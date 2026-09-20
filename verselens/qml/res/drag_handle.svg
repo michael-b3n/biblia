@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg width="24px" height="24px" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
-<circle cx="9.15" cy="3.45" r="1.4"/>
-<circle cx="14.85" cy="3.45" r="1.4"/>
-<circle cx="9.15" cy="9.15" r="1.4"/>
-<circle cx="14.85" cy="9.15" r="1.4"/>
-<circle cx="9.15" cy="14.85" r="1.4"/>
-<circle cx="14.85" cy="14.85" r="1.4"/>
-<circle cx="9.15" cy="20.55" r="1.4"/>
-<circle cx="14.85" cy="20.55" r="1.4"/>
+<circle cx="8.5" cy="5" r="1.5"/>
+<circle cx="15.5" cy="5" r="1.5"/>
+<circle cx="8.5" cy="12" r="1.5"/>
+<circle cx="15.5" cy="12" r="1.5"/>
+<circle cx="8.5" cy="19" r="1.5"/>
+<circle cx="15.5" cy="19" r="1.5"/>
 </svg>

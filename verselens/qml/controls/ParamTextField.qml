@@ -27,8 +27,10 @@ ParamBase
     verticalAlignment: Text.AlignVCenter
 
     padding: Metrics.paddingParamContent
+    topPadding: Metrics.spacingSmall
+    bottomPadding: Metrics.spacingSmall
     width: root.availableWidth
-    implicitHeight: input.contentHeight + 2 * input.padding
+    implicitHeight: root.lineHeight + input.topPadding + input.bottomPadding
 
     inputMethodHints:
     {
@@ -70,7 +72,7 @@ ParamBase
 
       // Properties
       interval: Metrics.durationDebounce
-      repeat: false // single-shot
+      repeat: false
 
       // Connections
       onTriggered: { input.handleTextChange() }

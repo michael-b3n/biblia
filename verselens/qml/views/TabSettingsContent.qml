@@ -8,8 +8,7 @@ import BibQml
 /// Content of the settings tab. A list view lists the settings of the listModelSettings through
 /// the Param controls, grouped by the first of the segments they are named by. Only this one
 /// level is grouped, all further segments name the setting itself.
-/// Every group can be folded away and the tab opens with all of them folded, so that the user
-/// reads what the application can be told before reading the settings themselves.
+/// Every group can be folded away, the tab opens with all of them unfolded.
 /// Groups and the settings inside them are listed in alphabetical order.
 ///
 Item
@@ -19,9 +18,9 @@ Item
   // Properties
   required property SettingsListModel listModelSettings
 
-  // Categories the user unfolded, by their key. Remembered per category and not per row, so that
-  // a setting created or reordered while a category is folded stays hidden with it.
-  property var openedCategories: ({})
+  // Categories the user folded away, by their key. Remembered per category and not per row, so
+  // that a setting created or reordered while a category is folded stays hidden with it.
+  property var collapsedCategories: ({})
 
   // The tab fades in when it is switched to, the layout takes the previous one off at once
   opacity: root.visible ? 1 : 0
@@ -101,7 +100,8 @@ Item
       width: listView.width - scrollBar.width
       // A folded setting is kept with no height left instead of being filtered out of the model:
       // the section header belongs to the first setting of its section and would go with it.
-      height: delegateRoot.collapsed ? 0 : content.implicitHeight
+      // The gap below a setting belongs to it, so that it is folded away together with it.
+      height: delegateRoot.collapsed ? 0 : paramLoader.implicitHeight + Metrics.spacingSmall
       visible: delegateRoot.height > 0
       clip: true
 
@@ -116,161 +116,145 @@ Item
       }
 
       // Components
-      Row
+      Loader
       {
-        id: content
+        id: paramLoader
 
         // Properties
-        width: delegateRoot.width
-        leftPadding: Metrics.spacingSmall
-        bottomPadding: Metrics.spacingTiny
-        spacing: Metrics.spacingLarge
-
-        // Components
-        Loader
+        x: Metrics.spacingSmall
+        width: delegateRoot.width - 2 * Metrics.spacingSmall
+        sourceComponent:
         {
-          // Properties
-          sourceComponent:
+          switch(delegateRoot.valueType)
           {
-            switch(delegateRoot.valueType)
+          case SettingsListModel.BoolValueType:
+          {
+            switch(delegateRoot.wrapperType)
             {
-            case SettingsListModel.BoolValueType:
-            {
-              switch(delegateRoot.wrapperType)
-              {
-              case SettingsListModel.NoneWrapperType: // [[fallthrough]]
-              case SettingsListModel.OptionalWrapperType: return paramSwitch
-              case SettingsListModel.ListWrapperType: return paramError // unsupported
-              default: return paramError
-              }
-            }
-            case SettingsListModel.IntValueType: // [[fallthrough]]
-            case SettingsListModel.DoubleValueType: // [[fallthrough]]
-            case SettingsListModel.TimeValueType: // [[fallthrough]]
-            case SettingsListModel.StringValueType: // [[fallthrough]]
-            case SettingsListModel.PathValueType:
-              switch(delegateRoot.wrapperType)
-              {
-              case SettingsListModel.NoneWrapperType: // [[fallthrough]]
-              case SettingsListModel.OptionalWrapperType:
-                switch(delegateRoot.validatorType)
-                {
-                case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
-                case SettingsListModel.RangeValidatorType: return paramTextField
-                case SettingsListModel.ListValidatorType: return paramComboBox
-                default: return paramError
-                }
-              case SettingsListModel.ListWrapperType: return paramListView
-              default: return paramError
-              }
+            case SettingsListModel.NoneWrapperType: // [[fallthrough]]
+            case SettingsListModel.OptionalWrapperType: return paramSwitch
+            case SettingsListModel.ListWrapperType: return paramError // unsupported
             default: return paramError
             }
           }
+          case SettingsListModel.IntValueType: // [[fallthrough]]
+          case SettingsListModel.DoubleValueType: // [[fallthrough]]
+          case SettingsListModel.TimeValueType: // [[fallthrough]]
+          case SettingsListModel.StringValueType: // [[fallthrough]]
+          case SettingsListModel.PathValueType:
+            switch(delegateRoot.wrapperType)
+            {
+            case SettingsListModel.NoneWrapperType: // [[fallthrough]]
+            case SettingsListModel.OptionalWrapperType:
+              switch(delegateRoot.validatorType)
+              {
+              case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
+              case SettingsListModel.RangeValidatorType: return paramTextField
+              case SettingsListModel.ListValidatorType: return paramComboBox
+              default: return paramError
+              }
+            case SettingsListModel.ListWrapperType: return paramListView
+            default: return paramError
+            }
+          default: return paramError
+          }
+        }
+
+        // Components
+        Component
+        {
+          id: paramSwitch
 
           // Components
-          Component
+          ParamSwitch
           {
-            id: paramSwitch
+            // Properties
+            categories: delegateRoot.categories
+            valueType: delegateRoot.valueType
+            wrapperType: delegateRoot.wrapperType
+            validatorType: delegateRoot.validatorType
+            value: delegateRoot.value
+            listValidatorData: delegateRoot.listValidatorData
 
-            // Components
-            ParamSwitch
-            {
-              // Properties
-              categories: delegateRoot.categories
-              valueType: delegateRoot.valueType
-              wrapperType: delegateRoot.wrapperType
-              validatorType: delegateRoot.validatorType
-              value: delegateRoot.value
-              listValidatorData: delegateRoot.listValidatorData
-              width: delegateRoot.width - content.leftPadding
-
-              // Connections
-              onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-            }
+            // Connections
+            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
           }
+        }
 
-          Component
+        Component
+        {
+          id: paramTextField
+
+          // Components
+          ParamTextField
           {
-            id: paramTextField
+            // Properties
+            categories: delegateRoot.categories
+            valueType: delegateRoot.valueType
+            wrapperType: delegateRoot.wrapperType
+            validatorType: delegateRoot.validatorType
+            value: delegateRoot.value
+            listValidatorData: delegateRoot.listValidatorData
 
-            // Components
-            ParamTextField
-            {
-              // Properties
-              categories: delegateRoot.categories
-              valueType: delegateRoot.valueType
-              wrapperType: delegateRoot.wrapperType
-              validatorType: delegateRoot.validatorType
-              value: delegateRoot.value
-              listValidatorData: delegateRoot.listValidatorData
-              width: delegateRoot.width - content.leftPadding
-
-              // Connections
-              onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-            }
+            // Connections
+            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
           }
+        }
 
-          Component
+        Component
+        {
+          id: paramComboBox
+
+          // Components
+          ParamComboBox
           {
-            id: paramComboBox
+            // Properties
+            categories: delegateRoot.categories
+            valueType: delegateRoot.valueType
+            wrapperType: delegateRoot.wrapperType
+            validatorType: delegateRoot.validatorType
+            value: delegateRoot.value
+            listValidatorData: delegateRoot.listValidatorData
 
-            // Components
-            ParamComboBox
-            {
-              // Properties
-              categories: delegateRoot.categories
-              valueType: delegateRoot.valueType
-              wrapperType: delegateRoot.wrapperType
-              validatorType: delegateRoot.validatorType
-              value: delegateRoot.value
-              listValidatorData: delegateRoot.listValidatorData
-              width: delegateRoot.width - content.leftPadding
-
-              // Connections
-              onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-            }
+            // Connections
+            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
           }
+        }
 
-          Component
+        Component
+        {
+          id: paramListView
+
+          // Components
+          ParamListView
           {
-            id: paramListView
+            // Properties
+            categories: delegateRoot.categories
+            valueType: delegateRoot.valueType
+            wrapperType: delegateRoot.wrapperType
+            validatorType: delegateRoot.validatorType
+            value: delegateRoot.value
+            listValidatorData: delegateRoot.listValidatorData
 
-            // Components
-            ParamListView
-            {
-              // Properties
-              categories: delegateRoot.categories
-              valueType: delegateRoot.valueType
-              wrapperType: delegateRoot.wrapperType
-              validatorType: delegateRoot.validatorType
-              value: delegateRoot.value
-              listValidatorData: delegateRoot.listValidatorData
-              width: delegateRoot.width - content.leftPadding
-
-              // Connections
-              onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-            }
+            // Connections
+            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
           }
+        }
 
-          Component
+        Component
+        {
+          id: paramError
+
+          // Components
+          ParamError
           {
-            id: paramError
-
-            // Components
-            ParamError
-            {
-              // Properties
-              categories: delegateRoot.categories
-              valueType: delegateRoot.valueType
-              wrapperType: delegateRoot.wrapperType
-              validatorType: delegateRoot.validatorType
-              value: delegateRoot.value
-              listValidatorData: delegateRoot.listValidatorData
-              width: delegateRoot.width - content.leftPadding
-
-              // Connections
-              onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-            }
+            // Properties
+            categories: delegateRoot.categories
+            valueType: delegateRoot.valueType
+            wrapperType: delegateRoot.wrapperType
+            validatorType: delegateRoot.validatorType
+            value: delegateRoot.value
+            listValidatorData: delegateRoot.listValidatorData
           }
         }
       }
@@ -296,7 +280,7 @@ Item
   ///
   function isCollapsed(category: string): bool
   {
-    return root.openedCategories[category] !== true
+    return root.collapsedCategories[category] === true
   }
 
   ///
@@ -306,8 +290,8 @@ Item
   {
     // The bindings on the folded state follow the property, not what is written into the object
     // it holds, so the change is reported by handing out a new object.
-    const opened = Object.assign({}, root.openedCategories)
-    opened[category] = root.isCollapsed(category)
-    root.openedCategories = opened
+    const collapsed = Object.assign({}, root.collapsedCategories)
+    collapsed[category] = !root.isCollapsed(category)
+    root.collapsedCategories = collapsed
   }
 }

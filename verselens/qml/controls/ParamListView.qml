@@ -15,12 +15,11 @@ ParamBase
   id: root
 
   // Components
-  contentItem: Rectangle
+  contentItem: Column
   {
     // Properties
     width: root.availableWidth
-    implicitHeight: listView.contentHeight + Metrics.controlHeight
-    color: "transparent"
+    spacing: Metrics.spacingTiny
 
     // Components
     ListView
@@ -28,24 +27,28 @@ ParamBase
       id: listView
 
       // Properties
+      property int dragIndex: -1
+      property int dropIndex: -1
+      readonly property real rowHeight:
+        listView.count > 0 ? (listView.contentHeight + listView.spacing) / listView.count : 0
+
       model: SimpleListModel{}
-      interactive: true
-      clip: false
-      anchors.fill: parent
+      width: parent.width
+      height: listView.contentHeight
+      spacing: Metrics.spacingSmall
+      interactive: false
 
       // Animations
-      // Only the edits of the user are animated. A value taken over from the backend resets the
-      // model, which fires no transition at all, so the list is simply there.
       add: Transition
       {
         NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Metrics.durationShort }
       }
+
       remove: Transition
       {
         NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Metrics.durationShort }
       }
-      // Rows an edit pushed aside slide to their new place. The dragged row itself is left alone,
-      // it is already where the user dropped it.
+
       displaced: Transition
       {
         NumberAnimation { property: "y"; duration: Metrics.durationShort; easing.type: Easing.InOutQuad }
@@ -62,7 +65,7 @@ ParamBase
       Component.onCompleted: { listView.model.replace(root.value) }
 
       // Components
-      delegate: Row
+      delegate: Item
       {
         id: delegateRoot
 
@@ -70,261 +73,282 @@ ParamBase
         required property int index
         required property var value
 
+        // What the control of the entry is left once the handle and the remove button took theirs
+        readonly property real controlWidth:
+          delegateRoot.width - 2 * (Metrics.iconSize + entry.spacing)
+
+        // How far the row steps aside to open the gap the dragged one will drop into. Only the
+        // rows between the place it was picked up from and the place it is headed for move, and
+        // they move by one row towards the gap the dragged one left behind.
+        readonly property real dragOffset:
+        {
+          if(listView.dragIndex < 0 || delegateRoot.index === listView.dragIndex)
+          {
+            return 0
+          }
+          if(delegateRoot.index > listView.dragIndex && delegateRoot.index <= listView.dropIndex)
+          {
+            return -listView.rowHeight
+          }
+          if(delegateRoot.index < listView.dragIndex && delegateRoot.index >= listView.dropIndex)
+          {
+            return listView.rowHeight
+          }
+          return 0
+        }
+
+        // Whether this is the entry the user picked up
+        readonly property bool dragged: listView.dragIndex === delegateRoot.index
+
         width: listView.width
-        spacing: Metrics.spacingTiny
+        height: entry.height
+        // The dragged entry is drawn over the ones it is pulled across
+        z: delegateRoot.dragged ? 1 : 0
+        // Stepping aside is a transform and not a position, so that it stays out of the way of
+        // the view, which is the one placing the rows.
+        transform: Translate
+        {
+          y: delegateRoot.dragOffset
+
+          Behavior on y
+          {
+            NumberAnimation { duration: Metrics.durationShort; easing.type: Easing.InOutQuad }
+          }
+        }
 
         // Components
-        Loader
+        Rectangle
         {
           // Properties
-          sourceComponent: delegateRoot.index === 0 ? plusButton : dragArea
+          anchors.fill: parent
+          visible: delegateRoot.dragged
+          radius: Metrics.radiusSmall
+          color: Colors.selection
+        }
+
+        Row
+        {
+          id: entry
+
+          // Properties
+          width: parent.width
+          spacing: Metrics.spacingTiny
 
           // Components
-          Component
+          ///
+          /// Handle the entry is dragged at. It is the only part of the entry that starts a drag,
+          /// which leaves the control next to it the gestures it needs itself.
+          ///
+          Item
           {
-            id: plusButton
+            id: handle
+
+            // Properties
+            // The column is kept even with nothing to order, so that the rows stay aligned
+            anchors.verticalCenter: parent.verticalCenter
+            width: Metrics.iconSize
+            height: Metrics.controlHeight
 
             // Components
-            Rectangle
+            VectorImage
             {
               // Properties
-              color: "transparent"
-              width: Metrics.controlHeight - delegateRoot.spacing
-              height: delegateRoot.height
+              anchors.centerIn: parent
+              width: Metrics.iconSize
+              height: Metrics.iconSize
+              // There is nothing to order while the list holds a single entry
+              visible: listView.count > 1
+              source: Icons.dragHandle
+              preferredRendererType: VectorImage.CurveRenderer
+            }
 
-              // Components
-              ButtonIconSimple
+            HoverHandler
+            {
+              // Properties
+              enabled: listView.count > 1
+              // The hand cursors are drawn by Qt itself and ignore the cursor the user picked,
+              // the resize ones are the native cursors and tell the drag axis as well.
+              cursorShape: Qt.SizeVerCursor
+            }
+
+            DragHandler
+            {
+              id: dragHandler
+
+              // Properties
+              target: null
+              enabled: listView.count > 1
+              xAxis.enabled: false
+              cursorShape: Qt.SizeVerCursor
+
+              property real startY: 0
+
+              // Connections
+              onActiveChanged:
               {
-                // Properties
-                svgSource: Icons.addToQueue
+                if(dragHandler.active)
+                {
+                  dragHandler.startY = delegateRoot.y
+                  listView.dragIndex = delegateRoot.index
+                  listView.dropIndex = delegateRoot.index
+                  return
+                }
 
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                height: width
+                const from = listView.dragIndex
+                const to = listView.dropIndex
+                delegateRoot.y = dragHandler.startY
+                listView.dragIndex = -1
+                listView.dropIndex = -1
+                if(to !== from)
+                {
+                  listView.moveItem(from, to)
+                }
+              }
+              onTranslationChanged:
+              {
+                if(!dragHandler.active)
+                {
+                  return
+                }
 
-                // Connections
-                onClicked: { listView.addVar() }
+                // The entry is held inside the list, one pulled past its end would land nowhere
+                const limit = listView.contentHeight - delegateRoot.height
+                delegateRoot.y =
+                  Math.max(0, Math.min(limit, dragHandler.startY + dragHandler.translation.y))
+
+                const offset = Math.round((delegateRoot.y - dragHandler.startY) / listView.rowHeight)
+                listView.dropIndex =
+                  Math.max(0, Math.min(listView.count - 1, listView.dragIndex + offset))
               }
             }
           }
-          Component
+
+          Loader
           {
-            id: dragArea
-
-            // Components
-            Rectangle
+            // Properties
+            // The loader carries the width, it resizes whichever control it holds to it
+            width: delegateRoot.controlWidth
+            sourceComponent:
             {
-              // Properties
-              color: "transparent"
-              width: Metrics.controlHeight - delegateRoot.spacing
-              height: delegateRoot.height
-
-              // Components
-              VectorImage
+              // param has list wrapper type
+              switch(root.valueType)
               {
-                source: Icons.dragHandle
-                preferredRendererType: VectorImage.CurveRenderer
-
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                height: width
-              }
-            }
-          }
-        }
-        Loader
-        {
-          // Properties
-          sourceComponent:
-          {
-            // param has list wrapper type
-            switch(root.valueType)
-            {
-            case SettingsListModel.BoolValueType: return paramSwitch
-            case SettingsListModel.IntValueType: // [[fallthrough]]
-            case SettingsListModel.DoubleValueType: // [[fallthrough]]
-            case SettingsListModel.TimeValueType: // [[fallthrough]]
-            case SettingsListModel.StringValueType: // [[fallthrough]]
-            case SettingsListModel.PathValueType:
-              switch(root.validatorType)
-              {
-              case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
-              case SettingsListModel.RangeValidatorType: return paramTextField
-              case SettingsListModel.ListValidatorType: return paramComboBox
+              case SettingsListModel.BoolValueType: return paramSwitch
+              case SettingsListModel.IntValueType: // [[fallthrough]]
+              case SettingsListModel.DoubleValueType: // [[fallthrough]]
+              case SettingsListModel.TimeValueType: // [[fallthrough]]
+              case SettingsListModel.StringValueType: // [[fallthrough]]
+              case SettingsListModel.PathValueType:
+                switch(root.validatorType)
+                {
+                case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
+                case SettingsListModel.RangeValidatorType: return paramTextField
+                case SettingsListModel.ListValidatorType: return paramComboBox
+                default: return paramError
+                }
               default: return paramError
               }
-            default: return paramError
             }
-          }
-
-          // Components
-          Component
-          {
-            id: paramSwitch
 
             // Components
-            ParamSwitch
+            Component
             {
-              id: switchControl
-
-              // Properties
-              categories: root.categories
-              valueType: root.valueType
-              wrapperType: root.wrapperType
-              validatorType: root.validatorType
-              value: delegateRoot.value
-              listValidatorData: root.listValidatorData
-
-              showTitle: false
-              width: delegateRoot.width
-
-              // Connections
-              onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
+              id: paramSwitch
 
               // Components
-              ButtonRemoveElement
+              ParamSwitch
               {
                 // Properties
-                paramControl: switchControl
+                categories: root.categories
+                valueType: root.valueType
+                wrapperType: root.wrapperType
+                validatorType: root.validatorType
+                value: delegateRoot.value
+                listValidatorData: root.listValidatorData
+
+                showTitle: false
 
                 // Connections
-                onClicked: listView.removeVar(delegateRoot.index)
+                onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
               }
             }
-          }
-          Component
-          {
-            id: paramTextField
-
-            // Components
-            ParamTextField
+            Component
             {
-              id: textFieldControl
-
-              // Properties
-              categories: root.categories
-              valueType: root.valueType
-              wrapperType: root.wrapperType
-              validatorType: root.validatorType
-              value: delegateRoot.value
-              listValidatorData: root.listValidatorData
-
-              showTitle: false
-              width: delegateRoot.width - Metrics.controlHeight
-
-              // Connections
-              onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
+              id: paramTextField
 
               // Components
-              ButtonRemoveElement
+              ParamTextField
               {
                 // Properties
-                paramControl: textFieldControl
+                categories: root.categories
+                valueType: root.valueType
+                wrapperType: root.wrapperType
+                validatorType: root.validatorType
+                value: delegateRoot.value
+                listValidatorData: root.listValidatorData
+
+                showTitle: false
 
                 // Connections
-                onClicked: listView.removeVar(delegateRoot.index)
+                onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
               }
             }
-          }
-          Component
-          {
-            id: paramComboBox
-
-            // Components
-            ParamComboBox
+            Component
             {
-              id: comboBoxControl
-
-              // Properties
-              categories: root.categories
-              valueType: root.valueType
-              wrapperType: root.wrapperType
-              validatorType: root.validatorType
-              value: delegateRoot.value
-              listValidatorData: root.listValidatorData
-
-              showTitle: false
-              width: delegateRoot.width - Metrics.controlHeight
-
-              // Connections
-              onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
+              id: paramComboBox
 
               // Components
-              ButtonRemoveElement
+              ParamComboBox
               {
                 // Properties
-                paramControl: comboBoxControl
+                categories: root.categories
+                valueType: root.valueType
+                wrapperType: root.wrapperType
+                validatorType: root.validatorType
+                value: delegateRoot.value
+                listValidatorData: root.listValidatorData
+
+                showTitle: false
 
                 // Connections
-                onClicked: listView.removeVar(delegateRoot.index)
+                onParamValueChanged: (value) => { listView.updateItem(delegateRoot.index, value) }
               }
             }
-          }
-          Component
-          {
-            id: paramError
-
-            // Components
-            ParamError
+            Component
             {
-              // Properties
-              categories: root.categories
-              valueType: root.valueType
-              wrapperType: root.wrapperType
-              validatorType: root.validatorType
-              value: delegateRoot.value
-              listValidatorData: root.listValidatorData
+              id: paramError
 
-              showTitle: false
-              width: delegateRoot.width - Metrics.controlHeight
-            }
-          }
-        }
-        DragHandler
-        {
-          id: dragHandler
-
-          // Properties
-          target: null
-          xAxis.enabled: false
-          grabPermissions: PointerHandler.CanTakeOverFromAnything
-
-          property real startY: 0
-          property int startIndex: -1
-          property int desiredIndex: -1
-
-          // Connections
-          onActiveChanged:
-          {
-            if(dragHandler.active)
-            {
-              listView.interactive = false
-              dragHandler.startY = delegateRoot.y
-              dragHandler.startIndex = delegateRoot.index
-              dragHandler.desiredIndex = dragHandler.startIndex
-            }
-            else
-            {
-              listView.interactive = true
-              delegateRoot.y = dragHandler.startY
-              if(dragHandler.desiredIndex !== dragHandler.startIndex)
+              // Components
+              ParamError
               {
-                listView.moveItem(dragHandler.startIndex, dragHandler.desiredIndex)
+                // Properties
+                categories: root.categories
+                valueType: root.valueType
+                wrapperType: root.wrapperType
+                validatorType: root.validatorType
+                value: delegateRoot.value
+                listValidatorData: root.listValidatorData
+
+                showTitle: false
               }
             }
           }
-          onTranslationChanged:
+
+          ///
+          /// Removes the entry it belongs to. It is listed in a column of its own, so that it is
+          /// told apart from whatever the control next to it draws at its own right edge.
+          ///
+          ButtonIconSimple
           {
-            if(!dragHandler.active)
-            {
-              return
-            }
+            // Properties
+            anchors.verticalCenter: parent.verticalCenter
+            svgSource: Icons.remove
+            iconSize: Metrics.iconSize
+            width: Metrics.iconSize
+            height: Metrics.controlHeight
 
-            delegateRoot.y = dragHandler.startY + dragHandler.translation.y
-
-            const offset = Math.round(dragHandler.translation.y / delegateRoot.height)
-            dragHandler.desiredIndex =
-              Math.max(0, Math.min(listView.count - 1, dragHandler.startIndex + offset))
+            // Connections
+            onClicked: { listView.removeVar(delegateRoot.index) }
           }
         }
       }
@@ -335,18 +359,18 @@ ParamBase
         switch(root.valueType)
         {
         case SettingsListModel.BoolValueType:
-          listView.model.prepend(false)
+          listView.model.append(false)
           break
         case SettingsListModel.IntValueType:
-          listView.model.prepend(0)
+          listView.model.append(0)
           break
         case SettingsListModel.DoubleValueType:
         case SettingsListModel.TimeValueType:
-          listView.model.prepend(0.0)
+          listView.model.append(0.0)
           break
         case SettingsListModel.StringValueType:
         case SettingsListModel.PathValueType:
-          listView.model.prepend("")
+          listView.model.append("")
           break
         default:
           BridgeLogger.error("unsupported SettingsListModel::ValueType value")
@@ -378,6 +402,32 @@ ParamBase
         {
           root.paramValueChanged(listView.model.entries())
         }
+      }
+    }
+
+    ///
+    /// Adds an entry below the ones already listed.
+    ///
+    ButtonBase
+    {
+      // Properties
+      width: parent.width
+
+      // Connections
+      onClicked: { listView.addVar() }
+
+      // Components
+      VectorImage
+      {
+        // Properties
+        anchors.left: parent.left
+        // Lined up with the grips of the entries above it
+        anchors.leftMargin: (Metrics.controlHeight - Metrics.iconSize) / 2
+        anchors.verticalCenter: parent.verticalCenter
+        width: Metrics.iconSize
+        height: Metrics.iconSize
+        source: Icons.add
+        preferredRendererType: VectorImage.CurveRenderer
       }
     }
   }

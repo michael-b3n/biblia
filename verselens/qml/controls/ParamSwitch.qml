@@ -10,10 +10,6 @@ ParamBase
 {
   id: root
 
-  // Properties
-  topPadding: Metrics.spacingTiny
-  leftPadding: root.titleWidth
-
   // Components
   contentItem: Switch
   {
@@ -23,8 +19,9 @@ ParamBase
     // Note optional params may hold no value at all.
     checked: root.value === undefined ? false : root.value
 
+    padding: 0
     implicitWidth: root.availableWidth
-    implicitHeight: root.titleHeight
+    implicitHeight: root.lineHeight
 
     // Connections
     onClicked: { root.paramValueChanged(control.checked) }
@@ -49,10 +46,10 @@ ParamBase
     indicator: Rectangle
     {
       // Properties
+      x: control.width - width
+      y: (control.height - height) / 2
       width: 2 * height
-      height: root.titleHeight
-      x: Math.min(control.leftPadding, control.leftPadding + (control.availableWidth - width) / 3)
-      y: control.topPadding + (control.availableHeight - height) / 2
+      height: control.implicitHeight
       radius: height / 2
       color: control.checked ? Colors.selection : Colors.backgroundSolidDarker
       border.color: control.checked ? Colors.borderDarker : Colors.border

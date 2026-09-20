@@ -1,50 +1,50 @@
 import QtQuick
 
 ///
-/// Header of one settings category. It names the category and folds its settings away when it
-/// is clicked.
+/// Header of one settings category. It names the category and folds its settings away when it is
+/// clicked. It is drawn as a heading with a rule running to the right of it.
 ///
 Item
 {
   id: root
 
   // Properties
-  // Key of the category, it is named through the translations like any other key
   required property string category
-  // Whether the settings of the category are folded away. The header only reports the click,
-  // the list the settings are shown in decides.
   required property bool collapsed
 
-  implicitHeight: Metrics.controlHeight
+  implicitHeight: Metrics.controlHeight + Metrics.spacingMedium
 
   // Signals
   signal toggled()
 
   // Components
-  Rectangle
+  Item
   {
-    id: background
+    id: heading
 
     // Properties
-    anchors.fill: parent
-    anchors.topMargin: Metrics.spacingTiny
-    anchors.bottomMargin: Metrics.spacingTiny
-    radius: Metrics.radiusSmall
-    color:
-    {
-      if(mouseArea.pressed) { return Colors.pressed }
-      if(mouseArea.containsMouse) { return Colors.selection }
-      return Colors.backgroundSolidDarker
-    }
-
-    // Animations
-    Behavior on color { ColorAnimation { duration: Metrics.durationShort } }
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    height: Metrics.controlHeight
 
     // Components
-    ///
-    /// Fold indicator. It points down at the settings while they are unfolded and to the right
-    /// while they are folded away.
-    ///
+    Rectangle
+    {
+      // Properties
+      anchors.fill: parent
+      radius: Metrics.radiusSmall
+      color:
+      {
+        if(mouseArea.pressed) { return Colors.pressed }
+        if(mouseArea.containsMouse) { return Colors.selection }
+        return "transparent"
+      }
+
+      // Animations
+      Behavior on color { ColorAnimation { duration: Metrics.durationShort } }
+    }
+
     TriangleShape
     {
       id: indicator
@@ -72,16 +72,28 @@ Item
 
     TextSimple
     {
+      id: title
+
       // Properties
       anchors.left: indicator.right
+      anchors.leftMargin: Metrics.spacingSmall
+      anchors.verticalCenter: parent.verticalCenter
+      text: Translations.name(root.category, Translations.language)
+      font.pointSize: Metrics.fontSizeHeading
+      font.bold: true
+      elide: Text.ElideRight
+    }
+
+    Rectangle
+    {
+      // Properties
+      anchors.left: title.right
       anchors.leftMargin: Metrics.spacingSmall
       anchors.right: parent.right
       anchors.rightMargin: Metrics.spacingSmall
       anchors.verticalCenter: parent.verticalCenter
-      // Note the language is passed to reevaluate this binding on a language change.
-      text: Translations.name(root.category, Translations.language)
-      font.bold: true
-      elide: Text.ElideRight
+      height: Metrics.border
+      color: Colors.border
     }
   }
 
@@ -90,7 +102,7 @@ Item
     id: mouseArea
 
     // Properties
-    anchors.fill: parent
+    anchors.fill: heading
     hoverEnabled: true
 
     // Connections

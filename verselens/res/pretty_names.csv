@@ -37,6 +37,7 @@ nirv,New International Reader's Version,New International Reader's Version
 niv,New International Version,New International Version
 nlb,Neues Leben. Die Bibel,Neues Leben. Die Bibel
 None,Keine Aktion,No action
+notifications,Benachrichtigungen,Notifications
 notifications_none,Keine neuen Benachrichtigungen.,No new notifications.
 ocr,Texterkennung,Text recognition
 ocr_auto,Automatische Texterkennung,Automatic text recognition
@@ -57,5 +58,6 @@ update_check_failed,Die Suche nach Updates ist fehlgeschlagen.,The update check 
 update_check_finished,Die Anwendung ist auf dem neuesten Stand.,The application is up to date.
 update_check_running,Suche nach Updates …,Checking for updates …
 update_now,Jetzt aktualisieren!,Update now!
+updates,Updates,Updates
 vxb,Volxbibel,Volxbibel
 zb,Zürcher Bibel,Zürcher Bibel

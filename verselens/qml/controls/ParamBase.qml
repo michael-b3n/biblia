@@ -1,13 +1,13 @@
 import QtQuick
-import QtQuick.Controls
 
 ///
 /// Parameter base object.
-/// Fixed is only the title of the param.
-/// Param implementations shall add the according
-/// design using the required properties.
+/// It is the titled box of the application, named by the setting it stands for. Param
+/// implementations shall add the according design using the required properties. A param nested
+/// in another one clears showTitle and is then drawn bare, the param it belongs to carries the
+/// frame for it.
 ///
-Control
+GroupBoxSimple
 {
   id: root
 
@@ -21,13 +21,14 @@ Control
   required property var listValidatorData
 
   property bool showTitle: true
-  readonly property int titleHeight: title.implicitHeight
-  readonly property int titleWidth: title.contentWidth + 2 * Metrics.spacingTiny
+  readonly property int lineHeight: Math.ceil(paramLine.boundingRect.height)
 
-  topPadding: root.showTitle ? (root.titleHeight + 2 * Metrics.spacingTiny) : Metrics.spacingTiny
-  bottomPadding: Metrics.spacingTiny
-  leftPadding: Metrics.spacingTiny
-  rightPadding: Metrics.spacingTiny
+  framed: root.showTitle
+  // The category is already named by the section the setting is listed under, so only the
+  // segments below it are left to name here. A setting without a category names itself.
+  // Note the language is passed to reevaluate this binding on a language change.
+  title: Translations.names(root.categories.length > 1 ? root.categories.slice(1) : root.categories,
+                            Translations.language)
 
   // Signals
   ///
@@ -38,22 +39,12 @@ Control
   signal paramValueChanged(value: var)
 
   // Components
-  ///
-  /// Title of the param object.
-  ///
-  TextSimple
+  TextMetrics
   {
-    id: title
+    id: paramLine
 
     // Properties
-    // The category is already named by the section the setting is listed under, so only the
-    // segments below it are left to name here. A setting without a category names itself.
-    // Note the language is passed to reevaluate this binding on a language change.
-    text: Translations.names(root.categories.length > 1 ? root.categories.slice(1) : root.categories,
-                             Translations.language)
-
-    visible: root.showTitle
-    width: root.width
-    // height is implicitly determined
+    font.pointSize: Metrics.fontSizeParam
+    text: "Ag"
   }
 }

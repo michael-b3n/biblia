@@ -13,7 +13,7 @@ ParamBase
   {
     // Properties
     width: root.availableWidth
-    height: errorText.contentHeight
+    height: errorText.implicitHeight
 
     // Components
     TextSimple

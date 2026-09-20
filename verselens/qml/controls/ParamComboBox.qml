@@ -23,10 +23,16 @@ ParamBase
     // Note the language is passed to reevaluate this binding on a language change.
     displayText: control.currentIndex < 0 ? "" : Translations.name(control.currentText, Translations.language)
 
+    // Size of the drop down indicator, the content is kept clear of it
+    readonly property real indicatorWidth: control.availableHeight / 2
+    readonly property real indicatorHeight: control.availableHeight / 3
+
     padding: Metrics.paddingParamContent
+    topPadding: Metrics.spacingSmall
+    bottomPadding: Metrics.spacingSmall
     spacing: Metrics.spacingTiny
     width: root.availableWidth
-    implicitHeight: contentText.implicitHeight + 2 * control.padding
+    implicitHeight: root.lineHeight + control.topPadding + control.bottomPadding
 
     // Connections
     onActivated: (index) =>
@@ -66,9 +72,8 @@ ParamBase
       // Properties
       text: control.displayText
       elide: Text.ElideRight
-      rightPadding: Metrics.paddingParamContent * 2
-      // width and height properties of combobox
-      // content item is ignored.
+      rightPadding: control.indicatorWidth + 2 * Metrics.paddingParamContent
+      // The width and height of a combobox content item are ignored.
     }
 
     ///
@@ -80,8 +85,8 @@ ParamBase
       // Properties
       x: control.width - width - Metrics.paddingParamContent
       y: control.topPadding + (control.availableHeight - height) / 2
-      width: control.availableHeight / 2
-      height: control.availableHeight / 3
+      width: control.indicatorWidth
+      height: control.indicatorHeight
       color: control.pressed ? Colors.pressed : Colors.border
       transformOrigin: Item.Center
       // Note the popup is null until the control is built, the indicator is declared before it
@@ -102,8 +107,12 @@ ParamBase
     popup: PopupSimple
     {
       // Properties
-      y: control.height - 1
+      // Overlapping the border of the field joins the popup to it
+      y: control.height - Metrics.border
       width: control.width
+      // Capped, so that a list too long for it scrolls instead of running past the window
+      height: Math.min(comboBoxListView.contentHeight + topPadding + bottomPadding,
+                       Metrics.popupHeightMax)
 
       // Components
       contentItem: ListView

@@ -31,7 +31,7 @@ class Icons final : public QObject
   QML_ELEMENT
   QML_SINGLETON
 
-  Q_PROPERTY(QString addToQueue MEMBER addToQueue_ CONSTANT)
+  Q_PROPERTY(QString add MEMBER add_ CONSTANT)
   Q_PROPERTY(QString bell MEMBER bell_ CONSTANT)
   Q_PROPERTY(QString bellRinging MEMBER bellRinging_ CONSTANT)
   Q_PROPERTY(QString checkMark MEMBER checkMark_ CONSTANT)
@@ -52,7 +52,7 @@ public: // Structors
   ~Icons() noexcept override;
 
 private: // Variables
-  QString addToQueue_{detail::toIconUrl("add_to_queue.svg")};
+  QString add_{detail::toIconUrl("add.svg")};
   QString bell_{detail::toIconUrl("bell.svg")};
   QString bellRinging_{detail::toIconUrl("bell_ringing.svg")};
   QString checkMark_{detail::toIconUrl("check_mark.svg")};
