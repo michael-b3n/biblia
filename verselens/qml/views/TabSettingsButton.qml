@@ -1,4 +1,5 @@
 import QtQuick
+import BibQml
 
 ///
 /// Tab button of the settings tab.

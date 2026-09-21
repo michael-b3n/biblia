@@ -18,7 +18,7 @@ auto show_already_running(int argc, char** argv) -> int
   configure_qml_layer();
   QGuiApplication app(argc, argv);
 
-  // The notice reads like the rest of the application: same pretty names, same language. The
+  // The notice reads like the rest of the application: same display names, same language. The
   // language is only read, a second instance must never write what the running one owns.
   const auto translations = construct_translations(read_language_setting());
 

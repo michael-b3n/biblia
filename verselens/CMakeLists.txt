@@ -92,7 +92,7 @@ file(GLOB_RECURSE ${PROJECT_NAME}_QML_HPP_FILES_RELATIVE RELATIVE ${CMAKE_CURREN
 #
 set(QT_FORCE_CMP0156_TO_VALUE NEW)
 
-find_package(${QT_VERSION_NAME} ${QT_VERSION_NUMBER} REQUIRED COMPONENTS Quick QuickControls2 QuickShapes Svg)
+find_package(${QT_VERSION_NAME} ${QT_VERSION_NUMBER} REQUIRED COMPONENTS Quick QuickControls2 QuickDialogs2 QuickShapes Svg)
 qt_standard_project_setup(REQUIRES ${QT_VERSION_NUMBER})
 qt_add_executable(${PROJECT_NAME} WIN32)
 
@@ -162,7 +162,7 @@ target_sources(${PROJECT_NAME}
 # Add all resources that are compiled into the executable using incbin.
 #
 add_incbin_resources(src/construct_tray.cpp res/icon.ico)
-add_incbin_resources(src/construct_translations.cpp res/pretty_names.csv)
+add_incbin_resources(src/construct_translations.cpp res/display_names.csv)
 
 #
 # Link against external dependencies
@@ -170,6 +170,7 @@ add_incbin_resources(src/construct_translations.cpp res/pretty_names.csv)
 target_link_libraries(${PROJECT_NAME}
   PRIVATE Qt6::Quick
   PRIVATE Qt6::QuickControls2
+  PRIVATE Qt6::QuickDialogs2
   PRIVATE Qt6::QuickShapes
   PRIVATE Qt6::Svg
   PRIVATE bibstd

@@ -4,7 +4,8 @@ import BibQml
 
 ///
 /// Content of the notifications tab: the state of the updates and, if the application has an
-/// updater, the buttons to check for an update and to install it.
+/// updater, the buttons to check for an update and to install it. Both are listed in the titled
+/// box the settings use as well, so that a tab of the window reads like the next one.
 ///
 Item
 {
@@ -39,45 +40,66 @@ Item
     spacing: Metrics.spacingSmall
 
     // Components
-    TextSimple
+    ///
+    /// State the updates are in, which is what there is to report.
+    ///
+    GroupBoxSimple
     {
       // Properties
       Layout.fillWidth: true
-      Layout.leftMargin: Metrics.spacingSmall
       // Note the language is passed to reevaluate this binding on a language change.
-      text: Translations.name(root.statusKey(), Translations.language)
-      wrapMode: Text.WordWrap
-    }
-
-    RowLayout
-    {
-      // Properties
-      Layout.fillWidth: true
-      spacing: Metrics.spacingSmall
-      visible: root.hasUpdater
+      title: Translations.name("notifications", Translations.language)
 
       // Components
-      ///
-      /// Installs the downloaded update, which restarts the application.
-      ///
-      ButtonTextSimple
+      contentItem: TextSimple
       {
         // Properties
-        visible: root.bridgeApplication.updateAvailable
-        text: Translations.name("update_now", Translations.language)
-
-        // Connections
-        onClicked: { root.bridgeApplication.requestUpdate() }
+        text: Translations.name(root.statusKey(), Translations.language)
+        wrapMode: Text.WordWrap
       }
+    }
 
-      ButtonTextSimple
+    ///
+    /// What can be asked of the updater.
+    ///
+    GroupBoxSimple
+    {
+      // Properties
+      Layout.fillWidth: true
+      visible: root.hasUpdater
+      title: Translations.name("updates", Translations.language)
+
+      // Components
+      contentItem: RowLayout
       {
         // Properties
-        enabled: !root.checkRunning
-        text: Translations.name("update_check", Translations.language)
+        spacing: Metrics.spacingSmall
 
-        // Connections
-        onClicked: { root.bridgeApplication.requestUpdateCheck() }
+        // Components
+        ///
+        /// Installs the downloaded update, which restarts the application.
+        ///
+        ButtonTextSimple
+        {
+          // Properties
+          visible: root.bridgeApplication.updateAvailable
+          text: Translations.name("update_now", Translations.language)
+
+          // Connections
+          onClicked: { root.bridgeApplication.requestUpdate() }
+        }
+
+        ButtonTextSimple
+        {
+          // Properties
+          enabled: !root.checkRunning
+          text: Translations.name("update_check", Translations.language)
+
+          // Connections
+          onClicked: { root.bridgeApplication.requestUpdateCheck() }
+        }
+
+        Item { Layout.fillWidth: true }
       }
     }
 

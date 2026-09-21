@@ -95,7 +95,7 @@ int main(int argc, char** argv)
   auto bridge = verselens::construct_bridge(app, backend);
   verselens::connect_bridge(bridge);
 
-  // Init the pretty names of the frontend. The backend deals with identifiers only.
+  // Init the display names of the frontend. The backend deals with identifiers only.
   auto translations = verselens::construct_translations(backend);
 
 #ifdef VERSELENS_VELOPACK

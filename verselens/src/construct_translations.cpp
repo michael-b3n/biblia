@@ -12,20 +12,51 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+#include <algorithm>
 #include <format>
 #include <memory>
+#include <span>
 #include <utility>
+#include <vector>
 
-INC_RESOURCE(pretty_names, "res/pretty_names.csv");
-const auto pretty_names_view = bibstd::util::incbin::to_span<std::byte>(res_pretty_names_data, res_pretty_names_size);
+INC_RESOURCE(display_names, "res/display_names.csv");
+const auto display_names_view = bibstd::util::incbin::to_span<std::byte>(res_display_names_data, res_display_names_size);
 
 namespace verselens
 {
+namespace
+{
+
+///
+/// The validator of the language setting lists what the document offers.
+/// \return languages of the translations
+///
+[[nodiscard]] auto available_languages(const bibqml::Translations& translations) -> std::vector<std::string>
+{
+  const auto languages = translations.availableLanguages();
+  auto result = std::vector<std::string>{};
+  result.reserve(static_cast<std::size_t>(languages.size()));
+  std::ranges::transform(languages, std::back_inserter(result), [](const auto& l) { return l.toStdString(); });
+  return result;
+}
+
+///
+/// Translations naming every key after itself, for a start that could not read the document.
+/// \return translations holding no names
+///
+[[nodiscard]] auto no_translations() -> std::unique_ptr<bibqml::Translations>
+{
+  return std::make_unique<bibqml::Translations>(std::span<const std::byte>{});
+}
+
+} // anonymous namespace
 
 ///
 ///
-translations_instance::translations_instance(app_pretty_names names, const language_setting_type language_setting)
-  : translations_{std::make_unique<qml::Translations>(std::move(names))}
+translations_instance::translations_instance(
+  std::unique_ptr<bibqml::Translations> translations, const language_setting_type language_setting
+)
+  : translations_{std::move(translations)}
   , language_setting_{language_setting}
 {
   if(language_setting_ == nullptr)
@@ -50,8 +81,10 @@ translations_instance::translations_instance(app_pretty_names names, const langu
 
 ///
 ///
-translations_instance::translations_instance(app_pretty_names names, const std::optional<std::string>& language)
-  : translations_{std::make_unique<qml::Translations>(std::move(names))}
+translations_instance::translations_instance(
+  std::unique_ptr<bibqml::Translations> translations, const std::optional<std::string>& language
+)
+  : translations_{std::move(translations)}
   , language_setting_{nullptr}
 {
   if(language.has_value())
@@ -69,13 +102,6 @@ translations_instance::~translations_instance() noexcept = default;
 auto translations_instance::disconnect() -> void
 {
   executor_.disconnect();
-}
-
-///
-///
-auto compiled_pretty_names() -> app_pretty_names
-{
-  return app_pretty_names{pretty_names_view};
 }
 
 ///
@@ -105,18 +131,19 @@ auto construct_translations(backend_instance& backend) -> translations_instance
 {
   try
   {
-    auto names = compiled_pretty_names();
+    auto translations = std::make_unique<bibqml::Translations>(display_names_view);
+    const auto languages = available_languages(*translations);
     auto* const language_setting = backend.workflow_settings->create_setting(
       std::string{translations_instance::language_setting_path},
-      std::string{names.languages().front()},
-      std::make_shared<bibstd::framework::setting_validator_list<std::string>>(names.languages())
+      languages.front(),
+      std::make_shared<bibstd::framework::setting_validator_list<std::string>>(languages)
     );
-    return translations_instance{std::move(names), language_setting};
+    return translations_instance{std::move(translations), language_setting};
   }
   catch(...)
   {
     LOG_ERROR("construct translations failed: {}", bibstd::util::exception_report());
-    return translations_instance{app_pretty_names{}, std::nullopt};
+    return translations_instance{no_translations(), std::nullopt};
   }
 }
 
@@ -126,12 +153,12 @@ auto construct_translations(const std::optional<std::string>& language) -> trans
 {
   try
   {
-    return translations_instance{compiled_pretty_names(), language};
+    return translations_instance{std::make_unique<bibqml::Translations>(display_names_view), language};
   }
   catch(...)
   {
     LOG_ERROR("construct translations failed: {}", bibstd::util::exception_report());
-    return translations_instance{app_pretty_names{}, std::nullopt};
+    return translations_instance{no_translations(), std::nullopt};
   }
 }
 

@@ -6,6 +6,8 @@
 #include "bibstd/util/string.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <optional>
@@ -13,7 +15,7 @@
 #include <string_view>
 #include <system_error>
 #include <tuple>
-#include <vector>
+#include <utility>
 
 namespace bibstd::core
 {
@@ -40,58 +42,25 @@ auto file_type(const std::filesystem::path& path) -> std::optional<core_scriptur
   return std::nullopt;
 }
 
+///
+/// Access the files directly inside \p folder, leaving out what is not a file of its own.
+/// \return view of the file paths
+///
+auto regular_files(const std::filesystem::path& folder, std::error_code& error) -> auto
+{
+  return std::filesystem::directory_iterator{folder, error} |
+         std::views::filter([&error](const auto& entry) { return entry.is_regular_file(error); }) |
+         std::views::transform([](const auto& entry) { return entry.path(); });
+}
+
 } // namespace
 
 ///
 ///
-core_scripture_store::core_scripture_store(const std::filesystem::path& folder)
+core_scripture_store::core_scripture_store(std::filesystem::path folder)
+  : folder_{std::move(folder)}
 {
-  auto error = std::error_code{};
-  if(!std::filesystem::exists(folder, error))
-  {
-    std::ignore = std::filesystem::create_directories(folder, error);
-    return;
-  }
-  if(!std::filesystem::is_directory(folder, error))
-  {
-    LOG_WARN("scripture folder not found: folder=\"{}\"", folder.generic_string());
-    return;
-  }
-
-  auto files = std::vector<std::filesystem::path>{};
-  for(const auto& entry : std::filesystem::directory_iterator{folder, error})
-  {
-    if(entry.is_regular_file(error))
-    {
-      files.push_back(entry.path());
-    }
-  }
-  std::ranges::sort(files);
-
-  std::ranges::for_each(
-    files,
-    [&](const auto& file)
-    {
-      const auto type = file_type(file);
-      if(!type)
-      {
-        LOG_WARN("file type not supported: file_name=\"{}\"", file.filename().string());
-        return;
-      }
-      LOG_INFO("loading scripture data: file_name=\"{}\"", file.filename().string());
-      try
-      {
-        switch(*type)
-        {
-        case core_scripture_store::supported_file_type::zip: load_usx(io::zip_file_reader(file)); break;
-        }
-      }
-      catch(...)
-      {
-        LOG_ERROR("failed to load scripture data: file_name=\"{}\", {}", file.filename().string(), util::exception_report());
-      }
-    }
-  );
+  load();
 }
 
 ///
@@ -107,34 +76,146 @@ auto core_scripture_store::scriptures() const -> const scripture_map_type&
 
 ///
 ///
-auto core_scripture_store::load_usx(const io::zip_file_reader& zip_reader) -> bool
+auto core_scripture_store::import(const std::filesystem::path& source) -> std::size_t
 {
-  if(!zip_reader.is_open())
+  auto error = std::error_code{};
+  if(!std::filesystem::is_directory(source, error))
   {
-    LOG_ERROR("failed to open zip archive for usx format");
-    return false;
+    LOG_WARN("scripture import folder not found: folder=\"{}\"", source.generic_string());
+    return 0;
   }
-  auto reader = bible::scripture_usx::create(zip_reader);
-  if(!reader)
+  if(std::filesystem::equivalent(source, folder_, error))
   {
-    return false;
+    return 0;
   }
-  static constexpr auto uint_ending_format = " ({})";
-  auto name = reader->information().name;
-  if(scripture_data_.contains(name))
+  std::ignore = std::filesystem::create_directories(folder_, error);
+
+  auto imported = std::size_t{0};
+  for(const auto& file :
+      regular_files(source, error) | std::views::filter([](const auto& path) { return file_type(path).has_value(); }))
   {
-    auto found_max_uint_ending = std::uint32_t{0};
+    // Read before the copy, so a file this store cannot load never reaches the folder
+    auto scripture = read(file);
+    if(!scripture)
+    {
+      LOG_WARN("scripture file not taken over: file_name=\"{}\"", file.filename().string());
+      continue;
+    }
+    const auto target = folder_ / file.filename();
+    if(!std::filesystem::copy_file(file, target, std::filesystem::copy_options::overwrite_existing, error))
+    {
+      LOG_ERROR("failed to copy scripture file: file_name=\"{}\", {}", file.filename().string(), error.message());
+      continue;
+    }
+    LOG_INFO("scripture file copied: file_name=\"{}\"", file.filename().string());
+    scripture_files_.insert_or_assign(target, std::move(scripture));
+    ++imported;
+  }
+  if(imported > 0)
+  {
+    name_scriptures();
+  }
+  return imported;
+}
+
+///
+///
+auto core_scripture_store::load() -> void
+{
+  scripture_files_.clear();
+  auto error = std::error_code{};
+  if(!std::filesystem::exists(folder_, error))
+  {
+    // Created here so a later import has somewhere to copy to
+    std::ignore = std::filesystem::create_directories(folder_, error);
+  }
+  else if(!std::filesystem::is_directory(folder_, error))
+  {
+    LOG_WARN("scripture folder not found: folder=\"{}\"", folder_.generic_string());
+  }
+  else
+  {
     std::ranges::for_each(
-      scripture_data_ | std::views::keys |
-        std::views::filter([&](const auto& n) { return util::string::starts_with(name, n); }) |
-        std::views::transform([](const auto& n)
-                              { return util::string::ends_with_formatted_uint(n, uint_ending_format).value_or(0); }),
-      [&](const auto i) { found_max_uint_ending = std::max(found_max_uint_ending, i); }
+      regular_files(folder_, error),
+      [this](const auto& file)
+      {
+        if(!file_type(file))
+        {
+          LOG_WARN("file type not supported: file_name=\"{}\"", file.filename().string());
+          return;
+        }
+        LOG_INFO("loading scripture data: file_name=\"{}\"", file.filename().string());
+        if(auto scripture = read(file))
+        {
+          scripture_files_.emplace(file, std::move(scripture));
+        }
+      }
     );
-    name = name + std::format(uint_ending_format, found_max_uint_ending + 1);
   }
-  scripture_data_.emplace(name, std::move(reader));
-  return true;
+  name_scriptures();
+}
+
+///
+///
+auto core_scripture_store::name_scriptures() -> void
+{
+  static constexpr auto uint_ending_format = " ({})";
+
+  scripture_data_.clear();
+  // The files are keyed by path, so the scriptures are named in the order of their file names
+  std::ranges::for_each(
+    scripture_files_ | std::views::values,
+    [this](const auto& scripture)
+    {
+      auto name = scripture->information().name;
+      if(scripture_data_.contains(name))
+      {
+        // Scriptures sharing a name are told apart by a counting suffix, counted up from the names
+        // already taken. Not const: a filter view cannot be iterated through a const reference.
+        auto endings =
+          scripture_data_ | std::views::keys |
+          std::views::filter([&name](const auto& n) { return util::string::starts_with(n, name); }) |
+          std::views::transform([](const auto& n)
+                                { return util::string::ends_with_formatted_uint(n, uint_ending_format).value_or(0); });
+        const auto highest =
+          std::ranges::fold_left(endings, std::uint32_t{0}, [](const auto a, const auto b) { return std::max(a, b); });
+        name += std::format(uint_ending_format, highest + 1);
+      }
+      scripture_data_.emplace(std::move(name), scripture);
+    }
+  );
+}
+
+///
+///
+auto core_scripture_store::read(const std::filesystem::path& file) -> std::shared_ptr<bible::scripture>
+{
+  const auto type = file_type(file);
+  if(!type)
+  {
+    return nullptr;
+  }
+  try
+  {
+    switch(*type)
+    {
+    case supported_file_type::zip:
+    {
+      const auto zip_reader = io::zip_file_reader{file};
+      if(!zip_reader.is_open())
+      {
+        LOG_ERROR("failed to open zip archive for usx format: file_name=\"{}\"", file.filename().string());
+        return nullptr;
+      }
+      return bible::scripture_usx::create(zip_reader);
+    }
+    }
+  }
+  catch(...)
+  {
+    LOG_ERROR("failed to read scripture data: file_name=\"{}\", {}", file.filename().string(), util::exception_report());
+  }
+  return nullptr;
 }
 
 } // namespace bibstd::core
