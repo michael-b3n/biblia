@@ -81,6 +81,7 @@ Item
       text: Translations.name(root.category, Translations.language)
       font.pointSize: Metrics.fontSizeHeading
       font.bold: true
+      color: Colors.border
       elide: Text.ElideRight
     }
 

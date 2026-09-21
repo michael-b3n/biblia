@@ -344,7 +344,7 @@ Item
     readonly property bool available: copyrightNote.statement !== ""
 
     anchors.bottom: parent.bottom
-    anchors.left: parent.left
+    anchors.right: parent.right
     anchors.margins: Metrics.spacingTiny
     width: Metrics.controlHeight - Metrics.spacingSmall
     height: copyrightNote.width
@@ -394,7 +394,7 @@ Item
       // Properties
       readonly property int maximumWidth: root.width - 2 * Metrics.spacingSmall
 
-      anchors.left: parent.left
+      anchors.right: parent.right
       anchors.bottom: parent.top
       anchors.bottomMargin: Metrics.spacingTiny
       width: copyrightStatementText.contentWidth + 2 * Metrics.spacingSmall
