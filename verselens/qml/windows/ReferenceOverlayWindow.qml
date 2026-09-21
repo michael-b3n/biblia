@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
+import BibQml
 
 ///
 /// Transparent button covering the reference on the screen. While the search runs it sits at the

@@ -162,7 +162,7 @@ target_sources(${PROJECT_NAME}
 # Add all resources that are compiled into the executable using incbin.
 #
 add_incbin_resources(src/construct_tray.cpp res/icon.ico)
-add_incbin_resources(src/construct_translations.cpp res/pretty_names.csv)
+add_incbin_resources(src/construct_translations.cpp res/display_names.csv)
 
 #
 # Link against external dependencies

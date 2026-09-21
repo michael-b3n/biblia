@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibqml/util/SettingValue.hpp"
+#include "bibqml/util/SettingConversion.hpp"
 
 #include <bibstd/signal/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>

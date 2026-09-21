@@ -1,5 +1,5 @@
 #include "bibqml/model/SettingsListModel.hpp"
-#include "bibqml/util/SettingValue.hpp"
+#include "bibqml/util/SettingConversion.hpp"
 
 #include <bibstd/framework/setting.hpp>
 #include <bibstd/framework/setting_validator.hpp>
