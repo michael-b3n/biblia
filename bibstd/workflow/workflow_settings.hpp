@@ -155,26 +155,46 @@ public: // Modifiers
   [[nodiscard]] auto type_erased_setting(
     const std::string& path,
     T default_value,
+    std::string postfix = {},
     framework::setting_validator<T> validator = detail::conditional_default_validator<T>()
   ) -> setting_type_erased_non_owning_ptr_variant_type;
 
   ///
+  /// Create or access a setting with no postfix, naming only the validator. \see type_erased_setting
+  /// \return the newly created or the already existing setting
+  ///
+  template<framework::underlying_setting_type_erased_type T>
+  [[nodiscard]] auto type_erased_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
+    -> setting_type_erased_non_owning_ptr_variant_type;
+
+  ///
   /// Create a new setting. The setting will be owned by this workflow and has static lifetime.
+  /// \p postfix is displayed behind the value, e.g. the unit it is measured in.
   /// \return non owning pointer to the newly created setting
   ///
   template<framework::underlying_setting_type T>
   [[nodiscard]] auto create_setting(
     const std::string& path,
     T default_value,
-    framework::setting_validator<T>&& validator = detail::conditional_default_validator<T>()
+    std::string postfix = {},
+    framework::setting_validator<T> validator = detail::conditional_default_validator<T>()
   ) -> setting_non_owning_ptr_type<T>;
+
+  ///
+  /// Create a new setting with no postfix, naming only the validator. \see create_setting
+  /// \return non owning pointer to the newly created setting
+  ///
+  template<framework::underlying_setting_type T>
+  [[nodiscard]] auto create_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
+    -> setting_non_owning_ptr_type<T>;
 };
 
 ///
 ///
 template<framework::underlying_setting_type_erased_type T>
-auto workflow_settings::type_erased_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
-  -> setting_type_erased_non_owning_ptr_variant_type
+auto workflow_settings::type_erased_setting(
+  const std::string& path, T default_value, std::string postfix, framework::setting_validator<T> validator
+) -> setting_type_erased_non_owning_ptr_variant_type
 {
   auto lock = std::unique_lock{mtx_};
   auto it = std::ranges::find_if(settings_, [&path](const auto& data) { return data.path == path; });
@@ -187,6 +207,7 @@ auto workflow_settings::type_erased_setting(const std::string& path, T default_v
         framework::property_tree::path_type{std::string(settings_root_name)} / framework::property_tree::path_type{path},
         std::move(default_value)
       )),
+      std::move(postfix),
       std::move(validator)
     );
     using underlying_setting_type_erased_type = framework::setting_type_erased<framework::setting_type_erased_type_from<T>>;
@@ -224,9 +245,19 @@ auto workflow_settings::type_erased_setting(const std::string& path, T default_v
 
 ///
 ///
+template<framework::underlying_setting_type_erased_type T>
+auto workflow_settings::type_erased_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
+  -> setting_type_erased_non_owning_ptr_variant_type
+{
+  return type_erased_setting<T>(path, std::move(default_value), {}, std::move(validator));
+}
+
+///
+///
 template<framework::underlying_setting_type T>
-auto workflow_settings::create_setting(const std::string& path, T default_value, framework::setting_validator<T>&& validator)
-  -> setting_non_owning_ptr_type<T>
+auto workflow_settings::create_setting(
+  const std::string& path, T default_value, std::string postfix, framework::setting_validator<T> validator
+) -> setting_non_owning_ptr_type<T>
 {
   const auto setting = std::make_shared<framework::setting<T>>(
     path,
@@ -234,6 +265,7 @@ auto workflow_settings::create_setting(const std::string& path, T default_value,
       framework::property_tree::path_type{std::string(settings_root_name)} / framework::property_tree::path_type{path},
       std::move(default_value)
     )),
+    std::move(postfix),
     std::move(validator)
   );
   const auto setting_ptr = setting.get();
@@ -251,6 +283,15 @@ auto workflow_settings::create_setting(const std::string& path, T default_value,
   }
   notify(&workflow_settings_signals::setting_created, path);
   return setting_ptr;
+}
+
+///
+///
+template<framework::underlying_setting_type T>
+auto workflow_settings::create_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
+  -> setting_non_owning_ptr_type<T>
+{
+  return create_setting<T>(path, std::move(default_value), {}, std::move(validator));
 }
 
 } // namespace bibstd::workflow

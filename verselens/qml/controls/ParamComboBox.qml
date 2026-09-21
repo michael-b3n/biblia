@@ -65,6 +65,17 @@ ParamBase
     }
 
     // Components
+    ParamPostfix
+    {
+      id: postfixText
+
+      // Properties
+      anchors.right: control.right
+      anchors.rightMargin: control.indicatorWidth + 2 * Metrics.paddingParamContent
+      anchors.verticalCenter: control.verticalCenter
+      text: root.postfix
+    }
+
     contentItem: TextSimple
     {
       id: contentText
@@ -72,7 +83,8 @@ ParamBase
       // Properties
       text: control.displayText
       elide: Text.ElideRight
-      rightPadding: control.indicatorWidth + 2 * Metrics.paddingParamContent
+      rightPadding: control.indicatorWidth + 2 * Metrics.paddingParamContent +
+                    (postfixText.width > 0 ? postfixText.width + Metrics.paddingParamContent : 0)
       // The width and height of a combobox content item are ignored.
     }
 
@@ -148,11 +160,15 @@ ParamBase
         id: textContent
 
         // Properties
-        // Note the language is passed to reevaluate this binding on a language change.
         text:
         {
           const valid = itemDelegate.modelData !== undefined && itemDelegate.modelData !== null
-          return valid ? Translations.name(String(itemDelegate.modelData), Translations.language) : ""
+          if(!valid)
+          {
+            return ""
+          }
+          const name = Translations.name(String(itemDelegate.modelData), Translations.language)
+          return root.postfix.length > 0 ? name + " " + root.postfix : name
         }
 
         elide: Text.ElideRight

@@ -94,6 +94,7 @@ Item
       required property int validatorType
       required property var value
       required property var listValidatorData
+      required property string postfix
 
       readonly property bool collapsed: root.isCollapsed(delegateRoot.category)
 
@@ -175,6 +176,7 @@ Item
             validatorType: delegateRoot.validatorType
             value: delegateRoot.value
             listValidatorData: delegateRoot.listValidatorData
+            postfix: delegateRoot.postfix
 
             // Connections
             onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
@@ -195,6 +197,7 @@ Item
             validatorType: delegateRoot.validatorType
             value: delegateRoot.value
             listValidatorData: delegateRoot.listValidatorData
+            postfix: delegateRoot.postfix
 
             // Connections
             onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
@@ -215,6 +218,7 @@ Item
             validatorType: delegateRoot.validatorType
             value: delegateRoot.value
             listValidatorData: delegateRoot.listValidatorData
+            postfix: delegateRoot.postfix
 
             // Connections
             onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
@@ -235,6 +239,7 @@ Item
             validatorType: delegateRoot.validatorType
             value: delegateRoot.value
             listValidatorData: delegateRoot.listValidatorData
+            postfix: delegateRoot.postfix
 
             // Connections
             onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
@@ -255,6 +260,7 @@ Item
             validatorType: delegateRoot.validatorType
             value: delegateRoot.value
             listValidatorData: delegateRoot.listValidatorData
+            postfix: delegateRoot.postfix
           }
         }
       }

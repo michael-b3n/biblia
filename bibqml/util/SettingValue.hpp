@@ -2,6 +2,7 @@
 
 #include <bibstd/workflow/workflow_settings.hpp>
 
+#include <QString>
 #include <QVariant>
 
 #include <optional>
@@ -40,6 +41,15 @@ using SettingVariantType = bibstd::workflow::workflow_settings::setting_type_era
 /// \return true if the value was set, false otherwise
 ///
 [[nodiscard]] auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bool;
+
+///
+/// Postfix a type erased setting is displayed behind its value with, e.g. the unit it is
+/// measured in. A setting naming its own is displayed with that one. A duration names none:
+/// it is handed over counting the period it is stored in, \see toQmlValue, so the unit of
+/// that period names it.
+/// \return postfix to display behind the value, empty if the setting has none
+///
+[[nodiscard]] auto toQmlPostfix(const SettingVariantType& setting) -> QString;
 
 ///
 /// Access all values the list validator of a type erased setting provides.

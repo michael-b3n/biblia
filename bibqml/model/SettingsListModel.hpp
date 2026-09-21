@@ -77,6 +77,7 @@ private: // Typedefs
     ValueType valueType;
     WrapperType wrapperType;
     ValidatorType validatorType;
+    QString postfix;
     bibstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type setting;
   };
 
@@ -95,6 +96,7 @@ public: // Typedefs
     ValidatorTypeRole,
     ValueRole,
     ListValidatorDataRole,
+    PostfixRole,
     ///
     /// One past the last role of this model. Proxy models begin the roles they add here, so
     /// that a role added above cannot silently take a value one of them already uses.

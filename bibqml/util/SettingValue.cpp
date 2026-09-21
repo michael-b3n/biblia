@@ -11,6 +11,7 @@
 
 #include <QColor>
 #include <QJSValue>
+#include <QLatin1StringView>
 #include <QMetaType>
 
 #include <algorithm>
@@ -109,13 +110,15 @@ auto toVariant(const double& value) -> QVariant
 }
 
 ///
-/// \return QVariant containing double type converted from a duration
+/// Convert a duration to the count of the period it is stored in, so that a value survives the
+/// way to QML and back unrounded. The unit of that period names the setting, \see toQmlPostfix.
+/// \return QVariant converted from a duration
 ///
 template<typename T>
   requires(bibstd::meta::is_duration_v<T>)
 auto toVariant(const T& value) -> QVariant
 {
-  return QVariant(std::chrono::duration<double>(value).count());
+  return toVariant(value.count());
 }
 
 ///
@@ -153,6 +156,22 @@ auto toVariant(const std::vector<T>& list) -> QVariant
   result.reserve(static_cast<int>(list.size()));
   std::ranges::for_each(list, [&](const auto& item) { result.emplace_back(toVariant(item)); });
   return result;
+}
+
+///
+/// Unit of the period a duration setting is stored in.
+/// \return unit the duration is displayed with
+///
+template<typename T>
+  requires(bibstd::meta::is_duration_v<T>)
+constexpr auto durationPostfix() -> QLatin1StringView
+{
+  // clang-format off
+  if constexpr(std::is_same_v<T, std::chrono::milliseconds>) { return QLatin1StringView{"ms"}; }
+  else if constexpr(std::is_same_v<T, std::chrono::seconds>) { return QLatin1StringView{"s"}; }
+  else if constexpr(std::is_same_v<T, std::chrono::minutes>) { return QLatin1StringView{"min"}; }
+  else { static_assert(always_false_v<T>, "Unsupported duration setting type"); }
+  // clang-format on
 }
 
 ///
@@ -273,16 +292,18 @@ auto setValueIntegerVec(const auto setting, const auto& value) -> bool
 }
 
 ///
-/// Set a duration value of a type erased setting from a QVariant.
+/// Set a duration value of a type erased setting from a QVariant. The value counts the period
+/// the setting is stored in, \see toVariant.
 /// \return true if the value was set, false otherwise
 ///
 auto setValueDuration(const auto setting, const auto value) -> bool
 {
-  static_assert(bibstd::meta::is_duration_v<setting_raw_value_type<decltype(setting)>>);
-  if constexpr(std::floating_point<decltype(value)>)
+  using duration_type = setting_raw_value_type<decltype(setting)>;
+  static_assert(bibstd::meta::is_duration_v<duration_type>);
+  if constexpr(std::integral<std::remove_cvref_t<decltype(value)>>)
   {
-    const auto d = std::chrono::duration_cast<setting_raw_value_type<decltype(setting)>>(std::chrono::duration<double>(value));
-    return setting->value(d);
+    const auto count = integer_cast<typename duration_type::rep>(value);
+    return count ? setting->value(duration_type{*count}) : false;
   }
   else
   {
@@ -296,18 +317,31 @@ auto setValueDuration(const auto setting, const auto value) -> bool
 ///
 auto setValueDurationVec(const auto setting, const auto& value) -> bool
 {
+  using duration_type = setting_raw_value_type<decltype(setting)>;
   using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
+  static_assert(bibstd::meta::is_duration_v<duration_type>);
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
-  if constexpr(std::floating_point<vector_value_type>)
+  if constexpr(std::integral<vector_value_type>)
   {
-    return setting->value(
-      value |
-      std::views::transform(
-        [&](const auto v)
-        { return std::chrono::duration_cast<setting_raw_value_type<decltype(setting)>>(std::chrono::duration<double>(v)); }
-      ) |
-      std::ranges::to<std::vector>()
+    auto dest = std::vector<duration_type>{};
+    dest.reserve(value.size());
+    auto result = std::ranges::all_of(
+      value,
+      [&](const auto v)
+      {
+        if(const auto count = integer_cast<typename duration_type::rep>(v))
+        {
+          dest.emplace_back(duration_type{*count});
+          return true;
+        }
+        return false;
+      }
     );
+    if(result)
+    {
+      result = setting->value(dest);
+    }
+    return result;
   }
   else
   {
@@ -368,9 +402,9 @@ auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bo
     [&](const setting_ptr<std::uint64_t> s) { return setValueInteger(s, v.toInt()); },
     [&](const setting_ptr<double> s) { return setValueConvertible(s, v.toDouble()); },
     [&](const setting_ptr<std::string> s) { return setValueConvertible(s, v.toString().toStdString()); },
-    [&](const setting_ptr<std::chrono::milliseconds> s) { return setValueDuration(s, v.toDouble()); },
-    [&](const setting_ptr<std::chrono::seconds> s) { return setValueDuration(s, v.toDouble()); },
-    [&](const setting_ptr<std::chrono::minutes> s) { return setValueDuration(s, v.toDouble()); },
+    [&](const setting_ptr<std::chrono::milliseconds> s) { return setValueDuration(s, v.toInt()); },
+    [&](const setting_ptr<std::chrono::seconds> s) { return setValueDuration(s, v.toInt()); },
+    [&](const setting_ptr<std::chrono::minutes> s) { return setValueDuration(s, v.toInt()); },
     [&](const setting_ptr<std::filesystem::path> s) { return setValueConvertible(s, v.toString().toStdString()); },
     [&](const setting_ptr<std::optional<bool>> s) { return setValueConvertible(s, v.toBool()); },
     [&](const setting_ptr<std::optional<std::int32_t>> s) { return setValueInteger(s, v.toInt()); },
@@ -379,9 +413,9 @@ auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bo
     [&](const setting_ptr<std::optional<std::uint64_t>> s) { return setValueInteger(s, v.toInt()); },
     [&](const setting_ptr<std::optional<double>> s) { return setValueConvertible(s, v.toDouble()); },
     [&](const setting_ptr<std::optional<std::string>> s) { return setValueConvertible(s, v.toString().toStdString()); },
-    [&](const setting_ptr<std::optional<std::chrono::milliseconds>> s) { return setValueDuration(s, v.toDouble()); },
-    [&](const setting_ptr<std::optional<std::chrono::seconds>> s) { return setValueDuration(s, v.toDouble()); },
-    [&](const setting_ptr<std::optional<std::chrono::minutes>> s) { return setValueDuration(s, v.toDouble()); },
+    [&](const setting_ptr<std::optional<std::chrono::milliseconds>> s) { return setValueDuration(s, v.toInt()); },
+    [&](const setting_ptr<std::optional<std::chrono::seconds>> s) { return setValueDuration(s, v.toInt()); },
+    [&](const setting_ptr<std::optional<std::chrono::minutes>> s) { return setValueDuration(s, v.toInt()); },
     [&](const setting_ptr<std::optional<std::filesystem::path>> s) { return setValueConvertible(s, v.toString().toStdString()); },
     [&](const setting_ptr<std::vector<std::int32_t>> s) { return setValueIntegerVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
     [&](const setting_ptr<std::vector<std::int64_t>> s) { return setValueIntegerVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
@@ -389,12 +423,37 @@ auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bo
     [&](const setting_ptr<std::vector<std::uint64_t>> s) { return setValueIntegerVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
     [&](const setting_ptr<std::vector<double>> s) { return setValueConvertibleVec(s, toVector(v, [](const auto& e) { return e.toDouble(); })); },
     [&](const setting_ptr<std::vector<std::string>> s) { return setValueConvertibleVec(s, toVector(v, [](const auto& e) { return e.toString().toStdString(); })); },
-    [&](const setting_ptr<std::vector<std::chrono::milliseconds>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toDouble(); })); },
-    [&](const setting_ptr<std::vector<std::chrono::seconds>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toDouble(); })); },
-    [&](const setting_ptr<std::vector<std::chrono::minutes>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toDouble(); })); },
+    [&](const setting_ptr<std::vector<std::chrono::milliseconds>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
+    [&](const setting_ptr<std::vector<std::chrono::seconds>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
+    [&](const setting_ptr<std::vector<std::chrono::minutes>> s) { return setValueDurationVec(s, toVector(v, [](const auto& e) { return e.toInt(); })); },
     [&](const setting_ptr<std::vector<std::filesystem::path>> s) { return setValueConvertibleVec(s, toVector(v, [](const auto& e) { return e.toString().toStdString(); })); }
   );
   // clang-format on
+}
+
+///
+///
+auto toQmlPostfix(const SettingVariantType& setting) -> QString
+{
+  return std::visit(
+    [](const auto s) -> QString
+    {
+      if(!s->postfix.empty())
+      {
+        return QString::fromStdString(s->postfix);
+      }
+      using value_type = setting_raw_value_type<std::remove_cvref_t<decltype(s)>>;
+      if constexpr(bibstd::meta::is_duration_v<value_type>)
+      {
+        return durationPostfix<value_type>();
+      }
+      else
+      {
+        return {};
+      }
+    },
+    setting
+  );
 }
 
 ///

@@ -43,6 +43,7 @@ public: // Variables
   const signal::adapter<setting_signals>& signal_adapter;
   const std::string path;
   const setting_validator_type_erased<value_type> validator;
+  const std::string postfix;
 };
 
 ///
@@ -87,6 +88,7 @@ setting_type_erased<T>::setting_type_erased(const std::shared_ptr<setting<U>>& s
   , signal_adapter{*setting}
   , path{setting->path}
   , validator{detail::validator_type_erased<U>(setting->validator)}
+  , postfix{setting->postfix}
 {
 }
 

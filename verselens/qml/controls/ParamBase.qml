@@ -19,6 +19,7 @@ GroupBoxSimple
   required property int validatorType
   required property var value
   required property var listValidatorData
+  required property string postfix
 
   property bool showTitle: true
   readonly property int lineHeight: Math.ceil(paramLine.boundingRect.height)

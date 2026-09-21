@@ -265,6 +265,7 @@ ParamBase
                 validatorType: root.validatorType
                 value: delegateRoot.value
                 listValidatorData: root.listValidatorData
+                postfix: root.postfix
 
                 showTitle: false
 
@@ -286,6 +287,7 @@ ParamBase
                 validatorType: root.validatorType
                 value: delegateRoot.value
                 listValidatorData: root.listValidatorData
+                postfix: root.postfix
 
                 showTitle: false
 
@@ -307,6 +309,7 @@ ParamBase
                 validatorType: root.validatorType
                 value: delegateRoot.value
                 listValidatorData: root.listValidatorData
+                postfix: root.postfix
 
                 showTitle: false
 
@@ -328,6 +331,7 @@ ParamBase
                 validatorType: root.validatorType
                 value: delegateRoot.value
                 listValidatorData: root.listValidatorData
+                postfix: root.postfix
 
                 showTitle: false
               }
@@ -361,11 +365,11 @@ ParamBase
         case SettingsListModel.BoolValueType:
           listView.model.append(false)
           break
-        case SettingsListModel.IntValueType:
+        case SettingsListModel.IntValueType: // [[fallthrough]]
+        case SettingsListModel.TimeValueType:
           listView.model.append(0)
           break
         case SettingsListModel.DoubleValueType:
-        case SettingsListModel.TimeValueType:
           listView.model.append(0.0)
           break
         case SettingsListModel.StringValueType:

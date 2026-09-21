@@ -188,6 +188,7 @@ QVariant SettingsListModel::data(const QModelIndex& index, const int role) const
   case ValidatorTypeRole: return static_cast<int>(entry.validatorType);
   case ValueRole: return toQmlValue(entry.setting);
   case ListValidatorDataRole: return toQmlValidatorValues(entry.setting);
+  case PostfixRole: return entry.postfix;
   default: return {};
   }
 }
@@ -204,6 +205,7 @@ QHash<int, QByteArray> SettingsListModel::roleNames() const
     {    ValidatorTypeRole,     "validatorType"},
     {            ValueRole,             "value"},
     {ListValidatorDataRole, "listValidatorData"},
+    {          PostfixRole,           "postfix"},
   };
 }
 
@@ -343,6 +345,7 @@ void SettingsListModel::addEntry(std::string path, const auto& setting)
       .valueType = getValueType(setting),
       .wrapperType = getWrapperType(setting),
       .validatorType = getValidatorType(setting),
+      .postfix = toQmlPostfix(setting),
       .setting = setting
     }
   );
