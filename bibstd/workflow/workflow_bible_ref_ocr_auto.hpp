@@ -94,10 +94,8 @@ struct workflow_bible_ref_ocr_auto_settings final : public framework::settings_b
 };
 
 ///
-/// Bible reference ocr auto: searches bible references without the user asking for one. The cursor
-/// is treated as the question the user is about to ask, so wherever it comes to rest the area
-/// around it is handed to \see workflow_bible_ref_ocr. A resting spot is searched once, moving the
-/// cursor away and back searches it again since the content below it might have changed.
+/// Bible reference ocr auto: searches bible references automatically. Resting the cursor
+/// on an area triggers the capture of the area and the detection \see workflow_bible_ref_ocr.
 ///
 /// Signal IDs to connect to:
 /// - detecting: Emitted for every resting spot before it is captured. Slots receive the start \see detection_started_type.
@@ -151,10 +149,9 @@ class workflow_bible_ref_ocr_auto final
   // Variables
   const std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr_;
   mutable std::mutex mtx_;
-  // Guarded by mtx_ like the machine, so a run can be told from another one in the log
   framework::process_id_type running_id_;
-  // Declared last: its running state holds the thread of a run, which is joined
-  // by destroying the machine and must be gone before everything that thread uses
+  // Declared last since its running state holds the thread of a run, which is joined
+  // by destroying the machine and must be gone before everything that thread uses.
   const std::unique_ptr<machine_holder> machine_;
 
 public: // Typedefs
@@ -189,7 +186,6 @@ public: // Modifiers
   [[nodiscard]] auto stop(params params) -> std::expected<void, error_code>;
 
 private: // Actions
-  // Run while mtx_ is held, so they only carry a run into the next state and log.
   auto a_start(const sm::e_start& event, sm::s_running& target) -> void;
   auto a_stop(sm::s_running& source) -> void;
 
