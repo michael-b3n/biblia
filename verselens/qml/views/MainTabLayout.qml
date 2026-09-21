@@ -17,6 +17,7 @@ Item
   required property BridgeBibleRefOcr bridgeBibleRefOcr
   required property BridgeBibleRefLookup bridgeBibleRefLookup
   required property BridgeApplication bridgeApplication
+  required property BridgeScripture bridgeScripture
   required property bool pinned
   required property bool movable
 
@@ -206,6 +207,7 @@ Item
         // Properties
         listModelScripture: root.listModelScripture
         bridgeBibleRefLookup: root.bridgeBibleRefLookup
+        bridgeScripture: root.bridgeScripture
       }
 
       TabSettingsContent

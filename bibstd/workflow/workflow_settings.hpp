@@ -45,12 +45,10 @@ auto conditional_default_validator() -> framework::setting_validator<T>
 } // namespace detail
 
 ///
-/// Struct containing signals for workflow settings class.
+/// Signals emitted by workflow settings.
 ///
 struct workflow_settings_signals final
 {
-  /// Setting created signal: will be emitted when a new setting was created.
-  /// The path of the newly created setting is provided as argument.
   signal::signal_type<void(std::string)> setting_created;
 };
 

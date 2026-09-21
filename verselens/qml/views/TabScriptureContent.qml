@@ -2,12 +2,15 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Layouts
 import QtQuick.VectorImage
 import BibQml
 
 ///
 /// Content of the scripture tab. A list view lists the verses of the listModelScripture, loading
-/// further ones whenever an end of the loaded range is reached.
+/// further ones whenever an end of the loaded range is reached. Without a single scripture there
+/// is nothing to list, the tab then asks for one instead.
 ///
 Item
 {
@@ -16,6 +19,9 @@ Item
   // Properties
   required property ScriptureListModel listModelScripture
   required property BridgeBibleRefLookup bridgeBibleRefLookup
+  required property BridgeScripture bridgeScripture
+
+  readonly property bool scripturesAvailable: root.bridgeScripture.available
 
   // The tab fades in when it is switched to, the layout takes the previous one off at once
   opacity: root.visible ? 1 : 0
@@ -46,6 +52,7 @@ Item
     anchors.left: parent.left
     anchors.right: parent.right
     height: stickyHeaderText.implicitHeight + Metrics.spacingMedium
+    visible: root.scripturesAvailable
     color: Colors.backgroundSolid
     z: 1
 
@@ -117,6 +124,7 @@ Item
     anchors.right: parent.right
     anchors.bottom: parent.bottom
     clip: true
+    visible: root.scripturesAvailable
     model: root.listModelScripture
     spacing: Metrics.spacingTiny
     cacheBuffer: listView.cachedPixels
@@ -422,6 +430,92 @@ Item
         font.pointSize: Metrics.fontSizeSmall
         color: Colors.text
         renderType: Text.CurveRendering
+      }
+    }
+  }
+
+  Item
+  {
+    id: emptyState
+
+    // Properties
+    property bool nothingImported: false
+
+    anchors.fill: parent
+    visible: !root.scripturesAvailable
+
+    // Connections
+    Connections
+    {
+      target: root.bridgeScripture
+
+      function onImportEnded(count) { emptyState.nothingImported = count === 0 }
+    }
+
+    // Components
+    ColumnLayout
+    {
+      // Properties
+      anchors.centerIn: parent
+      width: emptyState.width - 2 * Metrics.spacingLarge
+      spacing: Metrics.spacingMedium
+
+      // Components
+      ButtonIconSimple
+      {
+        id: importButton
+
+        // Properties
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 2 * Metrics.controlHeight
+        Layout.preferredHeight: 2 * Metrics.controlHeight
+        enabled: !root.bridgeScripture.importRunning
+        opacity: importButton.enabled ? 1 : 0.5
+        svgSource: Icons.folderOpen
+        iconSize: Math.round(1.5 * Metrics.controlHeight)
+
+        // Animations
+        Behavior on opacity { NumberAnimation { duration: Metrics.durationShort } }
+
+        // Connections
+        onClicked: { importDialog.open() }
+      }
+
+      TextSimple
+      {
+        // Properties
+        Layout.fillWidth: true
+        text: Translations.name("scriptures_none", Translations.language)
+        font.pointSize: Metrics.fontSizeHeading
+        font.bold: true
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+      }
+
+      TextSimple
+      {
+        // Properties
+        Layout.fillWidth: true
+        text: Translations.name(
+          emptyState.nothingImported ? "scriptures_import_empty" : "scriptures_import_hint", Translations.language
+        )
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+      }
+    }
+
+    FolderDialog
+    {
+      id: importDialog
+
+      // Properties
+      title: Translations.name("scriptures_import", Translations.language)
+
+      // Connections
+      onAccepted:
+      {
+        emptyState.nothingImported = false
+        root.bridgeScripture.importFolder(importDialog.selectedFolder)
       }
     }
   }

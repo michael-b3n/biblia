@@ -45,6 +45,10 @@ paragraph_recognition,Absatzerkennung,Paragraph recognition
 poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
 scripture,Bibelausgabe,Scripture
+scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
+scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.
+scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
+scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 slt,Schlachter,Schlachter
 tessdata_path,Tesseract Datenverzeichnis,Tesseract data folder
 translations,Übersetzungen,Translations
