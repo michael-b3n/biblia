@@ -123,7 +123,7 @@ struct CaptureResult final
 } // namespace
 
 // Constants
-constexpr auto ocrFindPath = "ocr";
+constexpr auto manualSearchPath = "manual_reference_search";
 
 ///
 ///
@@ -138,7 +138,7 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
   , workflowBibleRefOcr_{std::move(workflowBibleRefOcr)}
   , workflowBibleRefOcrAuto_{std::move(workflowBibleRefOcrAuto)}
   , manualSearchSig_{workflowHotkey->register_callback(
-      ocrFindPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f
+      manualSearchPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f
     )}
   , clickActionSetting_{createClickActionSetting(*workflowSettings)}
   , autoSearchSetting_{createAutoSearchSetting(*workflowSettings)}

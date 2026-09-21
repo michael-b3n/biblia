@@ -35,7 +35,7 @@ namespace
 ///
 [[nodiscard]] auto modifier_setting_path(const std::string& callback_path) -> std::string
 {
-  return std::format("{}.hotkey.modifier", callback_path);
+  return std::format("hotkey.{}.modifier", callback_path);
 }
 
 ///
@@ -44,7 +44,7 @@ namespace
 ///
 [[nodiscard]] auto key_setting_path(const std::string& callback_path) -> std::string
 {
-  return std::format("{}.hotkey.key", callback_path);
+  return std::format("hotkey.{}.key", callback_path);
 }
 
 } // namespace
