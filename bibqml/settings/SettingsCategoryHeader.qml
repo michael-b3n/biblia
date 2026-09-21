@@ -39,7 +39,7 @@ Item
       {
         if(mouseArea.pressed) { return Colors.pressed }
         if(mouseArea.containsMouse) { return Colors.selection }
-        return "transparent"
+        return Qt.alpha(Colors.selection, 0)
       }
 
       // Animations
