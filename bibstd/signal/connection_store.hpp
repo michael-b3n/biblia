@@ -25,7 +25,7 @@ public: // Modifiers
   ///
   /// Add connection to connection store.
   ///
-  auto store(scoped_connection_type&& con) -> void;
+  auto store(scoped_connection_type con) -> void;
 
   ///
   /// Clear connection store and disconnect all connections.
