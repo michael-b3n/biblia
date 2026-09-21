@@ -3,6 +3,7 @@
 #include "src/qml_application.hpp"
 
 #include <bibqml/bridge/BridgeApplication.hpp>
+#include <bibqml/translation/Translations.hpp>
 
 #include <bibstd/system/open_browser.hpp>
 #include <bibstd/system/tray.hpp>
@@ -27,7 +28,7 @@ namespace
 {
 
 ///
-/// Tray button, named by the key of its pretty name.
+/// Tray button, named by the key of its display name.
 ///
 struct tray_button final
 {
@@ -36,13 +37,13 @@ struct tray_button final
 };
 
 ///
-/// Get the pretty name of a key in the language the translations are displayed in.
-/// \return pretty name, the key itself if no pretty name is available
+/// Get the display name of a key in the language the translations are displayed in.
+/// \return display name, the key itself if no display name is available
 ///
 [[nodiscard]] auto tray_name(const char* const key) -> std::string
 {
   const auto name = QString::fromLatin1(key);
-  const auto* const translations = qml::Translations::instance();
+  const auto* const translations = bibqml::Translations::instance();
   return (translations != nullptr ? translations->name(name) : name).toStdString();
 }
 
@@ -72,11 +73,11 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
   );
   auto guard = bibstd::system::tray::init(bibstd::system::tray::icon_buffer{icon_view}, std::move(entries));
 
-  if(const auto* const names = qml::Translations::instance(); names != nullptr)
+  if(const auto* const names = bibqml::Translations::instance(); names != nullptr)
   {
     QObject::connect(
       names,
-      &qml::Translations::languageChanged,
+      &bibqml::Translations::languageChanged,
       &app,
       [buttons]()
       {

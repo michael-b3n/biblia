@@ -38,10 +38,11 @@ public: // Typedefs
 
 public: // Variables
   const std::string path;
+  const std::string postfix;
   const setting_validator<value_type> validator;
 
 public: // Structors
-  setting(std::string path, property<value_type> value, setting_validator<value_type> validator);
+  setting(std::string path, property<value_type> value, std::string postfix, setting_validator<value_type> validator);
 
 public: // Accessors
   ///
@@ -63,9 +64,12 @@ private: // Helpers
 ///
 ///
 template<underlying_setting_type T>
-setting<T>::setting(std::string path_, property<value_type> value, setting_validator<value_type> validator_)
+setting<T>::setting(
+  std::string path_, property<value_type> value, std::string postfix_, setting_validator<value_type> validator_
+)
   : value_{std::move(value)}
   , path{std::move(path_)}
+  , postfix{std::move(postfix_)}
   , validator{std::move(validator_)}
 {
   std::visit(

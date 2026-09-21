@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibqml/util/NativeScreen.hpp"
+#include "bibqml/util/ScreenConversion.hpp"
 
 #include <bibstd/bible/reference_range.hpp>
 #include <bibstd/framework/process_params.hpp>

@@ -15,7 +15,7 @@ file(GLOB_RECURSE ${PROJECT_NAME}_SVG_FILES_RELATIVE RELATIVE ${CMAKE_CURRENT_SO
 #
 set(QT_FORCE_CMP0156_TO_VALUE NEW)
 
-find_package(${QT_VERSION_NAME} ${QT_VERSION_NUMBER} REQUIRED COMPONENTS Quick)
+find_package(${QT_VERSION_NAME} ${QT_VERSION_NUMBER} REQUIRED COMPONENTS Quick QuickControls2)
 qt_standard_project_setup(REQUIRES ${QT_VERSION_NUMBER})
 
 #
@@ -41,7 +41,7 @@ qt_add_qml_module(
 #
 target_link_libraries(${PROJECT_NAME}
   PUBLIC bibstd
-  PRIVATE Qt6::Quick Qt6::Gui
+  PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Gui
 )
 
 #

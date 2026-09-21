@@ -2,11 +2,13 @@
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/core/core_scripture_store.hpp"
 #include "bibstd/framework/settings_base.hpp"
+#include "bibstd/util/contains.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/visit_helper.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
 
+#include <cstddef>
 #include <memory>
 
 namespace bibstd::workflow
@@ -70,14 +72,23 @@ auto workflow_scripture::versification_wrapper::get() const -> const bible::scri
 ///
 workflow_scripture::workflow_scripture(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_base{std::move(workflow_settings)}
+  , thread_pool_guard_{framework::thread_pool::init()}
   , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().scripture_folder->value()))
 {
-  init();
+  update_scripture_name_setting();
 }
 
 ///
 ///
 workflow_scripture::~workflow_scripture() noexcept = default;
+
+///
+///
+auto workflow_scripture::scripture_count() const -> std::size_t
+{
+  const auto lock = std::scoped_lock{mtx_};
+  return core_scripture_store_->scriptures().size();
+}
 
 ///
 ///
@@ -178,7 +189,44 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
 
 ///
 ///
-auto workflow_scripture::init() -> void
+auto workflow_scripture::import_scriptures(const import_params& params) -> void
+{
+  try
+  {
+    framework::thread_pool::queue_task(
+      [this, params]()
+      {
+        auto imported = std::size_t{0};
+        try
+        {
+          {
+            const auto lock = std::scoped_lock{mtx_};
+            imported = core_scripture_store_->import(params->folder);
+          }
+          if(imported != 0)
+          {
+            update_scripture_name_setting();
+          }
+        }
+        catch(...)
+        {
+          LOG_ERROR("exception occurred: {}", util::exception_report());
+        }
+        notify(&signals_type::import_ended, params.process_id(), imported);
+      },
+      strand_id_
+    );
+  }
+  catch(...)
+  {
+    LOG_ERROR("exception occurred: {}", util::exception_report());
+    notify(&signals_type::import_ended, params.process_id(), std::size_t{0});
+  }
+}
+
+///
+///
+auto workflow_scripture::update_scripture_name_setting() -> void
 {
   const auto lock = std::scoped_lock{mtx_};
   decltype(auto) scriptures = core_scripture_store_->scriptures();
@@ -187,7 +235,12 @@ auto workflow_scripture::init() -> void
     std::get<framework::setting_validator_list<std::optional<std::string>>::sptr_type>(settings().scripture_name->validator);
   std::ignore = scripture_name_validator->available(scripture_names);
 
-  if(!settings().scripture_name->value().has_value())
+  // A setting naming a scripture that is not loaded leaves every lookup without one. That is what
+  // a name left over from scriptures that are gone does, so it is pointed at a loaded scripture.
+  const auto name = settings().scripture_name->value();
+  const auto name_contained = name.has_value() && util::contains(scripture_names, *name);
+
+  if(!(name_contained || scripture_names.empty()))
   {
     static constexpr auto has_kjv_versification = [](const auto& s)
     { return s.second->versification() == bible::versification_kjv; };
@@ -196,7 +249,7 @@ auto workflow_scripture::init() -> void
     {
       settings().scripture_name->value(it->first);
     }
-    else if(!scripture_names.empty())
+    else
     {
       settings().scripture_name->value(scripture_names.front());
     }

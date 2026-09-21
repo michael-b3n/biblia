@@ -83,7 +83,7 @@ workflow_bible_ref_ocr_auto_settings::workflow_bible_ref_ocr_auto_settings(std::
   : framework::settings_base{std::move(workflow_settings)}
   , poll_interval{workflow_settings_->create_setting("ocr_auto.poll_interval", std::chrono::milliseconds{250})}
   , dwell_duration{workflow_settings_->create_setting("ocr_auto.dwell_duration", std::chrono::milliseconds{700})}
-  , movement_tolerance{workflow_settings_->create_setting("ocr_auto.movement_tolerance", std::int32_t{8})}
+  , movement_tolerance{workflow_settings_->create_setting("ocr_auto.movement_tolerance", std::int32_t{8}, "px")}
 {
 }
 

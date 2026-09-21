@@ -3,10 +3,14 @@
 #include "bibstd/bible/scripture.hpp"
 #include "bibstd/framework/process_params.hpp"
 #include "bibstd/framework/settings_base.hpp"
+#include "bibstd/framework/thread_pool.hpp"
+#include "bibstd/signal/adapter.hpp"
+#include "bibstd/signal/common.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
 
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <mutex>
@@ -21,6 +25,14 @@ class core_scripture_store;
 
 namespace bibstd::workflow
 {
+
+///
+/// Signals emitted by workflow scripture.
+///
+struct workflow_scripture_sigs final
+{
+  signal::signal_type<void(framework::process_id_type, std::size_t)> import_ended;
+};
 
 ///
 /// Settings corresponding to workflow scripture.
@@ -43,8 +55,12 @@ public: // Variables
 ///
 /// Workflow for scripture. The scriptures are the zip files in the folder of the setting "scripture.folder",
 /// by default the folder "scriptures" in the local data folder. They are loaded on construction.
+/// Signal IDs to connect to:
+/// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
 ///
-class workflow_scripture final : public workflow_base<workflow_scripture_settings>
+class workflow_scripture final
+  : public workflow_base<workflow_scripture_settings>
+  , public signal::adapter<workflow_scripture_sigs>
 {
   // Typedefs
   ///
@@ -91,9 +107,16 @@ class workflow_scripture final : public workflow_base<workflow_scripture_setting
     bible::scripture::passage_html_type passage;
   };
 
+  struct import_params_t final
+  {
+    std::filesystem::path folder;
+  };
+
   // Variables
-  mutable std::mutex mtx_;
+  const framework::thread_pool::strand_id_type strand_id_{framework::thread_pool::strand_id()};
+  const util::shared_scope_guard thread_pool_guard_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
+  mutable std::mutex mtx_;
 
 public: // Constants
   static constexpr auto default_versifications = []()
@@ -115,12 +138,18 @@ public: // Typedefs
   using scripture_result = framework::process_result<scripture_result_t>;
   using passage_params = framework::process_params<passage_params_t>;
   using passage_result = framework::process_result<passage_result_t>;
+  using import_params = framework::process_params<import_params_t>;
 
 public: // Structors
   workflow_scripture(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_scripture() noexcept override;
 
 public: // Accessors
+  ///
+  /// \return the number of loaded scriptures.
+  ///
+  [[nodiscard]] auto scripture_count() const -> std::size_t;
+
   ///
   /// Get scripture. If no scripture name is provided in the params,
   /// the scripture defined in the settings will be used.
@@ -143,8 +172,16 @@ public: // Accessors
   ///
   [[nodiscard]] auto passage(const passage_params& params) const -> passage_result;
 
+public: // Modifiers
+  ///
+  /// Take the scripture files of the folder named in the params into the scripture folder and
+  /// load them, \see core_scripture_store::import. The work is done outside of the calling thread.
+  /// \note import_ended is emitted once the import is over, also if it took over nothing.
+  ///
+  auto import_scriptures(const import_params& params) -> void;
+
 private: // Implementation
-  auto init() -> void;
+  auto update_scripture_name_setting() -> void;
 };
 
 } // namespace bibstd::workflow

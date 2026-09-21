@@ -55,6 +55,7 @@ QtObject
   required property BridgeBibleRefOcr bridgeBibleRefOcr
   required property BridgeBibleRefLookup bridgeBibleRefLookup
   required property BridgeApplication bridgeApplication
+  required property BridgeScripture bridgeScripture
 
   // Constants
   readonly property int referenceOverlayTimeout: 10000
@@ -247,6 +248,7 @@ QtObject
     bridgeBibleRefOcr: root.bridgeBibleRefOcr
     bridgeBibleRefLookup: root.bridgeBibleRefLookup
     bridgeApplication: root.bridgeApplication
+    bridgeScripture: root.bridgeScripture
     mainRect: mainPlacement.area
     pinned: mainPlacement.pinned
     shown: root.windowShown

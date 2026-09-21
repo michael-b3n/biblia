@@ -1,4 +1,5 @@
 import QtQuick
+import BibQml
 
 ///
 /// Transparent window covering a whole screen, drawing the speech bubble shape around the

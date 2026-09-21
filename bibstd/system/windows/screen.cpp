@@ -105,12 +105,18 @@ auto capture_gdi(const util::screen_rect_type rect, util::pixel_plane_type& pix)
 
 ///
 /// Access the capture backend of this platform. The first call brings it up,
-/// every later call hands out the same one.
+/// every later call hands out the same one. It is brought up by the thread that asks for the
+/// first capture, so that no thread is left in a com apartment it did not ask to be in.
 /// \return The backend, or nullptr if the platform offers none
 ///
 auto capture_backend() -> util::non_owning_ptr<screen_capture>
 {
-  static const auto backend = screen_capture::create();
+  static const auto backend = []
+  {
+    auto created = screen_capture::create();
+    LOG_INFO("screen capture backend: {}", created != nullptr ? "graphics capture" : "gdi");
+    return created;
+  }();
   return backend.get();
 }
 
@@ -123,9 +129,6 @@ auto screen::init() -> bool
   // Declare per-monitor DPI awareness for proper screen capture at native resolution.
   // This is also declared in the app manifest. The call here is a no-op if already set.
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-  // Bring the capture backend up here, so which one the process ended up with is known at startup
-  // and not only once the first capture is asked for.
-  LOG_INFO("screen capture backend: {}", capture_backend() != nullptr ? "graphics capture" : "gdi");
   return true;
 }
 

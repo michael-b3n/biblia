@@ -16,6 +16,7 @@ Window
   required property BridgeBibleRefOcr bridgeBibleRefOcr
   required property BridgeBibleRefLookup bridgeBibleRefLookup
   required property BridgeApplication bridgeApplication
+  required property BridgeScripture bridgeScripture
   required property rect mainRect
   required property bool pinned
   required property bool shown
@@ -103,6 +104,7 @@ Window
         bridgeBibleRefOcr: root.bridgeBibleRefOcr
         bridgeBibleRefLookup: root.bridgeBibleRefLookup
         bridgeApplication: root.bridgeApplication
+        bridgeScripture: root.bridgeScripture
         pinned: root.pinned
         movable: true
 

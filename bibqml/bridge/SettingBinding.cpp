@@ -1,6 +1,6 @@
 #include "bibqml/bridge/SettingBinding.hpp"
 #include "bibqml/bridge/BridgeSettings.hpp"
-#include "bibqml/util/SettingValue.hpp"
+#include "bibqml/util/SettingConversion.hpp"
 
 #include <bibstd/util/exception.hpp>
 #include <bibstd/util/log.hpp>
