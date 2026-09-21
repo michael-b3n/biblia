@@ -75,45 +75,48 @@ auto workflow_hotkey::available_callbacks() const -> std::vector<std::string>
 auto workflow_hotkey::register_callback(const path_type& path, const key_modifier default_modifier, const key default_key)
   -> shared_sig_type
 {
-  auto shared_sig = shared_sig_type{};
+  const auto lock = std::scoped_lock{mtx_};
+  if(const auto it = callbacks_.find(path); it != std::cend(callbacks_))
   {
-    const auto lock = std::scoped_lock{mtx_};
-    if(const auto it = callbacks_.find(path); it != std::cend(callbacks_))
-    {
-      return it->second.shared_sig;
-    }
-
-    auto data = callback_data{
-      .shared_sig = std::make_shared<signal::signal_type<void()>>(),
-      .modifier_setting = workflow_settings_->create_setting(modifier_setting_path(path), default_modifier),
-      .key_setting = workflow_settings_->create_setting(
-        key_setting_path(path),
-        default_key,
-        std::make_shared<framework::setting_validator_list<hotkey_type::key>>(assignable_keys())
-      ),
-      .registered = std::nullopt,
-      .connections = {}
-    };
-    // A hotkey the user chose takes effect as soon as it is written, both halves of it on their own
-    data.connections.emplace_back(
-      data.modifier_setting->connect(&framework::setting_signals::value_changed, [this, path]() { apply_hotkey(path); })
-    );
-    data.connections.emplace_back(
-      data.key_setting->connect(&framework::setting_signals::value_changed, [this, path]() { apply_hotkey(path); })
-    );
-    shared_sig = data.shared_sig;
-    callbacks_.emplace(path, std::move(data));
+    return it->second.shared_sig;
   }
-  // Registration takes the lock of its own, the callback is known by now
-  apply_hotkey(path);
+  auto shared_sig = std::make_shared<signal::signal_type<void()>>();
+
+  decltype(auto) data = callbacks_[path];
+  data.shared_sig = shared_sig;
+  data.modifier_setting = workflow_settings_->create_setting(modifier_setting_path(path), default_modifier);
+  data.key_setting = workflow_settings_->create_setting(
+    key_setting_path(path),
+    default_key,
+    std::make_shared<framework::setting_validator_list<hotkey_type::key>>(assignable_keys())
+  );
+  // data.registered is set in apply_hotkey_impl, which is called below
+  data.modifier_setting->connect_queued(
+    &framework::setting_signals::value_changed,
+    [this, path]()
+    {
+      const auto lock = std::scoped_lock{mtx_};
+      apply_hotkey_impl(path);
+    },
+    data.executor
+  );
+  data.key_setting->connect_queued(
+    &framework::setting_signals::value_changed,
+    [this, path]()
+    {
+      const auto lock = std::scoped_lock{mtx_};
+      apply_hotkey_impl(path);
+    },
+    data.executor
+  );
+  apply_hotkey_impl(path);
   return shared_sig;
 }
 
 ///
 ///
-auto workflow_hotkey::apply_hotkey(const path_type& path) -> void
+auto workflow_hotkey::apply_hotkey_impl(const path_type& path) -> void
 {
-  const auto lock = std::scoped_lock{mtx_};
   const auto it = callbacks_.find(path);
   if(it == std::cend(callbacks_))
   {
