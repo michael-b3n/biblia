@@ -12,7 +12,7 @@ connection_store::~connection_store() noexcept
 
 ///
 ///
-auto connection_store::store(scoped_connection_type&& con) -> void
+auto connection_store::store(scoped_connection_type con) -> void
 {
   const auto lock = std::scoped_lock(mtx_);
   connections_.emplace_back(std::move(con));

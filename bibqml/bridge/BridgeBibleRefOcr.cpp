@@ -137,15 +137,14 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
   : QObject{parent}
   , workflowBibleRefOcr_{std::move(workflowBibleRefOcr)}
   , workflowBibleRefOcrAuto_{std::move(workflowBibleRefOcrAuto)}
-  , manualSearchSig_{workflowHotkey->register_callback(ocrFindPath)}
+  , manualSearchSig_{workflowHotkey->register_callback(
+      ocrFindPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f
+    )}
   , clickActionSetting_{createClickActionSetting(*workflowSettings)}
   , autoSearchSetting_{createAutoSearchSetting(*workflowSettings)}
   , autoSearchExecutor_{bibstd::framework::thread_pool::strand_id()}
 {
   executor_.connect(*manualSearchSig_, [this]() { runManualSearch(); });
-  workflowHotkey->assign_hotkey({
-    {ocrFindPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f}
-  });
 
   workflowBibleRefOcrAuto_->connect_queued(
     &bibstd::workflow::workflow_bible_ref_ocr_auto_sigs::detecting,
