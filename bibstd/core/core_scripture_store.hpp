@@ -1,17 +1,17 @@
 #pragma once
 
-#include "bibstd/bible/scripture.hpp"
-
 #include <cstddef>
 #include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 // Forward declarations
 namespace bibstd::bible
 {
 class scripture;
+class scripture_reader;
 } // namespace bibstd::bible
 
 namespace bibstd::core
@@ -24,6 +24,7 @@ class core_scripture_store final
 {
   // Variables
   const std::filesystem::path folder_;
+  const std::vector<std::unique_ptr<const bible::scripture_reader>> readers_;
   std::map<std::filesystem::path, std::shared_ptr<bible::scripture>> scripture_files_;
   std::map<std::string, std::shared_ptr<bible::scripture>> scripture_data_;
 
@@ -31,9 +32,10 @@ public: // Typedefs
   using scripture_map_type = decltype(scripture_data_);
 
   ///
-  /// Supported file types for scripture data.
+  /// Container types a scripture file ships as, told apart by the file extension. Which format the
+  /// container holds is a separate question, answered by the readers, see bible::scripture_reader.
   ///
-  enum class supported_file_type
+  enum class container_type
   {
     zip,
   };
@@ -64,7 +66,7 @@ public: // Modifiers
 private: // Implementation
   auto load() -> void;
   auto name_scriptures() -> void;
-  [[nodiscard]] auto static read(const std::filesystem::path& file) -> std::shared_ptr<bible::scripture>;
+  [[nodiscard]] auto read(const std::filesystem::path& file) const -> std::shared_ptr<bible::scripture>;
 };
 
 } // namespace bibstd::core

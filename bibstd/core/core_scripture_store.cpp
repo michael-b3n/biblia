@@ -1,5 +1,6 @@
 #include "bibstd/core/core_scripture_store.hpp"
-#include "bibstd/bible/scripture_usx.hpp"
+#include "bibstd/bible/scripture_reader.hpp"
+#include "bibstd/bible/scripture_reader_usx.hpp"
 #include "bibstd/io/zip_file_reader.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
@@ -10,12 +11,14 @@
 #include <cstdint>
 #include <filesystem>
 #include <format>
+#include <memory>
 #include <optional>
 #include <ranges>
 #include <string_view>
 #include <system_error>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 namespace bibstd::core
 {
@@ -31,15 +34,27 @@ auto is_zip_file(const std::filesystem::path& path) -> bool
 }
 
 ///
-/// \return Supported file type of the given path, std::nullopt if it is not supported
+/// \return Container type of the given path, std::nullopt if its extension names none
 ///
-auto file_type(const std::filesystem::path& path) -> std::optional<core_scripture_store::supported_file_type>
+auto container_type_of(const std::filesystem::path& path) -> std::optional<core_scripture_store::container_type>
 {
   if(is_zip_file(path))
   {
-    return core_scripture_store::supported_file_type::zip;
+    return core_scripture_store::container_type::zip;
   }
   return std::nullopt;
+}
+
+///
+/// The readers the store offers a container to, in order. A newly supported scripture format is
+/// added here and nowhere else.
+/// \return one reader per supported scripture format
+///
+auto default_readers() -> std::vector<std::unique_ptr<const bible::scripture_reader>>
+{
+  auto result = std::vector<std::unique_ptr<const bible::scripture_reader>>{};
+  result.emplace_back(std::make_unique<bible::scripture_reader_usx>());
+  return result;
 }
 
 ///
@@ -59,6 +74,7 @@ auto regular_files(const std::filesystem::path& folder, std::error_code& error) 
 ///
 core_scripture_store::core_scripture_store(std::filesystem::path folder)
   : folder_{std::move(folder)}
+  , readers_{default_readers()}
 {
   load();
 }
@@ -92,7 +108,7 @@ auto core_scripture_store::import(const std::filesystem::path& source) -> std::s
 
   auto imported = std::size_t{0};
   for(const auto& file :
-      regular_files(source, error) | std::views::filter([](const auto& path) { return file_type(path).has_value(); }))
+      regular_files(source, error) | std::views::filter([](const auto& path) { return container_type_of(path).has_value(); }))
   {
     // Read before the copy, so a file this store cannot load never reaches the folder
     auto scripture = read(file);
@@ -139,7 +155,7 @@ auto core_scripture_store::load() -> void
       regular_files(folder_, error),
       [this](const auto& file)
       {
-        if(!file_type(file))
+        if(!container_type_of(file))
         {
           LOG_WARN("file type not supported: file_name=\"{}\"", file.filename().string());
           return;
@@ -188,26 +204,40 @@ auto core_scripture_store::name_scriptures() -> void
 
 ///
 ///
-auto core_scripture_store::read(const std::filesystem::path& file) -> std::shared_ptr<bible::scripture>
+auto core_scripture_store::read(const std::filesystem::path& file) const -> std::shared_ptr<bible::scripture>
 {
-  const auto type = file_type(file);
-  if(!type)
+  const auto container = container_type_of(file);
+  if(!container)
   {
     return nullptr;
   }
   try
   {
-    switch(*type)
+    switch(*container)
     {
-    case supported_file_type::zip:
+    case container_type::zip:
     {
-      const auto zip_reader = io::zip_file_reader{file};
-      if(!zip_reader.is_open())
+      const auto file_name = file.filename().string();
+      const auto archive = io::zip_file_reader{file};
+      if(!archive.is_open())
       {
-        LOG_ERROR("failed to open zip archive for usx format: file_name=\"{}\"", file.filename().string());
+        LOG_ERROR("failed to open scripture archive: file_name=\"{}\"", file_name);
         return nullptr;
       }
-      return bible::scripture_usx::create(zip_reader);
+      const auto reader =
+        std::ranges::find_if(readers_, [&archive](const auto& candidate) { return candidate->recognizes(archive); });
+      if(reader == std::ranges::end(readers_))
+      {
+        LOG_WARN("no known scripture format in file: file_name=\"{}\"", file_name);
+        return nullptr;
+      }
+      auto scripture = (*reader)->read(archive);
+      if(!scripture)
+      {
+        LOG_ERROR("failed to read scripture: file_name=\"{}\", format=\"{}\"", file_name, (*reader)->name());
+        return nullptr;
+      }
+      return scripture;
     }
     }
   }

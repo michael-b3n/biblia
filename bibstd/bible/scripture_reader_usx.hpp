@@ -2,38 +2,32 @@
 
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/scripture.hpp"
+#include "bibstd/bible/scripture_reader.hpp"
+#include "bibstd/bible/scripture_types.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/enum.hpp"
 
-#include <map>
 #include <memory>
 #include <optional>
-#include <type_traits>
+#include <string>
+#include <string_view>
 
+// Forward declarations
 namespace bibstd::io
 {
-// Forward declarations
 class zip_file_reader;
 } // namespace bibstd::io
+
 namespace bibstd::bible
 {
 
 ///
-/// Scripture scripture for USX formatted files.
+/// Reads the USX bundle format: a zip archive carrying a "metadata.xml" descriptor in its root and
+/// the USX document of every bible book, each named after the book's USX abbreviation.
 ///
-class scripture_usx final : public scripture
+class scripture_reader_usx final : public scripture_reader
 {
-  // Variables
-  const info_type info_data_;
-  const std::map<book_id, book_name_type> book_name_data_;
-  const std::map<reference_type, passage_html_type> verse_data_;
-  const versification_type versification_;
-
-public: // Constants
-  static constexpr auto unknown_name = "Unknown Scripture";
-  static constexpr auto unknown_abbreviation = "Unknown Abbreviation";
-  static constexpr auto unknown_language = "Unknown Language";
-
+  // Constants
   static constexpr auto books = util::make_const_bimap<book_id, std::string_view>({
     {        book_id::genesis, "GEN"},
     {         book_id::exodus, "EXO"},
@@ -104,42 +98,60 @@ public: // Constants
   });
   static_assert(books.size() == util::enum_count<book_id>());
 
-public: // Typedefs
-  using passage_map_type = std::remove_const_t<decltype(verse_data_)>;
-  using book_name_map_type = std::remove_const_t<decltype(book_name_data_)>;
-
-public: // Creators
+  // Typedefs
   ///
-  /// Create a scripture_usx instance by loading and parsing USX files from the provided zip reader.
-  /// \return A unique pointer to the created scripture_usx instance, or nullptr on failure
+  /// Name and passages parsed out of the USX document of a single book.
   ///
-  static auto create(const io::zip_file_reader& zip_reader) -> std::unique_ptr<scripture>;
-
-public: // Constructor
-  scripture_usx(info_type info_data, book_name_map_type book_name_data, passage_map_type verse_data);
-  ~scripture_usx() noexcept override;
-
-private: // Overrides
-  ///
-  /// \see scripture::information
-  ///
-  auto do_information() const -> info_type override;
+  struct book_document final
+  {
+    book_name name;
+    scripture::passage_map_type passages;
+  };
 
   ///
-  /// The names originate from the header paragraphs of the book's own USX document.
-  /// \see scripture::book_information
+  /// Names and passages of every book of a scripture.
   ///
-  auto do_book_information(book_id book) const -> std::optional<book_name_type> override;
+  struct scripture_content final
+  {
+    scripture::book_name_map_type book_names;
+    scripture::passage_map_type passages;
+  };
+
+public: // Overrides
+  ///
+  /// \see scripture_reader::name
+  ///
+  auto name() const -> name_type override;
 
   ///
-  /// \see scripture::passage_html
+  /// A USX bundle is identified by the "metadata.xml" descriptor in its archive root.
+  /// \see scripture_reader::recognizes
   ///
-  auto do_passage_html(const reference_type& ref) const -> std::optional<passage_html_type> override;
+  auto recognizes(const io::zip_file_reader& archive) const -> bool override;
 
   ///
-  /// \see scripture::versification
+  /// \see scripture_reader::read
   ///
-  auto do_versification() const -> const versification_type& override;
+  auto read(const io::zip_file_reader& archive) const -> std::unique_ptr<scripture> override;
+
+private: // Implementation
+  ///
+  /// Parse the "metadata.xml" descriptor of the bundle.
+  /// \return Information about the scripture, or std::nullopt if it is missing or broken
+  ///
+  [[nodiscard]] static auto parse_metadata(const io::zip_file_reader& archive) -> std::optional<scripture_info>;
+
+  ///
+  /// Parse the USX document of a single book.
+  /// \return Name and passages of the book, or std::nullopt if the document cannot be parsed
+  ///
+  [[nodiscard]] static auto parse_book_document(book_id book, const std::string& usx_content) -> std::optional<book_document>;
+
+  ///
+  /// Load and parse the USX document of every book of the scripture.
+  /// \return Names and passages of all books, or std::nullopt if one is missing or broken
+  ///
+  [[nodiscard]] static auto load_books(const io::zip_file_reader& archive) -> std::optional<scripture_content>;
 };
 
 } // namespace bibstd::bible
