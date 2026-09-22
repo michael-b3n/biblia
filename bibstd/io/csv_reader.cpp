@@ -190,28 +190,4 @@ auto csv_reader::column(const std::string_view column) const -> std::vector<std:
   return result;
 }
 
-///
-///
-auto csv_reader::find_row(const std::string_view column, const std::string_view value) const -> std::optional<std::size_t>
-{
-  const auto index = column_index(column);
-  if(!index)
-  {
-    return std::nullopt;
-  }
-  const auto rows = row_count();
-
-  auto result = std::optional<std::size_t>{};
-  std::ignore = std::ranges::any_of(
-    util::ranges::index_view_to(rows) |
-      std::views::filter([this, &index, &value](const auto row) { return cell(*index, row) == value; }),
-    [&](const auto row)
-    {
-      result = row;
-      return true;
-    }
-  );
-  return result;
-}
-
 } // namespace bibstd::io

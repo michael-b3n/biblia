@@ -5,20 +5,6 @@
 
 namespace bibstd::meta
 {
-namespace detail
-{
-
-///
-/// Index helper type.
-///
-template<std::size_t N>
-struct index_t
-{
-  static constexpr std::size_t index = N;
-};
-
-} // namespace detail
-
 ///
 /// packaged trait.
 ///

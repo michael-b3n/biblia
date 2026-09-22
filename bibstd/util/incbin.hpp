@@ -8,7 +8,6 @@ extern "C"
 }
 #include <cstddef>
 #include <span>
-#include <string_view>
 
 ///
 /// Usage: INC_RESOURCE(LABEL, FILE)
@@ -22,15 +21,6 @@ extern "C"
 
 namespace bibstd::util::incbin
 {
-
-///
-/// Reinterpret data pointer and size with string view.
-/// \return `std::string_view` on data
-///
-inline auto to_string_view(const std::byte* const data, const unsigned int size) -> std::string_view
-{
-  return {reinterpret_cast<const char* const>(data), size};
-}
 
 ///
 /// Reinterpret data pointer and size with span of given type `T`.

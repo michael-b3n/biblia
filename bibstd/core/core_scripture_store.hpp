@@ -38,14 +38,6 @@ public: // Typedefs
     zip,
   };
 
-  ///
-  /// Supported scripture formats.
-  ///
-  enum class supported_format_type
-  {
-    usx,
-  };
-
 public: // Structors
   ///
   /// Load every supported file directly inside \p folder, in the order of the file names.

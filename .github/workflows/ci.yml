@@ -1,13 +1,19 @@
+#
+# Builds, tests and installs on every pushed branch and pull request.
+#
 name: CI
 
 on:
   push:
     branches: ["**"]
+    paths-ignore: ["**.md", "doc/**", "LICENSE"]
   pull_request:
+    paths-ignore: ["**.md", "doc/**", "LICENSE"]
 
 permissions:
   contents: read
 
+# One run per branch and per pull request, a new push cancels the run still going.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -15,9 +21,12 @@ concurrency:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Build
         uses: ./.github/actions/build

@@ -3,8 +3,6 @@
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/enum.hpp"
 
-#include <string_view>
-
 namespace bibstd::util
 {
 
@@ -47,19 +45,5 @@ inline constexpr auto language_direction_map = util::make_const_map<language, la
   { language::german, language_direction::ltr},
 });
 static_assert(language_direction_map.size() == util::enum_count<language>());
-
-///
-/// Get pretty name of language.
-/// \return Pretty name of language
-///
-constexpr auto pretty_name(const language lang) -> std::string_view
-{
-  switch(lang)
-  {
-  case language::english: return "English";
-  case language::german: return "Deutsch";
-  default: return "Unknown";
-  }
-}
 
 } // namespace bibstd::util

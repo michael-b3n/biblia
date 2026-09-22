@@ -236,13 +236,6 @@ auto zip_file_reader::entry(const std::string& name, const query_flags_type flag
 
 ///
 ///
-auto zip_file_reader::has_entry(const std::string& name, const query_flags_type flags) const -> bool
-{
-  return index_of_entry(name, flags).has_value();
-}
-
-///
-///
 auto zip_file_reader::read_entry(const zip_entry& entry) const -> std::vector<std::byte>
 {
   if(!is_open() || !entry.index.has_value() || !entry.size.has_value())

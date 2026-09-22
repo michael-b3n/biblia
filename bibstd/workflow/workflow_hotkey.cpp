@@ -64,14 +64,6 @@ workflow_hotkey::~workflow_hotkey() noexcept = default;
 
 ///
 ///
-auto workflow_hotkey::available_callbacks() const -> std::vector<std::string>
-{
-  const auto lock = std::scoped_lock{mtx_};
-  return callbacks_ | std::views::keys | std::ranges::to<std::vector<std::string>>();
-}
-
-///
-///
 auto workflow_hotkey::register_callback(const path_type& path, const key_modifier default_modifier, const key default_key)
   -> shared_sig_type
 {

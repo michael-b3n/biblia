@@ -1,0 +1,13 @@
+#
+# Keeps the workflow actions current, so a runtime deprecation like the Node 20 one shows up as a
+# pull request instead of a warning on a release run.
+#
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

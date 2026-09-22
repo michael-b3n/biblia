@@ -16,7 +16,6 @@ class ocr_engine_system;
 namespace bibstd::txt
 {
 class ocr_engine_tesseract;
-struct ocr_engine_visitor;
 } // namespace bibstd::txt
 
 namespace bibstd::txt

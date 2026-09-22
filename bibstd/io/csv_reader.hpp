@@ -118,12 +118,6 @@ public: // Accessors
   /// \return cells of the column, empty if the column does not exist
   ///
   [[nodiscard]] auto column(std::string_view column) const -> std::vector<std::string>;
-
-  ///
-  /// Find the first row where the named column holds the specified value.
-  /// \return row index if found, std::nullopt otherwise
-  ///
-  [[nodiscard]] auto find_row(std::string_view column, std::string_view value) const -> std::optional<std::size_t>;
 };
 
 } // namespace bibstd::io

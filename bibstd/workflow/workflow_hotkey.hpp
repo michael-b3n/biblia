@@ -62,13 +62,6 @@ public: // Structors
   workflow_hotkey(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_hotkey() noexcept override;
 
-public: // Accessors
-  ///
-  /// Get the registered callback paths.
-  /// \return registered callback paths
-  ///
-  [[nodiscard]] auto available_callbacks() const -> std::vector<std::string>;
-
 public: // Modifiers
   ///
   /// Register a callback to a specific path and bind it to a hotkey. \p default_modifier and \p default_key
