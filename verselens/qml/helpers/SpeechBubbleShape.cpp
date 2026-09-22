@@ -1,4 +1,4 @@
-#include "SpeechBubbleShape.hpp"
+#include "qml/helpers/SpeechBubbleShape.hpp"
 
 #include <QPainter>
 #include <QPen>

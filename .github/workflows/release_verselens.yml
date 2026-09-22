@@ -25,15 +25,23 @@ env:
 jobs:
   release:
     runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      # The MSIX is built only where partner center values are configured, see the repository variables.
+      MSIX_ENABLED: ${{ vars.VERSELENS_MSIX_IDENTITY_NAME != '' }}
+      REPO_URL: ${{ github.server_url }}/${{ github.repository }}
     steps:
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Check tag
         id: version
-        shell: pwsh
         run: |
           $cmake = Get-Content verselens/CMakeLists.txt -Raw
           $major, $minor = 'MAJOR', 'MINOR' | ForEach-Object {
@@ -53,21 +61,20 @@ jobs:
         uses: ./.github/actions/build
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
       - name: Install vpk
-        shell: pwsh
         run: dotnet tool install --global vpk --version $env:VPK_VERSION
 
       # The previous release lets vpk create a delta package, which keeps updates small.
       - name: Download previous release
-        shell: pwsh
-        run: vpk download github --repoUrl "${{ github.server_url }}/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" --outputDir releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vpk download github --repoUrl "$env:REPO_URL" --token "$env:GH_TOKEN" --outputDir releases
 
       - name: Pack
-        shell: pwsh
         run: >
           vpk pack
           --packId $env:PACK_ID
@@ -83,7 +90,7 @@ jobs:
       # Microsoft store delivers the updates of the MSIX, so its build leaves out Velopack.
       # MSYS2 is set up by the build action already.
       - name: Build MSIX
-        if: vars.VERSELENS_MSIX_IDENTITY_NAME != ''
+        if: env.MSIX_ENABLED == 'true'
         shell: msys2 {0}
         run: |
           cmake --preset gcc-release-msix
@@ -92,8 +99,7 @@ jobs:
 
       # Microsoft store signs the package during certification, it is uploaded to partner center by hand.
       - name: Pack MSIX
-        if: vars.VERSELENS_MSIX_IDENTITY_NAME != ''
-        shell: pwsh
+        if: env.MSIX_ENABLED == 'true'
         run: >
           tools/make_msix_verselens.ps1
           -IdentityName "${{ vars.VERSELENS_MSIX_IDENTITY_NAME }}"
@@ -104,18 +110,21 @@ jobs:
           -Out msix/VerseLens.msix
 
       - name: Upload MSIX
-        if: vars.VERSELENS_MSIX_IDENTITY_NAME != ''
-        uses: actions/upload-artifact@v4
+        if: env.MSIX_ENABLED == 'true'
+        uses: actions/upload-artifact@v7
         with:
           name: msix
           path: msix/VerseLens.msix
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Publish
-        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
           vpk upload github
-          --repoUrl "${{ github.server_url }}/${{ github.repository }}"
-          --token "${{ secrets.GITHUB_TOKEN }}"
+          --repoUrl "$env:REPO_URL"
+          --token "$env:GH_TOKEN"
           --releaseName "VerseLens ${{ steps.version.outputs.version }}"
           --tag ${{ github.ref_name }}
           --outputDir releases

@@ -142,12 +142,6 @@ public: // Accessors
   [[nodiscard]] auto entry(const std::string& name, query_flags_type flags = {}) const -> std::optional<zip_entry>;
 
   ///
-  /// Check if an entry with the specified name exists.
-  /// \return true if entry exists, false otherwise
-  ///
-  [[nodiscard]] auto has_entry(const std::string& name, query_flags_type flags = {}) const -> bool;
-
-  ///
   /// Read an entry's content into memory.
   /// \return Binary data as vector, empty if error
   ///

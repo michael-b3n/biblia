@@ -28,7 +28,7 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
     )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
-      std::string{bible::scripture::versification_type::default_kjv::name},
+      std::string{bible::versification::default_kjv::name},
       std::make_shared<framework::setting_validator_list<setting_value_t<decltype(fallback_versification)>>>(
         workflow_scripture::default_versifications | std::views::keys |
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
@@ -36,9 +36,7 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
     )}
 {
   // The default value set above must be one of the default versifications, else it would be invalid.
-  static_assert(meta::contains_v<
-                bible::scripture::versification_type::all_defaults_variant,
-                bible::scripture::versification_type::default_kjv>);
+  static_assert(meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
 }
 
 ///
@@ -50,21 +48,19 @@ workflow_scripture::versification_wrapper::versification_wrapper(std::shared_ptr
 
 ///
 ///
-workflow_scripture::versification_wrapper::versification_wrapper(bible::scripture::versification_type versification)
+workflow_scripture::versification_wrapper::versification_wrapper(bible::versification versification)
   : data_{std::move(versification)}
 {
 }
 
 ///
 ///
-auto workflow_scripture::versification_wrapper::get() const -> const bible::scripture::versification_type&
+auto workflow_scripture::versification_wrapper::get() const -> const bible::versification&
 {
   return util::visit_lambdas(
     data_,
-    [](const bible::scripture::versification_type& versification) -> const bible::scripture::versification_type&
-    { return versification; },
-    [](const std::shared_ptr<bible::scripture>& scripture) -> const bible::scripture::versification_type&
-    { return scripture->versification(); }
+    [](const bible::versification& versification) -> const bible::versification& { return versification; },
+    [](const std::shared_ptr<bible::scripture>& scripture) -> const bible::versification& { return scripture->versification(); }
   );
 }
 
@@ -160,7 +156,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
     {
       if(const auto it = scriptures.find(*scripture_name); it != std::ranges::cend(scriptures))
       {
-        if(const auto passage_result = it->second->passage_html(params->reference))
+        if(const auto passage_result = it->second->passage(params->reference))
         {
           result = passage_result::value_type{.passage = *passage_result};
         }

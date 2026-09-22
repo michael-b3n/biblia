@@ -1,43 +1,63 @@
 #include "bibstd/bible/scripture.hpp"
+#include "bibstd/util/log.hpp"
+
+#include <algorithm>
 #include <optional>
+#include <ranges>
+#include <vector>
 
 namespace bibstd::bible
 {
 
 ///
 ///
-scripture::scripture() = default;
-
-///
-///
-scripture::~scripture() noexcept = default;
-
-///
-///
-auto scripture::information() const -> info_type
+scripture::scripture(scripture_info info, book_name_map_type book_name_data, passage_map_type passage_data)
+  : info_{std::move(info)}
+  , book_name_data_{std::move(book_name_data)}
+  , passage_data_{std::move(passage_data)}
+  , versification_{[&]
+                   {
+                     auto view = passage_data_ | std::views::keys;
+                     const auto v = bible::versification{info_.name, view | std::ranges::to<std::vector>()};
+                     const auto it = std::ranges::find(versifications_default, v);
+                     return it != std::ranges::cend(versifications_default) ? *it : v;
+                   }()}
 {
-  return do_information();
 }
 
 ///
 ///
-auto scripture::book_information(const book_id book) const -> std::optional<book_name_type>
+auto scripture::information() const -> const scripture_info&
 {
-  return do_book_information(book);
+  return info_;
 }
 
 ///
 ///
-auto scripture::passage_html(const reference_type& ref) const -> std::optional<passage_html_type>
+auto scripture::book_information(const book_id book) const -> std::optional<book_name>
 {
-  return do_passage_html(ref);
+  const auto it = book_name_data_.find(book);
+  return it != std::cend(book_name_data_) ? std::make_optional(it->second) : std::nullopt;
 }
 
 ///
 ///
-auto scripture::versification() const -> const versification_type&
+auto scripture::passage(const reference& ref) const -> std::optional<bible::passage>
 {
-  return do_versification();
+  const auto it = passage_data_.find(ref);
+  if(it != std::cend(passage_data_))
+  {
+    return it->second;
+  }
+  LOG_ERROR("verse not found: {}", ref);
+  return std::nullopt;
+}
+
+///
+///
+auto scripture::versification() const -> const bible::versification&
+{
+  return versification_;
 }
 
 } // namespace bibstd::bible

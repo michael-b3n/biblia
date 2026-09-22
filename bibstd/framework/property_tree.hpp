@@ -26,7 +26,6 @@ class property_tree final : public std::enable_shared_from_this<property_tree>
 
 public: // Typedefs
   using sptr_type = std::shared_ptr<property_tree>;
-  using tree_type = decltype(tree_);
   using path_type = property_path_type;
 
 public: // Creator

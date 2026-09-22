@@ -1,5 +1,6 @@
 #include <bibstd/bible/scripture.hpp>
 #include <bibstd/core/core_scripture_store.hpp>
+#include <test_utils/zip_archive.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -10,6 +11,8 @@
 #include <fstream>
 #include <ranges>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace bibstd::core
 {
@@ -35,6 +38,18 @@ auto test_folder(const std::string_view name) -> std::filesystem::path
 auto touch(const std::filesystem::path& path) -> void
 {
   const auto stream = std::ofstream{path};
+}
+
+///
+/// Write a valid zip archive holding one text entry, so the store opens the container but finds no
+/// format it knows inside it.
+///
+auto write_zip_of_unknown_format(const std::filesystem::path& path) -> void
+{
+  const auto entries = std::vector<io::test_utils::zip_entry>{
+    {"readme.txt", "no scripture here"}
+  };
+  io::test_utils::write_zip_archive(path, entries);
 }
 
 ///
@@ -152,6 +167,19 @@ TEST_CASE("core_scripture_store leaves files it cannot read where they are", "[c
   // The folder of the store only ever holds files it can load
   CHECK(!std::filesystem::exists(target / "scripture.zip"));
   CHECK(!std::filesystem::exists(target / "notes.txt"));
+}
+
+TEST_CASE("core_scripture_store leaves a readable archive of an unknown format where it is", "[core]")
+{
+  const auto source = test_folder("import_unknown_format_source");
+  const auto target = test_folder("import_unknown_format_target");
+  // The archive opens, no reader recognizes what is inside it
+  write_zip_of_unknown_format(source / "scripture.zip");
+
+  core_scripture_store store{target};
+  CHECK(store.import(source) == 0);
+  CHECK(store.scriptures().empty());
+  CHECK(!std::filesystem::exists(target / "scripture.zip"));
 }
 
 TEST_CASE("core_scripture_store takes over the scripture files of a folder", "[core]")

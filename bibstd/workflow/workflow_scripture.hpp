@@ -72,17 +72,17 @@ class workflow_scripture final
   {
   public: // Constructor
     explicit versification_wrapper(std::shared_ptr<bible::scripture> scripture);
-    explicit versification_wrapper(bible::scripture::versification_type versification);
+    explicit versification_wrapper(bible::versification versification);
 
   public: // Accessors
     ///
     /// Get the underlying versification.
     /// \return the underlying versification
     ///
-    auto get() const -> const bible::scripture::versification_type&;
+    auto get() const -> const bible::versification&;
 
   private: // Variables
-    std::variant<bible::scripture::versification_type, std::shared_ptr<bible::scripture>> data_;
+    std::variant<bible::versification, std::shared_ptr<bible::scripture>> data_;
   };
 
   struct scripture_params_t final
@@ -98,13 +98,13 @@ class workflow_scripture final
 
   struct passage_params_t final
   {
-    bible::scripture::reference_type reference;
+    bible::reference reference;
     std::optional<std::string> scripture_name;
   };
 
   struct passage_result_t final
   {
-    bible::scripture::passage_html_type passage;
+    bible::passage passage;
   };
 
   struct import_params_t final
@@ -121,12 +121,12 @@ class workflow_scripture final
 public: // Constants
   static constexpr auto default_versifications = []()
   {
-    using all_defaults_variant = bible::scripture::versification_type::all_defaults_variant;
+    using all_defaults_variant = bible::versification::all_defaults_variant;
     return [&]<std::size_t... I>(std::index_sequence<I...>)
     {
-      return util::make_const_bimap<std::string_view, bible::scripture::versification_type>({
+      return util::make_const_bimap<std::string_view, bible::versification>({
         {std::string_view{meta::pack_info<all_defaults_variant>::type_at<I>::name},
-         bible::scripture::versification_type{meta::pack_info<all_defaults_variant>::type_at<I>{}}}
+         bible::versification{meta::pack_info<all_defaults_variant>::type_at<I>{}}}
         ...
       });
     }(std::make_index_sequence<meta::pack_info<all_defaults_variant>::size>{});

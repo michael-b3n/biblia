@@ -87,15 +87,6 @@ static_assert(util::enum_count<book_id>() == 66); // bible has 66 books
 static_assert(std::ranges::none_of(util::enum_names<book_id>(), [](const auto name) { return name.contains('-'); }));
 
 ///
-/// Bible testaments.
-///
-enum class testament_id
-{
-  ot,
-  nt
-};
-
-///
 /// Bible translations.
 ///
 enum class translation
