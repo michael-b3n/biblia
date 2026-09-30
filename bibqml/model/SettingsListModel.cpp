@@ -7,6 +7,7 @@
 #include <bibstd/util/contains.hpp>
 #include <bibstd/util/exception.hpp>
 #include <bibstd/util/log.hpp>
+#include <bibstd/util/path.hpp>
 #include <bibstd/util/visit_helper.hpp>
 
 #include <algorithm>
@@ -53,19 +54,14 @@ auto isInternalSetting(const std::string_view path) -> bool
 }
 
 ///
-/// Read the segments a setting path is made of. Splitting is left to the backend, which is
-/// where how a path is written is known.
+/// Read the segments a setting path is made of.
 /// \return segments of the path as the views read them
 ///
 auto toCategories(const std::string& path) -> QStringList
 {
-  const auto segments = bibstd::workflow::workflow_settings::split_path(path);
-  auto categories = QStringList{};
-  categories.reserve(static_cast<qsizetype>(segments.size()));
-  std::ranges::transform(
-    segments, std::back_inserter(categories), [](const auto& segment) { return QString::fromStdString(segment); }
-  );
-  return categories;
+  return bibstd::util::path{path}.sections() |
+         std::views::transform([](const auto& segment) { return QString::fromStdString(segment); }) |
+         std::ranges::to<QStringList>();
 }
 
 ///

@@ -22,8 +22,11 @@ runs:
           mingw-w64-x86_64-cppwinrt
           mingw-w64-x86_64-curl
           mingw-w64-x86_64-libzip
+          mingw-w64-x86_64-lua54
           mingw-w64-x86_64-pugixml
+          mingw-w64-x86_64-sol2
           mingw-w64-x86_64-spdlog
+          mingw-w64-x86_64-sqlite3
           mingw-w64-x86_64-tesseract-ocr
           mingw-w64-x86_64-qt6-base
           mingw-w64-x86_64-qt6-declarative

@@ -4,13 +4,11 @@
 
 #include <QString>
 
-#include <memory>
 #include <optional>
 
 // Forward declarations
 namespace bibstd::bible
 {
-class scripture;
 class versification;
 } // namespace bibstd::bible
 namespace bibstd::workflow
@@ -22,21 +20,14 @@ namespace bibqml
 {
 
 ///
-/// Get the default scripture from the workflow scripture.
-/// \return default scripture, or std::nullopt if no scripture could be obtained
-///
-[[nodiscard]] auto defaultScripture(bibstd::workflow::workflow_scripture& workflowScripture)
-  -> std::optional<std::shared_ptr<bibstd::bible::scripture>>;
-
-///
 /// Get the name of a book as provided by the default scripture, in the language of that scripture.
-/// Falls back to the raw book identifier if the scripture does not provide a name.
+/// Falls back to the raw book identifier if the scripture does not provide a name. Blocks while a script answers.
 /// \return book name
 ///
 [[nodiscard]] auto bookName(bibstd::workflow::workflow_scripture& workflowScripture, bibstd::bible::book_id book) -> QString;
 
 ///
-/// Get the copyright statement of the default scripture.
+/// Get the copyright statement of the default scripture. Blocks while a script answers.
 /// \return copyright statement, empty if the scripture does not provide one
 ///
 [[nodiscard]] auto scriptureCopyright(bibstd::workflow::workflow_scripture& workflowScripture) -> QString;

@@ -98,7 +98,6 @@ public: // Typedefs
 public: // Constants
   static constexpr std::string_view settings_file_name = "settings.xml";
   static constexpr std::string_view settings_root_name = "settings";
-  static constexpr char path_separator = '.';
 
 public: // Static interface
   ///
@@ -107,12 +106,6 @@ public: // Static interface
   ///
   [[nodiscard]] static auto settings_file_path(std::optional<std::string_view> folder_name = std::nullopt)
     -> std::filesystem::path;
-
-  ///
-  /// Split a setting path into the segments it is made of.
-  /// \return segments in the order they are written in, empty segments are left out
-  ///
-  [[nodiscard]] static auto split_path(std::string_view path) -> std::vector<std::string>;
 
 public: // Accessors
   ///

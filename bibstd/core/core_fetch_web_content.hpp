@@ -33,7 +33,7 @@ public: // Operations
   ///
   /// \return Content of the webpage, or an error code
   ///
-  auto fetch(std::string_view url) const -> std::expected<std::string, error_code>;
+  static auto fetch(std::string_view url) -> std::expected<std::string, error_code>;
 };
 
 } // namespace bibstd::core

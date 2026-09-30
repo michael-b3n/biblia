@@ -413,35 +413,6 @@ struct paragraph_style final
 struct markup final
 {
   ///
-  /// \return text with the characters that carry meaning in XML replaced by their entity
-  ///
-  static auto escaped(const std::string_view text) -> std::string
-  {
-    static constexpr auto entities = util::make_const_map<char, std::string_view>({
-      {'&', "&amp;"},
-      {'<',  "&lt;"},
-      {'>',  "&gt;"}
-    });
-    auto result = std::string{};
-    result.reserve(text.size());
-    std::ranges::for_each(
-      text,
-      [&result](const auto character)
-      {
-        if(entities.contains(character))
-        {
-          result.append(entities.at(character));
-        }
-        else
-        {
-          result.push_back(character);
-        }
-      }
-    );
-    return result;
-  }
-
-  ///
   /// \return markup node a USX character style is kept as, or std::nullopt if there is none for it
   ///
   static auto node_of(const std::string_view char_style) -> std::optional<std::string_view>
@@ -471,7 +442,7 @@ struct markup final
         const auto type = child.type();
         if(type == pugi::node_pcdata || type == pugi::node_cdata)
         {
-          result.append(escaped(child.value()));
+          result.append(passage_markup::escaped_xml(child.value()));
         }
         else if(type != pugi::node_element)
         {
@@ -579,7 +550,7 @@ private: // Implementation
     const auto type = node.type();
     if(type == pugi::node_pcdata || type == pugi::node_cdata)
     {
-      append(markup::escaped(node.value()));
+      append(passage_markup::escaped_xml(node.value()));
     }
     else if(type == pugi::node_element)
     {
@@ -670,15 +641,7 @@ private: // Implementation
       auto content = std::string{};
       for(const auto& segment : segments_)
       {
-        content.append(
-          std::format(
-            R"(<{0} {1}="{2}">{3}</{0}>)",
-            passage_markup::paragraph,
-            passage_markup::paragraph_attribute,
-            segment.position,
-            segment.content
-          )
-        );
+        content.append(passage_markup::section(segment.position, segment.content));
       }
       if(!content.empty())
       {

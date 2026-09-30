@@ -14,6 +14,9 @@ namespace verselens
 struct backend_instance final
 {
   std::shared_ptr<bibstd::workflow::workflow_settings> workflow_settings;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_script;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_web;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_cache;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_hotkey;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_scripture;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr;

@@ -17,6 +17,7 @@ control_shift,Strg + Umschalt,Ctrl + Shift
 dbu,DBU,DBU
 dwell_duration,Verweildauer,Dwell duration
 elb,Elberfelder Bibel,Elberfelder Bibel
+enabled,Aktiviert,Enabled
 english,Englisch,English
 esv,English Standard Version,English Standard Version
 eu,Einheitsübersetzung,Einheitsübersetzung
@@ -53,6 +54,10 @@ ocr_auto,Automatische Texterkennung,Automatic text recognition
 paragraph_recognition,Absatzerkennung,Paragraph recognition
 poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
+script,Skripte,Scripts
+scripts_load,Skripte laden,Load scripts
+scripts_loaded,Geladene Skripte,Loaded scripts
+scripts_none,Keine Skripte geladen. Skripte kommen aus dem Skriptordner der Einstellungen.,No scripts loaded. Scripts come from the scripts folder of the settings.
 scripture,Bibelausgabe,Scripture
 scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
 scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.

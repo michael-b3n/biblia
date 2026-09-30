@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <mutex>
 #include <ranges>
+#include <utility>
 
 namespace bibstd::framework
 {
@@ -30,10 +31,13 @@ auto thread_pool::init() -> util::shared_scope_guard
       initialized_ = false;
       // Make sure the lock is not used by anyone else anymore. The initialized flag ensures,
       // that the pool_ member is not modified or read from external threads anymore.
+      auto pool = pool_type{};
       {
         const auto lock = std::scoped_lock{mtx_};
-        pool_.clear();
+        pool = std::exchange(pool_, {});
       }
+      // Joined outside of the lock, a running task takes it once it is done
+      pool.clear();
       cv_init.notify_all();
     }
   );
