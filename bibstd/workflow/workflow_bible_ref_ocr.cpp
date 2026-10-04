@@ -1,6 +1,7 @@
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_parser.hpp"
+#include "bibstd/system/locale.hpp"
 #include "bibstd/system/ocr.hpp"
 #include "bibstd/txt/ocr_engine.hpp"
 #include "bibstd/txt/ocr_engine_tesseract.hpp"
@@ -141,7 +142,7 @@ workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(std::shared_ptr
   , recognition_algorithm{workflow_settings_->create_setting(
       "ocr.recognition_algorithm", ocr_recognition_algorithm::line_recognition
     )}
-  , language{workflow_settings_->create_setting("ocr.language", util::language::german)}
+  , language{workflow_settings_->create_setting("ocr.language", system::locale::preferred_language())}
 {
 }
 

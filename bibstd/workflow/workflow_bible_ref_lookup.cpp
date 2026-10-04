@@ -1,18 +1,38 @@
 #include "bibstd/workflow/workflow_bible_ref_lookup.hpp"
 #include "bibstd/core/core_lookup_bibleserver.hpp"
+#include "bibstd/system/locale.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 
 namespace bibstd::workflow
 {
+namespace
+{
+
+///
+/// Get the translations looked up by default for the language the user prefers.
+/// \return default translations
+///
+[[nodiscard]] auto default_translations(const util::language language) -> std::vector<bible::translation>
+{
+  // No default case, so that a new language warns about its missing translations.
+  switch(language)
+  {
+  case util::language::english: return {bible::translation::niv, bible::translation::esv};
+  case util::language::german: return {bible::translation::ngu, bible::translation::elb};
+  }
+  throw util::exception{"unsupported language"};
+}
+
+} // namespace
 
 ///
 ///
 workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : framework::settings_base{std::move(workflow_settings)}
-  , translations{workflow_settings_->create_setting(
-      "lookup.translations", std::vector<bible::translation>{bible::translation::ngu, bible::translation::elb}
-    )}
+  , translations{
+      workflow_settings_->create_setting("lookup.translations", default_translations(system::locale::preferred_language()))
+    }
 {
 }
 

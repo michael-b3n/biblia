@@ -1,6 +1,7 @@
 #include "bibstd/math/coordinates.hpp"
 #include "bibstd/meta/lossless_conversion.hpp"
 #include "bibstd/system/ocr.hpp"
+#include "bibstd/system/windows/language_tag.hpp"
 #include "bibstd/txt/ocr_engine.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/language.hpp"
@@ -34,12 +35,7 @@ namespace winrt_globalization = winrt::Windows::Globalization;
 ///
 auto to_language_tag(const util::language language) -> winrt::hstring
 {
-  switch(language)
-  {
-  case util::language::german: return L"de";
-  case util::language::english: return L"en";
-  default: throw util::exception{"unsupported language"}; return L"";
-  }
+  return winrt::hstring{language_wtag_map.at(language)};
 }
 
 ///

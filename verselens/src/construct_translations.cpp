@@ -2,6 +2,8 @@
 #include "res/version.hpp"
 
 #include <bibstd/framework/setting_validator.hpp>
+#include <bibstd/system/locale.hpp>
+#include <bibstd/util/enum.hpp>
 #include <bibstd/util/exception.hpp>
 #include <bibstd/util/incbin.hpp>
 #include <bibstd/util/log.hpp>
@@ -133,9 +135,10 @@ auto construct_translations(backend_instance& backend) -> translations_instance
   {
     auto translations = std::make_unique<bibqml::Translations>(display_names_view);
     const auto languages = available_languages(*translations);
+    const auto preferred_language = std::string{bibstd::util::enum_name(bibstd::system::locale::preferred_language())};
     auto* const language_setting = backend.workflow_settings->create_setting(
       std::string{translations_instance::language_setting_path},
-      languages.front(),
+      std::ranges::contains(languages, preferred_language) ? preferred_language : languages.front(),
       std::make_shared<bibstd::framework::setting_validator_list<std::string>>(languages)
     );
     return translations_instance{std::move(translations), language_setting};
