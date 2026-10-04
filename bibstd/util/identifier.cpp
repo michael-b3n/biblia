@@ -13,7 +13,7 @@ namespace
 ///
 /// \return the normalized identifier of \p text, throws if it is empty
 ///
-auto normalize(const std::string_view text) -> std::string
+[[nodiscard]] auto normalize(const std::string_view text) -> std::string
 {
   if(text.empty())
   {

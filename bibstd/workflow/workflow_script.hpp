@@ -29,9 +29,8 @@ namespace bibstd::workflow
 {
 
 ///
-/// Manifest of a function a script offers, defined by the workflow calling it: the static id, e.g.
-/// "scripture.passage", the input and the output, usually a lua::script_table. The function is named by the id in the
-/// table the script returns, it takes the input and returns the output.
+/// Manifest of a function a script offers, defined by the workflow calling it: the static id naming the function,
+/// e.g. "scripture.passage", its input and its output, usually a lua::script_table.
 ///
 template<typename M>
 concept script_manifest = requires {
@@ -65,12 +64,10 @@ struct workflow_script_sigs final
 };
 
 ///
-/// Workflow script, owns the Lua state and loads the user scripts once, \see load_scripts.
-/// A user script returns a table with its id, its name and the functions it offers, each named after a
-/// script_manifest. The app knows a script by its id, the name of its file plays no role.
-/// Workflows register through it below root.interface.workflow, which scripts see as workflow. They do it last in their
-/// constructor and keep the registration as their last member, so no script reaches them partly constructed or
-/// destroyed, \see lua::registration.
+/// Workflow script, owns the Lua state and loads the user scripts, \see load_scripts.
+/// A script returns its id, its name and the functions it offers, each named after a script_manifest.
+/// Workflows register below root.interface.workflow, last in their constructor and kept as their last member, so
+/// no script reaches them partly constructed or destroyed, \see lua::registration.
 /// Signal IDs to connect to:
 /// - scripts_loaded: Emitted under the Lua lock once the scripts are loaded, also if none are.
 ///
@@ -95,7 +92,6 @@ class workflow_script final
   std::jthread loader_; // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
-  using script_info_type = script_info;
   using scripts_type = decltype(scripts_);
 
 public: // Structors
@@ -116,9 +112,8 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Load the user scripts outside of the calling thread, if enabled, and emit scripts_loaded. Called after the
-  /// workflows registered, so the scripts see them. Called again, e.g. from the settings, the scripts are loaded anew,
-  /// a loading still running is ended first after the script it runs.
+  /// Load the user scripts outside of the calling thread, if enabled, and emit scripts_loaded. Called once the
+  /// workflows registered, and again to load the scripts anew: a loading still running ends after its script first.
   ///
   auto load_scripts() -> void;
 
@@ -146,8 +141,8 @@ public: // Modifiers
     -> std::optional<typename M::output>;
 
   ///
-  /// Stop the scripts with force, no script runs from now on. Called before the app ends, so no workflow
-  /// waits for a  script that never returns once it is destroyed, \see lua::state_owner::shutdown
+  /// Stop the scripts with force, no script runs from now on. Called before the app ends, so no workflow waits
+  /// for a script that never returns once it is destroyed, \see lua::state_owner::shutdown
   ///
   auto shutdown() const noexcept -> void;
 

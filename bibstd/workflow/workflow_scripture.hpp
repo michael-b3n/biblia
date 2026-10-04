@@ -68,7 +68,7 @@ public: // Variables
 /// script, e.g. "LUT (bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
 /// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
-/// - scriptures_changed: Emitted when the scriptures of the script changed, e.g. once the scripts are loaded.
+/// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
 ///
 class workflow_scripture final
   : public workflow_base<workflow_scripture_settings>

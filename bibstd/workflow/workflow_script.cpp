@@ -11,6 +11,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -69,8 +70,7 @@ workflow_script::workflow_script(std::shared_ptr<workflow_settings> workflow_set
 ///
 workflow_script::~workflow_script() noexcept
 {
-  // First, the loading ends after the script it runs, which is stopped as a script may run endlessly.
-  // The loader joins once destroyed.
+  // The loading ends after its script, which is stopped as it may run endlessly. The loader joins once destroyed.
   loader_.request_stop();
   shutdown();
   // Waits for the running script
@@ -149,8 +149,7 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
     const auto lock = std::scoped_lock{mtx_};
     scripts_.clear();
   }
-  // Script failures are logged by the state, this only catches faults of the app, e.g. a vanishing folder.
-  // Either way the waiting workflows learn that loading is over.
+  // Faults of the app only, e.g. a vanishing folder. Either way the waiting workflows learn that loading is over.
   try
   {
     if(settings().enabled->value())
@@ -211,7 +210,7 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
   const auto functions = table.get<sol::object>(lua::names::script_functions);
   if(!id || !name || name->empty() || functions.get_type() != sol::type::table)
   {
-    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name or no table of functions", file);
+    LOG_ERROR("lua script rejected: file=\"{}\", it returns no id, no name or no table of functions", file);
     return;
   }
   // The first one keeps the id, a script is known by nothing else

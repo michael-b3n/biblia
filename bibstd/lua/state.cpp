@@ -6,6 +6,7 @@
 #include <optional>
 #include <ranges>
 #include <string>
+#include <utility>
 
 namespace bibstd::lua
 {

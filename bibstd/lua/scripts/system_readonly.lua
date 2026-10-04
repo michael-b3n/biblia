@@ -1,7 +1,6 @@
 -- Read-only views of shared tables, so a script can not change what other scripts or the app use.
--- A view is an empty table reading through to the real one, nested tables are viewed as well.
--- Lua has no read-only tables and the environment of a script only gives it globals of its own: what it reaches through
--- them, e.g. string or util, are the shared tables. Such a proxy is the usual way to protect them.
+-- A view is an empty table reading through to the real one, nested tables are viewed as well. Lua has no read-only
+-- tables, and the environment of a script only protects its globals, not the tables it reaches through them.
 local error, next, setmetatable, tostring, type = error, next, setmetatable, tostring, type
 
 -- One view per table, built once, so views stay comparable. Weak, a view goes with its table once that is taken back.

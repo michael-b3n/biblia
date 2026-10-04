@@ -19,8 +19,7 @@ namespace
 // How long a change waits for another process changing the file
 constexpr auto busy_timeout = std::chrono::seconds{5};
 
-// Write-ahead log: a change is appended without waiting for the disk, so a script may set many values one by one,
-// and other processes read meanwhile. A power failure may lose the last changes, the file stays intact.
+// Write-ahead log, so many single changes are fast. A power failure may lose the last ones, the file stays intact.
 constexpr auto setup_sql = "PRAGMA journal_mode = WAL;"
                            "PRAGMA synchronous = NORMAL;"
                            "CREATE TABLE IF NOT EXISTS entries (key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;";

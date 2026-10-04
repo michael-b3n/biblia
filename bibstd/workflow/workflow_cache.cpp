@@ -1,11 +1,9 @@
 #include "bibstd/workflow/workflow_cache.hpp"
 #include "bibstd/core/core_cache.hpp"
-#include "bibstd/util/exception.hpp"
 #include "bibstd/util/identifier.hpp"
 
 #include <format>
 #include <optional>
-#include <tuple>
 #include <utility>
 
 namespace bibstd::workflow
@@ -18,16 +16,15 @@ workflow_cache::workflow_cache(std::shared_ptr<workflow_script> workflow_script)
   , folder_{workflow_script_->settings().folder->value() / workflow_script_settings::cache_folder_name}
 {
   // Last, scripts may call into the workflow from here on
-  registrations_
-
-    << workflow_script_->register_function(
-         "cache.get", [this](const std::string& name, const std::string& key) { return get(util::identifier{name}, key); }
-       )
-    << workflow_script_->register_function(
-         "cache.set",
-         [this](const std::string& name, const std::string& key, std::optional<std::string> value)
-         { set(util::identifier{name}, key, std::move(value)); }
-       );
+  registrations_ << workflow_script_->register_function(
+                      "cache.get",
+                      [this](const std::string& name, const std::string& key) { return get(util::identifier{name}, key); }
+                    )
+                 << workflow_script_->register_function(
+                      "cache.set",
+                      [this](const std::string& name, const std::string& key, std::optional<std::string> value)
+                      { set(util::identifier{name}, key, std::move(value)); }
+                    );
 }
 
 ///

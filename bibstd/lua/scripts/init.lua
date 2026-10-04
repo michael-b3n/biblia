@@ -1,7 +1,6 @@
--- Sets up the state: fills the tree the app created as global `root`.
--- root.interface is what scripts see as their globals, read-only: the safe functions and libraries of Lua, the helpers
--- and what the workflows register. root.system is kept for the app.
--- The app passes the file names of the other embedded scripts and gave root.system.embedded and the log functions.
+-- Sets up the state in the global `root` the app created. root.interface is what scripts see as their globals,
+-- read-only: the safe parts of Lua, the helpers and what the workflows register. root.system is kept for the app.
+-- The app passes the file names of the other embedded scripts.
 local files = ...
 
 local interface, system = root.interface, root.system
@@ -11,9 +10,8 @@ for _, file in ipairs(files) do
   assert(load(system.embedded(file), "@" .. file, "t"))()
 end
 
--- The functions and libraries of Lua scripts may use. Not dofile, loadfile and the io, os, package and debug libraries,
--- they would reach files and processes. Not print, there is no console, \see util.log_info. Not rawset, a view is a
--- table of its own, rawset would change it for all scripts. Not collectgarbage, the collector is shared.
+-- What scripts may use of Lua. Not dofile, loadfile, io, os, package and debug, they reach files and processes.
+-- Not print, there is no console. Not rawset, it would change a view. Not collectgarbage, the collector is shared.
 for _, name in ipairs({
   "assert", "error", "getmetatable", "ipairs", "next", "pairs", "pcall", "rawequal", "rawget", "rawlen", "select",
   "tonumber", "tostring", "type", "xpcall", "_VERSION", "coroutine", "math", "string", "table", "utf8",
@@ -27,8 +25,7 @@ for _, library in ipairs({ coroutine, math, string, table, utf8 }) do
   readonly(library, true)
 end
 
--- All strings share one metatable, it gives them their methods, e.g. ("a"):upper(). getmetatable("") hands out this
--- field from now on instead of the metatable, so a script can not change the methods for all.
+-- All strings share one metatable for their methods, getmetatable("") hands out this field instead from now on
 getmetatable("").__metatable = "read only"
 
 -- Read-only, so a script can not change what other scripts or the app use. The app runs the scripts on it.
@@ -36,8 +33,7 @@ local sandbox = readonly(interface)
 system.sandbox = sandbox
 
 ---
---- setmetatable of scripts, a metatable with a finalizer fails: Lua runs finalizers without hooks, so the shutdown
---- could not stop one
+--- setmetatable of scripts. A finalizer fails: Lua runs it without hooks, the shutdown could not stop it.
 --- \return \p table
 ---
 function interface.setmetatable(table, metatable)
@@ -48,8 +44,7 @@ function interface.setmetatable(table, metatable)
 end
 
 ---
---- load of scripts, text only: Lua does not verify bytecode, a damaged one corrupts memory instead of failing with
---- an error that could be caught. By default the chunk gets globals of its own on the sandbox.
+--- load of scripts. Text only, damaged bytecode crashes the app. By default the chunk gets globals of its own.
 --- \return the loaded chunk, or nil and the error
 ---
 function interface.load(chunk, name, _, environment)

@@ -6,7 +6,7 @@ if not enabled then
   return
 end
 
--- The app knows this script by its id, of letters, digits and "_". Its cache is named after it.
+-- The app knows this script by its id, of letters, digits, "_" and "-". Its cache is named after it.
 local id = "example"
 
 return {

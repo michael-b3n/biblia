@@ -25,8 +25,7 @@ namespace bibstd::workflow
 namespace
 {
 
-// Name of a scripture of a script in the app: its name in the script and the id of the script, e.g.
-// "LUT (bibleserver)". The id, as the name of a script is for display only and may be the one of another script.
+// Name of a script's scripture in the app, e.g. "LUT (bibleserver)": the id of the script is unique, its name is not
 constexpr auto script_scripture_name = "{} ({})";
 
 ///
@@ -108,8 +107,7 @@ workflow_scripture::workflow_scripture(
 ///
 workflow_scripture::~workflow_scripture() noexcept
 {
-  // No slot reaches the workflow once disconnected. A request on the way ends with its script, the scripts are shut
-  // down before the app ends.
+  // No slot reaches the workflow once disconnected, a request on the way ends with its script
   executor_.disconnect();
 }
 
@@ -373,11 +371,25 @@ auto workflow_scripture::update_scripts() -> void
 ///
 auto workflow_scripture::update_scripture_name_setting() -> void
 {
-  const auto lock = std::scoped_lock{mtx_};
-  decltype(auto) scriptures = core_scripture_store_->scriptures();
-  auto names = scripture_names();
+  static constexpr auto has_kjv_versification = [](const auto& s)
+  { return s.second->versification() == bible::versification_kjv; };
+
+  // Read under the lock, the setting is changed without it: its listeners may call back into the workflow
+  auto names = std::vector<std::string>{};
+  auto preferred = std::optional<std::string>{};
+  auto scripts_loaded = false;
+  {
+    const auto lock = std::scoped_lock{mtx_};
+    decltype(auto) scriptures = core_scripture_store_->scriptures();
+    names = scripture_names();
+    scripts_loaded = script_scriptures_.has_value();
+    if(const auto it = std::ranges::find_if(scriptures, has_kjv_versification); it != std::ranges::cend(scriptures))
+    {
+      preferred = it->first;
+    }
+  }
   const auto name = settings().scripture_name->value();
-  if(!script_scriptures_ && name)
+  if(!scripts_loaded && name)
   {
     // Until the scripts are loaded, the name may be one of theirs.
     // If not here, validator would drop the existing value.
@@ -388,20 +400,9 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   // A setting naming a scripture that is not loaded leaves every lookup without one. That is what
   // a name left over from scriptures that are gone does, so it is pointed at a loaded scripture.
   const auto name_contained = name.has_value() && util::contains(names, *name);
-
   if(!(name_contained || names.empty()))
   {
-    static constexpr auto has_kjv_versification = [](const auto& s)
-    { return s.second->versification() == bible::versification_kjv; };
-
-    if(const auto it = std::ranges::find_if(scriptures, has_kjv_versification); it != std::ranges::cend(scriptures))
-    {
-      settings().scripture_name->value(it->first);
-    }
-    else
-    {
-      settings().scripture_name->value(names.front());
-    }
+    settings().scripture_name->value(preferred ? *preferred : names.front());
   }
 }
 

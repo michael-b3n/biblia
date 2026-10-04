@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
+#include <limits>
 #include <map>
 #include <optional>
 #include <string>
@@ -62,6 +63,19 @@ TEST_CASE("lua_value_cast_converts_basic_values", "[lua]")
   CHECK_FALSE(cast<bool>(lua, "nil"));
 }
 
+TEST_CASE("lua_value_cast_throws_for_an_integer_lua_can_not_hold", "[lua]")
+{
+  auto lua = sol::state{};
+  using limits = std::numeric_limits<std::uint64_t>;
+  const auto largest = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
+  CHECK(round_trip(lua, largest) == largest);
+  // It would be another, negative number for the script
+  CHECK_THROWS(value_cast<std::uint64_t>::to(lua, largest + 1));
+  CHECK_THROWS(value_cast<std::uint64_t>::to(lua, limits::max()));
+  CHECK_THROWS(value_cast<std::vector<std::uint64_t>>::to(lua, {1, limits::max()}));
+  CHECK(round_trip(lua, std::numeric_limits<std::int64_t>::min()) == std::numeric_limits<std::int64_t>::min());
+}
+
 TEST_CASE("lua_value_cast_converts_containers", "[lua]")
 {
   auto lua = sol::state{};
@@ -75,6 +89,10 @@ TEST_CASE("lua_value_cast_converts_containers", "[lua]")
   CHECK(cast<list>(lua, "{}") == list{});
   CHECK_FALSE(cast<list>(lua, "{1, 'a'}"));
   CHECK_FALSE(cast<list>(lua, "1"));
+  // A table with other keys is no list, else one by key would be read as an empty list
+  CHECK_FALSE(cast<list>(lua, "{a = 1}"));
+  CHECK_FALSE(cast<list>(lua, "{1, 2, n = 2}"));
+  CHECK_FALSE(cast<list>(lua, "{[2] = 2}"));
 
   using map = std::map<std::string, std::vector<std::string>>;
   CHECK(

@@ -7,7 +7,6 @@
 #include "bibstd/workflow/workflow_script.hpp"
 
 #include <memory>
-#include <vector>
 
 namespace bibstd::workflow
 {
@@ -21,17 +20,19 @@ public: // Structors
   workflow_template_settings(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_template_settings() noexcept override = default;
 
+  // clang-format off
 public: // Variables
-        // const setting_type<bool> plain_bool;
-        // const setting_type<int> plain_int;
-        // const setting_type<double> plain_double;
-        // const setting_type<std::string> plain_string;
-        // const setting_type<std::optional<bool>> optional_bool;
-        // const setting_type<std::optional<int>> optional_int;
-        // const setting_type<std::optional<double>> optional_double;
-        // const setting_type<std::optional<std::string>> optional_string;
-        // const setting_type<std::vector<std::string>> vector_string;
+  // const setting_type<bool> plain_bool;
+  // const setting_type<int> plain_int;
+  // const setting_type<double> plain_double;
+  // const setting_type<std::string> plain_string;
+  // const setting_type<std::optional<bool>> optional_bool;
+  // const setting_type<std::optional<int>> optional_int;
+  // const setting_type<std::optional<double>> optional_double;
+  // const setting_type<std::optional<std::string>> optional_string;
+  // const setting_type<std::vector<std::string>> vector_string;
 };
+// clang-format on
 
 ///
 /// Workflow template. This is a template for creating new workflows.

@@ -4,6 +4,7 @@
 #include "bibstd/lua/value_cast.hpp"
 #include "bibstd/util/exception.hpp"
 
+#include <concepts>
 #include <cstddef>
 #include <expected>
 #include <format>
@@ -53,10 +54,16 @@ template<value_castable T>
 }
 
 ///
+/// What a function for scripts takes: a value value_cast converts, by value or const reference.
+///
+template<typename T>
+concept function_parameter = value_castable<std::remove_cvref_t<T>> && std::convertible_to<std::remove_cvref_t<T>, T>;
+
+///
 /// \return the function a script calls in place of \p function, \see function_cast
 ///
 template<typename R, typename... A>
-  requires(function_result<R> && (value_castable<std::remove_cvref_t<A>> && ...))
+  requires(function_result<R> && (function_parameter<A> && ...))
 [[nodiscard]] auto wrapped(std::function<R(A...)> function)
 {
   return [function = std::move(function)](sol::this_state lua, sol::variadic_args arguments)
@@ -119,9 +126,8 @@ template<typename F>
 concept function_castable = requires(F&& function) { detail::wrapped(std::function{std::forward<F>(function)}); };
 
 ///
-/// Conversion of a C++ function to the one a script calls, so \p function takes and returns C++ values only: its
-/// signature is deduced, the arguments of the script and the result are converted by value_cast.
-/// An argument of another type is an error for the script, one left out is nil, more than the parameters are ignored.
+/// The function a script calls for \p function, which takes and returns C++ values: value_cast converts them.
+/// An argument of another type is an error for the script, one left out is nil, extra ones are ignored.
 /// \return the function to set in a Lua table
 ///
 template<function_castable F>
@@ -131,8 +137,7 @@ template<function_castable F>
 }
 
 ///
-/// function_cast of a function that is taken back: once \p registered is gone, calling it is an error for the script,
-/// which may still hold the function.
+/// function_cast of a function taken back later: once \p registered is gone, calling it is an error for the script.
 /// \return the function to set in a Lua table
 ///
 template<function_castable F>

@@ -119,6 +119,7 @@ TEST_CASE("lua_state_register_function_converts_the_values", "[lua]")
   // Only callables of one signature and of values value_cast converts
   STATIC_REQUIRE(function_castable<int (*)(const std::string&)>);
   STATIC_REQUIRE_FALSE(function_castable<int (*)(const char*)>);
+  STATIC_REQUIRE_FALSE(function_castable<void (*)(std::string&)>);
   STATIC_REQUIRE_FALSE(function_castable<std::string_view (*)()>);
   STATIC_REQUIRE_FALSE(function_castable<int>);
   const auto generic = [](const auto& value) { return value; };
@@ -426,6 +427,12 @@ TEST_CASE("lua_state_protects_shared_tables", "[lua]")
   {
     CHECK(runs("assert(a.f() == 1 and util.split('a,b', ',')[2] == 'b')"));
     CHECK(runs("assert(#util.keys({1}) == 1 and ('abc'):upper() == 'ABC' and string.upper('a') == 'A')"));
+    // Like tables: pairs, ipairs and the length
+    s->script("root.interface.list = {'x', 'y', nested = {1, 2, 3}}");
+    CHECK(runs("local n = 0 for k, v in pairs(list) do n = n + 1 end assert(n == 3 and #list == 2 and #list.nested == 3)"));
+    CHECK(runs("local t = '' for i, v in ipairs(list) do t = t .. i .. v end assert(t == '1x2y')"));
+    CHECK(runs("for k, v in pairs(list) do if k == 'nested' then assert(getmetatable(v) == 'read only') end end"));
+    CHECK(runs("assert(util.contains(util.keys(util), 'split'))"));
     // What the app keeps for itself is out of reach
     CHECK(runs("assert(root == nil and _G == nil and require == nil and print == nil and rawset == nil)"));
     // Globals of the script itself stay writable, also one named like a shared one

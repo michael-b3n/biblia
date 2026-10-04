@@ -30,10 +30,8 @@ public: // Modifiers
   [[nodiscard]] auto lock() const -> state;
 
   ///
-  /// Shut the scripts down for good, from any thread and without the lock: root.system.shutdown_flag is set, the running
-  /// code fails with an error at its next call and code started later fails right away.
-  /// E.g. before the app ends, so nothing waits for a script that never returns.
-  /// Catching the error does not keep a script running.
+  /// Shut the scripts down for good, from any thread and without the lock, e.g. before the app ends: the running
+  /// code fails at its next call, also if it catches the error, and code started later fails right away.
   ///
   auto shutdown() const noexcept -> void;
 };

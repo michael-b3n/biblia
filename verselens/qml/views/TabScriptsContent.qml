@@ -5,7 +5,6 @@ import BibQml
 
 ///
 /// Content of the scripts tab: the loaded scripts with the functions they offer, and the button to load them anew.
-/// They are listed in the titled box the other tabs use as well, so that a tab of the window reads like the next one.
 ///
 Item
 {

@@ -47,8 +47,9 @@ set(QT_VERSION_NUMBER 6.11)
 add_compile_options(-Wall -Wpedantic)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
-# Source paths in __FILE__ and std::source_location are kept relative
-add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=>)
+# Source paths in __FILE__ and std::source_location are kept relative. Only those: -ffile-prefix-map maps the
+# paths of the coverage data as well, gcov then reports sources that do not exist and the coverage report is empty.
+add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-fmacro-prefix-map=${CMAKE_SOURCE_DIR}/=>)
 
 # GNU ld overflows REL32 relocations linking clang objects against the GCC-built mingw libraries.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

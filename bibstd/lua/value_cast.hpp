@@ -21,12 +21,10 @@ namespace bibstd::lua
 {
 
 ///
-/// Conversion between a C++ value and the Lua value a script sees. Each specialization offers
-/// to(lua, value) -> sol::object and from(object) -> std::optional<T>, std::nullopt if the object is no T.
-/// Both copy: to builds a new Lua value, from a new C++ value, neither keeps a reference to its argument. So small
-/// values are taken by value and the others by const reference.
-/// Only plain value types convert. References, pointers, views like std::string_view and const types do not: what
-/// from returns would point into a Lua value that may be gone.
+/// Conversion between a C++ value and the Lua value a script sees: to(lua, value) -> sol::object and
+/// from(object) -> std::optional<T>, std::nullopt if the object is no T. Both copy.
+/// Only plain value types convert, no references, pointers, views or const types: they would point into a Lua
+/// value that may be gone.
 ///
 template<typename T>
 struct value_cast final
@@ -79,6 +77,7 @@ struct value_cast<bool> final
 
 ///
 /// A Lua integer, a float is none even of an integral value. Out of the range of T it is none.
+/// \throw boost::numeric::bad_numeric_cast from to, if Lua can not hold the value
 ///
 template<std::integral T>
   requires(detail::plain<T> && !std::same_as<T, bool>)
@@ -165,7 +164,7 @@ struct value_cast<std::optional<T>> final
 };
 
 ///
-/// A table of the values in sequence.
+/// A table of the values in sequence, one with other keys is none.
 ///
 template<value_castable T>
 struct value_cast<std::vector<T>> final
@@ -234,7 +233,7 @@ template<std::integral T>
   requires(detail::plain<T> && !std::same_as<T, bool>)
 auto value_cast<T>::to(sol::state_view lua, const T v) -> sol::object
 {
-  return sol::make_object(lua, static_cast<lua_Integer>(v));
+  return sol::make_object(lua, numeric_cast<lua_Integer>(v));
 }
 
 ///
@@ -352,6 +351,11 @@ auto value_cast<std::vector<T>>::from(const sol::object& v) -> std::optional<std
     return std::nullopt;
   }
   const auto table = v.as<sol::table>();
+  // Else e.g. a table by key would be read as an empty list
+  if(detail::entries(table).size() != table.size())
+  {
+    return std::nullopt;
+  }
   return detail::all_or_none(
     util::ranges::index_view_between(std::size_t{1}, table.size() + 1) |
     std::views::transform([&](const std::size_t i) { return value_cast<T>::from(table.get<sol::object>(i)); })

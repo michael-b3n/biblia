@@ -6,11 +6,9 @@
 #include <bibstd/util/identifier.hpp>
 #include <bibstd/workflow/workflow_base.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>

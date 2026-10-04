@@ -20,7 +20,6 @@
 #include <string_view>
 #include <system_error>
 #include <utility>
-#include <vector>
 
 namespace bibstd::workflow
 {
@@ -266,6 +265,29 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   CHECK(passage->passage.content.contains("new"));
   // The user interface is told each time
   CHECK(test_utils::wait_until([&]() { return *changed.first >= 2; }));
+}
+
+TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[workflow]")
+{
+  auto fixture =
+    scripture_fixture{"workflow_scripture_changes_the_name_setting_without_its_lock", {{"first", scripture_script}}};
+  const auto& scripture = *fixture.scripture;
+  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (first)"; }));
+  // Listeners called right where the setting changes, each calls back into the workflow
+  auto counted = std::make_shared<std::atomic<int>>(0);
+  const auto count = [&scripture, counted]() { *counted += static_cast<int>(scripture.scripture_count()) + 1; };
+  const auto value = scripture.settings().scripture_name->connect(&framework::setting_signals::value_changed, count);
+  const auto validator = scripture.settings().scripture_name->connect(&framework::setting_signals::validator_changed, count);
+
+  // The selected scripture goes with its script, so the names and the name change
+  std::filesystem::remove(fixture.folder.path() / "user_scripts" / "first.lua");
+  test_utils::write_file(
+    fixture.folder.path() / "user_scripts" / "second.lua",
+    std::format("return {{id = 'second', name = 'Second', functions = (function() {} end)()}}", scripture_script)
+  );
+  test_utils::load_scripts(*fixture.script);
+  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (second)"; }));
+  CHECK(test_utils::wait_until([&]() { return *counted > 0; }));
 }
 
 TEST_CASE("workflow_scripture_passage_ends_on_stop", "[workflow]")
