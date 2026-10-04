@@ -30,3 +30,86 @@ jobs:
 
       - name: Build
         uses: ./.github/actions/build
+
+  coverage:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up MSYS2
+        uses: ./.github/actions/setup-msys2
+        with:
+          extra-packages: >-
+            mingw-w64-x86_64-python-pip
+            mingw-w64-x86_64-python-lxml
+            mingw-w64-x86_64-python-jinja
+            mingw-w64-x86_64-python-pygments
+            mingw-w64-x86_64-python-colorlog
+
+      # MSYS2 has no gcovr package for MINGW64, its compiled dependencies come from pacman above
+      - name: Install gcovr
+        shell: msys2 {0}
+        run: python -m pip install --break-system-packages gcovr==8.6
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          git config --global --add safe.directory '*'
+          cmake --preset gcc-coverage
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build --preset gcc-coverage
+
+      - name: Test
+        shell: msys2 {0}
+        run: ctest --preset gcc-coverage
+
+      # Only the library counts, the tests, Qt layer and third party sources would skew the figure
+      - name: Create coverage report
+        shell: msys2 {0}
+        run: |
+          mkdir -p build/coverage
+          gcovr --root . --filter 'bibstd/' \
+            --html-details build/coverage/index.html \
+            --json-summary build/coverage/summary.json \
+            build
+          python .github/scripts/coverage_badge.py build/coverage/summary.json build/coverage/badge.json
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: build/coverage/
+          retention-days: 14
+
+  # The badge in the README reads badge.json from the published pages
+  publish-coverage:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: site/coverage
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
+          keep_files: true

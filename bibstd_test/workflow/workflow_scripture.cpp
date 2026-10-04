@@ -8,6 +8,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -18,6 +19,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <utility>
 #include <vector>
 
 namespace bibstd::workflow
@@ -224,6 +226,46 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_all_scripts", "[workflow]
   CHECK(information->name == "BBB (c_complete)");
   CHECK(scripture.information({{"AAA (b_complete)"}}));
   CHECK_FALSE(scripture.information({{"XXX (a_partial)"}}));
+}
+
+TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
+{
+  auto fixture = scripture_fixture{"workflow_scripture_follows_the_scripts_loaded_anew", {{"first", scripture_script}}};
+  const auto& scripture = *fixture.scripture;
+  const auto scripts = fixture.folder.path() / "user_scripts";
+  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (first)"; }));
+  const auto changed = [&]()
+  {
+    auto count = std::make_shared<std::atomic<int>>(0);
+    return std::pair{count, scripture.connect(&workflow_scripture_sigs::scriptures_changed, [count]() { ++*count; })};
+  }();
+
+  // While the app runs: a script added, its scriptures join the others and the selected one stays
+  test_utils::write_file(
+    scripts / "added.lua",
+    "return {id = 'second', name = 'Second', functions = {['scripture.names'] = function() return {names = {'CCC'}} end, "
+    "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
+    "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}}"
+  );
+  test_utils::load_scripts(*fixture.script);
+  REQUIRE(test_utils::wait_until([&]() { return scripture.scripture_count() == 3; }));
+  CHECK(scripture.settings().scripture_name->value() == "AAA (first)");
+  CHECK(scripture.information({{"CCC (second)"}}));
+  CHECK(scripture.information({{"BBB (first)"}}));
+
+  // A script removed, its scriptures are gone and the selected one moves to one that is left
+  std::filesystem::remove(scripts / "first.lua");
+  test_utils::load_scripts(*fixture.script);
+  REQUIRE(test_utils::wait_until([&]() { return scripture.scripture_count() == 1; }));
+  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "CCC (second)"; }));
+  CHECK_FALSE(scripture.information({{"AAA (first)"}}));
+  const auto passage = scripture.passage({
+    {.reference = john(16), .scripture_name = std::nullopt}
+  });
+  REQUIRE(passage);
+  CHECK(passage->passage.content.contains("new"));
+  // The user interface is told each time
+  CHECK(test_utils::wait_until([&]() { return *changed.first >= 2; }));
 }
 
 TEST_CASE("workflow_scripture_passage_ends_on_stop", "[workflow]")
