@@ -1,7 +1,7 @@
 #
 # Renders the icon sources of verselens/res/icon into the icon of the executable and the assets of the MSIX
 # package. Every size takes the cut that is drawn for it, the small cuts drop the details that turn into mud.
-# Needs rsvg-convert, the MSYS2 package mingw-w64-x86_64-librsvg holds it.
+# Needs rsvg-convert, the MSYS2 package mingw-w64-ucrt-x86_64-librsvg holds it.
 #
 # Examples:
 #   tools/make_icons_verselens.ps1
@@ -27,11 +27,11 @@ $icoSizes = @(32, 16, 20, 24, 48, 64, 128, 256)
 $rsvg = (Get-Command rsvg-convert -ErrorAction SilentlyContinue)?.Source
 if($null -eq $rsvg)
 {
-  $rsvg = "C:/msys64/mingw64/bin/rsvg-convert.exe"
+  $rsvg = "C:/msys64/ucrt64/bin/rsvg-convert.exe"
 }
 if(-not (Test-Path $rsvg))
 {
-  throw "rsvg-convert not found. Install it with 'pacman -S mingw-w64-x86_64-librsvg' or add it to the PATH."
+  throw "rsvg-convert not found. Install it with 'pacman -S mingw-w64-ucrt-x86_64-librsvg' or add it to the PATH."
 }
 
 function Get-IconSource([int] $size)

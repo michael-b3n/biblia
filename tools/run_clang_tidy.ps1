@@ -30,7 +30,7 @@ if(-not (Test-Path $compileDb))
 $clangTidy = Get-Command clang-tidy -ErrorAction SilentlyContinue
 if(-not $clangTidy)
 {
-  throw "clang-tidy not found on PATH. Install it, e.g. 'pacman -S mingw-w64-x86_64-clang-tools-extra'."
+  throw "clang-tidy not found on PATH. Install it, e.g. 'pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra'."
 }
 
 #
