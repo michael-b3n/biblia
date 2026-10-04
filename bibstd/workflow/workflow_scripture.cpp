@@ -108,9 +108,8 @@ workflow_scripture::workflow_scripture(
 ///
 workflow_scripture::~workflow_scripture() noexcept
 {
-  // First, a script may run endlessly. Destroyed on shutdown, so the scripts stop for good, a request on the way
-  // fails. No slot reaches the workflow once disconnected.
-  workflow_script_->shutdown();
+  // No slot reaches the workflow once disconnected. A request on the way ends with its script, the scripts are shut
+  // down before the app ends.
   executor_.disconnect();
 }
 

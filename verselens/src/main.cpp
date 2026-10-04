@@ -111,6 +111,8 @@ int main(int argc, char** argv)
   const auto tray_guard = verselens::construct_tray(app, bridge, translations);
 
   const auto reval = QGuiApplication::exec();
+
+  verselens::shutdown_backend(backend);
   LOG_INFO("exit application: {}", reval);
   return reval;
 }

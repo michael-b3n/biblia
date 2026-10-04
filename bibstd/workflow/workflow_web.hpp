@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bibstd/lua/registration.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
 
@@ -21,6 +22,7 @@ public: // Typedefs
 
 private: // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
+  lua::registration registrations_;
 
 public: // Structors
   workflow_web(std::shared_ptr<workflow_script> workflow_script);

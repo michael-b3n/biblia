@@ -44,15 +44,17 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
   CHECK_FALSE(std::filesystem::exists(folder.path() / "scripts" / "a.sqlite"));
 }
 
-TEST_CASE("workflow_cache_shuts_the_scripts_down_on_destruction", "[workflow]")
+TEST_CASE("workflow_cache_takes_its_functions_back_on_destruction", "[workflow]")
 {
-  const auto folder = test_utils::temp_folder{"workflow_cache_shuts_the_scripts_down_on_destruction"};
+  const auto folder = test_utils::temp_folder{"workflow_cache_takes_its_functions_back_on_destruction"};
   const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
   {
     const auto cache = workflow_cache{script};
     CHECK(script->state()->script("return type(root.interface.workflow.cache.get) == 'function'").get<bool>());
   }
-  CHECK_FALSE(script->state().run_script("after.lua", "return 1"));
+  // Only them, the scripts go on
+  CHECK(script->state()->script("return root.interface.workflow == nil").get<bool>());
+  CHECK(script->state().run_script("after.lua", "return 1"));
 }
 
 } // namespace bibstd::workflow

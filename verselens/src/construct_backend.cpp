@@ -51,4 +51,11 @@ auto construct_backend() -> backend_instance
   };
 }
 
+///
+///
+auto shutdown_backend(const backend_instance& backend) -> void
+{
+  std::static_pointer_cast<bibstd::workflow::workflow_script>(backend.workflow_script)->shutdown();
+}
+
 } // namespace verselens

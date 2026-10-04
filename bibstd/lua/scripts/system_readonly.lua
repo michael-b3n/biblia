@@ -4,8 +4,8 @@
 -- them, e.g. string or util, are the shared tables. Such a proxy is the usual way to protect them.
 local error, next, setmetatable, tostring, type = error, next, setmetatable, tostring, type
 
--- One view per table, built once, so views stay comparable. Never freed, what is viewed lives as long as the state.
-local views = {}
+-- One view per table, built once, so views stay comparable. Weak, a view goes with its table once that is taken back.
+local views = setmetatable({}, { __mode = "k" })
 
 ---
 --- \return the read-only view of \p value, values other than tables as they are. A \p flat table holds no tables and

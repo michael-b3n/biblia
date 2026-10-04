@@ -1,3 +1,5 @@
+#include "test_utils/registrations.hpp"
+
 #include <bibstd/lua/state_owner.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -79,11 +81,12 @@ TEST_CASE("lua_state_owner_is_locked_from_several_threads", "[lua]")
 TEST_CASE("lua_state_owner_is_locked_again_from_a_script", "[lua]")
 {
   auto owner = state_owner{};
+  auto keep = test_utils::registrations{};
   {
     auto s = owner.lock();
     s->set("value", 7);
     // A copy kept by the state itself would keep it alive forever
-    CHECK(s.register_function("read_value", [&owner]() { return owner.lock()->get<int>("value"); }));
+    CHECK(keep(s.register_function("read_value", [&owner]() { return owner.lock()->get<int>("value"); })));
   }
   CHECK(owner.lock()->script("return root.interface.read_value() * 2").get<int>() == 14);
 }

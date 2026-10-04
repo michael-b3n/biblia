@@ -16,16 +16,12 @@ workflow_web::workflow_web(std::shared_ptr<workflow_script> workflow_script)
   : workflow_script_{std::move(workflow_script)}
 {
   // The page, or nil and why it failed
-  std::ignore = workflow_script_->register_function("web.fetch", [this](const std::string& url) { return fetch(url); });
+  registrations_ << workflow_script_->register_function("web.fetch", [this](const std::string& url) { return fetch(url); });
 }
 
 ///
 ///
-workflow_web::~workflow_web() noexcept
-{
-  // First, so no script calls into the workflow once its destruction starts. For good, it lives as long as the app.
-  workflow_script_->shutdown();
-}
+workflow_web::~workflow_web() noexcept = default;
 
 ///
 ///

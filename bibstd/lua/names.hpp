@@ -15,6 +15,7 @@ inline constexpr std::string_view node_interface = "interface";
 inline constexpr std::string_view node_system = "system";
 inline constexpr std::string_view node_sandbox = "sandbox";
 inline constexpr std::string_view node_scripts = "scripts";
+inline constexpr std::string_view node_util = "util";
 
 inline constexpr std::string_view function_embedded = "embedded";
 inline constexpr std::string_view function_log_debug = "log_debug";
@@ -24,6 +25,7 @@ inline constexpr std::string_view function_log_error = "log_error";
 inline constexpr std::string_view function_get = "get";
 inline constexpr std::string_view function_set = "set";
 inline constexpr std::string_view function_postfix = "postfix";
+inline constexpr std::string_view function_remove = "remove";
 
 inline constexpr std::string_view value_shutdown_flag = "shutdown_flag";
 

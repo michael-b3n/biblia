@@ -2,10 +2,12 @@
 
 #include "bibstd/framework/process_params.hpp"
 #include "bibstd/framework/settings_base.hpp"
+#include "bibstd/lua/registration.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace bibstd::workflow
 {
@@ -45,8 +47,8 @@ class workflow_template final : public workflow_base<workflow_template_settings>
   using result_t = float /*some type*/;
 
   // Variables
-  // (flag_ removed - template placeholder, use in your workflow implementation)
   const std::shared_ptr<workflow_script> workflow_script_;
+  lua::registration registrations_;
 
 public: // Typedefs
   using params = framework::process_params<params_t>;

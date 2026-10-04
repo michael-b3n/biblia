@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bibstd/lua/registration.hpp"
 #include "bibstd/util/identifier.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
@@ -32,6 +33,7 @@ class workflow_cache final : public workflow_base<void>
   const std::filesystem::path folder_;
   mutable std::mutex mtx_;
   std::map<std::string, std::unique_ptr<core::core_cache>> caches_;
+  lua::registration registrations_;
 
 public: // Structors
   explicit workflow_cache(std::shared_ptr<workflow_script> workflow_script);

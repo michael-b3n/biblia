@@ -31,19 +31,15 @@ workflow_template::workflow_template(
   , workflow_script_{std::move(workflow_script)}
 {
   // Last, scripts may call into the workflow from here on. A failed registration is logged by the state.
-  std::ignore = workflow_script_->register_function(
+  registrations_ << workflow_script_->register_function(
     "template.start", [this](int value) { return start(params{{.value = value}}).has_value(); }
   );
-  // std::ignore = workflow_script_->register_setting(*settings().plain_bool);
+  // registrations_ << workflow_script_->register_setting(*settings().plain_bool);
 }
 
 ///
 ///
-workflow_template::~workflow_template() noexcept
-{
-  // First, so no script calls into the workflow once its destruction starts. For good, it lives as long as the app.
-  workflow_script_->shutdown();
-}
+workflow_template::~workflow_template() noexcept = default;
 
 ///
 ///

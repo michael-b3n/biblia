@@ -69,8 +69,8 @@ struct workflow_script_sigs final
 /// A user script returns a table with its id, its name and the functions it offers, each named after a
 /// script_manifest. The app knows a script by its id, the name of its file plays no role.
 /// Workflows register through it below root.interface.workflow, which scripts see as workflow. They do it last in their
-/// constructor and shut the scripts down first in their destructor, so no script reaches them partly constructed or
-/// destroyed.
+/// constructor and keep the registration as their last member, so no script reaches them partly constructed or
+/// destroyed, \see lua::registration.
 /// Signal IDs to connect to:
 /// - scripts_loaded: Emitted under the Lua lock once the scripts are loaded, also if none are.
 ///
@@ -124,17 +124,17 @@ public: // Modifiers
 
   ///
   /// Register a function for scripts at workflow.\p p, e.g. "web.fetch", \see lua::state::register_function
-  /// \return false if \p p can not be registered, the reason is logged
+  /// \return the registration to keep, one of nothing if \p p can not be registered, the reason is logged
   ///
   template<lua::function_castable F>
-  [[nodiscard]] auto register_function(const util::path& p, F&& function) const -> bool;
+  [[nodiscard]] auto register_function(const util::path& p, F&& function) const -> lua::registration;
 
   ///
   /// Register \p setting for scripts at workflow and its own path, \see lua::state::register_setting
-  /// \return false if the path can not be registered, the reason is logged
+  /// \return the registration to keep, one of nothing if the path can not be registered, the reason is logged
   ///
   template<framework::underlying_setting_type T>
-  [[nodiscard]] auto register_setting(framework::setting<T>& setting) const -> bool;
+  [[nodiscard]] auto register_setting(framework::setting<T>& setting) const -> lua::registration;
 
   ///
   /// Run the function of the manifest \p M of the script with the id \p script. Blocks until it returns, it may wait
@@ -146,8 +146,8 @@ public: // Modifiers
     -> std::optional<typename M::output>;
 
   ///
-  /// Stop the scripts with force, no script runs from now on, e.g. once a workflow registered for scripts is destroyed,
-  /// \see lua::state_owner::shutdown
+  /// Stop the scripts with force, no script runs from now on. Called before the app ends, so no workflow
+  /// waits for a  script that never returns once it is destroyed, \see lua::state_owner::shutdown
   ///
   auto shutdown() const noexcept -> void;
 
@@ -176,7 +176,7 @@ auto workflow_script::scripts() const -> scripts_type
 ///
 ///
 template<lua::function_castable F>
-auto workflow_script::register_function(const util::path& p, F&& function) const -> bool
+auto workflow_script::register_function(const util::path& p, F&& function) const -> lua::registration
 {
   return state().register_function(lua_path(p), std::forward<F>(function));
 }
@@ -184,7 +184,7 @@ auto workflow_script::register_function(const util::path& p, F&& function) const
 ///
 ///
 template<framework::underlying_setting_type T>
-auto workflow_script::register_setting(framework::setting<T>& setting) const -> bool
+auto workflow_script::register_setting(framework::setting<T>& setting) const -> lua::registration
 {
   return state().register_setting(lua_path(util::path{setting.path}), setting);
 }

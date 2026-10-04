@@ -32,6 +32,7 @@ public: // Modifiers
   ///
   /// Shut the scripts down for good, from any thread and without the lock: root.system.shutdown_flag is set, the running
   /// code fails with an error at its next call and code started later fails right away.
+  /// E.g. before the app ends, so nothing waits for a script that never returns.
   /// Catching the error does not keep a script running.
   ///
   auto shutdown() const noexcept -> void;

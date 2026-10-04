@@ -10,6 +10,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -132,6 +133,10 @@ public: // Structors
 public: // Variables
   bool registered{false};
   int value{42};
+
+private: // Variables
+  // Last, so it is taken back first
+  lua::registration registrations_;
 };
 
 ///
@@ -140,16 +145,15 @@ workflow_test::workflow_test(std::shared_ptr<workflow_script> workflow_script, s
   : workflow_script_{std::move(workflow_script)}
   , name_{std::move(name)}
 {
-  registered = workflow_script_->register_function(name_ + ".nested.value", [this]() { return value; }) &&
-               workflow_script_->register_function(name_ + ".twice", [this]() { return 2 * value; });
+  auto nested = workflow_script_->register_function(name_ + ".nested.value", [this]() { return value; });
+  auto twice = workflow_script_->register_function(name_ + ".twice", [this]() { return 2 * value; });
+  registered = nested && twice;
+  registrations_ << std::move(nested) << std::move(twice);
 }
 
 ///
 ///
-workflow_test::~workflow_test() noexcept
-{
-  workflow_script_->shutdown();
-}
+workflow_test::~workflow_test() noexcept = default;
 
 } // namespace
 
@@ -177,15 +181,19 @@ TEST_CASE("workflow_script_registers_a_workflow", "[workflow]")
   );
 }
 
-TEST_CASE("workflow_script_shuts_down_once_a_workflow_is_destroyed", "[workflow]")
+TEST_CASE("workflow_script_drops_the_functions_of_a_destroyed_workflow", "[workflow]")
 {
-  const auto folder = test_utils::temp_folder{"workflow_script_shuts_down_once_a_workflow_is_destroyed"};
+  const auto folder = test_utils::temp_folder{"workflow_script_drops_the_functions_of_a_destroyed_workflow"};
   const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
-  REQUIRE(script->state().run_script("before.lua", "return workflow == nil"));
-  std::ignore = workflow_test{script};
-  // No script reaches the functions of the destroyed workflow, none runs anymore
+  const auto other = workflow_test{script, "other"};
+  {
+    const auto workflow = workflow_test{script};
+    REQUIRE(script->state().run_script("before.lua", "held = workflow.test.twice return held()"));
+  }
+  // Its functions only: no script reaches the destroyed workflow, the other one and the scripts go on
+  CHECK(script->state().run_script("after.lua", "return workflow.test == nil and workflow.other.twice() == 84"));
   CHECK_FALSE(script->state().run_script("after.lua", "return workflow.test.twice()"));
-  CHECK_FALSE(script->state().run_script("after.lua", "return 1"));
+  CHECK(script->state().run_script("after.lua", "return 1"));
 }
 
 TEST_CASE("workflow_script_rejects_a_taken_name", "[workflow]")

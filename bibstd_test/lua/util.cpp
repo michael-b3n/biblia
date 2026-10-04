@@ -1,3 +1,5 @@
+#include "test_utils/registrations.hpp"
+
 #include <bibstd/lua/scripts.hpp>
 #include <bibstd/lua/state_owner.hpp>
 
@@ -12,6 +14,7 @@ TEST_CASE("lua_util", "[lua]")
 {
   auto owner = state_owner{};
   auto s = owner.lock();
+  auto keep = test_utils::registrations{};
   const auto check = [&](const std::string& code) { return s->script("return " + code).get<bool>(); };
 
   SECTION("strings")
@@ -50,7 +53,7 @@ TEST_CASE("lua_util", "[lua]")
     CHECK(check("root.interface.util.dump({}) == '{}'"));
     s->script("cyclic = {} cyclic.self = cyclic");
     CHECK(check("root.interface.util.dump(cyclic) == '{\\n  [\"self\"] = <cycle>\\n}'"));
-    CHECK(s.register_function("a.b.value", []() { return 3; }));
+    CHECK(keep(s.register_function("a.b.value", []() { return 3; })));
     CHECK(check("root.interface.util.at('a.b.value')() == 3 and root.interface.util.at('a.missing.value') == nil"));
   }
 }
@@ -59,12 +62,13 @@ TEST_CASE("lua_state_register_takes_no_name_of_the_state", "[lua]")
 {
   auto owner = state_owner{};
   auto s = owner.lock();
+  auto keep = test_utils::registrations{};
   CHECK(s->script("return util == nil").get<bool>());
-  CHECK_FALSE(s.register_function("util", []() { return 1; }));
-  CHECK_FALSE(s.register_function("util.split", []() { return 1; }));
+  CHECK_FALSE(keep(s.register_function("util", []() { return 1; })));
+  CHECK_FALSE(keep(s.register_function("util.split", []() { return 1; })));
   // Neither what scripts have of Lua
-  CHECK_FALSE(s.register_function("pairs", []() { return 1; }));
-  CHECK_FALSE(s.register_function("string.upper", []() { return 1; }));
+  CHECK_FALSE(keep(s.register_function("pairs", []() { return 1; })));
+  CHECK_FALSE(keep(s.register_function("string.upper", []() { return 1; })));
   CHECK(s->script("return type(root.interface.util.split) == 'function'").get<bool>());
 }
 
@@ -75,11 +79,35 @@ TEST_CASE("lua_embedded_scripts_add_themselves", "[lua]")
   // Each at the node it names
   CHECK(s->script("return type(root.interface.util) == 'table'").get<bool>());
   CHECK(s->script("return type(root.system.readonly) == 'function'").get<bool>());
+  CHECK(s->script("return type(root.system.util.remove) == 'function'").get<bool>());
   // So does init.lua with what scripts run on
   CHECK(s->script("return root.system.sandbox == root.system.readonly(root.interface)").get<bool>());
   // Nothing else is left behind, neither a way to load files
   CHECK(s->script("return require == nil and util == nil and readonly == nil").get<bool>());
   CHECK(s->script("return root.system.embedded('missing.lua') == nil").get<bool>());
+}
+
+TEST_CASE("lua_system_util_removes_a_path", "[lua]")
+{
+  const auto owner = state_owner{};
+  auto s = owner.lock();
+  const auto check = [&](const std::string& code) { return s->script("local i = root.interface " + code).get<bool>(); };
+  s->script("root.interface.a = {b = {c = 1, d = 2}, e = 3} root.interface.f = {g = {h = 1}}");
+  s->script("root.system.util.remove('a.b.c')");
+  CHECK(check("return i.a.b.c == nil and i.a.b.d == 2 and i.a.e == 3"));
+  // With the tables it leaves empty, up to the first one that holds more
+  s->script("root.system.util.remove('a.b.d')");
+  CHECK(check("return i.a.b == nil and i.a.e == 3"));
+  s->script("root.system.util.remove('f.g.h')");
+  CHECK(check("return i.f == nil and type(i.util) == 'table'"));
+  // A whole table, a path that is not there, no path
+  s->script("root.interface.k = {l = {m = 1}}");
+  s->script("root.system.util.remove('k.l')");
+  CHECK(check("return i.k == nil"));
+  CHECK_NOTHROW(
+    s->script("root.system.util.remove('a.missing.x') root.system.util.remove('a.e.x') root.system.util.remove('')")
+  );
+  CHECK(check("return i.a.e == 3 and type(i.util.split) == 'function'"));
 }
 
 TEST_CASE("lua_scripts_compile", "[lua]")

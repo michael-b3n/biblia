@@ -4,6 +4,7 @@
 #include "bibstd/framework/setting_common.hpp"
 #include "bibstd/lua/function_cast.hpp"
 #include "bibstd/lua/names.hpp"
+#include "bibstd/lua/registration.hpp"
 #include "bibstd/lua/sol.hpp"
 #include "bibstd/util/path.hpp"
 
@@ -14,6 +15,7 @@
 #include <optional>
 #include <string_view>
 #include <utility>
+#include <variant>
 
 namespace bibstd::lua
 {
@@ -67,21 +69,21 @@ public: // Accessors
 
 public: // Operations
   ///
-  /// Register a function at \p p, the last section is its name. What the function reaches must live until the
-  /// state is shut down, \see state_owner::shutdown.
-  /// \p function takes and returns C++ values, what a script passes and gets is converted, \see function_cast.
-  /// \return false if \p p can not be registered
+  /// Register a function at \p p, the last section is its name, for as long as the registration is kept.
+  /// What the function reaches must live as long, \see registration. \p function takes and returns C++
+  /// values, what a script passes and gets is converted, \see function_cast.
+  /// \return the registration, one of nothing if \p p can not be registered
   ///
   template<function_castable F>
-  [[nodiscard]] auto register_function(const util::path& p, F&& function) -> bool;
+  [[nodiscard]] auto register_function(const util::path& p, F&& function) -> registration;
 
   ///
-  /// Register \p setting at \p p, as table with the functions get(), set(value) and postfix().
-  /// \p setting must live until the state is shut down.
-  /// \return false if the path can not be registered
+  /// Register \p setting at \p p, as table with the functions get(), set(value) and postfix(), for as long as the
+  /// registration is kept. \p setting must live as long.
+  /// \return the registration, one of nothing if the path can not be registered
   ///
   template<framework::underlying_setting_type T>
-  [[nodiscard]] auto register_setting(const util::path& p, framework::setting<T>& setting) -> bool;
+  [[nodiscard]] auto register_setting(const util::path& p, framework::setting<T>& setting) -> registration;
 
   ///
   /// Run a user script in an environment of its own, so its globals do not reach other scripts.
@@ -105,15 +107,16 @@ private: // Implementation
 ///
 ///
 template<function_castable F>
-auto state::register_function(const util::path& p, F&& function) -> bool
+auto state::register_function(const util::path& p, F&& function) -> registration
 {
   auto parent = free_parent(p);
   if(!parent)
   {
-    return false;
+    return {};
   }
-  parent->set_function(p.sections().back(), function_cast(std::forward<F>(function)));
-  return true;
+  auto registered = std::make_shared<const std::monostate>();
+  parent->set_function(p.sections().back(), function_cast(std::forward<F>(function), registered));
+  return registration{data_, p, std::move(registered)};
 }
 
 ///
@@ -127,31 +130,34 @@ auto state::call(const sol::protected_function& function, Args&&... args) -> std
 ///
 ///
 template<framework::underlying_setting_type T>
-auto state::register_setting(const util::path& p, framework::setting<T>& setting) -> bool
+auto state::register_setting(const util::path& p, framework::setting<T>& setting) -> registration
 {
   using erased_type = framework::setting_type_erased_type_from<T>;
 
   auto parent = free_parent(p);
   if(!parent)
   {
-    return false;
+    return {};
   }
+  auto registered = std::make_shared<const std::monostate>();
   auto node = parent->create_named(p.sections().back());
   node.set_function(
     names::function_get,
     function_cast(
-      [&setting]() -> erased_type { return framework::create_setting_value_converter<T, erased_type>()(setting.value()); }
+      [&setting]() -> erased_type { return framework::create_setting_value_converter<T, erased_type>()(setting.value()); },
+      registered
     )
   );
   node.set_function(
     names::function_set,
     function_cast(
       [&setting](const erased_type& value) -> bool
-      { return setting.value(framework::create_setting_value_converter<erased_type, T>()(value)); }
+      { return setting.value(framework::create_setting_value_converter<erased_type, T>()(value)); },
+      registered
     )
   );
-  node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }));
-  return true;
+  node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }, registered));
+  return registration{data_, p, std::move(registered)};
 }
 
 } // namespace bibstd::lua

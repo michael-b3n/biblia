@@ -32,4 +32,10 @@ struct backend_instance final
 ///
 auto construct_backend() -> backend_instance;
 
+///
+/// Stop the scripts of \p backend for good. Called first once the app ends,
+/// so no workflow waits for a script that never returns when it is destroyed.
+///
+auto shutdown_backend(const backend_instance& backend) -> void;
+
 } // namespace verselens
