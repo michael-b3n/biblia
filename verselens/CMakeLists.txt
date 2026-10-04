@@ -213,4 +213,6 @@ install(
   POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
 )
 install(DIRECTORY ${TESSDATA_FOLDER_PATH} DESTINATION share)
+# For the user to copy into the script folder, the app does not
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/bibstd/lua/examples/ DESTINATION share/scripts)
 install(SCRIPT ${QT_DEPLOY_SCRIPT})

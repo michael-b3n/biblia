@@ -43,6 +43,13 @@
       }
     },
     {
+      "name": "coverage",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "--coverage -O0 -g"
+      }
+    },
+    {
       "name": "msix",
       "hidden": true,
       "binaryDir": "${sourceDir}/build_msix",
@@ -74,6 +81,11 @@
       "name": "gcc-release-msix",
       "displayName": "GCC Release MSIX",
       "inherits": ["msix", "base", "gcc", "release"]
+    },
+    {
+      "name": "gcc-coverage",
+      "displayName": "GCC Coverage",
+      "inherits": ["base", "gcc", "debug", "coverage"]
     }
   ],
   "buildPresets": [
@@ -81,7 +93,8 @@
     { "name": "clang-release", "configurePreset": "clang-release" },
     { "name": "gcc-debug", "configurePreset": "gcc-debug" },
     { "name": "gcc-release", "configurePreset": "gcc-release" },
-    { "name": "gcc-release-msix", "configurePreset": "gcc-release-msix" }
+    { "name": "gcc-release-msix", "configurePreset": "gcc-release-msix" },
+    { "name": "gcc-coverage", "configurePreset": "gcc-coverage" }
   ],
   "testPresets": [
     {
@@ -93,6 +106,7 @@
     { "name": "clang-debug", "inherits": "base", "configurePreset": "clang-debug" },
     { "name": "clang-release", "inherits": "base", "configurePreset": "clang-release" },
     { "name": "gcc-debug", "inherits": "base", "configurePreset": "gcc-debug" },
-    { "name": "gcc-release", "inherits": "base", "configurePreset": "gcc-release" }
+    { "name": "gcc-release", "inherits": "base", "configurePreset": "gcc-release" },
+    { "name": "gcc-coverage", "inherits": "base", "configurePreset": "gcc-coverage" }
   ]
 }

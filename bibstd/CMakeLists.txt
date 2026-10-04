@@ -26,15 +26,27 @@ target_sources(${PROJECT_NAME}
   PRIVATE ${BIBSTD_SRC_FILES} ${BIBSTD_INC_FILES}
 )
 
+#
+# Compile the Lua scripts into the library, a new script in lua/scripts needs no other change.
+#
+include(helper_functions)
+file(GLOB BIBSTD_LUA_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/scripts/*.lua")
+configure_incbin_source(lua_script lua/scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/scripts.cpp ${BIBSTD_LUA_SCRIPTS})
+target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/scripts.cpp)
+
 find_package(Boost REQUIRED COMPONENTS filesystem url)
 find_package(spdlog REQUIRED)
 find_package(pugixml REQUIRED)
 find_package(libzip REQUIRED)
+find_package(sol2 3.5 REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(TESSERACT REQUIRED IMPORTED_TARGET tesseract)
 pkg_search_module(LEPTONICA REQUIRED IMPORTED_TARGET lept)
 pkg_search_module(LIBCURL REQUIRED IMPORTED_TARGET libcurl)
+# sol2 3.5 is made for Lua 5.1 to 5.4, the unversioned mingw package already ships 5.5.
+pkg_search_module(LUA REQUIRED IMPORTED_TARGET lua5.4)
+pkg_search_module(SQLITE REQUIRED IMPORTED_TARGET sqlite3)
 
 #
 # Link libraries.
@@ -49,6 +61,9 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC PkgConfig::TESSERACT
   PUBLIC PkgConfig::LEPTONICA
   PUBLIC PkgConfig::LIBCURL
+  PUBLIC PkgConfig::LUA
+  PRIVATE PkgConfig::SQLITE
+  PUBLIC sol2::sol2
   PUBLIC libs_external::all
   PUBLIC stdc++exp
 )

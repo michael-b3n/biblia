@@ -1,6 +1,5 @@
 #include "bibstd/workflow/workflow_settings.hpp"
 #include "bibstd/system/filesystem.hpp"
-#include "bibstd/util/string.hpp"
 
 #include <algorithm>
 #include <ranges>
@@ -28,15 +27,6 @@ workflow_settings::workflow_settings(const std::optional<std::string_view> folde
 auto workflow_settings::data_folder() const -> const std::filesystem::path&
 {
   return data_folder_;
-}
-
-///
-///
-auto workflow_settings::split_path(const std::string_view path) -> std::vector<std::string>
-{
-  auto segments = util::string::split(path, path_separator);
-  std::erase_if(segments, [](const auto& segment) { return segment.empty(); });
-  return segments;
 }
 
 ///

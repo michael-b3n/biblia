@@ -26,7 +26,7 @@ auto write_callback(char* ptr, std::size_t size, std::size_t nmemb, void* userda
 
 ///
 ///
-auto core_fetch_web_content::fetch(std::string_view url) const -> std::expected<std::string, error_code>
+auto core_fetch_web_content::fetch(std::string_view url) -> std::expected<std::string, error_code>
 {
   const auto parsed_url = boost::urls::parse_uri(url);
   if(!parsed_url.has_value())
@@ -49,6 +49,9 @@ auto core_fetch_web_content::fetch(std::string_view url) const -> std::expected<
   curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+  // Web pages only, scripts pass their own urls and file:// would reach local files
+  curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "http,https");
+  curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // Follow redirects
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);       // 30 second timeout
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "bibstd-core-fetch/1.0");

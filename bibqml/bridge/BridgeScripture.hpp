@@ -60,6 +60,9 @@ public: // Modifiers
   ///
   void disconnect();
 
+private: // Implementation
+  void updateAvailable();
+
 signals:
   void availableChanged();
   void importRunningChanged();

@@ -27,6 +27,35 @@ function(add_incbin_resources source)
 endfunction(add_incbin_resources)
 
 #
+# Configure \p template into \p output for the files given after it, so a new file needs no code change.
+# The template receives @INCBIN_DECLARATIONS@, @INCBIN_COUNT@ and @INCBIN_ENTRIES@, one entry per file:
+# `{"<file name>", res_<label>_<file name>_data, res_<label>_<file name>_size},`
+#
+function(configure_incbin_source label template output)
+  unset(declarations)
+  unset(entries)
+  unset(resource_labels)
+  foreach(file ${ARGN})
+    cmake_path(GET file FILENAME file_name)
+    string(MAKE_C_IDENTIFIER "${label}_${file_name}" resource_label)
+    if(resource_label IN_LIST resource_labels)
+      message(FATAL_ERROR "configure_incbin_source: file names map to the same label: ${resource_label}")
+    endif()
+    list(APPEND resource_labels ${resource_label})
+    string(APPEND declarations "INC_RESOURCE(${resource_label}, \"${file}\");\n")
+    string(APPEND entries "  {\"${file_name}\", res_${resource_label}_data, res_${resource_label}_size},\n")
+  endforeach()
+
+  list(LENGTH ARGN INCBIN_COUNT)
+  set(INCBIN_DECLARATIONS "${declarations}")
+  set(INCBIN_ENTRIES "${entries}")
+  configure_file(${template} ${output} @ONLY)
+  if(INCBIN_COUNT GREATER 0)
+    add_incbin_resources(${output} ${ARGN})
+  endif()
+endfunction(configure_incbin_source)
+
+#
 # Set the mingw root path variable named by \p mingw_root_dir, the parent of the compiler's bin folder.
 #
 function(set_mingw_path mingw_root_dir)

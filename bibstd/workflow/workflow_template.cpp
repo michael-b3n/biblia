@@ -7,7 +7,7 @@ namespace bibstd::workflow
 ///
 workflow_template_settings::workflow_template_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : framework::settings_base{std::move(workflow_settings)} // clang-format off
-  // , plain_bool(workflow_settings_->create_setting("template.plain_bool", true))
+  // , plain_bool{workflow_settings_->create_setting("template.plain_bool", true)}
   // , plain_int(workflow_settings_->create_setting("template.plain_int", 42))
   // , plain_double(workflow_settings_->create_setting("template.plain_double", 42.42))
   // , plain_string(workflow_settings_->create_setting("template.plain_string", std::string{"test"}))
@@ -22,9 +22,17 @@ workflow_template_settings::workflow_template_settings(std::shared_ptr<workflow_
 
 ///
 ///
-workflow_template::workflow_template(std::shared_ptr<workflow_settings> workflow_settings)
+workflow_template::workflow_template(
+  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+)
   : workflow_base{std::move(workflow_settings)}
+  , workflow_script_{std::move(workflow_script)}
 {
+  // Last, scripts may call into the workflow from here on. A failed registration is logged by the state.
+  registrations_ << workflow_script_->register_function(
+    "template.start", [this](int value) { return start(params{{.value = value}}).has_value(); }
+  );
+  // registrations_ << workflow_script_->register_setting(*settings().plain_bool);
 }
 
 ///

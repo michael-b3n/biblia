@@ -2,7 +2,11 @@
 
 #include "bibstd/framework/process_params.hpp"
 #include "bibstd/framework/settings_base.hpp"
+#include "bibstd/lua/registration.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
+#include "bibstd/workflow/workflow_script.hpp"
+
+#include <memory>
 
 namespace bibstd::workflow
 {
@@ -16,6 +20,7 @@ public: // Structors
   workflow_template_settings(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_template_settings() noexcept override = default;
 
+  // clang-format off
 public: // Variables
   // const setting_type<bool> plain_bool;
   // const setting_type<int> plain_int;
@@ -27,9 +32,11 @@ public: // Variables
   // const setting_type<std::optional<std::string>> optional_string;
   // const setting_type<std::vector<std::string>> vector_string;
 };
+// clang-format on
 
 ///
 /// Workflow template. This is a template for creating new workflows.
+/// A workflow without Lua registrations leaves out workflow_script.
 ///
 class workflow_template final : public workflow_base<workflow_template_settings>
 {
@@ -41,14 +48,15 @@ class workflow_template final : public workflow_base<workflow_template_settings>
   using result_t = float /*some type*/;
 
   // Variables
-  // (flag_ removed - template placeholder, use in your workflow implementation)
+  const std::shared_ptr<workflow_script> workflow_script_;
+  lua::registration registrations_;
 
 public: // Typedefs
   using params = framework::process_params<params_t>;
   using result = framework::process_result<result_t>;
 
 public: // Structors
-  workflow_template(std::shared_ptr<workflow_settings> workflow_settings);
+  workflow_template(std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script);
   ~workflow_template() noexcept override;
 
 public: // Modifiers

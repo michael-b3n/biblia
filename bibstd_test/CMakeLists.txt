@@ -42,6 +42,14 @@ target_compile_definitions(bibstd_test
 )
 
 #
+# Provide the example Lua scripts, which are installed with the app.
+#
+cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH BIBSTD_TEST_ROOT_DIR)
+target_compile_definitions(bibstd_test
+  PRIVATE BIBSTD_TEST_LUA_EXAMPLES_DIR="${BIBSTD_TEST_ROOT_DIR}/bibstd/lua/examples"
+)
+
+#
 # Link libaries.
 #
 target_link_libraries(

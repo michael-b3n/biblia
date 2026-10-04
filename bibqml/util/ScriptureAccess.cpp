@@ -1,7 +1,6 @@
 #include "bibqml/util/ScriptureAccess.hpp"
 
 #include <bibstd/bible/common.hpp>
-#include <bibstd/bible/scripture.hpp>
 #include <bibstd/util/enum.hpp>
 #include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
@@ -11,20 +10,12 @@
 
 namespace bibqml
 {
-
-///
-///
-auto defaultScripture(bibstd::workflow::workflow_scripture& workflowScripture)
-  -> std::optional<std::shared_ptr<bibstd::bible::scripture>>
+namespace
 {
-  static constexpr auto defaultScriptureParams = bibstd::workflow::workflow_scripture::scripture_params::value_type{};
-  auto scripture = workflowScripture.scripture(defaultScriptureParams);
-  if(!scripture)
-  {
-    return std::nullopt;
-  }
-  return scripture.value().scripture;
-}
+
+constexpr auto defaultScriptureParams = bibstd::workflow::workflow_scripture::scripture_params::value_type{};
+
+} // namespace
 
 ///
 ///
@@ -36,12 +27,7 @@ auto bookName(bibstd::workflow::workflow_scripture& workflowScripture, const bib
     return QString::fromLatin1(name.data(), static_cast<qsizetype>(name.size()));
   };
 
-  const auto scripture = defaultScripture(workflowScripture);
-  if(!scripture)
-  {
-    return identifier(book);
-  }
-  const auto names = scripture.value()->book_information(book);
+  const auto names = workflowScripture.book_information(defaultScriptureParams, book);
   if(!names)
   {
     return identifier(book);
@@ -56,23 +42,14 @@ auto bookName(bibstd::workflow::workflow_scripture& workflowScripture, const bib
 ///
 auto scriptureCopyright(bibstd::workflow::workflow_scripture& workflowScripture) -> QString
 {
-  const auto scripture = defaultScripture(workflowScripture);
-  if(!scripture)
-  {
-    return {};
-  }
-  const auto copyright = scripture.value()->information().copyright;
-  return copyright ? QString::fromStdString(*copyright) : QString{};
+  const auto information = workflowScripture.information(defaultScriptureParams);
+  return information && information->copyright ? QString::fromStdString(*information->copyright) : QString{};
 }
 
 ///
 ///
-auto toReference(
-  const bibstd::bible::versification& versification,
-  const QString& bookId,
-  const int chapter,
-  const int verse
-) -> std::optional<bibstd::bible::reference>
+auto toReference(const bibstd::bible::versification& versification, const QString& bookId, const int chapter, const int verse)
+  -> std::optional<bibstd::bible::reference>
 {
   const auto book = bibstd::util::to_enum<bibstd::bible::book_id>(bookId.toStdString());
   if(!book)

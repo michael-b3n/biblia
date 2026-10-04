@@ -1,0 +1,60 @@
+// Generated from bibstd/lua/scripts.cpp.in by configure_incbin_source.
+#include "bibstd/lua/scripts.hpp"
+#include "bibstd/util/incbin.hpp"
+#include "bibstd/util/non_owning_ptr.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <ranges>
+#include <string_view>
+#include <vector>
+
+// clang-format off
+@INCBIN_DECLARATIONS@
+// clang-format on
+
+namespace bibstd::lua::scripts
+{
+
+///
+///
+auto all() -> std::span<const script>
+{
+  struct resource final
+  {
+    std::string_view name;
+    util::non_owning_ptr<const std::byte> data;
+    unsigned int size;
+  };
+
+  // Function local, the sizes are only read once the program runs
+  static const auto scripts = []
+  {
+    // clang-format off
+    const auto resources = std::array<resource, @INCBIN_COUNT@>{{
+@INCBIN_ENTRIES@
+    }};
+    // clang-format on
+    const auto to_script = [](const resource& r)
+    {
+      const auto code = util::incbin::to_span<char>(r.data, r.size);
+      return script{
+        .name = r.name, .code = {code.data(), code.size()}
+      };
+    };
+    return resources | std::views::transform(to_script) | std::ranges::to<std::vector>();
+  }();
+  return scripts;
+}
+
+///
+///
+auto find(const std::string_view name) -> std::optional<script>
+{
+  const auto scripts = all();
+  const auto it = std::ranges::find(scripts, name, &script::name);
+  return it != std::ranges::end(scripts) ? std::optional{*it} : std::nullopt;
+}
+
+} // namespace bibstd::lua::scripts

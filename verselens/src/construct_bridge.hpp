@@ -11,6 +11,7 @@ namespace bibqml
 class BridgeApplication;
 class BridgeBibleRefLookup;
 class BridgeBibleRefOcr;
+class BridgeScript;
 class BridgeScripture;
 class BridgeSettings;
 class ScriptureListModel;
@@ -33,6 +34,7 @@ struct bridge_instance final
   std::unique_ptr<bibqml::BridgeBibleRefLookup> bridge_bible_ref_lookup;
   std::unique_ptr<bibqml::ScriptureListModel> scripture_list_model;
   std::unique_ptr<bibqml::BridgeScripture> bridge_scripture;
+  std::unique_ptr<bibqml::BridgeScript> bridge_script;
 };
 
 ///

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bibstd/bible/reference.hpp>
+#include <bibstd/signal/common.hpp>
 #include <bibstd/signal/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
@@ -52,7 +53,10 @@ class ScriptureListModel final : public QAbstractListModel
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
   std::deque<Entry> entries_;
   int referenceRow_{0};
-  bibstd::signal::synchronized_executor executor_;
+  QString scriptureCopyright_;
+  bibstd::signal::signal_type<void(bibstd::bible::reference)> entryRequested_;
+  bibstd::signal::signal_type<void()> copyrightRequested_;
+  bibstd::signal::synchronized_executor executor_{bibstd::framework::thread_pool::strand_id()};
 
 public: // Typedefs
   ///
@@ -131,7 +135,9 @@ signals:
 private: // Implementation
   void referenceRow(int row);
   QString fetchPassage(const bibstd::bible::reference& ref) const;
-  Entry makeEntry(const bibstd::bible::reference& ref) const;
+  Entry makeEntry(const bibstd::bible::reference& ref);
+  void provideEntry(const bibstd::bible::reference& ref, const QString& verseText, const QString& bookName);
+  void refresh();
   void addEntry(const bibstd::bible::reference& ref);
 };
 

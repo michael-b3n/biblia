@@ -35,6 +35,17 @@ struct passage_markup final
   static constexpr std::string_view paragraph_begin = "begin";
   static constexpr std::string_view paragraph_continue = "continue";
   static constexpr std::string_view paragraph_undefined = "undefined"; // outside of any paragraph
+
+  // Functions
+  ///
+  /// \return \p text as XML text content, the characters that carry meaning in XML replaced by their entity
+  ///
+  [[nodiscard]] static auto escaped_xml(std::string_view text) -> std::string;
+
+  ///
+  /// \return paragraph section of \p content, which is markup already, at \p position in its paragraph
+  ///
+  [[nodiscard]] static auto section(std::string_view position, std::string_view content) -> std::string;
 };
 
 ///

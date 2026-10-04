@@ -18,6 +18,7 @@ Item
   required property BridgeBibleRefLookup bridgeBibleRefLookup
   required property BridgeApplication bridgeApplication
   required property BridgeScripture bridgeScripture
+  required property BridgeScript bridgeScript
   required property bool pinned
   required property bool movable
 
@@ -110,6 +111,8 @@ Item
         }
 
         TabSettingsButton {}
+
+        TabScriptsButton {}
 
         TabNotificationsButton
         {
@@ -214,6 +217,12 @@ Item
       {
         // Properties
         listModelSettings: root.listModelSettings
+      }
+
+      TabScriptsContent
+      {
+        // Properties
+        bridgeScript: root.bridgeScript
       }
 
       TabNotificationsContent

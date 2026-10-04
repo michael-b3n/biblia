@@ -18,8 +18,13 @@ BridgeScripture::BridgeScripture(
 )
   : QObject{parent}
   , workflowScripture_{std::move(workflowScripture)}
-  , available_{workflowScripture_->scripture_count() > 0}
 {
+  // Scripts add scriptures once they are loaded
+  workflowScripture_->connect_queued(
+    &bibstd::workflow::workflow_scripture_sigs::scriptures_changed,
+    [this]() { QMetaObject::invokeMethod(this, [this]() { updateAvailable(); }, Qt::QueuedConnection); },
+    executor_
+  );
   workflowScripture_->connect_queued(
     &bibstd::workflow::workflow_scripture_sigs::import_ended,
     [this](const bibstd::framework::process_id_type processId, const std::size_t imported)
@@ -37,11 +42,7 @@ BridgeScripture::BridgeScripture(
             importRunning_ = false;
             emit importRunningChanged();
           }
-          if(const auto available = workflowScripture_->scripture_count() > 0; available_ != available)
-          {
-            available_ = available;
-            emit availableChanged();
-          }
+          updateAvailable();
           emit importEnded(static_cast<int>(imported));
         },
         Qt::QueuedConnection
@@ -49,6 +50,8 @@ BridgeScripture::BridgeScripture(
     },
     executor_
   );
+  // After connecting, so no change is missed
+  available_ = workflowScripture_->scripture_count() > 0;
 }
 
 ///
@@ -83,6 +86,17 @@ void BridgeScripture::importFolder(const QUrl& folder)
 void BridgeScripture::disconnect()
 {
   executor_.disconnect();
+}
+
+///
+///
+void BridgeScripture::updateAvailable()
+{
+  if(const auto available = workflowScripture_->scripture_count() > 0; available_ != available)
+  {
+    available_ = available;
+    emit availableChanged();
+  }
 }
 
 } // namespace bibqml

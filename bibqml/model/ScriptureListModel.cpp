@@ -41,31 +41,46 @@ ScriptureListModel::ScriptureListModel(
 
   scriptureNameSetting->connect_queued(
     &ScriptureNameSetting::signals_type::value_changed,
+    [this]() { QMetaObject::invokeMethod(this, [this]() { refresh(); }, Qt::QueuedConnection); },
+    executor_
+  );
+  workflowScripture_->connect_queued(
+    &bibstd::workflow::workflow_scripture_sigs::scriptures_changed,
+    [this]() { QMetaObject::invokeMethod(this, [this]() { refresh(); }, Qt::QueuedConnection); },
+    executor_
+  );
+
+  executor_.connect(
+    entryRequested_,
+    [this](const bibstd::bible::reference& ref)
+    {
+      QMetaObject::invokeMethod(
+        this,
+        [this, ref, verseText = fetchPassage(ref), bookName = bibqml::bookName(*workflowScripture_, ref.book())]()
+        { provideEntry(ref, verseText, bookName); },
+        Qt::QueuedConnection
+      );
+    }
+  );
+  executor_.connect(
+    copyrightRequested_,
     [this]()
     {
       QMetaObject::invokeMethod(
         this,
-        [this]()
+        [this, copyright = bibqml::scriptureCopyright(*workflowScripture_)]()
         {
-          std::ranges::for_each(
-            entries_,
-            [this](auto& entry)
-            {
-              const auto ref = entry.ref;
-              entry = makeEntry(ref);
-            }
-          );
-          if(!entries_.empty())
+          if(scriptureCopyright_ != copyright)
           {
-            emit dataChanged(index(0, 0), index(rowCount() - 1, 0));
+            scriptureCopyright_ = copyright;
+            emit scriptureCopyrightChanged();
           }
-          emit scriptureCopyrightChanged();
         },
         Qt::QueuedConnection
       );
-    },
-    executor_
+    }
   );
+  copyrightRequested_();
 }
 
 ///
@@ -125,19 +140,19 @@ int ScriptureListModel::referenceRow() const
 ///
 QString ScriptureListModel::scriptureCopyright() const
 {
-  return bibqml::scriptureCopyright(*workflowScripture_);
+  return scriptureCopyright_;
 }
 
 ///
 ///
 void ScriptureListModel::resetWithReference(const QString& bookId, const int chapter, const int verse)
 {
-  decltype(auto) scripture = defaultScripture(*workflowScripture_);
-  if(!scripture)
+  if(workflowScripture_->scripture_count() == 0)
   {
     return;
   }
-  const auto ref = toReference(scripture.value()->versification(), bookId, chapter, verse);
+  const auto versification = workflowScripture_->versification_or_fallback({{}});
+  const auto ref = toReference(versification.get(), bookId, chapter, verse);
   if(!ref)
   {
     return;
@@ -161,12 +176,8 @@ void ScriptureListModel::loadPrevious(const int count)
   {
     return;
   }
-  const auto scripture = defaultScripture(*workflowScripture_);
-  if(!scripture)
-  {
-    return;
-  }
-  decltype(auto) versification = scripture.value()->versification();
+  const auto versificationWrapper = workflowScripture_->versification_or_fallback({{}});
+  decltype(auto) versification = versificationWrapper.get();
 
   auto ref = entries_.front().ref;
   auto newEntries = std::vector<Entry>{};
@@ -210,12 +221,8 @@ void ScriptureListModel::loadNext(const int count)
   {
     return;
   }
-  const auto scripture = defaultScripture(*workflowScripture_);
-  if(!scripture)
-  {
-    return;
-  }
-  decltype(auto) versification = scripture.value()->versification();
+  const auto versificationWrapper = workflowScripture_->versification_or_fallback({{}});
+  decltype(auto) versification = versificationWrapper.get();
 
   auto ref = entries_.back().ref;
   auto newEntries = std::vector<Entry>{};
@@ -296,19 +303,44 @@ QString ScriptureListModel::fetchPassage(const bibstd::bible::reference& ref) co
 
 ///
 ///
-ScriptureListModel::Entry ScriptureListModel::makeEntry(const bibstd::bible::reference& ref) const
+ScriptureListModel::Entry ScriptureListModel::makeEntry(const bibstd::bible::reference& ref)
 {
   const auto bookId = bibstd::util::enum_name(ref.book());
-
+  const auto bookIdText = QString::fromLatin1(bookId.data(), static_cast<qsizetype>(bookId.size()));
+  // Placeholders until provideEntry fills them in
+  entryRequested_(ref); // Queued into `this`'s thread
   return Entry{
     .ref = ref,
-    .verseText = fetchPassage(ref),
-    .bookId = QString::fromLatin1(bookId.data(), static_cast<qsizetype>(bookId.size())),
-    .bookName = bookName(*workflowScripture_, ref.book()),
+    .verseText = QString{"..."},
+    .bookId = bookIdText,
+    .bookName = QString{"..."},
     .chapterNumber = ref.chapter().value,
     .verseNumber = ref.verse().value,
     .isHeader = ref.verse() == decltype(ref.verse()){1},
   };
+}
+
+///
+///
+void ScriptureListModel::provideEntry(const bibstd::bible::reference& ref, const QString& verseText, const QString& bookName)
+{
+  const auto it = std::ranges::find(entries_, ref, &Entry::ref);
+  if(it == std::ranges::end(entries_))
+  {
+    return;
+  }
+  it->verseText = verseText;
+  it->bookName = bookName;
+  const auto row = static_cast<int>(std::ranges::distance(std::ranges::begin(entries_), it));
+  emit dataChanged(index(row, 0), index(row, 0));
+}
+
+///
+///
+void ScriptureListModel::refresh()
+{
+  std::ranges::for_each(entries_, [this](const Entry& entry) { entryRequested_(entry.ref); });
+  copyrightRequested_();
 }
 
 ///

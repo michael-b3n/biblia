@@ -6,6 +6,10 @@
 /.vscode
 /.cache
 
+# Private Lua scripts and their tests, kept out of the repository
+/bibstd/lua/private
+/bibstd_test/lua/private
+
 # Prerequisites
 *.d
 
