@@ -25,7 +25,7 @@ namespace bibstd::workflow
 namespace
 {
 
-// Name of a script's scripture in the app, e.g. "LUT (bibleserver)": the id of the script is unique, its name is not
+// Name of a script's scripture in the app, e.g. "LUT (scripture_bibleserver)": the id of the script is unique, its name is not
 constexpr auto script_scripture_name = "{} ({})";
 
 ///

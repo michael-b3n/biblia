@@ -59,7 +59,7 @@ end
 return {
   id = "lookup_bibleserver",
   -- Shown to the user
-  name = "bibleserver.com",
+  name = "Bibleserver",
   functions = {
     ---
     --- \return the translations to choose from and the ones of the language \p input.language

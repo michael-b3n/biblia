@@ -11,7 +11,7 @@ A script returns a table describing itself:
 | Key | Value |
 |---|---|
 | `id` | What the app knows the script by, of letters, digits, `_` and `-`, e.g. `example`. Other characters are replaced by `_`. The name of the file plays no role. Of two scripts with the same id the first one loaded is kept. |
-| `name` | The name shown to the user, e.g. `Example`. |
+| `name` | The name shown to the user, e.g. `Example`. A script using a web page takes the name of the page, e.g. `Bibleserver`, the id tells what the script offers. |
 | `functions` | The functions the script offers. Each is named after a manifest of the app, which defines its input and output. Entries that are no named function are left out. |
 
 A script returning no table is loaded but offers nothing. One without a valid `id`, a `name` or `functions` is rejected, the log tells its file.
@@ -36,7 +36,7 @@ The functions run outside of the user interface, one at a time, and may read web
 
 ## Scriptures
 
-A script offering the four functions below offers scriptures, several scripts may. Their scriptures join those of `Scripture > Name`, named after the id of their script, e.g. `LUT (Bibleserver)`, and they use the fallback versification.
+A script offering the four functions below offers scriptures, several scripts may. Their scriptures join those of `Scripture > Name`, named after the id of their script, e.g. `LUT (scripture_bibleserver)`, and they use the fallback versification.
 
 | Manifest | Input | Output |
 |---|---|---|

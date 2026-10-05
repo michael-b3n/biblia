@@ -65,7 +65,7 @@ public: // Variables
 /// Workflow for scripture. The scriptures are the zip files in the folder of the setting "scripture.folder",
 /// by default the folder "scriptures" in the local data folder. They are loaded on construction.
 /// More scriptures come from the scripts implementing the four manifests below, named after the id of their
-/// script, e.g. "LUT (bibleserver)". Scriptures from scripts use the fallback versification.
+/// script, e.g. "LUT (scripture_bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
 /// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
 /// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
