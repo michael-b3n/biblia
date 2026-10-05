@@ -31,7 +31,7 @@ auto construct_backend() -> backend_instance
   auto workflow_scripture = std::make_shared<bibstd::workflow::workflow_scripture>(workflow_settings, workflow_script);
   auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(workflow_settings, workflow_scripture);
   auto workflow_bible_ref_ocr_auto = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr_auto>(workflow_settings, workflow_bible_ref_ocr);
-  auto workflow_bible_ref_lookup = std::make_shared<bibstd::workflow::workflow_bible_ref_lookup>(workflow_settings);
+  auto workflow_bible_ref_lookup = std::make_shared<bibstd::workflow::workflow_bible_ref_lookup>(workflow_settings, workflow_script);
   auto workflow_template = std::make_shared<bibstd::workflow::workflow_template>(workflow_settings, workflow_script);
   // clang-format on
   workflow_script->load_scripts();

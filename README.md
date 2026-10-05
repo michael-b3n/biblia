@@ -8,7 +8,7 @@ Libraries that find bible references on the screen, and VerseLens, the app built
 
 The app is the smaller part of this repository, the library below it holds the logic.
 
-- `bibstd` — the library: bible references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), OCR engines and text scripts (`txt`), scripture store and bibleserver lookup (`core`), the Lua scripting (`lua`), threading and settings (`framework`), and a system layer whose Windows implementations sit in `system/windows`.
+- `bibstd` — the library: bible references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), OCR engines and text scripts (`txt`), scripture store, cache and web fetch (`core`), the Lua scripting and the scripts bundled with the app (`lua`), threading and settings (`framework`), and a system layer whose Windows implementations sit in `system/windows`.
 - `bibqml` — the Qt layer: the bridge between QML and the library, models and shared controls.
 - `bibstd_test` — Catch2 tests of `bibstd`. Their scripture zips are local only, see `bibstd_test/res/scripture`.
 - `verselens` — the app: window, tray, updater and the resources a release ships.

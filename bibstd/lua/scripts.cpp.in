@@ -14,12 +14,12 @@
 @INCBIN_DECLARATIONS@
 // clang-format on
 
-namespace bibstd::lua::scripts
+namespace bibstd::lua::@INCBIN_LABEL@
 {
 
 ///
 ///
-auto all() -> std::span<const script>
+auto all() -> std::span<const embedded_script>
 {
   struct resource final
   {
@@ -39,7 +39,7 @@ auto all() -> std::span<const script>
     const auto to_script = [](const resource& r)
     {
       const auto code = util::incbin::to_span<char>(r.data, r.size);
-      return script{
+      return embedded_script{
         .name = r.name, .code = {code.data(), code.size()}
       };
     };
@@ -50,11 +50,11 @@ auto all() -> std::span<const script>
 
 ///
 ///
-auto find(const std::string_view name) -> std::optional<script>
+auto find(const std::string_view name) -> std::optional<embedded_script>
 {
   const auto scripts = all();
-  const auto it = std::ranges::find(scripts, name, &script::name);
+  const auto it = std::ranges::find(scripts, name, &embedded_script::name);
   return it != std::ranges::end(scripts) ? std::optional{*it} : std::nullopt;
 }
 
-} // namespace bibstd::lua::scripts
+} // namespace bibstd::lua::@INCBIN_LABEL@

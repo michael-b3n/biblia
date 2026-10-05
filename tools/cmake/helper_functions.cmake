@@ -28,7 +28,7 @@ endfunction(add_incbin_resources)
 
 #
 # Configure \p template into \p output for the files given after it, so a new file needs no code change.
-# The template receives @INCBIN_DECLARATIONS@, @INCBIN_COUNT@ and @INCBIN_ENTRIES@, one entry per file:
+# The template receives @INCBIN_LABEL@, @INCBIN_DECLARATIONS@, @INCBIN_COUNT@ and @INCBIN_ENTRIES@, one entry per file:
 # `{"<file name>", res_<label>_<file name>_data, res_<label>_<file name>_size},`
 #
 function(configure_incbin_source label template output)
@@ -46,6 +46,7 @@ function(configure_incbin_source label template output)
     string(APPEND entries "  {\"${file_name}\", res_${resource_label}_data, res_${resource_label}_size},\n")
   endforeach()
 
+  set(INCBIN_LABEL "${label}")
   list(LENGTH ARGN INCBIN_COUNT)
   set(INCBIN_DECLARATIONS "${declarations}")
   set(INCBIN_ENTRIES "${entries}")

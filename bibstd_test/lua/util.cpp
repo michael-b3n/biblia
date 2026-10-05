@@ -5,6 +5,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <array>
+#include <ranges>
 #include <string>
 
 namespace bibstd::lua
@@ -114,10 +116,11 @@ TEST_CASE("lua_scripts_compile", "[lua]")
 {
   const auto owner = state_owner{};
   auto s = owner.lock();
-  REQUIRE_FALSE(scripts::all().empty());
-  CHECK(scripts::find("init.lua"));
-  CHECK_FALSE(scripts::find("missing.lua"));
-  for(const auto& script : scripts::all())
+  REQUIRE_FALSE(internal::all().empty());
+  CHECK(internal::find("init.lua"));
+  CHECK_FALSE(internal::find("missing.lua"));
+  REQUIRE_FALSE(bundled::all().empty());
+  for(const auto& script : std::array{internal::all(), bundled::all()} | std::views::join)
   {
     INFO(script.name);
     CHECK(s->load(script.code, std::string{script.name}).valid());

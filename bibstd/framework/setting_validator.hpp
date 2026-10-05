@@ -645,8 +645,9 @@ auto setting_validator_list<T>::available(const R& range) -> bool
     list.erase(std::unique(list.begin(), list.end()), list.end());
     return list;
   }();
-  const auto new_list_valid = is_optional_type || !new_list.empty();
-  if constexpr(is_optional_type)
+  // A plain value needs one to hold, an optional or a vector may hold none
+  const auto new_list_valid = !is_plain_type || !new_list.empty();
+  if constexpr(!is_plain_type)
   {
     const auto lock = std::scoped_lock{mtx_};
     list_ = std::move(new_list);

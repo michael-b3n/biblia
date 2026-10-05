@@ -64,7 +64,7 @@ struct workflow_script_sigs final
 };
 
 ///
-/// Workflow script, owns the Lua state and loads the user scripts, \see load_scripts.
+/// Workflow script, owns the Lua state and loads the scripts (bundled and user scripts) \see load_scripts.
 /// A script returns its id, its name and the functions it offers, each named after a script_manifest.
 /// Workflows register below root.interface.workflow, last in their constructor and kept as their last member, so
 /// no script reaches them partly constructed or destroyed, \see lua::registration.
@@ -112,8 +112,9 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Load the user scripts outside of the calling thread, if enabled, and emit scripts_loaded. Called once the
-  /// workflows registered, and again to load the scripts anew: a loading still running ends after its script first.
+  /// Load the bundled scripts and, if enabled, the user scripts outside of the calling thread, and emit
+  /// scripts_loaded. Called once the workflows registered, and again to load the scripts anew: a loading still
+  /// running ends after its script first.
   ///
   auto load_scripts() -> void;
 
@@ -157,6 +158,7 @@ private: // Implementation
   ) const -> void;
   auto load(const std::stop_token& stop_token) -> void;
   auto load_folder(const std::filesystem::path& folder, const std::stop_token& stop_token) -> void;
+  auto load_script(std::string_view file, std::string_view code) -> void;
   auto add_script(const lua::state& state, const std::string& file, const sol::object& description) -> void;
 };
 

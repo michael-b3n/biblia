@@ -9,6 +9,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -113,6 +114,27 @@ struct echo_manifest final
 [[nodiscard]] auto ids(const workflow_script::scripts_type& scripts) -> std::vector<std::string>
 {
   return scripts | std::views::keys | std::views::transform(&util::identifier::string) | std::ranges::to<std::vector>();
+}
+
+///
+/// \return the ids of the scripts the app ships, the ones loaded without the scripts of the user. \p folder is
+/// the one of the test.
+///
+[[nodiscard]] auto bundled_ids(const test_utils::temp_folder& folder) -> std::vector<std::string>
+{
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path() / "bundled")};
+  test_utils::load_scripts(workflow);
+  return ids(workflow.scripts());
+}
+
+///
+/// \return the ids of the scripts of \p workflow without the bundled ones
+///
+[[nodiscard]] auto user_ids(const workflow_script& workflow, const test_utils::temp_folder& folder) -> std::vector<std::string>
+{
+  const auto bundled = bundled_ids(folder);
+  return ids(workflow.scripts()) | std::views::filter([&](const auto& id) { return !std::ranges::contains(bundled, id); }) |
+         std::ranges::to<std::vector>();
 }
 
 ///
@@ -289,7 +311,33 @@ TEST_CASE("workflow_script_creates_a_missing_folder", "[workflow]")
   test_utils::load_scripts(workflow);
   // Empty, for the user to put scripts into
   CHECK(std::filesystem::is_empty(folder.path() / "scripts"));
-  CHECK(workflow.scripts().empty());
+  CHECK(user_ids(workflow, folder).empty());
+}
+
+TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
+{
+  const auto folder = test_utils::temp_folder{"workflow_script_loads_the_bundled_scripts"};
+  const auto scripts = folder.path() / "user_scripts";
+  std::filesystem::create_directories(scripts);
+  test_utils::write_file(scripts / "a.lua", report("a", "'ran'"));
+  // The id of a bundled script is taken
+  test_utils::write_file(scripts / "b.lua", report("lookup_bibleserver", "'ran'"));
+
+  SECTION("without the scripts of the user")
+  {
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false, scripts)};
+    test_utils::load_scripts(workflow);
+    CHECK(std::ranges::contains(ids(workflow.scripts()), std::string{"lookup_bibleserver"}));
+    CHECK(reports(workflow).empty());
+  }
+
+  SECTION("before the scripts of the user")
+  {
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+    test_utils::load_scripts(workflow);
+    CHECK(user_ids(workflow, folder) == std::vector<std::string>{"a"});
+    CHECK(reports(workflow) == std::vector<std::string>{"ran (a)"});
+  }
 }
 
 TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
@@ -315,7 +363,7 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   CHECK(ids(workflow.scripts<a_manifest, b_manifest>()) == std::vector<std::string>{"both"});
   CHECK(workflow.scripts<missing_manifest>().empty());
   // All of them without a manifest
-  CHECK(ids(workflow.scripts()) == std::vector<std::string>{"both", "one"});
+  CHECK(user_ids(workflow, folder) == std::vector<std::string>{"both", "one"});
 }
 
 TEST_CASE("workflow_script_knows_a_script_by_its_id", "[workflow]")
@@ -344,7 +392,7 @@ TEST_CASE("workflow_script_knows_a_script_by_its_id", "[workflow]")
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
   test_utils::load_scripts(workflow);
   const auto loaded = workflow.scripts();
-  REQUIRE(ids(loaded) == std::vector<std::string>{"Alpha_2", "has_space", "zeta"});
+  REQUIRE(user_ids(workflow, folder) == std::vector<std::string>{"Alpha_2", "has_space", "zeta"});
   CHECK(loaded.at(util::identifier{"zeta"}).name == "Zeta Script");
   CHECK(loaded.at(util::identifier{"Alpha_2"}).name == "Alpha");
   CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha_2)", "ran (has_space)", "ran (zeta)"});

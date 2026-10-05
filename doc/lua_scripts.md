@@ -2,6 +2,8 @@
 
 VerseLens loads the `*.lua` files of the script folder once after the start, in the order of their names, if `Scripts > Enabled` is set. The folder is `%LOCALAPPDATA%\verselens\scripts` unless `Scripts > Folder` names another one. It is created empty on first use. An example of a script, [example.lua](../bibstd/lua/examples/example.lua), is installed with the app in `share/scripts`. Copied into the script folder it is inactive until its `enabled` is set. Changes to scripts or to these settings take effect on the next start, or right away with `Load scripts` in the scripts tab, which lists the loaded scripts and their functions.
 
+The scripts of [bibstd/lua/bundled](../bibstd/lua/bundled) are part of the app, e.g. the lookup on bibleserver.com. They are written like the scripts of the folder and loaded before them, also without `Scripts > Enabled`, so their ids are taken.
+
 ## Functions of a script
 
 A script returns a table describing itself:
@@ -44,6 +46,17 @@ A script offering the four functions below offers scriptures, several scripts ma
 | `scripture.passage` | `name`, `book`, `chapter`, `verse` | `text`: the plain text of the verse, markup of a page is shown as text. Without it the verse shows "...". |
 
 `name` is one of the names the script offers, `book` the identifier of the app, e.g. `john`, `chapter` and `verse` are integers. `scripture.passage` runs whenever a verse is shown, keeping fetched verses in `workflow.cache` is up to the script, see `example.lua`. Mind the terms of use of the pages a script reads.
+
+## Lookup
+
+A script offering the two functions below can open references in the browser. `Lookup > Scripts` chooses one of them. [lookup_bibleserver.lua](../bibstd/lua/bundled/lookup_bibleserver.lua), the default, and [lookup_bible_com.lua](../bibstd/lua/bundled/lookup_bible_com.lua) are bundled with the app. A script is named after what it offers and the page it uses, a script offering the scriptures of bibleserver.com would be `scripture_bibleserver`.
+
+| Manifest | Input | Output |
+|---|---|---|
+| `lookup.translations` | `language` | `names`: string_table of the translations to choose from in `Lookup > Translations`, may be empty. `defaults`: the ones chosen as long as the user chose none, optional. |
+| `lookup.url` | `translations`, `book`, `chapter`, `verse_begin`, `verse_end` | `url`: the web page showing these verses, or none |
+
+`language` is the language of the user, `english` or `german`. `translations` are the chosen names in the order chosen, `book` is the identifier of the app, e.g. `john`, the others are integers. A reference over several chapters asks for a url per chapter, each is opened in a tab of its own. Only a valid `http` or `https` url is opened, so encode what is not ASCII.
 
 ## Sandbox
 

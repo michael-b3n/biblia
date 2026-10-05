@@ -1,5 +1,6 @@
 #include "bibstd/workflow/workflow_script.hpp"
 #include "bibstd/lua/names.hpp"
+#include "bibstd/lua/scripts.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 
@@ -152,6 +153,10 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
   // Faults of the app only, e.g. a vanishing folder. Either way the waiting workflows learn that loading is over.
   try
   {
+    std::ranges::for_each(
+      lua::bundled::all() | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
+      [this](const auto& script) { load_script(script.name, script.code); }
+    );
     if(settings().enabled->value())
     {
       const auto folder = settings().folder->value();
@@ -182,16 +187,23 @@ auto workflow_script::load_folder(const std::filesystem::path& folder, const std
     lua_files(folder) | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
     [&](const auto& file)
     {
-      // Per script, so a workflow registering meanwhile waits for one script only
-      auto state = state_owner_.lock();
-      const auto code = read(file);
-      const auto name = file.filename().string();
-      if(const auto description = code ? state.run_script(name, *code) : std::nullopt)
+      if(const auto code = read(file))
       {
-        add_script(state, name, *description);
+        load_script(file.filename().string(), *code);
       }
     }
   );
+}
+
+///
+///
+auto workflow_script::load_script(const std::string_view file, const std::string_view code) -> void
+{
+  auto state = state_owner_.lock();
+  if(const auto description = state.run_script(file, code))
+  {
+    add_script(state, std::string{file}, *description);
+  }
 }
 
 ///

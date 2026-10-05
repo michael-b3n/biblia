@@ -118,7 +118,7 @@ auto limit_to(
   const std::vector<typename framework::setting_validator_list<T>::plain_underlying_type>& available
 ) -> void
 {
-  // Only an empty list of a non optional setting is refused, the lists given here always hold line recognition.
+  // Only an empty list of a plain setting is refused, the lists given here always hold line recognition.
   std::ignore = std::get<typename framework::setting_validator_list<T>::sptr_type>(setting->validator)->available(available);
 }
 
