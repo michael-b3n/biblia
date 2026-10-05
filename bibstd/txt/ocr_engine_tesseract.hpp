@@ -42,9 +42,8 @@ class ocr_engine_tesseract final : public ocr_engine<ocr_engine_tag_layout_analy
 
 public: // Static
   ///
-  /// Find tessdata folder by searching from executable folder upwards.
-  /// First it looks for `{executable_folder}/share/tessdata`, then it searches recursively
-  /// from the executable folder upwards for a "tessdata" folder.
+  /// Find the tessdata folder: `share/tessdata` next to the folder of the executable as installed, else the
+  /// nearest folder "tessdata" below the parent of the executable folder, else below the parent of that.
   /// \return optional path to tessdata folder, std::nullopt if not found
   ///
   [[nodiscard]] static auto tessdata_folder_finder() -> std::optional<std::filesystem::path>;
