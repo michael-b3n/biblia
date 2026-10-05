@@ -194,7 +194,7 @@ endif()
 # Configure installation
 #
 set_mingw_path(MINGW_ROOT_DIRECTORY)
-message(STATUS "found mingw64 root directory: " ${MINGW_ROOT_DIRECTORY})
+message(STATUS "found mingw root directory: " ${MINGW_ROOT_DIRECTORY})
 
 include(GNUInstallDirs)
 

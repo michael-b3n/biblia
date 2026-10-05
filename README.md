@@ -18,7 +18,7 @@ The app is the smaller part of this repository, the library below it holds the l
 
 ## Development
 
-In the MSYS2 MINGW64 shell:
+In the MSYS2 UCRT64 shell:
 
 ```
 cmake --preset gcc-release --fresh
