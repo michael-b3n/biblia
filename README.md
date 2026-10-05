@@ -1,7 +1,6 @@
 # biblia
 
 [![CI](https://github.com/michael-b3n/biblia/actions/workflows/ci.yml/badge.svg)](https://github.com/michael-b3n/biblia/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fmichael-b3n.github.io%2Fbiblia%2Fcoverage%2Fbadge.json)](https://michael-b3n.github.io/biblia/coverage/)
 
 Libraries that find bible references on the screen, and VerseLens, the app built on them.
 
