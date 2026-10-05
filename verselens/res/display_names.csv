@@ -43,7 +43,6 @@ recognition_algorithm,Erkennungsverfahren,Recognition algorithm
 script,Skripte,Scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
-scripts_none,Keine Skripte geladen. Skripte kommen aus dem Skriptordner der Einstellungen.,No scripts loaded. Scripts come from the scripts folder of the settings.
 scripture,Bibelausgabe,Scripture
 scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
 scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.

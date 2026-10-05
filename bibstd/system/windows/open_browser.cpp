@@ -18,7 +18,6 @@ auto open_browser::open(const std::string& url) -> bool
   MultiByteToWideChar(CP_UTF8, 0, url.c_str(), -1, url_wstr.data(), wchar_count);
 
   SHELLEXECUTEINFOW sh_exec_info = {.cbSize = sizeof(sh_exec_info)};
-  sh_exec_info.cbSize = sizeof(SHELLEXECUTEINFO);
   sh_exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
   sh_exec_info.hwnd = nullptr;
   sh_exec_info.lpVerb = L"open";

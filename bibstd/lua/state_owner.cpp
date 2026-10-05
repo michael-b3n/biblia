@@ -1,7 +1,7 @@
 #include "bibstd/lua/state_owner.hpp"
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/function_cast.hpp"
 #include "bibstd/lua/names.hpp"
-#include "bibstd/lua/scripts.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/non_owning_ptr.hpp"

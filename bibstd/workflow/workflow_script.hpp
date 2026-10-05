@@ -1,6 +1,5 @@
 #pragma once
 
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/lua/state.hpp"
 #include "bibstd/lua/state_owner.hpp"
 #include "bibstd/lua/value_cast.hpp"
@@ -10,6 +9,7 @@
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <concepts>
 #include <filesystem>
@@ -40,7 +40,7 @@ concept script_manifest = requires {
 ///
 /// Settings corresponding to workflow script.
 ///
-class workflow_script_settings final : public framework::settings_base
+class workflow_script_settings final : public workflow_settings_base
 {
 public: // Structors
   workflow_script_settings(std::shared_ptr<workflow_settings> workflow_settings);

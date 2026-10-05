@@ -1,7 +1,7 @@
 #pragma once
 
+#include "bibstd/framework/synchronized_executor.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/signal/synchronized_executor.hpp"
 #include "bibstd/system/hotkey_common.hpp"
 #include "bibstd/util/scope_guard.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
@@ -13,7 +13,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 namespace bibstd::workflow
 {
@@ -34,15 +33,12 @@ class workflow_hotkey final : public workflow_base<void>
   {
     std::shared_ptr<signal::signal_type<void()>> shared_sig;
 
-    // Both settings `modifier_setting` and `key_setting` are created on registration of a callback.
-    // Changing the settings trigger an async update of the hotkey registration. There is no guarantee
-    // that the hotkey is registered with the new combination immediately after the setting is changed.
-    // Changing these settings via object client (using workflow_settings) is therefore not recommended.
+    // Created on registration. A change registers the hotkey anew on another thread, so not at once.
     setting_type<hotkey_type::key_modifier> modifier_setting;
     setting_type<hotkey_type::key> key_setting;
 
     std::optional<std::pair<hotkey_type::key, hotkey_type::key_modifier>> registered;
-    signal::synchronized_executor executor;
+    framework::synchronized_executor executor;
   };
 
   // Variables

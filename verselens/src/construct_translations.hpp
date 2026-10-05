@@ -5,7 +5,7 @@
 #include <bibqml/translation/Translations.hpp>
 
 #include <bibstd/framework/setting.hpp>
-#include <bibstd/signal/synchronized_executor.hpp>
+#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <optional>
@@ -33,7 +33,7 @@ class translations_instance final
   // Variables
   const std::unique_ptr<bibqml::Translations> translations_;
   const bibstd::util::non_owning_ptr<bibstd::framework::setting<std::string>> language_setting_;
-  bibstd::signal::synchronized_executor executor_;
+  bibstd::framework::synchronized_executor executor_;
 
 public: // Typedefs
   using language_setting_type = decltype(language_setting_);

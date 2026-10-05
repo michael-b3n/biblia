@@ -10,6 +10,10 @@ namespace bibstd::bible
 ///
 class reference_range final
 {
+  // Variables
+  reference from_;
+  reference to_;
+
 public: // Typedefs
   using chapter_type = reference::chapter_type;
   using verse_type = reference::verse_type;
@@ -33,10 +37,6 @@ public: // Accessors
   /// \return the last reference.
   ///
   constexpr auto end() const -> reference;
-
-private: // Variables
-  reference from_;
-  reference to_;
 };
 
 ///

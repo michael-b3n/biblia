@@ -23,7 +23,7 @@ namespace
 struct MonitorMapping final
 {
   // Variables
-  bibstd::util::screen_rect_type nativeGeometry;
+  bibstd::data::screen_rect_type nativeGeometry;
   QRect deviceIndependentGeometry;
 
   ///
@@ -42,7 +42,7 @@ struct MonitorMapping final
   /// Map a position in native pixels that is on this monitor to device independent pixels.
   /// \return position in device independent pixels
   ///
-  [[nodiscard]] auto map(const bibstd::util::screen_coordinates_type& position) const -> QPoint;
+  [[nodiscard]] auto map(const bibstd::data::screen_coordinates_type& position) const -> QPoint;
 };
 
 ///
@@ -73,7 +73,7 @@ auto MonitorMapping::vertical(const std::int64_t nativePixels) const -> int
 
 ///
 ///
-auto MonitorMapping::map(const bibstd::util::screen_coordinates_type& position) const -> QPoint
+auto MonitorMapping::map(const bibstd::data::screen_coordinates_type& position) const -> QPoint
 {
   const auto origin = nativeGeometry.origin();
   return deviceIndependentGeometry.topLeft() +
@@ -104,7 +104,7 @@ auto MonitorMapping::map(const bibstd::util::screen_coordinates_type& position) 
 
 ///
 ///
-auto toDeviceIndependent(const bibstd::util::screen_rect_type& rect, const CursorPositionPair& cursor) -> std::optional<QRect>
+auto toDeviceIndependent(const bibstd::data::screen_rect_type& rect, const CursorPositionPair& cursor) -> std::optional<QRect>
 {
   const auto mapping = monitorMappingAt(cursor);
   if(!mapping)

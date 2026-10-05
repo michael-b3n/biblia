@@ -2,7 +2,7 @@
 
 #include <bibstd/bible/reference_range.hpp>
 #include <bibstd/framework/process_params.hpp>
-#include <bibstd/signal/synchronized_executor.hpp>
+#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -39,7 +39,7 @@ class BridgeBibleRefLookup final : public QObject
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
   bibstd::framework::process_id_type processId_;
   bool running_{false};
-  bibstd::signal::synchronized_executor executor_;
+  bibstd::framework::synchronized_executor executor_;
 
 public: // Structors
   explicit BridgeBibleRefLookup(

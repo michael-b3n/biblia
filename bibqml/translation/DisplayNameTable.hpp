@@ -12,18 +12,13 @@ namespace bibqml
 {
 
 ///
-/// Table holding the display names of an application in all available languages.
-/// The table is read from a CSV document with the following layout:
+/// Table of the display names of an application in all languages, read from a CSV document:
 /// \code
 ///   key,<language>,<language>,...
 ///   <key>,<display name>,<display name>,...
 /// \endcode
-/// The first column is named `key` and holds the keys, all following columns hold the display
-/// names of one language each. The name of a language column is the language identifier used
-/// for lookups. Lines starting with '#' and empty lines are ignored.
-///
-/// Keys are the identifiers used by the backend, e.g. the path of a setting. The display name
-/// of a setting value is stored under the key "<setting path>/<setting value>".
+/// A key is an identifier of the backend, e.g. a segment of a setting path. A language column is named by the
+/// identifier used for lookups. Lines starting with '#' and empty lines are ignored.
 ///
 class DisplayNameTable final
 {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <bibstd/bible/reference.hpp>
+#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/signal/common.hpp>
-#include <bibstd/signal/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QAbstractListModel>
@@ -56,7 +56,7 @@ class ScriptureListModel final : public QAbstractListModel
   QString scriptureCopyright_;
   bibstd::signal::signal_type<void(bibstd::bible::reference)> entryRequested_;
   bibstd::signal::signal_type<void()> copyrightRequested_;
-  bibstd::signal::synchronized_executor executor_{bibstd::framework::thread_pool::strand_id()};
+  bibstd::framework::synchronized_executor executor_{bibstd::framework::thread_pool::strand_id()};
 
 public: // Typedefs
   ///

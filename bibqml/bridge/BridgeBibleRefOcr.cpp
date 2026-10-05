@@ -30,9 +30,9 @@ namespace
 ///
 struct CaptureResult final
 {
-  bibstd::util::pixel_plane_type image;
-  bibstd::util::screen_coordinates_type relativeCursorPosition;
-  bibstd::util::screen_coordinates_type origin;
+  bibstd::data::pixel_plane_type image;
+  bibstd::data::screen_coordinates_type relativeCursorPosition;
+  bibstd::data::screen_coordinates_type origin;
 };
 
 ///
@@ -55,7 +55,7 @@ struct CaptureResult final
 /// Capture the screen area of the window at the specified cursor position.
 /// \return captured screen area, or std::nullopt if the area could not be captured
 ///
-[[nodiscard]] auto captureScreen(const bibstd::util::screen_coordinates_type& cursorPosition) -> std::optional<CaptureResult>
+[[nodiscard]] auto captureScreen(const bibstd::data::screen_coordinates_type& cursorPosition) -> std::optional<CaptureResult>
 {
   SCOPED_TIMER_LOG();
   const auto windowRect = bibstd::system::screen::window_at(cursorPosition);
@@ -63,7 +63,7 @@ struct CaptureResult final
   {
     return std::nullopt;
   }
-  auto image = bibstd::util::pixel_plane_type{};
+  auto image = bibstd::data::pixel_plane_type{};
   if(!bibstd::system::screen::capture(*windowRect, image))
   {
     return std::nullopt;
@@ -78,10 +78,10 @@ struct CaptureResult final
 /// \return rectangle in native screen pixels
 ///
 [[nodiscard]] auto toScreenRect(
-  const bibstd::util::screen_rect_type& rect, const bibstd::util::screen_coordinates_type& imageOrigin
-) -> bibstd::util::screen_rect_type
+  const bibstd::data::screen_rect_type& rect, const bibstd::data::screen_coordinates_type& imageOrigin
+) -> bibstd::data::screen_rect_type
 {
-  return bibstd::util::screen_rect_type{
+  return bibstd::data::screen_rect_type{
     rect.origin() + imageOrigin, bibstd::math::size(rect.horizontal_range()), bibstd::math::size(rect.vertical_range())
   };
 }
@@ -238,7 +238,7 @@ void BridgeBibleRefOcr::runManualSearch()
     return;
   }
 
-  auto boundingBox = std::optional<bibstd::util::screen_rect_type>{};
+  auto boundingBox = std::optional<bibstd::data::screen_rect_type>{};
   if(result->reference_bounding_box)
   {
     boundingBox = toScreenRect(*result->reference_bounding_box, capture->origin);
@@ -294,7 +294,7 @@ void BridgeBibleRefOcr::notifyManualSearchStarted(const bibstd::framework::proce
 void BridgeBibleRefOcr::notifyManualSearchFinished(
   const bibstd::framework::process_id_type processId,
   const std::optional<bibstd::bible::reference_range> referenceRange,
-  const std::optional<bibstd::util::screen_rect_type> boundingBox
+  const std::optional<bibstd::data::screen_rect_type> boundingBox
 )
 {
   QMetaObject::invokeMethod(
@@ -338,7 +338,7 @@ void BridgeBibleRefOcr::notifyAutoSearchDetecting(const bibstd::framework::proce
 void BridgeBibleRefOcr::notifyAutoSearchDetection(
   const bibstd::framework::process_id_type detectionId,
   const bibstd::bible::reference_range referenceRange,
-  const std::optional<bibstd::util::screen_rect_type> boundingBox
+  const std::optional<bibstd::data::screen_rect_type> boundingBox
 )
 {
   QMetaObject::invokeMethod(
@@ -387,7 +387,7 @@ void BridgeBibleRefOcr::emitCursorPosition(const std::optional<CursorPositionPai
 ///
 void BridgeBibleRefOcr::emitReference(
   const bibstd::bible::reference_range& referenceRange,
-  const std::optional<bibstd::util::screen_rect_type>& boundingBox,
+  const std::optional<bibstd::data::screen_rect_type>& boundingBox,
   const std::optional<CursorPositionPair>& cursor
 )
 {

@@ -13,6 +13,9 @@ namespace bibstd::util
 ///
 class timer final
 {
+  // Variables
+  std::chrono::system_clock::time_point time_point_;
+
 public: // Constructor
   timer();
 
@@ -22,9 +25,6 @@ public: // Accessors
   /// \return current duration
   ///
   [[nodiscard]] auto current_duration() const -> std::chrono::milliseconds;
-
-private: // Variables
-  std::chrono::system_clock::time_point time_point_;
 };
 
 ///
@@ -32,13 +32,13 @@ private: // Variables
 ///
 class scoped_timer_logger final
 {
+  // Variables
+  const std::source_location source_location_;
+  const timer timer_;
+
 public: // Destructor
   scoped_timer_logger(std::source_location&& source_location = std::source_location::current());
   ~scoped_timer_logger();
-
-private: // Variables
-  const std::source_location source_location_;
-  const timer timer_;
 };
 
 } // namespace bibstd::util

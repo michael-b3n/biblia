@@ -153,11 +153,9 @@ auto ocr_engine_windows::recognize() const -> recognition_data
       auto words_data = l.Words() | std::views::transform(to_word_data) | std::ranges::to<std::vector>();
       auto combined_bounding_box = compute_line_bounding_box(words_data);
       auto line_data = line{.text = winrt::to_string(l.Text()), .bounding_box = combined_bounding_box};
-      recognition_data_.reserve(words_data.size());
-      for(auto& word_data : words_data)
-      {
-        recognition_data_.emplace_back(recognition_data::value_type{.word_data = std::move(word_data), .line_data = line_data});
-      }
+      const auto to_recognition_data = [&](auto&& word_data)
+      { return recognition_data::value_type{.word_data = std::move(word_data), .line_data = line_data}; };
+      recognition_data_.append_range(words_data | std::views::as_rvalue | std::views::transform(to_recognition_data));
     }
 
     return recognition_data_;

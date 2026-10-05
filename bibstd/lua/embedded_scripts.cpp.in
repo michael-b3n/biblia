@@ -1,5 +1,5 @@
-// Generated from bibstd/lua/scripts.cpp.in by configure_incbin_source.
-#include "bibstd/lua/scripts.hpp"
+// Generated from bibstd/lua/embedded_scripts.cpp.in by configure_incbin_source.
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/util/incbin.hpp"
 #include "bibstd/util/non_owning_ptr.hpp"
 

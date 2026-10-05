@@ -93,17 +93,6 @@ Item
             }
           }
         }
-
-        TextSimple
-        {
-          // Properties
-          anchors.centerIn: parent
-          width: parent.width
-          visible: scriptList.count === 0
-          text: Translations.name("scripts_none", Translations.language)
-          horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.WordWrap
-        }
       }
     }
 

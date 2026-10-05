@@ -19,6 +19,9 @@ class TriangleShape : public QQuickPaintedItem
 
   Q_PROPERTY(QColor color MEMBER color_ NOTIFY colorChanged)
 
+  // Variables
+  QColor color_{Qt::black};
+
 public: // Structors
   explicit TriangleShape(bibstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
   ~TriangleShape() noexcept override;
@@ -28,9 +31,6 @@ public: // Overrides
 
 signals:
   void colorChanged();
-
-private: // Variables
-  QColor color_{Qt::black};
 };
 
 } // namespace bibqml

@@ -27,6 +27,13 @@ class DashedBorder : public QObject
   Q_PROPERTY(QList<qreal> dashPattern READ dashPattern NOTIFY changed)
   Q_PROPERTY(qreal period READ period NOTIFY changed)
 
+  // Variables
+  qreal borderWidth_{0.0};
+  qreal borderHeight_{0.0};
+  qreal radius_{0.0};
+  qreal strokeWidth_{1.0};
+  qreal segmentRatio_{0.25};
+
 public: // Structors
   explicit DashedBorder(QObject* parent = nullptr);
   ~DashedBorder() noexcept override;
@@ -50,13 +57,6 @@ private: // Implementation
   /// \return border length in multiples of the stroke width
   ///
   qreal strokes() const;
-
-private: // Variables
-  qreal borderWidth_{0.0};
-  qreal borderHeight_{0.0};
-  qreal radius_{0.0};
-  qreal strokeWidth_{1.0};
-  qreal segmentRatio_{0.25};
 };
 
 } // namespace bibqml

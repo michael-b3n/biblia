@@ -1,7 +1,7 @@
 #pragma once
 
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/system/windows/win.hpp"
-#include "bibstd/util/screen_types.hpp"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -92,8 +92,17 @@ inline auto to_string(const HRESULT hr) -> std::string
 ///
 class device final
 {
+  // Variables
+  const winrt::com_ptr<ID3D11Device> d3d_device_;
+  const winrt::com_ptr<ID3D11DeviceContext> context_;
+  const direct3d_api::IDirect3DDevice capture_device_;
+  std::mutex mtx_;
+  winrt::com_ptr<ID3D11Texture2D> staging_;
+  std::int32_t staging_width_{0};
+  std::int32_t staging_height_{0};
+
 public: // Typedefs
-  using pixel_plane_type = util::pixel_plane_type;
+  using pixel_plane_type = data::pixel_plane_type;
   using texture_type = winrt::com_ptr<ID3D11Texture2D>;
 
 public: // Creators
@@ -146,15 +155,6 @@ private: // Implementation
   /// \return true if the texture is ready to be read into, false otherwise
   ///
   auto prepare_staging(std::int32_t width, std::int32_t height) -> bool;
-
-private: // Variables
-  const winrt::com_ptr<ID3D11Device> d3d_device_;
-  const winrt::com_ptr<ID3D11DeviceContext> context_;
-  const direct3d_api::IDirect3DDevice capture_device_;
-  std::mutex mtx_;
-  texture_type staging_;
-  std::int32_t staging_width_{0};
-  std::int32_t staging_height_{0};
 };
 
 } // namespace bibstd::system::winrt_capture

@@ -27,7 +27,7 @@ namespace winrt_capture
 class monitor final
 {
 public: // Typedefs
-  using pixel_plane_type = util::pixel_plane_type;
+  using pixel_plane_type = data::pixel_plane_type;
 
 public: // Constructor
   ///
@@ -273,7 +273,7 @@ struct placement final
 /// Locate a screen region on the monitor showing it.
 /// \return Placement of the region, or std::nullopt if no single monitor shows all of it
 ///
-auto place(const util::screen_rect_type rect) -> std::optional<placement>
+auto place(const data::screen_rect_type rect) -> std::optional<placement>
 {
   const auto width = numeric_cast<std::int32_t>(math::size(rect.horizontal_range()));
   const auto height = numeric_cast<std::int32_t>(math::size(rect.vertical_range()));

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "bibstd/bible/reference_range.hpp"
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/util/screen_types.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <sfsm/sfsm.hpp>
 
@@ -59,7 +59,7 @@ struct workflow_bible_ref_ocr_auto_sigs final
   {
     framework::process_id_type process_id;
     framework::process_id_type detection_id;
-    util::screen_coordinates_type cursor_position;
+    data::screen_coordinates_type cursor_position;
   };
 
   ///
@@ -71,7 +71,7 @@ struct workflow_bible_ref_ocr_auto_sigs final
     framework::process_id_type process_id;
     framework::process_id_type detection_id;
     std::vector<bible::reference_range> reference_ranges;
-    std::optional<util::screen_rect_type> reference_bounding_box;
+    std::optional<data::screen_rect_type> reference_bounding_box;
   };
 
   // Variables
@@ -82,7 +82,7 @@ struct workflow_bible_ref_ocr_auto_sigs final
 ///
 /// Settings corresponding to workflow bible reference ocr auto.
 ///
-struct workflow_bible_ref_ocr_auto_settings final : public framework::settings_base
+struct workflow_bible_ref_ocr_auto_settings final : public workflow_settings_base
 {
   // Structors
   workflow_bible_ref_ocr_auto_settings(std::shared_ptr<workflow_settings> workflow_settings);
@@ -191,7 +191,7 @@ private: // Actions
 
 private: // Implementation
   auto search(std::stop_token token, framework::process_id_type id) -> void;
-  auto examine(const std::stop_token& token, util::screen_coordinates_type position, framework::process_id_type id) -> void;
+  auto examine(const std::stop_token& token, data::screen_coordinates_type position, framework::process_id_type id) -> void;
   [[nodiscard]] auto local_settings() const -> settings_t;
 };
 

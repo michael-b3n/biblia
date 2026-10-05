@@ -27,6 +27,13 @@ class FrameShape : public QQuickPaintedItem
   Q_PROPERTY(qreal gapStart MEMBER gapStart_ NOTIFY gapStartChanged)
   Q_PROPERTY(qreal gapEnd MEMBER gapEnd_ NOTIFY gapEndChanged)
 
+  // Variables
+  QColor strokeColor_{Qt::gray};
+  int strokeWidth_{1};
+  int radius_{4};
+  qreal gapStart_{0.0};
+  qreal gapEnd_{0.0};
+
 public: // Structors
   explicit FrameShape(bibstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
   ~FrameShape() noexcept override;
@@ -48,13 +55,6 @@ private: // Implementation
   /// \return The corresponding painter path
   ///
   [[nodiscard]] auto buildPath() const -> QPainterPath;
-
-private: // Variables
-  QColor strokeColor_{Qt::gray};
-  int strokeWidth_{1};
-  int radius_{4};
-  qreal gapStart_{0.0};
-  qreal gapEnd_{0.0};
 };
 
 } // namespace bibqml

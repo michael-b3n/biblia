@@ -13,19 +13,6 @@ task_queue::~task_queue() noexcept
 
 ///
 ///
-auto task_queue::shutdown() -> void
-{
-  {
-    const auto queue_lock = std::scoped_lock{queue_mtx_};
-    shutdown_ = true;
-    std::queue<task_type> empty_queue;
-    std::swap(task_queue_, empty_queue);
-  }
-  task_cv_.notify_all();
-}
-
-///
-///
 auto task_queue::empty() const -> bool
 {
   const auto lock = std::scoped_lock{queue_mtx_};
@@ -53,6 +40,19 @@ auto task_queue::queue(task_type&& task) -> void
     task_queue_.emplace(std::forward<decltype(task)>(task));
   }
   task_cv_.notify_one();
+}
+
+///
+///
+auto task_queue::shutdown() -> void
+{
+  {
+    const auto queue_lock = std::scoped_lock{queue_mtx_};
+    shutdown_ = true;
+    std::queue<task_type> empty_queue;
+    std::swap(task_queue_, empty_queue);
+  }
+  task_cv_.notify_all();
 }
 
 ///

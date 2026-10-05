@@ -1,6 +1,7 @@
 #include "test_utils/files.hpp"
-#include "test_utils/script_settings.hpp"
+#include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
+#include "test_utils/wait_until.hpp"
 
 #include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>

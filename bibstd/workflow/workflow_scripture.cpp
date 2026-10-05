@@ -1,13 +1,13 @@
 #include "bibstd/workflow/workflow_scripture.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/core/core_scripture_store.hpp"
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/util/contains.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/visit_helper.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -41,7 +41,7 @@ constexpr auto script_scripture_name = "{} ({})";
 ///
 ///
 workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , scripture_name{workflow_settings_->create_setting(
       "scripture.name",
       setting_value_t<decltype(scripture_name)>{},

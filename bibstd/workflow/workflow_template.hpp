@@ -1,10 +1,10 @@
 #pragma once
 
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/lua/registration.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <memory>
 
@@ -14,7 +14,7 @@ namespace bibstd::workflow
 ///
 /// Settings corresponding to workflow template.
 ///
-class workflow_template_settings final : public framework::settings_base
+class workflow_template_settings final : public workflow_settings_base
 {
 public: // Structors
   workflow_template_settings(std::shared_ptr<workflow_settings> workflow_settings);

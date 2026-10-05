@@ -638,11 +638,8 @@ private: // Implementation
   {
     if(chapter_ && verse_)
     {
-      auto content = std::string{};
-      for(const auto& segment : segments_)
-      {
-        content.append(passage_markup::section(segment.position, segment.content));
-      }
+      const auto to_section = [](const auto& segment) { return passage_markup::section(segment.position, segment.content); };
+      auto content = segments_ | std::views::transform(to_section) | std::views::join | std::ranges::to<std::string>();
       if(!content.empty())
       {
         const auto ref = reference::create_unguarded(book_, *chapter_, *verse_);
@@ -683,14 +680,8 @@ auto parse_name(const pugi::xml_node& usx_node) -> book_name
 
   const auto preferred = [&headers](const auto& styles)
   {
-    for(const auto style : styles)
-    {
-      if(const auto found = headers.find(style); found != std::cend(headers))
-      {
-        return found->second;
-      }
-    }
-    return std::string{};
+    const auto found = std::ranges::find_if(styles, [&](const auto style) { return headers.contains(style); });
+    return found != std::ranges::end(styles) ? headers.find(*found)->second : std::string{};
   };
   return book_name{
     .abbreviation = preferred(paragraph_style::abbreviations),
@@ -797,23 +788,26 @@ auto scripture_reader_usx::load_books(const io::zip_file_reader& archive) -> std
   try
   {
     auto result = scripture_content{};
-    for(const auto& [id, abbreviation] : books)
+    const auto load_book = [&](const auto& book)
     {
+      const auto& [id, abbreviation] = book;
       const auto usx_content = archive_entries::load(archive, std::format("{}.usx", abbreviation));
       if(!usx_content.has_value() || usx_content->empty())
       {
         LOG_ERROR("failed to load \"{}\" data: expected \"{}.usx\" file within archive", util::enum_name(id), abbreviation);
-        return std::nullopt;
+        return false;
       }
       auto document = parse_book_document(id, *usx_content);
       if(!document)
       {
-        return std::nullopt;
+        return false;
       }
       result.book_names.emplace(id, std::move(document->name));
       result.passages.merge(document->passages);
-    }
-    return result;
+      return true;
+    };
+    // Ends at the first book that can not be loaded
+    return std::ranges::all_of(books, load_book) ? std::optional{std::move(result)} : std::nullopt;
   }
   catch(...)
   {

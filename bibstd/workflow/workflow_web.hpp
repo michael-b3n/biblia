@@ -17,12 +17,12 @@ namespace bibstd::workflow
 ///
 class workflow_web final : public workflow_base<void>
 {
-public: // Typedefs
-  using page_type = std::expected<std::string, std::string>;
-
-private: // Variables
+  // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   lua::registration registrations_;
+
+public: // Typedefs
+  using page_type = std::expected<std::string, std::string>;
 
 public: // Structors
   workflow_web(std::shared_ptr<workflow_script> workflow_script);

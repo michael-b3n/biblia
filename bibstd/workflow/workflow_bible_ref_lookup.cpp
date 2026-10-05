@@ -33,7 +33,7 @@ template<framework::underlying_setting_type T>
 ///
 ///
 workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , script{workflow_settings_->create_setting(
       "lookup.script",
       std::string{default_script},

@@ -1,6 +1,6 @@
 #include "test_utils/registrations.hpp"
 
-#include <bibstd/lua/scripts.hpp>
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/lua/state_owner.hpp>
 
 #include <catch2/catch_test_macros.hpp>

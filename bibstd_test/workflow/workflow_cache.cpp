@@ -1,4 +1,4 @@
-#include "test_utils/script_settings.hpp"
+#include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
 #include <bibstd/workflow/workflow_cache.hpp>

@@ -1,7 +1,6 @@
 #include "bibqml/bridge/BridgeBibleRefLookup.hpp"
 #include "bibqml/util/ScriptureAccess.hpp"
 
-#include <bibstd/bible/scripture.hpp>
 #include <bibstd/util/format.hpp>
 #include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>

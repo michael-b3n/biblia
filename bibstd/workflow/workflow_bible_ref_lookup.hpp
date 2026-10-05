@@ -2,15 +2,15 @@
 
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
+#include "bibstd/framework/synchronized_executor.hpp"
 #include "bibstd/framework/thread_pool.hpp"
 #include "bibstd/lua/script_table.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/signal/synchronized_executor.hpp"
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -32,7 +32,7 @@ struct workflow_bible_ref_lookup_sigs final
 ///
 /// Settings corresponding to workflow bible reference lookup.
 ///
-class workflow_bible_ref_lookup_settings final : public framework::settings_base
+class workflow_bible_ref_lookup_settings final : public workflow_settings_base
 {
 public: // Structors
   workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings);
@@ -67,7 +67,7 @@ class workflow_bible_ref_lookup final
   const util::shared_scope_guard thread_pool_guard_;
   const framework::thread_pool::strand_id_type strand_id_{framework::thread_pool::strand_id()};
   const std::shared_ptr<workflow_script> workflow_script_;
-  signal::synchronized_executor executor_{strand_id_};
+  framework::synchronized_executor executor_{strand_id_};
 
 public: // Typedefs
   using params = framework::process_params<params_t>;

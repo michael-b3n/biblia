@@ -536,7 +536,6 @@ setting_validator_range_type_erased<T>::setting_validator_range_type_erased(cons
                       static constexpr auto from_type_erased_value =
                         create_setting_value_converter<setting_type_erased_type_from<type>, type>();
                       return to_type_erased_value(validator->validate(from_type_erased_value(value)));
-                      return to_type_erased_value(validator->validate(from_type_erased_value(value)));
                     }}
   , contains_{[validator](const T& value)
               {
@@ -710,15 +709,8 @@ setting_validator_list_type_erased<T>::setting_validator_list_type_erased(const 
                  static constexpr auto to_type_erased_value =
                    create_setting_value_converter<type, setting_type_erased_type_from<type>>();
 
-                 const auto available_list = validator->available();
-                 auto converted_list = std::vector<plain_underlying_type>{};
-                 converted_list.reserve(available_list.size());
-                 for(const auto& item : available_list)
-                 {
-                   auto converted_item = to_type_erased_value(item);
-                   converted_list.emplace_back(std::move(converted_item));
-                 }
-                 return converted_list;
+                 return validator->available() | std::views::transform(to_type_erased_value) |
+                        std::ranges::to<std::vector<plain_underlying_type>>();
                }}
   , contains_{[validator](const T& value)
               {

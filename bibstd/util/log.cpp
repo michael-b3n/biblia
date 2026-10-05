@@ -68,31 +68,24 @@ constexpr auto to_spdlog_level(const logger_level level) -> spdlog::level::level
 ///
 inline auto prune_log_files(const std::filesystem::path& log_directory, const std::size_t max_count) -> std::size_t
 {
-  auto files = std::vector<std::pair<std::filesystem::file_time_type, std::filesystem::path>>{};
   auto ec = std::error_code{};
-  for(const auto& entry : std::filesystem::directory_iterator{log_directory, ec})
+  const auto is_session_log = [&](const auto& entry)
   {
-    if(entry.is_regular_file(ec) && entry.path().extension() == ".log" && entry.path().filename() != latest_log_file_name)
-    {
-      files.emplace_back(entry.last_write_time(ec), entry.path());
-    }
-  }
+    return entry.is_regular_file(ec) && entry.path().extension() == ".log" && entry.path().filename() != latest_log_file_name;
+  };
+  auto files = std::filesystem::directory_iterator{log_directory, ec} | std::views::filter(is_session_log) |
+               std::views::transform([&](const auto& entry) { return std::pair{entry.last_write_time(ec), entry.path()}; }) |
+               std::ranges::to<std::vector>();
   if(files.size() <= max_count)
   {
     return 0;
   }
 
   std::ranges::sort(files, std::ranges::greater{}, &decltype(files)::value_type::first);
-  auto deleted = std::size_t{0};
-  for(const auto& file : files | std::views::drop(max_count))
-  {
-    // A file that cannot be deleted is retried on the next startup.
-    if(std::filesystem::remove(file.second, ec))
-    {
-      ++deleted;
-    }
-  }
-  return deleted;
+  // A file that cannot be deleted is retried on the next startup.
+  return static_cast<std::size_t>(std::ranges::count_if(
+    files | std::views::drop(max_count), [&](const auto& file) { return std::filesystem::remove(file.second, ec); }
+  ));
 }
 
 ///

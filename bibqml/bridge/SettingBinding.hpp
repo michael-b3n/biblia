@@ -2,7 +2,7 @@
 
 #include "bibqml/util/SettingConversion.hpp"
 
-#include <bibstd/signal/synchronized_executor.hpp>
+#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -16,28 +16,13 @@ namespace bibqml
 {
 
 ///
-/// QML setting binding.
-/// This element binds a QML property to a setting of the settings workflow. If no setting
-/// exists for the given path, a new one is created from the given default value. This allows
-/// the QML layer to declare its own settings, e.g. style colors, without the backend knowing
-/// about them. Settings declared this way are persisted like any other setting.
-///
-/// A binding is created by the settings registry, it cannot be declared in QML. This keeps
-/// path and default value constant for the lifetime of the binding, only `value` changes at
-/// runtime, in both directions.
-///
-/// Usage:
+/// QML setting binding, binds `value` to the setting at a path in both directions. A missing setting is created
+/// from the default value, unbound and of its type (boolean, integral, floating point, string or color, kept as
+/// "#AARRGGBB"), so QML declares settings of its own. Created by BridgeSettings only, path and default never change:
 /// \code
 ///   readonly property SettingBinding accentColor: BridgeSettings.binding("ui.color.accent", "#1e301e")
-///   ...
 ///   color: accentColor.value
 /// \endcode
-///
-/// A setting that is created by this binding is created with the value type of the default value.
-/// Supported are boolean, integral, floating point, string and color values. Colors are stored
-/// as "#AARRGGBB" strings. Settings declared from QML are unbound, they have no validator.
-/// Reading and writing `value` is defined by the value type of the bound setting, therefore a
-/// binding can also be attached to a setting of any value type the backend declared.
 /// \see BridgeSettings
 ///
 class SettingBinding final : public QObject
@@ -55,7 +40,7 @@ class SettingBinding final : public QObject
   const QString path_;
   const QVariant defaultValue_;
   std::optional<SettingVariantType> setting_;
-  bibstd::signal::synchronized_executor executor_;
+  bibstd::framework::synchronized_executor executor_;
 
 public: // Structors
   ///

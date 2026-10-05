@@ -30,10 +30,10 @@ namespace
 /// Shift a rectangle given in image coordinates onto the screen the image was captured from.
 /// \return rectangle in native screen pixels
 ///
-[[nodiscard]] auto to_screen_rect(const util::screen_rect_type& rect, const util::screen_coordinates_type& image_origin)
-  -> util::screen_rect_type
+[[nodiscard]] auto to_screen_rect(const data::screen_rect_type& rect, const data::screen_coordinates_type& image_origin)
+  -> data::screen_rect_type
 {
-  return util::screen_rect_type{
+  return data::screen_rect_type{
     rect.origin() + image_origin, math::size(rect.horizontal_range()), math::size(rect.vertical_range())
   };
 }
@@ -80,7 +80,7 @@ public: // Operators
 ///
 ///
 workflow_bible_ref_ocr_auto_settings::workflow_bible_ref_ocr_auto_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , poll_interval{workflow_settings_->create_setting("ocr_auto.poll_interval", std::chrono::milliseconds{250})}
   , dwell_duration{workflow_settings_->create_setting("ocr_auto.dwell_duration", std::chrono::milliseconds{700})}
   , movement_tolerance{workflow_settings_->create_setting("ocr_auto.movement_tolerance", std::int32_t{8}, "px")}
@@ -152,8 +152,8 @@ auto workflow_bible_ref_ocr_auto::a_stop(sm::s_running& source) -> void
 ///
 auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const framework::process_id_type id) -> void
 {
-  auto examined = std::optional<util::screen_coordinates_type>{};
-  auto resting_position = std::optional<util::screen_coordinates_type>{};
+  auto examined = std::optional<data::screen_coordinates_type>{};
+  auto resting_position = std::optional<data::screen_coordinates_type>{};
   auto resting_since = clock_type::time_point{};
 
   while(!token.stop_requested())
@@ -173,7 +173,7 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const fram
 
     const auto now = clock_type::now();
     const auto moved = [&](const auto& reference)
-    { return util::screen_coordinates_type::distance(reference, *position) > static_cast<double>(local.movement_tolerance); };
+    { return data::screen_coordinates_type::distance(reference, *position) > static_cast<double>(local.movement_tolerance); };
 
     if(!resting_position || moved(*resting_position))
     {
@@ -195,7 +195,7 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const fram
 ///
 ///
 auto workflow_bible_ref_ocr_auto::examine(
-  const std::stop_token& token, const util::screen_coordinates_type position, const framework::process_id_type id
+  const std::stop_token& token, const data::screen_coordinates_type position, const framework::process_id_type id
 ) -> void
 {
   try
@@ -212,7 +212,7 @@ auto workflow_bible_ref_ocr_auto::examine(
       LOG_DEBUG("auto reference search found no window: position={}", position);
       return;
     }
-    auto image = util::pixel_plane_type{};
+    auto image = data::pixel_plane_type{};
     if(!system::screen::capture(*window, image))
     {
       LOG_WARN("auto reference search failed to capture screen: position={}", position);
@@ -233,7 +233,7 @@ auto workflow_bible_ref_ocr_auto::examine(
       return;
     }
 
-    auto bounding_box = std::optional<util::screen_rect_type>{};
+    auto bounding_box = std::optional<data::screen_rect_type>{};
     if(result->reference_bounding_box)
     {
       bounding_box = to_screen_rect(*result->reference_bounding_box, window->origin());

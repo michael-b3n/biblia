@@ -1,6 +1,6 @@
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/names.hpp"
-#include "bibstd/lua/scripts.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 
@@ -54,7 +54,7 @@ namespace
 ///
 ///
 workflow_script_settings::workflow_script_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , enabled{workflow_settings_->create_setting("script.enabled", true)}
   , folder{workflow_settings_->create_setting("script.folder", workflow_settings_->data_folder() / default_folder_name)}
 {
@@ -83,6 +83,20 @@ workflow_script::~workflow_script() noexcept
 auto workflow_script::state() const -> lua::state
 {
   return state_owner_.lock();
+}
+
+///
+///
+auto workflow_script::load_scripts() -> void
+{
+  loader_ = std::jthread{[this](const std::stop_token& stop_token) { load(stop_token); }};
+}
+
+///
+///
+auto workflow_script::shutdown() const noexcept -> void
+{
+  state_owner_.shutdown();
 }
 
 ///
@@ -123,20 +137,6 @@ auto workflow_script::run(
   {
     LOG_ERROR("lua script output rejected: script=\"{}\", function=\"{}\"", script.string(), id.string());
   }
-}
-
-///
-///
-auto workflow_script::shutdown() const noexcept -> void
-{
-  state_owner_.shutdown();
-}
-
-///
-///
-auto workflow_script::load_scripts() -> void
-{
-  loader_ = std::jthread{[this](const std::stop_token& stop_token) { load(stop_token); }};
 }
 
 ///

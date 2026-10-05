@@ -1,8 +1,8 @@
 #pragma once
 
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/math/value_range.hpp"
 #include "bibstd/txt/ocr_engine.hpp"
-#include "bibstd/util/screen_types.hpp"
 
 #include <expected>
 #include <optional>
@@ -21,8 +21,8 @@ struct reference_ocr final
 {
   // Typedefs
   using ocr_engine_list_type = std::vector<txt::ocr_engine_uptr_variant_type>;
-  using pixel_plane_view_type = util::pixel_plane_view_type;
-  using position_type = util::screen_coordinates_type;
+  using pixel_plane_view_type = data::pixel_plane_view_type;
+  using position_type = data::screen_coordinates_type;
 
   ///
   /// This struct contains OCR data for recognized reference position:
@@ -35,7 +35,7 @@ struct reference_ocr final
   struct reference_position_data final
   {
     // Typedefs
-    using bounding_box_type = util::screen_rect_type;
+    using bounding_box_type = data::screen_rect_type;
 
     // Variables
     std::string text;

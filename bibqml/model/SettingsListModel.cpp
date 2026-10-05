@@ -223,12 +223,8 @@ bool SettingsListModel::setData(const QModelIndex& index, const QVariant& value,
     const auto isValueSet = setQmlValue(entry.setting, value);
     if(!isValueSet)
     {
-      // Emit dataChanged signal to notify that the value
-      // could not be set such that the UI can be reset.
-      // The setting itself will also emit a dataChanged signal
-      // if the value of the setting changed successfully.
-      // If settings fails but the value still changed,
-      // the signal is emitted twice.
+      // Not set, so the UI shows the value of the setting again. A setting that changed anyway, e.g. to a
+      // validated value, reports it itself and the signal is emitted twice.
       emit dataChanged(index, index, {role});
     }
     LOG_DEBUG("write setting: path=\"{}\", row={}", entry.path, index.row());

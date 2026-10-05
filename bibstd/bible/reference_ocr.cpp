@@ -1,12 +1,12 @@
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/data/pixel.hpp"
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/math/coordinates.hpp"
 #include "bibstd/math/rect.hpp"
 #include "bibstd/txt/ocr_engine.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/numeric_cast.hpp"
 #include "bibstd/util/ranges.hpp"
-#include "bibstd/util/screen_types.hpp"
 #include "bibstd/util/timer.hpp"
 #include "bibstd/util/visit_helper.hpp"
 
@@ -104,7 +104,7 @@ struct position_text final
 struct character_run final
 {
   math::value_range<std::size_t> index_range;
-  util::screen_rect_type bounding_box;
+  data::screen_rect_type bounding_box;
 };
 
 ///
@@ -520,11 +520,11 @@ struct line_words final
 /// recognized area, engines read them better there.
 /// \return padded area
 ///
-[[nodiscard]] auto padded(const util::screen_rect_type& area, const util::screen_rect_type& line) -> util::screen_rect_type
+[[nodiscard]] auto padded(const data::screen_rect_type& area, const data::screen_rect_type& line) -> data::screen_rect_type
 {
   const auto padding = math::size(line.vertical_range()) / 2;
-  const auto signed_padding = numeric_cast<util::screen_rect_type::value_type>(padding);
-  return util::screen_rect_type{
+  const auto signed_padding = numeric_cast<data::screen_rect_type::value_type>(padding);
+  return data::screen_rect_type{
     math::coordinates(area.origin().x() - signed_padding, area.origin().y() - signed_padding),
     math::size(area.horizontal_range()) + (2 * padding),
     math::size(area.vertical_range()) + (2 * padding)
@@ -537,7 +537,7 @@ struct line_words final
 /// it continues on is recognized as well.
 /// \return area of the relevant lines with a bit of padding around them
 ///
-[[nodiscard]] auto relevant_lines_area(const auto& layouts, const auto& relevant_line_it) -> util::screen_rect_type
+[[nodiscard]] auto relevant_lines_area(const auto& layouts, const auto& relevant_line_it) -> data::screen_rect_type
 {
   const auto& relevant_line = *relevant_line_it;
   const auto same_paragraph_line = [&](const auto& it)
@@ -564,10 +564,10 @@ struct line_words final
   const reference_ocr::engine_names& names,
   const reference_ocr::pixel_plane_view_type& image,
   const reference_ocr::position_type position
-) -> std::expected<util::screen_rect_type, reference_ocr::unexpected_ocr_result>
+) -> std::expected<data::screen_rect_type, reference_ocr::unexpected_ocr_result>
 {
   SCOPED_TIMER_LOG();
-  using return_type = std::expected<util::screen_rect_type, reference_ocr::unexpected_ocr_result>;
+  using return_type = std::expected<data::screen_rect_type, reference_ocr::unexpected_ocr_result>;
 
   if(!names.layout_recognition)
   {
@@ -603,7 +603,7 @@ struct line_words final
       if(relevant_line_it == std::ranges::cend(layouts))
       {
         LOG_DEBUG("paragraph recognition returns with empty rect");
-        return util::screen_rect_type{math::coordinates(0, 0), 0u, 0u};
+        return data::screen_rect_type{math::coordinates(0, 0), 0u, 0u};
       }
       if(!relevant_line_it->paragraph_bounding_box)
       {
@@ -641,7 +641,7 @@ struct line_words final
   // The padding added around the lines can reach outside the image. An engine recognizes the
   // area clipped to the image, so the character boxes it reports are relative to the clipped
   // area and it is that origin the boxes have to be shifted back by.
-  const auto clipped = math::overlap(*area, util::screen_rect_type{math::coordinates(0, 0), image.width(), image.height()});
+  const auto clipped = math::overlap(*area, data::screen_rect_type{math::coordinates(0, 0), image.width(), image.height()});
   if(!clipped || math::empty(*clipped))
   {
     // empty position data
@@ -785,7 +785,7 @@ struct line_words final
 /// \return padded area of those lines, nothing if the cursor character has no bounding box
 ///
 [[nodiscard]] auto cursor_lines_area(const reference_ocr::reference_position_data& position_data)
-  -> std::optional<util::screen_rect_type>
+  -> std::optional<data::screen_rect_type>
 {
   const auto cursor = position_data.cursor_character_index;
   const auto runs = character_runs(position_data);
@@ -809,7 +809,7 @@ struct line_words final
   // A reference may be broken over a line break, so the line above and below are taken as well. A line of another
   // column follows in the text too, it does not share a column with the cursor line.
   const auto cursor_area = cursor_line->first;
-  const auto same_column = [&](const util::screen_rect_type& area)
+  const auto same_column = [&](const data::screen_rect_type& area)
   { return math::overlaps(area.horizontal_range(), cursor_area.horizontal_range()); };
   const auto lines_area = std::ranges::fold_left(
     with_neighbours(lines, cursor_line) | std::views::keys | std::views::filter(same_column),
@@ -826,8 +826,8 @@ struct line_words final
 /// \return enlarged copy of the area
 ///
 [[nodiscard]] auto enlarged_copy(
-  const reference_ocr::pixel_plane_view_type& image, const util::screen_rect_type& area, const double scale
-) -> util::pixel_plane_type
+  const reference_ocr::pixel_plane_view_type& image, const data::screen_rect_type& area, const double scale
+) -> data::pixel_plane_type
 {
   assert(!math::empty(area) && scale >= 1.0);
   // A pixel holds red, green, blue and alpha in one byte each, the layout of an rgba8 pixel of boost::gil.
@@ -837,7 +837,7 @@ struct line_words final
   const auto area_height = math::size(area.vertical_range());
   const auto enlarged_size = [&](const auto size)
   { return static_cast<std::uint32_t>(std::lround(static_cast<double>(size) * scale)); };
-  auto result = util::pixel_plane_type{enlarged_size(area_width), enlarged_size(area_height)};
+  auto result = data::pixel_plane_type{enlarged_size(area_width), enlarged_size(area_height)};
 
   const auto image_view = boost::gil::interleaved_view(
     image.width(),
@@ -879,16 +879,16 @@ struct line_words final
 ) -> std::expected<reference_ocr::reference_position_data, reference_ocr::unexpected_ocr_result>
 {
   const auto scale = algorithm.scale;
-  const auto image_area = util::screen_rect_type{math::coordinates(0, 0), image.width(), image.height()};
+  const auto image_area = data::screen_rect_type{math::coordinates(0, 0), image.width(), image.height()};
   const auto lines_area = cursor_lines_area(algorithm.earlier_recognition);
   const auto area = lines_area ? math::overlap(*lines_area, image_area) : std::nullopt;
 
-  const auto recognize = [&](const util::screen_rect_type& area)
+  const auto recognize = [&](const data::screen_rect_type& area)
   {
     const auto enlarged = enlarged_copy(image, area, scale);
     const auto origin = area.origin();
     const auto to_enlarged = [&](const auto value, const auto area_origin)
-    { return static_cast<util::screen_rect_type::value_type>(std::lround(static_cast<double>(value - area_origin) * scale)); };
+    { return static_cast<data::screen_rect_type::value_type>(std::lround(static_cast<double>(value - area_origin) * scale)); };
     auto result = recognize_just_with_line_recognition(
       engines,
       names,
@@ -897,12 +897,12 @@ struct line_words final
     );
     // The engine reports the boxes in the enlarged copy, the caller expects them in the image.
     const auto to_image = [&](const auto value) { return std::lround(static_cast<double>(value) / scale); };
-    const auto to_image_box = [&](const util::screen_rect_type& box)
+    const auto to_image_box = [&](const data::screen_rect_type& box)
     {
-      return util::screen_rect_type{
+      return data::screen_rect_type{
         math::coordinates(
-          origin.x() + static_cast<util::screen_rect_type::value_type>(to_image(box.origin().x())),
-          origin.y() + static_cast<util::screen_rect_type::value_type>(to_image(box.origin().y()))
+          origin.x() + static_cast<data::screen_rect_type::value_type>(to_image(box.origin().x())),
+          origin.y() + static_cast<data::screen_rect_type::value_type>(to_image(box.origin().y()))
         ),
         static_cast<std::uint32_t>(to_image(math::size(box.horizontal_range()))),
         static_cast<std::uint32_t>(to_image(math::size(box.vertical_range())))
@@ -918,6 +918,27 @@ struct line_words final
 }
 
 } // namespace
+
+///
+///
+auto reference_ocr::run(
+  const ocr_engine_list_type& engines,
+  const engine_names& names,
+  const pixel_plane_view_type& image,
+  const position_type position,
+  const algorithm_type& algorithm
+) -> std::expected<reference_position_data, unexpected_ocr_result>
+{
+  return util::visit_lambdas(
+    algorithm,
+    [&]([[maybe_unused]] const paragraph_recognition&)
+    { return recognize_with_paragraph_recognition(engines, names, image, position); },
+    [&]([[maybe_unused]] const line_recognition&)
+    { return recognize_just_with_line_recognition(engines, names, image, position); },
+    [&](const enlarged_lines_recognition& enlarged)
+    { return recognize_enlarged_lines(engines, names, image, position, enlarged); }
+  );
+}
 
 ///
 ///
@@ -955,27 +976,6 @@ auto reference_ocr::consecutive_characters(
                         : within_gap;
   };
   return std::ranges::fold_left(gaps, whole_text, up_to_gap);
-}
-
-///
-///
-auto reference_ocr::run(
-  const ocr_engine_list_type& engines,
-  const engine_names& names,
-  const pixel_plane_view_type& image,
-  const position_type position,
-  const algorithm_type& algorithm
-) -> std::expected<reference_position_data, unexpected_ocr_result>
-{
-  return util::visit_lambdas(
-    algorithm,
-    [&]([[maybe_unused]] const paragraph_recognition&)
-    { return recognize_with_paragraph_recognition(engines, names, image, position); },
-    [&]([[maybe_unused]] const line_recognition&)
-    { return recognize_just_with_line_recognition(engines, names, image, position); },
-    [&](const enlarged_lines_recognition& enlarged)
-    { return recognize_enlarged_lines(engines, names, image, position, enlarged); }
-  );
 }
 
 } // namespace bibstd::bible

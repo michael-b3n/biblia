@@ -2,17 +2,17 @@
 
 #include "bibstd/bible/scripture.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
+#include "bibstd/framework/synchronized_executor.hpp"
 #include "bibstd/framework/thread_pool.hpp"
 #include "bibstd/lua/script_table.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/signal/synchronized_executor.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -46,7 +46,7 @@ struct workflow_scripture_sigs final
 ///
 /// Settings corresponding to workflow scripture.
 ///
-class workflow_scripture_settings final : public framework::settings_base
+class workflow_scripture_settings final : public workflow_settings_base
 {
 public: // Structors
   workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings);
@@ -132,7 +132,7 @@ class workflow_scripture final
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
   mutable std::mutex mtx_;
   std::optional<std::map<std::string, script_scripture_t>> script_scriptures_; // by name in the app, guarded by mtx_
-  signal::synchronized_executor executor_{strand_id_};
+  framework::synchronized_executor executor_{strand_id_};
 
 public: // Constants
   static constexpr auto default_versifications = []()

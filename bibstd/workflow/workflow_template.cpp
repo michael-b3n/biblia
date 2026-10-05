@@ -6,7 +6,7 @@ namespace bibstd::workflow
 ///
 ///
 workflow_template_settings::workflow_template_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)} // clang-format off
+  : workflow_settings_base{std::move(workflow_settings)} // clang-format off
   // , plain_bool{workflow_settings_->create_setting("template.plain_bool", true)}
   // , plain_int(workflow_settings_->create_setting("template.plain_int", 42))
   // , plain_double(workflow_settings_->create_setting("template.plain_double", 42.42))
