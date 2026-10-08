@@ -20,15 +20,23 @@ local books = {
   jude = "Judas", revelation = "Offenbarung",
 }
 
--- Abbreviations of the translations on bibleserver.com
-local translations = {
-  "DBU", "ELB", "ESV", "EU", "GNB", "HFA", "KJV", "LUT", "MENG", "NeÜ", "NGÜ", "NIRV", "NIV", "NLB", "SLT", "VXB", "ZB",
+-- Translations of bibleserver.com: the name shown to the user and the abbreviation in the urls
+local abbreviations = {
+  ["Das Buch"] = "DBU", ["Einheitsübersetzung"] = "EU", ["Elberfelder Bibel"] = "ELB",
+  ["English Standard Version"] = "ESV", ["Gute Nachricht Bibel"] = "GNB", ["Hoffnung für alle"] = "HFA",
+  ["King James Version"] = "KJV", ["Lutherbibel"] = "LUT", ["Menge Bibel"] = "MENG",
+  ["Neue evangelistische Übersetzung"] = "NeÜ", ["Neue Genfer Übersetzung"] = "NGÜ",
+  ["Neues Leben. Die Bibel"] = "NLB", ["New International Reader's Version"] = "NIRV",
+  ["New International Version"] = "NIV", ["Schlachter"] = "SLT", ["Volxbibel"] = "VXB", ["Zürcher Bibel"] = "ZB",
 }
+
+local translations = util.keys(abbreviations)
+table.sort(translations)
 
 -- Translations looked up until the user chooses, by the language the user prefers
 local defaults = {
-  english = { "NIV", "ESV" },
-  german = { "NGÜ", "ELB" },
+  english = { "New International Version", "English Standard Version" },
+  german = { "Neue Genfer Übersetzung", "Elberfelder Bibel" },
 }
 
 ---
@@ -42,7 +50,7 @@ end
 --- \return the url showing the verses of \p input in its translations, nil without a translation or a book
 ---
 local function url(input)
-  local known = util.filter(input.translations, function(name) return util.contains(translations, name) end)
+  local known = util.filter(input.translations, function(name) return abbreviations[name] ~= nil end)
   local book = books[input.book]
   if #known == 0 or not book then
     return nil
@@ -52,12 +60,11 @@ local function url(input)
     verses = verses .. "-" .. input.verse_end
   end
   -- Several translations are shown side by side
-  local names = table.concat(util.map(known, encode), ".")
+  local names = table.concat(util.map(known, function(name) return encode(abbreviations[name]) end), ".")
   return { url = "https://www.bibleserver.com/" .. names .. "/" .. encode(book) .. input.chapter .. "%2C" .. verses }
 end
 
 return {
-  id = "lookup_bibleserver",
   -- Shown to the user
   name = "Bibleserver",
   functions = {

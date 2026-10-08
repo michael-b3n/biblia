@@ -5,7 +5,6 @@
 #include "bibstd/lua/value_cast.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/util/identifier.hpp"
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
@@ -65,7 +64,8 @@ struct workflow_script_sigs final
 
 ///
 /// Workflow script, owns the Lua state and loads the scripts (bundled and user scripts) \see load_scripts.
-/// A script returns its id, its name and the functions it offers, each named after a script_manifest.
+/// A script returns its name and the functions it offers, each named after a script_manifest. Scripts of the
+/// same name are one script, a function they both offer is the one of the first.
 /// Workflows register below root.interface.workflow, last in their constructor and kept as their last member, so
 /// no script reaches them partly constructed or destroyed, \see lua::registration.
 /// Signal IDs to connect to:
@@ -75,23 +75,17 @@ class workflow_script final
   : public workflow_base<workflow_script_settings>
   , public signal::adapter<workflow_script_sigs>
 {
-  // Typedefs
-  struct script_info final
-  {
-    std::string name;               // shown to the user
-    std::set<util::path> functions; // ids of the functions it offers
-  };
-
   // Constants
   static constexpr auto lua_node = "workflow"; // below root, the node of all workflow registrations
 
   // Variables
   mutable std::mutex mtx_;
-  std::map<util::identifier, script_info> scripts_; // the loaded scripts by id
+  std::map<std::string, std::set<util::path>> scripts_; // the functions of the loaded scripts by name
   const lua::state_owner state_owner_;
   std::jthread loader_; // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
+  using script_name_type = decltype(scripts_)::key_type;
   using scripts_type = decltype(scripts_);
 
 public: // Structors
@@ -105,7 +99,8 @@ public: // Accessors
   [[nodiscard]] auto state() const -> lua::state;
 
   ///
-  /// \return the loaded scripts offering a function for each of the manifests \p M, all of them without one, by id
+  /// \return the loaded scripts offering a function for each manifest \p M, all of them without \p M: the
+  /// functions of each by the name of its script
   ///
   template<script_manifest... M>
   [[nodiscard]] auto scripts() const -> scripts_type;
@@ -133,12 +128,12 @@ public: // Modifiers
   [[nodiscard]] auto register_setting(framework::setting<T>& setting) const -> lua::registration;
 
   ///
-  /// Run the function of the manifest \p M of the script with the id \p script. Blocks until it returns, it may wait
+  /// Run the function of the manifest \p M of the script named \p script. Blocks until it returns, it may wait
   /// e.g. for a web page.
   /// \return its output, or std::nullopt if it failed, is missing or its output does not fit \p M
   ///
   template<script_manifest M>
-  [[nodiscard]] auto run(const util::identifier& script, const typename M::input& input) const
+  [[nodiscard]] auto run(const script_name_type& script, const typename M::input& input) const
     -> std::optional<typename M::output>;
 
   ///
@@ -151,7 +146,7 @@ private: // Implementation
   [[nodiscard]] static auto lua_path(const util::path& p) -> util::path;
   [[nodiscard]] auto scripts(const std::vector<util::path>& ids) const -> scripts_type;
   auto run(
-    const util::identifier& script,
+    const script_name_type& script,
     const util::path& id,
     const std::function<sol::object(sol::state_view)>& input,
     const std::function<bool(const sol::object&)>& output
@@ -189,7 +184,7 @@ auto workflow_script::register_setting(framework::setting<T>& setting) const -> 
 ///
 ///
 template<script_manifest M>
-auto workflow_script::run(const util::identifier& script, const typename M::input& input) const
+auto workflow_script::run(const script_name_type& script, const typename M::input& input) const
   -> std::optional<typename M::output>
 {
   auto output = std::optional<typename M::output>{};

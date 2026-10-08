@@ -69,7 +69,7 @@ TEST_CASE("example_script_provides_a_scripture", "[lua]")
 {
   const auto fixture = example_fixture{"example_script_provides_a_scripture", true};
   const auto& scripture = *fixture.scripture;
-  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "DEMO (example)"; }));
+  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "DEMO (Example)"; }));
   CHECK(scripture.scripture_count() == 1);
   const auto information = scripture.information({{}});
   REQUIRE(information);

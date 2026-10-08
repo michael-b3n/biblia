@@ -86,7 +86,7 @@ Item
             {
               // Properties
               Layout.fillWidth: true
-              text: scriptRow.modelData.id + ": " + scriptRow.modelData.functions.join(", ")
+              text: scriptRow.modelData.functions.join(", ")
               font.pointSize: Metrics.fontSizeSmall
               color: Colors.borderDarker
               wrapMode: Text.WordWrap

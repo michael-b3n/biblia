@@ -1,34 +1,28 @@
 # OCR test images
 
-Drop screenshots here. They are the source of the OCR data the `reference_ocr` test replays:
-each image is run through the real tesseract engine once, and the recognized words, lines and
-paragraphs are written next to it as a `.ocr` file. The test itself never reads an image, so it
-stays fast and independent of the tesseract version installed.
+Screenshots dropped here are the source of the OCR data the `reference_ocr` test replays.
 
-Neither the images nor the captured data are committed, `.gitignore` keeps this folder empty
-except for its documentation. The test skips its capture driven part when there is no `.ocr`
-file, everything it checks with its own designed data still runs.
+- The capture runs each image through the real tesseract engine once and writes the recognized words, lines and paragraphs next to it as a `.ocr` file.
+- The test only reads the `.ocr` files, so it is fast and independent of the installed tesseract version.
+- Neither the images nor the `.ocr` files are committed, `.gitignore` keeps this folder empty except for this file.
+- Without `.ocr` files the test skips its capture driven part and still checks its own designed data.
 
-## What makes a good image
+## A good image
 
-- A bible reference inside running text, not a reference standing on its own.
-- Two to four lines of the surrounding paragraph, so the paragraph recognition has
-  neighbouring lines to widen to.
-- A reference broken across a line break is the most valuable case, e.g. "... steht in
-  Johannes 3," at the end of one line and "16 und wurde ..." at the start of the next.
-- A crop around the paragraph rather than a whole desktop.
-- Text rendered the way the app really sees it: same scaling and font smoothing as the
-  screen it was captured from.
+- A bible reference inside running text, not one standing on its own.
+- Two to four lines of the surrounding paragraph, so the paragraph recognition has neighbouring lines to widen to.
+- Best of all a reference broken across a line break, e.g. "... steht in Johannes 3," at the end of one line and "16 und wurde ..." at the start of the next.
+- A crop around the paragraph, not a whole desktop.
+- Text rendered the way the app sees it: the scaling and font smoothing of the screen it was captured from.
 
 ## Capturing
 
-Add the images, then run the capture. It reads every png, bmp, jpg and tif in this folder and
-writes a `<name>.ocr` next to each of them:
+Add the images, then run the capture. It reads every png, bmp, jpg and tif in this folder and writes a `<name>.ocr` next to each:
 
 ```bash
 build/bibstd_test/bibstd_test.exe "[.capture]"
 ```
 
-The capture is hidden from ctest, because it needs the real tesseract engine. This folder comes
-from the `BIBSTD_TEST_OCR_DIR` define in `bibstd_test/CMakeLists.txt`, the tessdata folder is
-located at runtime by `ocr_engine_tesseract::tessdata_folder_finder`.
+- The capture is hidden from ctest, it needs the real tesseract engine.
+- This folder is the `BIBSTD_TEST_OCR_DIR` define of `bibstd_test/CMakeLists.txt`.
+- The tessdata folder is found at runtime by `ocr_engine_tesseract::tessdata_folder_finder`.

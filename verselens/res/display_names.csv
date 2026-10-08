@@ -40,6 +40,7 @@ ocr_auto,Automatische Texterkennung,Automatic text recognition
 paragraph_recognition,Absatzerkennung,Paragraph recognition
 poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
+retry_pause,Pause nach einem Fehler,Pause after a failure
 script,Skripte,Scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
@@ -116,3 +117,4 @@ vk_w,W,W
 vk_x,X,X
 vk_y,Y,Y
 vk_z,Z,Z
+web,Web,Web

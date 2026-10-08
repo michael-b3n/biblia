@@ -119,6 +119,12 @@ Item
     property string currentBookId: ""
     property int currentChapter: 0
 
+    // The reference is not at the top yet, too few verses follow it, \see showReference
+    property bool referencePending: false
+    // Row at the top and how far it is scrolled out, kept while verses are inserted before it
+    property int heldRow: -1
+    property real heldOffset: 0
+
     anchors.top: stickyHeader.bottom
     anchors.left: parent.left
     anchors.right: parent.right
@@ -137,12 +143,37 @@ Item
     onCountChanged: { listView.updateHeader() }
     onAtYBeginningChanged: { Qt.callLater(listView.loadPrevious) }
     onAtYEndChanged: { Qt.callLater(listView.loadNext) }
+    onMovementStarted: { listView.referencePending = false }
     Connections
     {
       target: root.listModelScripture
 
       function onRefreshed() { Qt.callLater(listView.showReference) }
       function onDataChanged() { listView.updateHeader() }
+      function onLoaded()
+      {
+        Qt.callLater(listView.loadPrevious)
+        Qt.callLater(listView.loadNext)
+      }
+      function onRowsAboutToBeInserted(parentIndex, first, last)
+      {
+        if(first === 0)
+        {
+          listView.holdPosition()
+        }
+      }
+      function onRowsInserted(parentIndex, first, last)
+      {
+        if(first === 0)
+        {
+          listView.heldRow += last + 1
+          Qt.callLater(listView.restorePosition)
+        }
+        else if(listView.referencePending)
+        {
+          Qt.callLater(listView.showReference)
+        }
+      }
     }
 
     // Components
@@ -296,25 +327,51 @@ Item
       // Lays out the rows of the reset now instead of at the next frame, a view whose delegates
       // do not exist yet cannot be positioned
       listView.forceLayout()
-      listView.positionViewAtIndex(root.listModelScripture.referenceRow, ListView.Beginning)
+      const row = root.listModelScripture.referenceRow
+      listView.positionViewAtIndex(row, ListView.Beginning)
+      // A view cannot scroll past its last row, the reference only gets to the top once the
+      // verses after it fill the view
+      const item = listView.itemAtIndex(row)
+      listView.referencePending = item !== null && Math.round(item.y - listView.contentY) > 0
+      if(listView.referencePending)
+      {
+        root.listModelScripture.loadNext(listView.pageSize)
+      }
     }
 
     ///
-    /// Loads verses before the first one and keeps the view on the verse it is on, prepending
-    /// alone would push what the user reads out of sight.
+    /// Remembers what is at the top of the view. Verses inserted before the first one would
+    /// push what the user reads out of sight, \see restorePosition.
+    ///
+    function holdPosition()
+    {
+      listView.heldRow = listView.rowAt(listView.contentY)
+      const item = listView.itemAtIndex(listView.heldRow)
+      listView.heldOffset = item ? listView.contentY - item.y : 0
+    }
+
+    ///
+    /// Takes the view back to what holdPosition remembered.
+    ///
+    function restorePosition()
+    {
+      listView.forceLayout()
+      listView.positionViewAtIndex(listView.heldRow, ListView.Beginning)
+      const item = listView.itemAtIndex(listView.heldRow)
+      if(item)
+      {
+        listView.contentY = item.y + listView.heldOffset
+      }
+    }
+
+    ///
+    /// Loads verses before the first one.
     ///
     function loadPrevious()
     {
-      if(!listView.atYBeginning || root.listModelScripture.rowCount() === 0)
+      if(listView.atYBeginning && root.listModelScripture.rowCount() > 0)
       {
-        return
-      }
-      const rowsBefore = root.listModelScripture.rowCount()
-      root.listModelScripture.loadPrevious(listView.pageSize)
-      const addedCount = root.listModelScripture.rowCount() - rowsBefore
-      if(addedCount > 0)
-      {
-        listView.positionViewAtIndex(addedCount, ListView.Beginning)
+        root.listModelScripture.loadPrevious(listView.pageSize)
       }
     }
 

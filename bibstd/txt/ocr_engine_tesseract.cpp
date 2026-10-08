@@ -122,7 +122,7 @@ auto ocr_engine_tesseract::tessdata_folder_finder() -> std::optional<std::filesy
 {
   const auto executable_folder_parent = system::filesystem::executable_folder().parent_path();
   const auto root = executable_folder_parent.parent_path();
-  const auto best_guess = executable_folder_parent / "share" / "tessdata";
+  auto best_guess = executable_folder_parent / "share" / "tessdata";
   if(std::filesystem::exists(best_guess))
   {
     return best_guess;
@@ -144,7 +144,8 @@ ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata
     throw util::exception("non existent tessdata path");
   }
   auto tessdata_string = tessdata_path.generic_string();
-  tesseract_->Init(tessdata_string.data(), language_map.at(language).data(), tesseract::OEM_LSTM_ONLY);
+  const auto lang = std::string{language_map.at(language)};
+  tesseract_->Init(tessdata_string.data(), lang.c_str(), tesseract::OEM_LSTM_ONLY);
   tesseract_->SetVariable("lstm_choice_mode", "2"); // set lstm_choice_mode to alternative symbol choices per character
 }
 

@@ -17,16 +17,26 @@ local codes = {
   revelation = "REV",
 }
 
--- Versions of the translations in the urls of bible.com, by their abbreviation there
+-- Translations of bible.com by the name shown to the user: the version and the abbreviation in the urls
 local versions = {
-  DELUT = 51, ELB = 57, ELB71 = 58, HFA = 73, NGU2011 = 108, SCH2000 = 157,
-  ESV = 59, KJV = 1, NASB1995 = 100, NIV = 111, NKJV = 114, NLT = 116,
+  ["Lutherbibel 1912"] = { version = 51, abbreviation = "DELUT" },
+  ["Elberfelder 1905"] = { version = 57, abbreviation = "ELB" },
+  ["Elberfelder 1871"] = { version = 58, abbreviation = "ELB71" },
+  ["Hoffnung für alle"] = { version = 73, abbreviation = "HFA" },
+  ["Neue Genfer Übersetzung"] = { version = 108, abbreviation = "NGU2011" },
+  ["Schlachter 2000"] = { version = 157, abbreviation = "SCH2000" },
+  ["English Standard Version"] = { version = 59, abbreviation = "ESV" },
+  ["King James Version"] = { version = 1, abbreviation = "KJV" },
+  ["New American Standard Bible 1995"] = { version = 100, abbreviation = "NASB1995" },
+  ["New International Version"] = { version = 111, abbreviation = "NIV" },
+  ["New King James Version"] = { version = 114, abbreviation = "NKJV" },
+  ["New Living Translation"] = { version = 116, abbreviation = "NLT" },
 }
 
 -- Translation looked up until the user chooses, by the language the user prefers
 local defaults = {
-  english = { "NIV" },
-  german = { "ELB" },
+  english = { "New International Version" },
+  german = { "Elberfelder 1905" },
 }
 
 local translations = util.keys(versions)
@@ -46,12 +56,12 @@ local function url(input)
   if input.verse_end > input.verse_begin then
     verses = verses .. "-" .. input.verse_end
   end
-  local passage = table.concat({ code, input.chapter, verses, translation }, ".")
-  return { url = "https://www.bible.com/bible/" .. versions[translation] .. "/" .. passage }
+  local version = versions[translation]
+  local passage = table.concat({ code, input.chapter, verses, version.abbreviation }, ".")
+  return { url = "https://www.bible.com/bible/" .. version.version .. "/" .. passage }
 end
 
 return {
-  id = "lookup_bible_com",
   -- Shown to the user
   name = "Bible.com",
   functions = {

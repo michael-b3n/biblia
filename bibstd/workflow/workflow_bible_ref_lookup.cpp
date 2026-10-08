@@ -5,7 +5,6 @@
 #include "bibstd/util/contains.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/exception.hpp"
-#include "bibstd/util/identifier.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/url.hpp"
 
@@ -35,9 +34,7 @@ template<framework::underlying_setting_type T>
 workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_base{std::move(workflow_settings)}
   , script{workflow_settings_->create_setting(
-      "lookup.script",
-      std::string{default_script},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(script)>>>()
+      "lookup.script", std::string{}, std::make_shared<framework::setting_validator_list<setting_value_t<decltype(script)>>>()
     )}
   , translations{workflow_settings_->create_setting(
       "lookup.translations",
@@ -56,7 +53,7 @@ workflow_bible_ref_lookup::workflow_bible_ref_lookup(
   , thread_pool_guard_{framework::thread_pool::init()}
   , workflow_script_{std::move(workflow_script)}
 {
-  // Last, the scripts are loaded once the workflows are constructed and again from the settings
+  // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
   settings().script->connect_queued(&framework::setting_signals::value_changed, [this]() { update_translations(); }, executor_);
   workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, executor_);
 }
@@ -111,24 +108,20 @@ auto workflow_bible_ref_lookup::lookup(const params& params) -> void
 ///
 auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const -> std::vector<std::string>
 {
-  const auto script = util::identifier::from(settings().script->value());
-  if(!script)
-  {
-    return {};
-  }
+  const auto script = settings().script->value();
   const auto same_book = range.begin().book() == range.end().book();
   if(!same_book)
   {
     LOG_WARN("lookup supports one book only: {}", range);
   }
-  // Web pages count the verses the default way
+  // Web pages count chapters and verses like the KJV
   const auto chapters = bible::versification_kjv.split_by_chapter(same_book ? range : bible::reference_range{range.begin()});
   const auto translations = settings().translations->value();
   const auto to_url = [&](const bible::reference_range& chapter) -> std::optional<std::string>
   {
     const auto begin = chapter.begin();
     const auto output = workflow_script_->run<url_manifest>(
-      *script,
+      script,
       {
         translations,
         std::string{util::enum_name(begin.book())},
@@ -141,7 +134,7 @@ auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const 
     // A script built it, anything but a web page could start a program
     if(!url || !util::url::is_web_url(*url))
     {
-      LOG_WARN("lookup without the url of a web page: script=\"{}\", url=\"{}\"", script->string(), url.value_or(""));
+      LOG_WARN("lookup without the url of a web page: script=\"{}\", url=\"{}\"", script, url.value_or(""));
       return std::nullopt;
     }
     return url;
@@ -157,14 +150,19 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
   try
   {
     const auto scripts = workflow_script_->scripts<translations_manifest, url_manifest>();
-    const auto ids =
-      scripts | std::views::keys | std::views::transform(&util::identifier::string) | std::ranges::to<std::vector>();
-    // A chosen script that is gone gives way to the default one, the validator alone would take the first
-    const auto gone = !util::contains(ids, settings().script->value());
-    std::ignore = list_validator(settings().script)->available(ids);
-    if(gone && util::contains(ids, std::string{workflow_bible_ref_lookup_settings::default_script}))
+    const auto names = scripts | std::views::keys | std::ranges::to<std::vector>();
+    // No script chosen yet, or the chosen one is gone: the one offering the most translations takes its place
+    const auto gone = !util::contains(names, settings().script->value());
+    std::ignore = list_validator(settings().script)->available(names);
+    if(gone && !scripts.empty())
     {
-      std::ignore = settings().script->value(workflow_bible_ref_lookup_settings::default_script);
+      const auto language = std::string{util::enum_name(system::locale::preferred_language())};
+      const auto translations = [&](const workflow_script::scripts_type::value_type& script)
+      {
+        const auto output = workflow_script_->run<translations_manifest>(script.first, {language});
+        return output ? output->get<"names">().size() : std::size_t{0};
+      };
+      std::ignore = settings().script->value(std::ranges::max_element(scripts, {}, translations)->first);
     }
     update_translations();
   }
@@ -180,9 +178,8 @@ auto workflow_bible_ref_lookup::update_translations() -> void
 {
   try
   {
-    const auto script = util::identifier::from(settings().script->value());
     const auto language = std::string{util::enum_name(system::locale::preferred_language())};
-    const auto output = script ? workflow_script_->run<translations_manifest>(*script, {language}) : std::nullopt;
+    const auto output = workflow_script_->run<translations_manifest>(settings().script->value(), {language});
     if(!output)
     {
       return;

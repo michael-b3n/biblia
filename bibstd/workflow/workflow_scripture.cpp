@@ -25,9 +25,6 @@ namespace bibstd::workflow
 namespace
 {
 
-// Name of a script's scripture in the app, e.g. "LUT (scripture_bibleserver)": the id of the script is unique, its name is not
-constexpr auto script_scripture_name = "{} ({})";
-
 ///
 /// \return the list validator of \p setting
 ///
@@ -99,7 +96,7 @@ workflow_scripture::workflow_scripture(
   , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().scripture_folder->value()))
 {
   update_scripture_name_setting();
-  // Last, the scripts are loaded once the workflows are constructed and again from the settings
+  // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
   workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, executor_);
 }
 
@@ -194,6 +191,8 @@ auto workflow_scripture::versification_or_fallback(const scripture_params& param
 ///
 auto workflow_scripture::passage(const passage_params& params) const -> passage_result
 {
+  static constexpr auto verse_not_found = "verse not found";
+  static constexpr auto script_failed = "script failed";
   try
   {
     const auto& ref = params->reference;
@@ -204,7 +203,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
         return passage_result_t{.passage = std::move(*passage)};
       }
       LOG_WARN("passage not found: reference=\"{}\"", ref);
-      return passage_result{return_failure};
+      return std::unexpected{std::string{verse_not_found}};
     }
     const auto name = selected_name(params->scripture_name);
     const auto output = name ? run_script<passage_manifest>({
@@ -217,7 +216,9 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
     const auto content = output ? output->get<"text">() : std::nullopt;
     if(!content)
     {
-      return passage_result{return_failure};
+      // What the script reports, e.g. a web page it could not fetch
+      const auto error = output ? output->get<"error">() : std::string{script_failed};
+      return std::unexpected{error.value_or(std::string{verse_not_found})};
     }
     using markup = bible::passage_markup;
     return passage_result_t{
@@ -226,8 +227,9 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
-    return passage_result{return_failure};
+    auto report = util::exception_report();
+    LOG_ERROR("exception occurred: {}", report);
+    return std::unexpected{std::move(report)};
   }
 }
 
@@ -332,20 +334,21 @@ auto workflow_scripture::run_script(typename M::input input) const -> std::optio
 ///
 auto workflow_scripture::update_scripts() -> void
 {
+  // The name in the script, then the name of the script, e.g. "LUT (Bibleserver)"
+  static constexpr auto script_scripture_name = "{} ({})";
   try
   {
     // The scriptures of a script by their names in the app
     const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
     {
-      const auto& id = script.first;
-      const auto output = workflow_script_->run<names_manifest>(id, {});
+      const auto output = workflow_script_->run<names_manifest>(script.first, {});
       const auto names = output ? output->get<"names">() : std::vector<std::string>{};
       return names |
              std::views::transform(
                [&](const auto& name)
                {
                  return std::pair{
-                   std::format(script_scripture_name, name, id.string()), script_scripture_t{id, name}
+                   std::format(script_scripture_name, name, script.first), script_scripture_t{script.first, name}
                  };
                }
              ) |

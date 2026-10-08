@@ -6,11 +6,10 @@ if not enabled then
   return
 end
 
--- The app knows this script by its id, of letters, digits, "_" and "-". Its cache is named after it.
-local id = "example"
+-- The cache of this script, a name of letters, digits, "_" and "-"
+local cache = "example"
 
 return {
-  id = id,
   -- Shown to the user
   name = "Example",
   functions = {
@@ -42,14 +41,15 @@ return {
     ---
     ["scripture.passage"] = function(input)
       local key = table.concat({ input.name, input.book, input.chapter, input.verse }, ".")
-      local cached = workflow.cache.get(id, key)
+      local cached = workflow.cache.get(cache, key)
       if cached then
         return { text = cached }
       end
       -- A script providing real text fetches it here, mind the terms of use of the page:
       -- local page, reason = workflow.web.fetch("https://example.com/" .. input.book .. input.chapter)
+      -- if not page then return { error = "example.com: " .. reason } end
       local text = "Example text of " .. input.book .. " " .. input.chapter .. "," .. input.verse
-      workflow.cache.set(id, key, text)
+      workflow.cache.set(cache, key, text)
       return { text = text }
     end,
   },

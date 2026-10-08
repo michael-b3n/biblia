@@ -19,4 +19,4 @@ The Microsoft Store version is updated by the Microsoft Store. The version insta
 ## Contact
 Questions about this policy: [github.com/michael-b3n/biblia/issues](https://github.com/michael-b3n/biblia/issues)
 
-Last updated: 2026-09-19
+Last updated: 2026-10-06

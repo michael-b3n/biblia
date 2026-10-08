@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -64,8 +65,8 @@ public: // Variables
 ///
 /// Workflow for scripture. The scriptures are the zip files in the folder of the setting "scripture.folder",
 /// by default the folder "scriptures" in the local data folder. They are loaded on construction.
-/// More scriptures come from the scripts implementing the four manifests below, named after the id of their
-/// script, e.g. "LUT (scripture_bibleserver)". Scriptures from scripts use the fallback versification.
+/// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
+/// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
 /// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
 /// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
@@ -121,7 +122,7 @@ class workflow_scripture final
   // Scripture of a script, \see update_scripts
   struct script_scripture_t final
   {
-    util::identifier script;
+    workflow_script::script_name_type script;
     std::string name; // in the script
   };
 
@@ -152,10 +153,11 @@ public: // Typedefs
   using versification_wrapper_type = versification_wrapper;
   using scripture_params = framework::process_params<scripture_params_t>;
   using passage_params = framework::process_params<passage_params_t>;
-  using passage_result = framework::process_result<passage_result_t>;
+  using passage_result = std::expected<passage_result_t, std::string>;
   using import_params = framework::process_params<import_params_t>;
 
   // Manifests of a script offering scriptures, \see doc/lua_scripts.md
+  // clang-format off
   struct names_manifest final
   {
     static inline const util::path id{"scripture.names"};
@@ -191,8 +193,9 @@ public: // Typedefs
       lua::field<"book", std::string>,
       lua::field<"chapter", std::int64_t>,
       lua::field<"verse", std::int64_t>>;
-    using output = lua::script_table<lua::field<"text", std::optional<std::string>>>;
+    using output = lua::script_table<lua::field<"text", std::optional<std::string>>, lua::field<"error", std::optional<std::string>>>;
   };
+  // clang-format on
 
 public: // Structors
   workflow_scripture(std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script);
@@ -228,7 +231,7 @@ public: // Accessors
   ///
   /// Get passage from scripture. If no scripture name is provided in the params,
   /// the scripture defined in the settings will be used.
-  /// \return passage, or an unexpected result in case of failure
+  /// \return passage, or why there is none: the error of the script, else "verse not found" or "script failed"
   ///
   [[nodiscard]] auto passage(const passage_params& params) const -> passage_result;
 

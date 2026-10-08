@@ -38,9 +38,6 @@ public: // Structors
   workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_bible_ref_lookup_settings() noexcept override = default;
 
-public: // Constants
-  static constexpr auto default_script = "lookup_bibleserver";
-
 public: // Variables
   const setting_type<std::string> script;
   const setting_type<std::vector<std::string>> translations;
@@ -49,9 +46,10 @@ public: // Variables
 ///
 /// Workflow for bible reference lookup. The script of the setting "lookup.script" builds the url of each chapter
 /// of a reference, the workflow opens it in the browser. Scripts offering the two manifests below can be chosen,
-/// the chosen one tells the translations of the setting "lookup.translations".
+/// the chosen one tells the translations of the setting "lookup.translations". Until the user chooses, it is the
+/// script offering the most translations.
 /// Signal IDs to connect to:
-/// - ended: Emitted when the workflow ends. Slots receive the result parameters `result_type`.
+/// - ended: Emitted once the urls of a lookup are opened, also if there were none. Slots receive its process ID.
 ///
 class workflow_bible_ref_lookup final
   : public workflow_base<workflow_bible_ref_lookup_settings>
@@ -102,7 +100,8 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Lookup bible references, each url is opened in the default web browser.
+  /// Look up bible references outside of the calling thread: the url of each chapter is opened in the default
+  /// web browser, then ended is emitted. A reference over several books is looked up at its first verse only.
   ///
   auto lookup(const params& params) -> void;
 
