@@ -46,8 +46,8 @@ auto workflow_web::fetch(const std::string_view url) const -> page_type
   {
     {
       const auto lock = std::scoped_lock{mtx_};
-      const auto failed = failures_.find(std::string{url});
-      if(failed != failures_.cend() && clock_type::now() < failed->second.retry_at)
+      std::erase_if(failures_, [now = clock_type::now()](const auto& failure) { return failure.second.retry_at <= now; });
+      if(const auto failed = failures_.find(std::string{url}); failed != failures_.cend())
       {
         return std::unexpected{failed->second.reason};
       }

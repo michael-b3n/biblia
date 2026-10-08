@@ -231,7 +231,8 @@ public: // Accessors
   ///
   /// Get passage from scripture. If no scripture name is provided in the params,
   /// the scripture defined in the settings will be used.
-  /// \return passage, or why there is none: the error of the script, else "verse not found" or "script failed"
+  /// \return passage, or why there is none: "scripture not found", the error of the script,
+  /// else "verse not found" or "script failed"
   ///
   [[nodiscard]] auto passage(const passage_params& params) const -> passage_result;
 
@@ -247,6 +248,7 @@ private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;
   [[nodiscard]] auto stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>;
+  [[nodiscard]] auto script_scripture(const std::string& name) const -> std::optional<script_scripture_t>;
   template<script_manifest M>
   [[nodiscard]] auto run_script(typename M::input input) const -> std::optional<typename M::output>;
   auto update_scripts() -> void;

@@ -191,6 +191,7 @@ auto workflow_scripture::versification_or_fallback(const scripture_params& param
 ///
 auto workflow_scripture::passage(const passage_params& params) const -> passage_result
 {
+  static constexpr auto scripture_not_found = "scripture not found";
   static constexpr auto verse_not_found = "verse not found";
   static constexpr auto script_failed = "script failed";
   try
@@ -206,13 +207,16 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
       return std::unexpected{std::string{verse_not_found}};
     }
     const auto name = selected_name(params->scripture_name);
-    const auto output = name ? run_script<passage_manifest>({
-                                 *name,
-                                 std::string{util::enum_name(ref.book())},
-                                 static_cast<std::int64_t>(ref.chapter().value),
-                                 static_cast<std::int64_t>(ref.verse().value),
-                               })
-                             : std::nullopt;
+    if(!name || !script_scripture(*name))
+    {
+      return std::unexpected{std::string{scripture_not_found}};
+    }
+    const auto output = run_script<passage_manifest>({
+      *name,
+      std::string{util::enum_name(ref.book())},
+      static_cast<std::int64_t>(ref.chapter().value),
+      static_cast<std::int64_t>(ref.verse().value),
+    });
     const auto content = output ? output->get<"text">() : std::nullopt;
     if(!content)
     {
@@ -306,21 +310,25 @@ auto workflow_scripture::stored(const std::optional<std::string>& name) const ->
 
 ///
 ///
+auto workflow_scripture::script_scripture(const std::string& name) const -> std::optional<script_scripture_t>
+{
+  const auto lock = std::scoped_lock{mtx_};
+  if(!script_scriptures_)
+  {
+    return std::nullopt;
+  }
+  const auto it = script_scriptures_->find(name);
+  return it != script_scriptures_->cend() ? std::optional{it->second} : std::nullopt;
+}
+
+///
+///
 template<script_manifest M>
 auto workflow_scripture::run_script(typename M::input input) const -> std::optional<typename M::output>
 {
   auto& name = input.template get<"name">();
   // Copied, so the lock is not held while the script runs
-  const auto scripture = [&]() -> std::optional<script_scripture_t>
-  {
-    const auto lock = std::scoped_lock{mtx_};
-    if(!script_scriptures_)
-    {
-      return std::nullopt;
-    }
-    const auto it = script_scriptures_->find(name);
-    return it != script_scriptures_->cend() ? std::optional{it->second} : std::nullopt;
-  }();
+  const auto scripture = script_scripture(name);
   if(!scripture)
   {
     return std::nullopt;

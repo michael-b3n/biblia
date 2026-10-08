@@ -164,6 +164,12 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
       {.reference = john(2), .scripture_name = std::nullopt}
   }) == std::unexpected{std::string{"no such verse"}}
   );
+  // No script is asked for a scripture that is not there
+  CHECK(
+    scripture.passage({
+      {.reference = john(16), .scripture_name = "XXX"}
+  }) == std::unexpected{std::string{"scripture not found"}}
+  );
 
   // No scripture object, the fallback versification is used
   CHECK(
