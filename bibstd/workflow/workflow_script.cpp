@@ -1,4 +1,5 @@
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/names.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
@@ -53,7 +54,7 @@ namespace
 ///
 ///
 workflow_script_settings::workflow_script_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , enabled{workflow_settings_->create_setting("script.enabled", true)}
   , folder{workflow_settings_->create_setting("script.folder", workflow_settings_->data_folder() / default_folder_name)}
 {
@@ -86,42 +87,9 @@ auto workflow_script::state() const -> lua::state
 
 ///
 ///
-auto workflow_script::lua_path(const util::path& p) -> util::path
+auto workflow_script::load_scripts() -> void
 {
-  return util::path{std::format("{}.{}", lua_node, p.string())};
-}
-
-///
-///
-auto workflow_script::scripts(const std::vector<util::path>& ids) const -> scripts_type
-{
-  const auto offers_all = [&ids](const auto& entry)
-  { return std::ranges::all_of(ids, [&](const auto& id) { return entry.second.functions.contains(id); }); };
-  const auto lock = std::scoped_lock{mtx_};
-  return scripts_ | std::views::filter(offers_all) | std::ranges::to<scripts_type>();
-}
-
-///
-///
-auto workflow_script::run(
-  const util::identifier& script,
-  const util::path& id,
-  const std::function<sol::object(sol::state_view)>& input,
-  const std::function<bool(const sol::object&)>& output
-) const -> void
-{
-  auto state = state_owner_.lock();
-  const auto function = state->traverse_get<sol::optional<sol::protected_function>>(
-    lua::names::node_root, lua::names::node_system, lua::names::node_scripts, script.string(), id.string()
-  );
-  if(!function)
-  {
-    return;
-  }
-  if(const auto result = state.call(*function, input(*state)); result && !output(*result))
-  {
-    LOG_ERROR("lua script output rejected: script=\"{}\", function=\"{}\"", script.string(), id.string());
-  }
+  loader_ = std::jthread{[this](const std::stop_token& stop_token) { load(stop_token); }};
 }
 
 ///
@@ -133,9 +101,42 @@ auto workflow_script::shutdown() const noexcept -> void
 
 ///
 ///
-auto workflow_script::load_scripts() -> void
+auto workflow_script::lua_path(const util::path& p) -> util::path
 {
-  loader_ = std::jthread{[this](const std::stop_token& stop_token) { load(stop_token); }};
+  return util::path{std::format("{}.{}", lua_node, p.string())};
+}
+
+///
+///
+auto workflow_script::scripts(const std::vector<util::path>& ids) const -> scripts_type
+{
+  const auto offers_all = [&ids](const auto& entry)
+  { return std::ranges::all_of(ids, [&](const auto& id) { return entry.second.contains(id); }); };
+  const auto lock = std::scoped_lock{mtx_};
+  return scripts_ | std::views::filter(offers_all) | std::ranges::to<scripts_type>();
+}
+
+///
+///
+auto workflow_script::run(
+  const script_name_type& script,
+  const util::path& id,
+  const std::function<sol::object(sol::state_view)>& input,
+  const std::function<bool(const sol::object&)>& output
+) const -> void
+{
+  auto state = state_owner_.lock();
+  const auto function = state->traverse_get<sol::optional<sol::protected_function>>(
+    lua::names::node_root, lua::names::node_system, lua::names::node_scripts, script, id.string()
+  );
+  if(!function)
+  {
+    return;
+  }
+  if(const auto result = state.call(*function, input(*state)); result && !output(*result))
+  {
+    LOG_ERROR("lua script output rejected: script=\"{}\", function=\"{}\"", script, id.string());
+  }
 }
 
 ///
@@ -152,6 +153,10 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
   // Faults of the app only, e.g. a vanishing folder. Either way the waiting workflows learn that loading is over.
   try
   {
+    std::ranges::for_each(
+      lua::bundled::all() | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
+      [this](const auto& script) { load_script(script.name, script.code); }
+    );
     if(settings().enabled->value())
     {
       const auto folder = settings().folder->value();
@@ -182,16 +187,23 @@ auto workflow_script::load_folder(const std::filesystem::path& folder, const std
     lua_files(folder) | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
     [&](const auto& file)
     {
-      // Per script, so a workflow registering meanwhile waits for one script only
-      auto state = state_owner_.lock();
-      const auto code = read(file);
-      const auto name = file.filename().string();
-      if(const auto description = code ? state.run_script(name, *code) : std::nullopt)
+      if(const auto code = read(file))
       {
-        add_script(state, name, *description);
+        load_script(file.filename().string(), *code);
       }
     }
   );
+}
+
+///
+///
+auto workflow_script::load_script(const std::string_view file, const std::string_view code) -> void
+{
+  auto state = state_owner_.lock();
+  if(const auto description = state.run_script(file, code))
+  {
+    add_script(state, std::string{file}, *description);
+  }
 }
 
 ///
@@ -205,46 +217,47 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
   }
   auto table = description.as<sol::table>();
   const auto text = [&](const std::string_view key) { return lua::value_cast<std::string>::from(table.get<sol::object>(key)); };
-  const auto id = text(lua::names::script_id).and_then([](const auto& t) { return util::identifier::from(t); });
   const auto name = text(lua::names::script_name);
   const auto functions = table.get<sol::object>(lua::names::script_functions);
-  if(!id || !name || name->empty() || functions.get_type() != sol::type::table)
+  if(!name || name->empty() || functions.get_type() != sol::type::table)
   {
-    LOG_ERROR("lua script rejected: file=\"{}\", it returns no id, no name or no table of functions", file);
+    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name or no table of functions", file);
     return;
   }
-  // The first one keeps the id, a script is known by nothing else
-  if(const auto lock = std::scoped_lock{mtx_}; scripts_.contains(*id))
-  {
-    LOG_ERROR("lua script rejected: file=\"{}\", id=\"{}\" is taken", file, id->string());
-    return;
-  }
-  // Only named functions, so a workflow finds nothing it can not run
-  auto kept = state->create_table();
+  // Scripts of the same name are one script, e.g. the lookup and the scriptures of a web page
+  sol::table system = state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system);
+  sol::table kept = system[lua::names::node_scripts].get_or_create<sol::table>()[*name].get_or_create<sol::table>();
   auto function_names = std::set<util::path>{};
   functions.as<sol::table>().for_each(
     [&](const sol::object& key, const sol::object& value)
     {
+      // Only named functions, so a workflow finds nothing it can not run
       const auto function = key.get_type() == sol::type::string ? util::path{key.as<std::string>()} : util::path{};
       if(function.empty() || value.get_type() != sol::type::function)
       {
-        LOG_ERROR("lua script entry rejected: script=\"{}\", no named function", id->string());
+        LOG_ERROR("lua script entry rejected: file=\"{}\", script=\"{}\", no named function", file, *name);
+        return;
+      }
+      // The first one keeps the function
+      if(kept[function.string()].valid())
+      {
+        LOG_ERROR(
+          "lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, function.string()
+        );
         return;
       }
       kept[function.string()] = value;
       function_names.insert(function);
     }
   );
-  sol::table system = state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system);
-  system[lua::names::node_scripts].get_or_create<sol::table>()[id->string()] = kept;
   LOG_INFO(
-    "lua script loaded: id=\"{}\", name=\"{}\", functions={}",
-    id->string(),
+    "lua script loaded: file=\"{}\", name=\"{}\", functions={}",
+    file,
     *name,
     function_names | std::views::transform(&util::path::string)
   );
   const auto lock = std::scoped_lock{mtx_};
-  scripts_.insert_or_assign(*id, script_info{.name = *name, .functions = std::move(function_names)});
+  scripts_[*name].insert_range(function_names);
 }
 
 } // namespace bibstd::workflow

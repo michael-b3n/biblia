@@ -2,20 +2,21 @@
 
 #include "bibstd/bible/scripture.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
+#include "bibstd/framework/synchronized_executor.hpp"
 #include "bibstd/framework/thread_pool.hpp"
 #include "bibstd/lua/script_table.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
-#include "bibstd/signal/synchronized_executor.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -46,7 +47,7 @@ struct workflow_scripture_sigs final
 ///
 /// Settings corresponding to workflow scripture.
 ///
-class workflow_scripture_settings final : public framework::settings_base
+class workflow_scripture_settings final : public workflow_settings_base
 {
 public: // Structors
   workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings);
@@ -64,8 +65,8 @@ public: // Variables
 ///
 /// Workflow for scripture. The scriptures are the zip files in the folder of the setting "scripture.folder",
 /// by default the folder "scriptures" in the local data folder. They are loaded on construction.
-/// More scriptures come from the scripts implementing the four manifests below, named after the id of their
-/// script, e.g. "LUT (bibleserver)". Scriptures from scripts use the fallback versification.
+/// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
+/// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
 /// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
 /// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
@@ -121,7 +122,7 @@ class workflow_scripture final
   // Scripture of a script, \see update_scripts
   struct script_scripture_t final
   {
-    util::identifier script;
+    workflow_script::script_name_type script;
     std::string name; // in the script
   };
 
@@ -132,7 +133,7 @@ class workflow_scripture final
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
   mutable std::mutex mtx_;
   std::optional<std::map<std::string, script_scripture_t>> script_scriptures_; // by name in the app, guarded by mtx_
-  signal::synchronized_executor executor_{strand_id_};
+  framework::synchronized_executor executor_{strand_id_};
 
 public: // Constants
   static constexpr auto default_versifications = []()
@@ -152,10 +153,11 @@ public: // Typedefs
   using versification_wrapper_type = versification_wrapper;
   using scripture_params = framework::process_params<scripture_params_t>;
   using passage_params = framework::process_params<passage_params_t>;
-  using passage_result = framework::process_result<passage_result_t>;
+  using passage_result = std::expected<passage_result_t, std::string>;
   using import_params = framework::process_params<import_params_t>;
 
   // Manifests of a script offering scriptures, \see doc/lua_scripts.md
+  // clang-format off
   struct names_manifest final
   {
     static inline const util::path id{"scripture.names"};
@@ -191,8 +193,9 @@ public: // Typedefs
       lua::field<"book", std::string>,
       lua::field<"chapter", std::int64_t>,
       lua::field<"verse", std::int64_t>>;
-    using output = lua::script_table<lua::field<"text", std::optional<std::string>>>;
+    using output = lua::script_table<lua::field<"text", std::optional<std::string>>, lua::field<"error", std::optional<std::string>>>;
   };
+  // clang-format on
 
 public: // Structors
   workflow_scripture(std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script);
@@ -228,7 +231,8 @@ public: // Accessors
   ///
   /// Get passage from scripture. If no scripture name is provided in the params,
   /// the scripture defined in the settings will be used.
-  /// \return passage, or an unexpected result in case of failure
+  /// \return passage, or why there is none: "scripture not found", the error of the script,
+  /// else "verse not found" or "script failed"
   ///
   [[nodiscard]] auto passage(const passage_params& params) const -> passage_result;
 
@@ -244,6 +248,7 @@ private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;
   [[nodiscard]] auto stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>;
+  [[nodiscard]] auto script_scripture(const std::string& name) const -> std::optional<script_scripture_t>;
   template<script_manifest M>
   [[nodiscard]] auto run_script(typename M::input input) const -> std::optional<typename M::output>;
   auto update_scripts() -> void;

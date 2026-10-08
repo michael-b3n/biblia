@@ -32,21 +32,8 @@ struct format final
 ///
 auto format::join(const std::ranges::range auto& range, const std::string_view delimiter) -> std::string
 {
-  auto result = std::string{};
-  auto first = true;
-  for(const auto& item : range)
-  {
-    if(first)
-    {
-      result += std::format("{}", item);
-      first = false;
-    }
-    else
-    {
-      result += std::format("{}{}", delimiter, item);
-    }
-  }
-  return result;
+  return range | std::views::transform([](const auto& item) { return std::format("{}", item); }) |
+         std::views::join_with(delimiter) | std::ranges::to<std::string>();
 }
 
 ///

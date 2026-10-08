@@ -27,12 +27,17 @@ target_sources(${PROJECT_NAME}
 )
 
 #
-# Compile the Lua scripts into the library, a new script in lua/scripts needs no other change.
+# Compile the Lua scripts into the library, a new script in lua/internal or lua/bundled needs no other change.
+# The label is the namespace of the scripts, \see lua/embedded_scripts.hpp.
 #
 include(helper_functions)
-file(GLOB BIBSTD_LUA_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/scripts/*.lua")
-configure_incbin_source(lua_script lua/scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/scripts.cpp ${BIBSTD_LUA_SCRIPTS})
-target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/scripts.cpp)
+file(GLOB BIBSTD_LUA_INTERNAL CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/internal/*.lua")
+file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua")
+configure_incbin_source(internal lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${BIBSTD_LUA_INTERNAL})
+configure_incbin_source(bundled lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
+target_sources(${PROJECT_NAME}
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
+)
 
 find_package(Boost REQUIRED COMPONENTS filesystem url)
 find_package(spdlog REQUIRED)

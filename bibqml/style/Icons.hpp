@@ -49,11 +49,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString settings MEMBER settings_ CONSTANT)
   Q_PROPERTY(QString stop MEMBER stop_ CONSTANT)
 
-public: // Structors
-  explicit Icons(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
-  ~Icons() noexcept override;
-
-private: // Variables
+  // Variables
   QString add_{detail::toIconUrl("add.svg")};
   QString bell_{detail::toIconUrl("bell.svg")};
   QString bellRinging_{detail::toIconUrl("bell_ringing.svg")};
@@ -71,6 +67,10 @@ private: // Variables
   QString remove_{detail::toIconUrl("remove.svg")};
   QString settings_{detail::toIconUrl("settings.svg")};
   QString stop_{detail::toIconUrl("stop.svg")};
+
+public: // Structors
+  explicit Icons(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  ~Icons() noexcept override;
 };
 
 } // namespace bibqml

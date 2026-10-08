@@ -20,6 +20,7 @@ public: // Typedefs
   {
     init_failed,    ///< Failed to initialize curl
     request_failed, ///< HTTP request failed
+    not_found,      ///< HTTP 404 or 410, the server has no such page
     invalid_url,    ///< Invalid URL provided
     timeout,        ///< Request timed out
     unknown         ///< Unknown error occurred

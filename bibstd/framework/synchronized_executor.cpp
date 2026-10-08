@@ -1,22 +1,22 @@
-#include "bibstd/signal/synchronized_executor.hpp"
+#include "bibstd/framework/synchronized_executor.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include <algorithm>
 
-namespace bibstd::signal
+namespace bibstd::framework
 {
 
 ///
 ///
 synchronized_executor::synchronized_executor()
-  : thread_pool_guard_{framework::thread_pool::init()}
+  : thread_pool_guard_{thread_pool::init()}
 {
 }
 
 ///
 ///
-synchronized_executor::synchronized_executor(const framework::thread_pool::strand_id_type strand_id)
-  : thread_pool_guard_{framework::thread_pool::init()}
+synchronized_executor::synchronized_executor(const thread_pool::strand_id_type strand_id)
+  : thread_pool_guard_{thread_pool::init()}
   , strand_id_{strand_id}
 {
 }
@@ -39,9 +39,7 @@ synchronized_executor::~synchronized_executor() noexcept
 ///
 auto synchronized_executor::disconnect() -> void
 {
-  // Holding this lock until this functions returns (even though all the sync->mtx
-  // locks are also locked afterwards) guarantees that this function cannot be
-  // called again before it returns from another thread.
+  // Held until the end, so a second call from another thread waits for this one
   const auto lock = std::scoped_lock{mtx_};
   connections_.clear();
   auto syncs = std::move(syncs_);
@@ -58,16 +56,16 @@ auto synchronized_executor::disconnect() -> void
 
 ///
 ///
-auto synchronized_executor::exec(framework::thread_pool::task_type&& task) const -> void
+auto synchronized_executor::exec(thread_pool::task_type&& task) const -> void
 {
   if(strand_id_.has_value())
   {
-    framework::thread_pool::queue_task(std::move(task), *strand_id_);
+    thread_pool::queue_task(std::move(task), *strand_id_);
   }
   else
   {
-    framework::thread_pool::queue_task(std::move(task));
+    thread_pool::queue_task(std::move(task));
   }
 }
 
-} // namespace bibstd::signal
+} // namespace bibstd::framework

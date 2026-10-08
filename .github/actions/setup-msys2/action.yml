@@ -1,11 +1,6 @@
 name: Set up MSYS2
 description: Install the MSYS2 toolchain and the libraries VerseLens builds against.
 
-inputs:
-  extra-packages:
-    description: Additional MSYS2 packages, separated by spaces.
-    default: ""
-
 runs:
   using: composite
   steps:
@@ -36,4 +31,3 @@ runs:
           mingw-w64-ucrt-x86_64-qt6-base
           mingw-w64-ucrt-x86_64-qt6-declarative
           mingw-w64-ucrt-x86_64-qt6-svg
-          ${{ inputs.extra-packages }}

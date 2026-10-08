@@ -1,14 +1,14 @@
 #include "test_utils/files.hpp"
-#include "test_utils/script_settings.hpp"
+#include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
 #include <bibstd/lua/script_table.hpp>
-#include <bibstd/util/identifier.hpp>
 #include <bibstd/workflow/workflow_base.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -76,43 +76,65 @@ struct echo_manifest final
 };
 
 ///
-/// \return Lua of the script \p id offering the function of report_manifest, it tells the value \p expression had
-/// while loading
+/// \return Lua of the script \p name offering the function of report_manifest, it tells the value \p expression
+/// had while loading
 ///
-[[nodiscard]] auto report(const std::string& id, const std::string& expression) -> std::string
+[[nodiscard]] auto report(const std::string& name, const std::string& expression) -> std::string
 {
   return std::format(
-    "local value = tostring({}) return {{id = '{}', name = 'Script {}', "
+    "local value = tostring({}) return {{name = '{}', "
     "functions = {{['test.report'] = function() return {{value = value}} end}}}}",
     expression,
-    id,
-    id
+    name
   );
 }
 
 ///
-/// \return what the scripts offering report_manifest report, as "value (id)"
+/// \return what the scripts offering report_manifest report, as "value (name)"
 ///
 [[nodiscard]] auto reports(const workflow_script& workflow) -> std::vector<std::string>
 {
   const auto scripts = workflow.scripts<report_manifest>();
   return scripts | std::views::keys |
          std::views::transform(
-           [&](const util::identifier& script)
+           [&](const workflow_script::script_name_type& script)
            {
              const auto output = workflow.run<report_manifest>(script, {});
-             return std::format("{} ({})", output ? output->get<"value">() : std::string{"?"}, script.string());
+             return std::format("{} ({})", output ? output->get<"value">() : std::string{"?"}, script);
            }
          ) |
          std::ranges::to<std::vector>();
 }
 
 ///
-/// \return the ids of \p scripts
+/// \return the names of \p scripts
 ///
-[[nodiscard]] auto ids(const workflow_script::scripts_type& scripts) -> std::vector<std::string>
+[[nodiscard]] auto names(const workflow_script::scripts_type& scripts) -> std::vector<std::string>
 {
-  return scripts | std::views::keys | std::views::transform(&util::identifier::string) | std::ranges::to<std::vector>();
+  return scripts | std::views::keys | std::ranges::to<std::vector>();
+}
+
+///
+/// \return the names of the scripts the app ships, the ones loaded without the scripts of the user. \p folder is
+/// the one of the test.
+///
+[[nodiscard]] auto bundled_names(const test_utils::temp_folder& folder) -> std::vector<std::string>
+{
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path() / "bundled")};
+  test_utils::load_scripts(workflow);
+  return names(workflow.scripts());
+}
+
+///
+/// \return the names of the scripts of \p workflow without the bundled ones
+///
+[[nodiscard]] auto user_names(const workflow_script& workflow, const test_utils::temp_folder& folder)
+  -> std::vector<std::string>
+{
+  const auto bundled = bundled_names(folder);
+  return names(workflow.scripts()) |
+         std::views::filter([&](const auto& name) { return !std::ranges::contains(bundled, name); }) |
+         std::ranges::to<std::vector>();
 }
 
 ///
@@ -289,7 +311,33 @@ TEST_CASE("workflow_script_creates_a_missing_folder", "[workflow]")
   test_utils::load_scripts(workflow);
   // Empty, for the user to put scripts into
   CHECK(std::filesystem::is_empty(folder.path() / "scripts"));
-  CHECK(workflow.scripts().empty());
+  CHECK(user_names(workflow, folder).empty());
+}
+
+TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
+{
+  const auto folder = test_utils::temp_folder{"workflow_script_loads_the_bundled_scripts"};
+  const auto scripts = folder.path() / "user_scripts";
+  std::filesystem::create_directories(scripts);
+  test_utils::write_file(scripts / "a.lua", report("a", "'ran'"));
+  // A script of the name of a bundled one adds its functions to it
+  test_utils::write_file(scripts / "b.lua", report("Bibleserver", "'ran'"));
+
+  SECTION("without the scripts of the user")
+  {
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false, scripts)};
+    test_utils::load_scripts(workflow);
+    CHECK(std::ranges::contains(names(workflow.scripts()), std::string{"Bibleserver"}));
+    CHECK(reports(workflow).empty());
+  }
+
+  SECTION("before the scripts of the user")
+  {
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+    test_utils::load_scripts(workflow);
+    CHECK(user_names(workflow, folder) == std::vector<std::string>{"a"});
+    CHECK(reports(workflow) == std::vector<std::string>{"ran (Bibleserver)", "ran (a)"});
+  }
 }
 
 TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
@@ -298,58 +346,54 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   const auto scripts = folder.path() / "user_scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(
-    scripts / "both.lua",
-    "return {id = 'both', name = 'Both', functions = {['test.a'] = function() end, ['test.b'] = function() end}}"
+    scripts / "both.lua", "return {name = 'Both', functions = {['test.a'] = function() end, ['test.b'] = function() end}}"
   );
   // Only named functions count
   test_utils::write_file(
-    scripts / "one.lua",
-    "return {id = 'one', name = 'One', functions = {['test.a'] = function() end, ['test.b'] = 1, function() end}}"
+    scripts / "one.lua", "return {name = 'One', functions = {['test.a'] = function() end, ['test.b'] = 1, function() end}}"
   );
   // A script returning no table offers nothing
   test_utils::write_file(scripts / "none.lua", "return 1");
 
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
   test_utils::load_scripts(workflow);
-  CHECK(ids(workflow.scripts<a_manifest>()) == std::vector<std::string>{"both", "one"});
-  CHECK(ids(workflow.scripts<a_manifest, b_manifest>()) == std::vector<std::string>{"both"});
+  CHECK(names(workflow.scripts<a_manifest>()) == std::vector<std::string>{"Both", "One"});
+  CHECK(names(workflow.scripts<a_manifest, b_manifest>()) == std::vector<std::string>{"Both"});
   CHECK(workflow.scripts<missing_manifest>().empty());
   // All of them without a manifest
-  CHECK(ids(workflow.scripts()) == std::vector<std::string>{"both", "one"});
+  CHECK(user_names(workflow, folder) == std::vector<std::string>{"Both", "One"});
 }
 
-TEST_CASE("workflow_script_knows_a_script_by_its_id", "[workflow]")
+TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
 {
-  const auto folder = test_utils::temp_folder{"workflow_script_knows_a_script_by_its_id"};
+  const auto folder = test_utils::temp_folder{"workflow_script_knows_a_script_by_its_name"};
   const auto scripts = folder.path() / "user_scripts";
   std::filesystem::create_directories(scripts);
-  const auto script = [](const std::string& description)
-  { return "return {" + description + " functions = {['test.report'] = function() return {value = 'ran'} end}}"; };
-  // The name of the file plays no role
-  test_utils::write_file(scripts / "1.lua", script("id = 'zeta', name = 'Zeta Script',"));
-  test_utils::write_file(scripts / "2.lua", script("id = 'Alpha_2', name = 'Alpha',"));
-  // The first one keeps a taken id
-  test_utils::write_file(scripts / "3.lua", script("id = 'zeta', name = 'Second',"));
-  // Other characters of an id are replaced
-  test_utils::write_file(scripts / "4.lua", script("id = 'has space', name = 'Space',"));
-  // No id, no name
-  test_utils::write_file(scripts / "5.lua", script("id = 5, name = 'Number',"));
-  test_utils::write_file(scripts / "50.lua", script("id = '', name = 'Empty id',"));
-  test_utils::write_file(scripts / "6.lua", script("name = 'No id',"));
-  test_utils::write_file(scripts / "7.lua", script("id = 'no_name',"));
-  test_utils::write_file(scripts / "8.lua", script("id = 'empty_name', name = '',"));
+  const auto script = [](const std::string& description, const std::string& value)
+  { return "return {" + description + " functions = {['test.report'] = function() return {value = '" + value + "'} end}}"; };
+  // The name of the file plays no role, the name may be any text
+  test_utils::write_file(scripts / "1.lua", script("name = 'Zeta',", "first"));
+  test_utils::write_file(scripts / "2.lua", script("name = 'Alpha page.com',", "ran"));
+  // Scripts of the same name are one script: a function it has is kept, another one is added
+  test_utils::write_file(
+    scripts / "3.lua",
+    "return {name = 'Zeta', functions = {['test.report'] = function() return {value = 'second'} end, "
+    "['test.a'] = function() end}}"
+  );
+  // No name
+  test_utils::write_file(scripts / "5.lua", script("name = 5,", "ran"));
+  test_utils::write_file(scripts / "6.lua", script("", "ran"));
+  test_utils::write_file(scripts / "8.lua", script("name = '',", "ran"));
   // No functions
-  test_utils::write_file(scripts / "9.lua", "return {id = 'no_functions', name = 'No functions'}");
+  test_utils::write_file(scripts / "9.lua", "return {name = 'No functions'}");
 
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
   test_utils::load_scripts(workflow);
-  const auto loaded = workflow.scripts();
-  REQUIRE(ids(loaded) == std::vector<std::string>{"Alpha_2", "has_space", "zeta"});
-  CHECK(loaded.at(util::identifier{"zeta"}).name == "Zeta Script");
-  CHECK(loaded.at(util::identifier{"Alpha_2"}).name == "Alpha");
-  CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha_2)", "ran (has_space)", "ran (zeta)"});
+  REQUIRE(user_names(workflow, folder) == std::vector<std::string>{"Alpha page.com", "Zeta"});
+  CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha page.com)", "first (Zeta)"});
+  CHECK(names(workflow.scripts<a_manifest>()) == std::vector<std::string>{"Zeta"});
   // Neither by the name of its file
-  CHECK_FALSE(workflow.run<report_manifest>(util::identifier{"1"}, {}));
+  CHECK_FALSE(workflow.run<report_manifest>("1", {}));
 }
 
 TEST_CASE("workflow_script_runs_a_function", "[workflow]")
@@ -360,7 +404,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
   test_utils::write_file(
     scripts / "echo.lua",
     R"(
-      return { id = "echo", name = "Echo", functions = {
+      return { name = "Echo", functions = {
         ["test.echo"] = function(input)
           local case = input.text
           if case == "broken" then error("broken") end
@@ -388,7 +432,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
           {{"x", 1}}
     };
   };
-  const auto run = [&](const std::string& text) { return workflow.run<echo_manifest>(util::identifier{"echo"}, input(text)); };
+  const auto run = [&](const std::string& text) { return workflow.run<echo_manifest>("Echo", input(text)); };
 
   CHECK(
     run("john3") == echo_table{
@@ -410,8 +454,8 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
   CHECK_FALSE(run("number as key"));
   CHECK_FALSE(run("broken"));
   // A missing script or function
-  CHECK_FALSE(workflow.run<echo_manifest>(util::identifier{"missing"}, input("john3")));
-  CHECK_FALSE(workflow.run<missing_manifest>(util::identifier{"echo"}, {}));
+  CHECK_FALSE(workflow.run<echo_manifest>("Missing", input("john3")));
+  CHECK_FALSE(workflow.run<missing_manifest>("Echo", {}));
 }
 
 } // namespace bibstd::workflow

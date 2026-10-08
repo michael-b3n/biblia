@@ -25,6 +25,11 @@ namespace bibstd::system
 ///
 class screen_capture_winrt final : public screen_capture
 {
+  // Variables
+  const std::shared_ptr<winrt_capture::device> device_;
+  std::mutex mtx_;
+  std::unordered_map<HMONITOR, std::shared_ptr<winrt_capture::monitor>> monitors_;
+
 public: // Constructor
   explicit screen_capture_winrt(std::shared_ptr<winrt_capture::device> capture_device);
   ~screen_capture_winrt() noexcept override;
@@ -49,11 +54,6 @@ private: // Implementation
   /// \return capture of the monitor
   ///
   auto monitor_of(HMONITOR handle, std::int32_t width, std::int32_t height) -> std::shared_ptr<winrt_capture::monitor>;
-
-private: // Variables
-  const std::shared_ptr<winrt_capture::device> device_;
-  std::mutex mtx_;
-  std::unordered_map<HMONITOR, std::shared_ptr<winrt_capture::monitor>> monitors_;
 };
 
 } // namespace bibstd::system

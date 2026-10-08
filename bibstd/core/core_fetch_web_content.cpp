@@ -79,7 +79,8 @@ auto core_fetch_web_content::fetch(std::string_view url) -> std::expected<std::s
   {
     LOG_ERROR("fetch url content failed on http request: url=\"{}\", http_error_code={}", url, http_code);
     curl_easy_cleanup(curl);
-    return std::unexpected(error_code::request_failed);
+    // 404 and 410 are told apart: the page is missing, asking again brings the same answer
+    return std::unexpected(http_code == 404 || http_code == 410 ? error_code::not_found : error_code::request_failed);
   }
 
   curl_easy_cleanup(curl);

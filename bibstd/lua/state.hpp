@@ -121,14 +121,6 @@ auto state::register_function(const util::path& p, F&& function) -> registration
 
 ///
 ///
-template<typename... Args>
-auto state::call(const sol::protected_function& function, Args&&... args) -> std::optional<sol::object>
-{
-  return run([&] { return function(std::forward<Args>(args)...); });
-}
-
-///
-///
 template<framework::underlying_setting_type T>
 auto state::register_setting(const util::path& p, framework::setting<T>& setting) -> registration
 {
@@ -158,6 +150,14 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
   );
   node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }, registered));
   return registration{data_, p, std::move(registered)};
+}
+
+///
+///
+template<typename... Args>
+auto state::call(const sol::protected_function& function, Args&&... args) -> std::optional<sol::object>
+{
+  return run([&] { return function(std::forward<Args>(args)...); });
 }
 
 } // namespace bibstd::lua

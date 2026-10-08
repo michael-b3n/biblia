@@ -3,11 +3,11 @@
 #include "bibqml/util/ScreenConversion.hpp"
 
 #include <bibstd/bible/reference_range.hpp>
+#include <bibstd/data/screen_types.hpp>
 #include <bibstd/framework/process_params.hpp>
 #include <bibstd/framework/setting_type_erased.hpp>
-#include <bibstd/signal/synchronized_executor.hpp>
+#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
-#include <bibstd/util/screen_types.hpp>
 #include <bibstd/workflow/workflow_hotkey.hpp>
 
 #include <QObject>
@@ -64,10 +64,10 @@ class BridgeBibleRefOcr final : public QObject
   bool manualSearchRunning_{false};
   bool autoSearchRunning_{false};
   QPoint cursorPosition_{0, 0};
-  bibstd::signal::synchronized_executor executor_;
+  bibstd::framework::synchronized_executor executor_;
   // Carries the auto search requests alone, on a strand of its own: stopping the search joins its
   // run, which must neither happen on the thread of the QML layer nor delay what the other one does
-  bibstd::signal::synchronized_executor autoSearchExecutor_;
+  bibstd::framework::synchronized_executor autoSearchExecutor_;
 
 public: // Typedefs
   ///
@@ -131,19 +131,19 @@ private: // Implementation
   void notifyManualSearchFinished(
     bibstd::framework::process_id_type processId,
     std::optional<bibstd::bible::reference_range> referenceRange,
-    std::optional<bibstd::util::screen_rect_type> boundingBox
+    std::optional<bibstd::data::screen_rect_type> boundingBox
   );
   void notifyAutoSearchDetecting(bibstd::framework::process_id_type detectionId);
   void notifyAutoSearchDetection(
     bibstd::framework::process_id_type detectionId,
     bibstd::bible::reference_range referenceRange,
-    std::optional<bibstd::util::screen_rect_type> boundingBox
+    std::optional<bibstd::data::screen_rect_type> boundingBox
   );
   void notifyAutoSearchRunning(bool running);
   void emitCursorPosition(const std::optional<CursorPositionPair>& cursor);
   void emitReference(
     const bibstd::bible::reference_range& referenceRange,
-    const std::optional<bibstd::util::screen_rect_type>& boundingBox,
+    const std::optional<bibstd::data::screen_rect_type>& boundingBox,
     const std::optional<CursorPositionPair>& cursor
   );
 };

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <concepts>
 #include <expected>
@@ -42,7 +42,7 @@ protected: // Structors
 ///
 /// template specialization \see workflow_base
 ///
-template<std::derived_from<framework::settings_base> S>
+template<std::derived_from<workflow_settings_base> S>
 class workflow_base<S> : public workflow_ground
 {
 protected: // Structors
@@ -64,7 +64,7 @@ private: // Variables
 
 ///
 ///
-template<std::derived_from<framework::settings_base> S>
+template<std::derived_from<workflow_settings_base> S>
 workflow_base<S>::workflow_base(std::shared_ptr<workflow_settings> workflow_settings)
   : settings_{std::make_unique<S>(std::move(workflow_settings))}
 {
@@ -72,7 +72,7 @@ workflow_base<S>::workflow_base(std::shared_ptr<workflow_settings> workflow_sett
 
 ///
 ///
-template<std::derived_from<framework::settings_base> S>
+template<std::derived_from<workflow_settings_base> S>
 auto workflow_base<S>::settings() const -> const S&
 {
   return *settings_;

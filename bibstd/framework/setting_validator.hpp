@@ -2,6 +2,7 @@
 
 #include "bibstd/framework/setting_common.hpp"
 #include "bibstd/math/value_range.hpp"
+#include "bibstd/meta/chrono.hpp"
 #include "bibstd/meta/type_traits.hpp"
 #include "bibstd/util/contains.hpp"
 #include "bibstd/util/log.hpp"
@@ -38,10 +39,11 @@ template<typename T>
 using remove_optional_or_vector_t = std::conditional_t<is_optional_v<T> || is_vector_v<T>, meta::remove_wrapper_t<T>, T>;
 
 ///
-/// Concept for types that can be used as range type in setting_validator_range.
+/// Types setting_validator_range limits: numbers but bool, and durations by their count.
 ///
 template<typename T>
-concept setting_validator_range_type = underlying_setting_type<T> && std::is_arithmetic_v<T> && !std::is_same_v<T, bool>;
+concept setting_validator_range_value_type =
+  underlying_setting_type<T> && ((std::is_arithmetic_v<T> && !std::is_same_v<T, bool>) || meta::is_duration_v<T>);
 
 ///
 /// Helper type to extract validator type from smart pointer.
@@ -99,7 +101,7 @@ struct setting_validator_unbound final : public detail::setting_validator_connec
 
 ///
 /// Class for range type setting validators. The class range validator is only meaningful
-/// for arithmetic types wrapped by optional or vectors.
+/// for numbers and durations, plain or wrapped by optional or vectors.
 /// The provided member functions `validate` and `contains` accept plain or optional types
 /// and perform the range checks or validation on those single values. If the setting type
 /// is a vector type, every single value of the vector is checked (with &&) or validated.
@@ -108,17 +110,50 @@ template<underlying_setting_type T>
 class setting_validator_range final : public detail::setting_validator_connector
 {
   // Typedefs
-  using plain_underlying_type_ = detail::remove_optional_or_vector_t<T>;
+  using plain_underlying_t = detail::remove_optional_or_vector_t<T>;
+
+  // Constants
+  ///
+  /// \return the setting value \p v as value of the range, a duration as its count
+  ///
+  static constexpr auto to_range_value = [](const plain_underlying_t v) -> auto
+  {
+    if constexpr(meta::is_duration_v<plain_underlying_t>)
+    {
+      return v.count();
+    }
+    else
+    {
+      return v;
+    }
+  };
+
+  ///
+  /// \return the range value \p v as setting value, a count as its duration
+  ///
+  static constexpr auto from_range_value = [](const auto v) -> plain_underlying_t
+  {
+    if constexpr(meta::is_duration_v<plain_underlying_t>)
+    {
+      return plain_underlying_t{v};
+    }
+    else
+    {
+      return v;
+    }
+  };
 
   // Variables
-  const math::value_range<
-    std::conditional_t<detail::setting_validator_range_type<plain_underlying_type_>, plain_underlying_type_, int>>
+  const math::value_range<std::conditional_t<
+    detail::setting_validator_range_value_type<plain_underlying_t>,
+    std::invoke_result_t<decltype(to_range_value), plain_underlying_t>,
+    int>>
     range_;
 
 public: // Typedefs
   using sptr_type = std::shared_ptr<setting_validator_range<T>>;
   using underlying_type = T;
-  using plain_underlying_type = plain_underlying_type_;
+  using plain_underlying_type = plain_underlying_t;
 
 public: // Constants
   static constexpr auto is_plain_type = std::is_same_v<underlying_type, plain_underlying_type>;
@@ -127,7 +162,7 @@ public: // Constants
 
 public: // Structors
   setting_validator_range(plain_underlying_type min, plain_underlying_type max)
-    requires(detail::setting_validator_range_type<plain_underlying_type>);
+    requires(detail::setting_validator_range_value_type<plain_underlying_type>);
 
 public: // Operators
   ///
@@ -137,13 +172,13 @@ public: // Operators
   /// setting type is optional, std::nullopt is returned.
   ///
   [[nodiscard]] auto validate(const T& value) const -> T
-    requires(detail::setting_validator_range_type<T>);
+    requires(detail::setting_validator_range_value_type<plain_underlying_type>);
 
   ///
-  /// Validate overload for non plain underlying types (optional or vector). \see validate
+  /// Validate overload for vector underlying types. \see validate
   ///
   [[nodiscard]] auto validate(const plain_underlying_type& value) const -> plain_underlying_type
-    requires(!is_plain_type && detail::setting_validator_range_type<T>);
+    requires(is_vector_type && detail::setting_validator_range_value_type<plain_underlying_type>);
 
 public: // Operators
   ///
@@ -151,25 +186,25 @@ public: // Operators
   /// \return true if value is contained, false otherwise
   ///
   [[nodiscard]] auto contains(const T& value) const -> bool
-    requires(detail::setting_validator_range_type<T>);
+    requires(detail::setting_validator_range_value_type<plain_underlying_type>);
 
   ///
-  /// Contains overload for non plain underlying types (optional or vector). \see contains
+  /// Contains overload for vector underlying types. \see contains
   ///
   [[nodiscard]] auto contains(const plain_underlying_type& value) const -> bool
-    requires(!is_plain_type && detail::setting_validator_range_type<T>);
+    requires(is_vector_type && detail::setting_validator_range_value_type<plain_underlying_type>);
 
 public: // Dummy implementation for unsupported types
   setting_validator_range(plain_underlying_type min, plain_underlying_type max)
-    requires(!detail::setting_validator_range_type<plain_underlying_type>);
+    requires(!detail::setting_validator_range_value_type<plain_underlying_type>);
   [[nodiscard]] auto validate(const T& value) const -> T
-    requires(!detail::setting_validator_range_type<T>);
+    requires(!detail::setting_validator_range_value_type<plain_underlying_type>);
   [[nodiscard]] auto validate(const plain_underlying_type& value) const -> plain_underlying_type
-    requires(!is_plain_type && !detail::setting_validator_range_type<T>);
+    requires(is_vector_type && !detail::setting_validator_range_value_type<plain_underlying_type>);
   [[nodiscard]] auto contains(const T& value) const -> bool
-    requires(!detail::setting_validator_range_type<T>);
+    requires(!detail::setting_validator_range_value_type<plain_underlying_type>);
   [[nodiscard]] auto contains(const plain_underlying_type& value) const -> bool
-    requires(!is_plain_type && !detail::setting_validator_range_type<T>);
+    requires(is_vector_type && !detail::setting_validator_range_value_type<plain_underlying_type>);
 };
 
 ///
@@ -210,7 +245,7 @@ public: // Operators
   /// \see setting_validator_range::validate
   ///
   [[nodiscard]] auto validate(const plain_underlying_type& value) const -> plain_underlying_type
-    requires(std::is_same_v<underlying_type, plain_underlying_type>);
+    requires(detail::is_vector_v<T>);
 
 public: // Operators
   ///
@@ -222,7 +257,7 @@ public: // Operators
   /// \see setting_validator_range::contains
   ///
   [[nodiscard]] auto contains(const plain_underlying_type& value) const -> bool
-    requires(std::is_same_v<underlying_type, plain_underlying_type>);
+    requires(detail::is_vector_v<T>);
 };
 
 ///
@@ -285,10 +320,10 @@ public: // Operators
   [[nodiscard]] auto contains(const T& value) const -> bool;
 
   ///
-  /// Contains overload for non plain underlying types (optional or vector). \see contains
+  /// Contains overload for vector underlying types. \see contains
   ///
   [[nodiscard]] auto contains(const plain_underlying_type& value) const -> bool
-    requires(!is_plain_type);
+    requires(is_vector_type);
 };
 
 ///
@@ -340,7 +375,7 @@ public: // Operators
   /// \see setting_validator_list::contains
   ///
   [[nodiscard]] auto contains(const plain_underlying_type& value) const -> bool
-    requires(std::is_same_v<underlying_type, plain_underlying_type>);
+    requires(detail::is_vector_v<T>);
 };
 
 ///
@@ -367,8 +402,8 @@ using setting_validator_type_erased = std::variant<
 ///
 template<underlying_setting_type T>
 setting_validator_range<T>::setting_validator_range(const plain_underlying_type min, const plain_underlying_type max)
-  requires(detail::setting_validator_range_type<plain_underlying_type>)
-  : range_{min, max}
+  requires(detail::setting_validator_range_value_type<plain_underlying_type>)
+  : range_{to_range_value(min), to_range_value(max)}
 {
   if constexpr(!is_optional_type)
   {
@@ -383,7 +418,7 @@ setting_validator_range<T>::setting_validator_range(const plain_underlying_type 
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::validate(const T& value) const -> T
-  requires(detail::setting_validator_range_type<T>)
+  requires(detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   if constexpr(is_vector_type)
   {
@@ -396,13 +431,13 @@ auto setting_validator_range<T>::validate(const T& value) const -> T
     {
       return std::nullopt;
     }
-    return math::clamp(range_, *value);
+    return from_range_value(math::clamp(range_, to_range_value(*value)));
   }
   else
   {
     // range must not be empty for non-optional setting types
     // \see setting_validator_range::setting_validator_range
-    return math::clamp(range_, value);
+    return from_range_value(math::clamp(range_, to_range_value(value)));
   }
 }
 
@@ -410,29 +445,16 @@ auto setting_validator_range<T>::validate(const T& value) const -> T
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::validate(const plain_underlying_type& value) const -> plain_underlying_type
-  requires(!is_plain_type && detail::setting_validator_range_type<T>)
+  requires(is_vector_type && detail::setting_validator_range_value_type<plain_underlying_type>)
 {
-  if constexpr(is_optional_type)
-  {
-    if(math::empty(range_))
-    {
-      return std::nullopt;
-    }
-    return math::clamp(range_, value);
-  }
-  else
-  {
-    // range must not be empty for non-optional setting types
-    // \see setting_validator_range::setting_validator_range
-    return math::clamp(range_, value);
-  }
+  return from_range_value(math::clamp(range_, to_range_value(value)));
 }
 
 ///
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::contains(const T& value) const -> bool
-  requires(detail::setting_validator_range_type<T>)
+  requires(detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   if constexpr(is_vector_type)
   {
@@ -444,11 +466,11 @@ auto setting_validator_range<T>::contains(const T& value) const -> bool
     {
       return true;
     }
-    return math::contains(range_, *value);
+    return math::contains(range_, to_range_value(*value));
   }
   else
   {
-    return math::contains(range_, value);
+    return math::contains(range_, to_range_value(value));
   }
 }
 
@@ -456,9 +478,9 @@ auto setting_validator_range<T>::contains(const T& value) const -> bool
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::contains(const plain_underlying_type& value) const -> bool
-  requires(!is_plain_type && detail::setting_validator_range_type<T>)
+  requires(is_vector_type && detail::setting_validator_range_value_type<plain_underlying_type>)
 {
-  return math::contains(range_, value);
+  return math::contains(range_, to_range_value(value));
 }
 
 ///
@@ -468,7 +490,7 @@ setting_validator_range<T>::setting_validator_range(
   [[maybe_unused]] plain_underlying_type /*min*/, [[maybe_unused]] plain_underlying_type
   /*max*/
 )
-  requires(!detail::setting_validator_range_type<plain_underlying_type>)
+  requires(!detail::setting_validator_range_value_type<plain_underlying_type>)
   : range_{0, 0}
 {
   LOG_WARN("unsupported range validator construction: type=\"{}\"", typeid(T).name());
@@ -478,7 +500,7 @@ setting_validator_range<T>::setting_validator_range(
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::validate(const T& value) const -> T
-  requires(!detail::setting_validator_range_type<T>)
+  requires(!detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   LOG_WARN("unsupported range validator validation: type=\"{}\"", typeid(T).name());
   return value;
@@ -488,7 +510,7 @@ auto setting_validator_range<T>::validate(const T& value) const -> T
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::validate(const plain_underlying_type& value) const -> plain_underlying_type
-  requires(!is_plain_type && !detail::setting_validator_range_type<T>)
+  requires(is_vector_type && !detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   LOG_WARN("unsupported range validator validation: type=\"{}\"", typeid(plain_underlying_type).name());
   return value;
@@ -498,7 +520,7 @@ auto setting_validator_range<T>::validate(const plain_underlying_type& value) co
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::contains([[maybe_unused]] const T& /*value*/) const -> bool
-  requires(!detail::setting_validator_range_type<T>)
+  requires(!detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   LOG_WARN("unsupported range validator contains check: type=\"{}\"", typeid(T).name());
   return true;
@@ -508,7 +530,7 @@ auto setting_validator_range<T>::contains([[maybe_unused]] const T& /*value*/) c
 ///
 template<underlying_setting_type T>
 auto setting_validator_range<T>::contains([[maybe_unused]] const plain_underlying_type& /*value*/) const -> bool
-  requires(!is_plain_type && !detail::setting_validator_range_type<T>)
+  requires(is_vector_type && !detail::setting_validator_range_value_type<plain_underlying_type>)
 {
   LOG_WARN("unsupported range validator contains check: type=\"{}\"", typeid(plain_underlying_type).name());
   return true;
@@ -528,15 +550,27 @@ setting_validator_range_type_erased<T>::setting_validator_range_type_erased(cons
                   create_setting_value_converter<setting_type_erased_type_from<type>, type>();
                 return to_type_erased_value(validator->validate(from_type_erased_value(value)));
               }}
-  , plain_validate_{[validator](const plain_underlying_type& value)
+  , plain_validate_{[validator](const plain_underlying_type& value) -> plain_underlying_type
                     {
-                      using type = typename detail::validator_t<decltype(validator)>::plain_underlying_type;
-                      static constexpr auto to_type_erased_value =
-                        create_setting_value_converter<type, setting_type_erased_type_from<type>>();
-                      static constexpr auto from_type_erased_value =
-                        create_setting_value_converter<setting_type_erased_type_from<type>, type>();
-                      return to_type_erased_value(validator->validate(from_type_erased_value(value)));
-                      return to_type_erased_value(validator->validate(from_type_erased_value(value)));
+                      using validator_type = detail::validator_t<decltype(validator)>;
+                      using type = validator_type::plain_underlying_type;
+                      if constexpr(validator_type::is_vector_type)
+                      {
+                        static constexpr auto to_type_erased_value =
+                          create_setting_value_converter<type, setting_type_erased_type_from<type>>();
+                        static constexpr auto from_type_erased_value =
+                          create_setting_value_converter<setting_type_erased_type_from<type>, type>();
+                        return to_type_erased_value(validator->validate(from_type_erased_value(value)));
+                      }
+                      else
+                      {
+                        // Dummy return. The `plain_validate` function is only called for vector underlying types.
+                        // Plain types return the correct type out of the box and vector types provide overloads
+                        // for `validate` that return plain underlying types. Optional types cannot provide a
+                        // `plain_validate` overload and therefore return optional types. Using `if constexpr`
+                        // here to avoid compilation errors for optional types.
+                        return value;
+                      }
                     }}
   , contains_{[validator](const T& value)
               {
@@ -568,7 +602,7 @@ auto setting_validator_range_type_erased<T>::validate(const T& value) const -> T
 ///
 template<underlying_setting_type_erased_type T>
 auto setting_validator_range_type_erased<T>::validate(const plain_underlying_type& value) const -> plain_underlying_type
-  requires(std::is_same_v<underlying_type, plain_underlying_type>)
+  requires(detail::is_vector_v<T>)
 {
   return plain_validate_(value);
 }
@@ -585,7 +619,7 @@ auto setting_validator_range_type_erased<T>::contains(const T& value) const -> b
 ///
 template<underlying_setting_type_erased_type T>
 auto setting_validator_range_type_erased<T>::contains(const plain_underlying_type& value) const -> bool
-  requires(std::is_same_v<underlying_type, plain_underlying_type>)
+  requires(detail::is_vector_v<T>)
 {
   return plain_contains_(value);
 }
@@ -645,8 +679,9 @@ auto setting_validator_list<T>::available(const R& range) -> bool
     list.erase(std::unique(list.begin(), list.end()), list.end());
     return list;
   }();
-  const auto new_list_valid = is_optional_type || !new_list.empty();
-  if constexpr(is_optional_type)
+  // A plain value needs one to hold, an optional or a vector may hold none
+  const auto new_list_valid = !is_plain_type || !new_list.empty();
+  if constexpr(!is_plain_type)
   {
     const auto lock = std::scoped_lock{mtx_};
     list_ = std::move(new_list);
@@ -691,7 +726,7 @@ auto setting_validator_list<T>::contains(const T& value) const -> bool
 ///
 template<underlying_setting_type T>
 auto setting_validator_list<T>::contains(const plain_underlying_type& value) const -> bool
-  requires(!is_plain_type)
+  requires(is_vector_type)
 {
   const auto lock = std::scoped_lock{mtx_};
   return std::ranges::binary_search(list_, value);
@@ -709,15 +744,8 @@ setting_validator_list_type_erased<T>::setting_validator_list_type_erased(const 
                  static constexpr auto to_type_erased_value =
                    create_setting_value_converter<type, setting_type_erased_type_from<type>>();
 
-                 const auto available_list = validator->available();
-                 auto converted_list = std::vector<plain_underlying_type>{};
-                 converted_list.reserve(available_list.size());
-                 for(const auto& item : available_list)
-                 {
-                   auto converted_item = to_type_erased_value(item);
-                   converted_list.emplace_back(std::move(converted_item));
-                 }
-                 return converted_list;
+                 return validator->available() | std::views::transform(to_type_erased_value) |
+                        std::ranges::to<std::vector<plain_underlying_type>>();
                }}
   , contains_{[validator](const T& value)
               {
@@ -765,7 +793,7 @@ auto setting_validator_list_type_erased<T>::contains(const T& value) const -> bo
 ///
 template<underlying_setting_type_erased_type T>
 auto setting_validator_list_type_erased<T>::contains(const plain_underlying_type& value) const -> bool
-  requires(std::is_same_v<underlying_type, plain_underlying_type>)
+  requires(detail::is_vector_v<T>)
 {
   return plain_contains_(value);
 }

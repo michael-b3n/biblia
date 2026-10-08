@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibstd/util/screen_types.hpp"
+#include "bibstd/data/screen_types.hpp"
 
 #include <memory>
 
@@ -17,8 +17,8 @@ namespace bibstd::system
 class screen_capture
 {
 public: // Typedefs
-  using screen_rect_type = util::screen_rect_type;
-  using pixel_plane_type = util::pixel_plane_type;
+  using screen_rect_type = data::screen_rect_type;
+  using pixel_plane_type = data::pixel_plane_type;
 
 public: // Creators
   ///

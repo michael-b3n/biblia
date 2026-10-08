@@ -175,28 +175,6 @@ auto reference_parser::parse(
 
 ///
 ///
-auto reference_parser::reference_index_range(
-  const std::string_view text,
-  const std::size_t index,
-  const find_book_result& book,
-  const passage_template_result& passage_template,
-  const util::language language
-) -> std::optional<index_range_type>
-{
-  // Without a passage number the reference ends with the book name.
-  const auto end = passage_template.index_numbers_end > 0 ? book.index_range_numbers.begin + passage_template.index_numbers_end
-                                                          : book.index_range_book.end;
-  // The numbers found after the book name reach up to the next letter, the passage may end before. A number behind
-  // it, e.g. the verse number "19" of "(Phil 1,10) 19 ...", is no part of the reference, the ")" of its word still is.
-  if(index >= end_of_word(text, end, language))
-  {
-    return std::nullopt;
-  }
-  return index_range_type{book.index_range_book.begin, end};
-}
-
-///
-///
 auto reference_parser::find_book(const std::string_view text, const std::size_t index, const util::language language)
   -> std::optional<find_book_result>
 {
@@ -294,6 +272,28 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
     }
   );
   return found_book;
+}
+
+///
+///
+auto reference_parser::reference_index_range(
+  const std::string_view text,
+  const std::size_t index,
+  const find_book_result& book,
+  const passage_template_result& passage_template,
+  const util::language language
+) -> std::optional<index_range_type>
+{
+  // Without a passage number the reference ends with the book name.
+  const auto end = passage_template.index_numbers_end > 0 ? book.index_range_numbers.begin + passage_template.index_numbers_end
+                                                          : book.index_range_book.end;
+  // The numbers found after the book name reach up to the next letter, the passage may end before. A number behind
+  // it, e.g. the verse number "19" of "(Phil 1,10) 19 ...", is no part of the reference, the ")" of its word still is.
+  if(index >= end_of_word(text, end, language))
+  {
+    return std::nullopt;
+  }
+  return index_range_type{book.index_range_book.begin, end};
 }
 
 ///

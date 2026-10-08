@@ -11,8 +11,10 @@
 
 #include <cstddef>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace bibstd::bible
 {
@@ -126,6 +128,13 @@ public: // Operations
   /// \return previous reference if it exists, std::nullopt otherwise
   ///
   constexpr auto prev(const reference& ref) const -> std::optional<reference>;
+
+  ///
+  /// Splits the given reference range by chapter. A chapter the range runs through
+  /// is taken from its first to its last verse.
+  /// \return reference range of each chapter, in order
+  ///
+  constexpr auto split_by_chapter(const reference_range& ref) const -> std::vector<reference_range>;
 
 private: // Helpers
   static constexpr auto visit_size(const data_type& data) -> std::size_t;
@@ -343,6 +352,33 @@ constexpr auto versification::prev(const reference& ref) const -> std::optional<
     return std::nullopt;
   }
   return reference::create_unguarded(book, chapter, verse);
+}
+
+///
+///
+constexpr auto versification::split_by_chapter(const reference_range& ref) const -> std::vector<reference_range>
+{
+  const auto begin = ref.begin();
+  const auto end = ref.end();
+  const auto in_range = [&](const book_id book) { return begin.book() <= book && book <= end.book(); };
+  const auto chapters_of = [&](const book_id book)
+  {
+    const auto first_chapter = book == begin.book() ? begin.chapter().value : 1U;
+    const auto last_chapter = book == end.book() ? end.chapter().value : chapter_count(book);
+    const auto to_range = [&, book](const std::uint32_t chapter_value)
+    {
+      const auto chapter = reference::chapter_type{chapter_value};
+      const auto is_first = book == begin.book() && chapter == begin.chapter();
+      const auto is_last = book == end.book() && chapter == end.chapter();
+      return reference_range{
+        reference::create_unguarded(book, chapter, is_first ? begin.verse() : reference::verse_type{1}),
+        reference::create_unguarded(book, chapter, is_last ? end.verse() : reference::verse_type{verse_count(book, chapter)})
+      };
+    };
+    return std::views::iota(first_chapter, last_chapter + 1) | std::views::transform(to_range);
+  };
+  return util::enum_values<book_id>() | std::views::filter(in_range) | std::views::transform(chapters_of) | std::views::join |
+         std::ranges::to<std::vector>();
 }
 
 ///

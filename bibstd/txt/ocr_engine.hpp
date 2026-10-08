@@ -1,7 +1,7 @@
 #pragma once
 
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/meta/for_each.hpp"
-#include "bibstd/util/screen_types.hpp"
 
 #include <memory>
 #include <string>
@@ -42,7 +42,7 @@ private: // Typedefs
   struct ocr_t final
   {
     std::string text;
-    util::screen_rect_type bounding_box;
+    data::screen_rect_type bounding_box;
   };
 
 public: // Typedefs
@@ -77,7 +77,7 @@ struct ocr_engine_tag_layout_analysis
   struct paragraph final
   {
     std::string text;
-    util::screen_rect_type bounding_box;
+    data::screen_rect_type bounding_box;
   };
   using resolution_tags = meta::for_each_t<std::variant<word, line, paragraph>, ocr_engine_resolution_tag>;
 
@@ -127,7 +127,7 @@ protected:
 public: // Typedefs
   using uptr_type = std::unique_ptr<ocr_engine<EngineTag>>;
   using name_type = std::string;
-  using pixel_plane_view_type = util::pixel_plane_view_type;
+  using pixel_plane_view_type = data::pixel_plane_view_type;
 
   using resolution_tags = typename EngineTag::resolution_tags;
   using recognition_data = std::vector<typename EngineTag::recognition_data_element>;

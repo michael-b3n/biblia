@@ -14,38 +14,24 @@ character_recognition_ocr_engine,Zeichenerkennung,Character recognition
 click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
-dbu,DBU,DBU
 dwell_duration,Verweildauer,Dwell duration
-elb,Elberfelder Bibel,Elberfelder Bibel
 enabled,Aktiviert,Enabled
 english,Englisch,English
-esv,English Standard Version,English Standard Version
-eu,Einheitsübersetzung,Einheitsübersetzung
 fallback_versification_name,Ersatz-Verszählung,Fallback versification
 folder,Ordner,Folder
 german,Deutsch,German
-gnb,Gute Nachricht Bibel,Gute Nachricht Bibel
-hfa,Hoffnung für alle,Hoffnung für alle
 hide_window,Fenster ausgeblendet,Window hidden
 hotkey,Tastenkürzel,Shortcut
 key,Taste,Key
-kjv,King James Version,King James Version
 language,Sprache,Language
 layout_recognition_ocr_engine,Layouterkennung,Layout recognition
 line_recognition,Zeilenerkennung,Line recognition
 lookup,Nachschlagen,Lookup
 LookupBrowser,Im Browser öffnen,Open in browser
-lut,Lutherbibel,Lutherbibel
 manual_reference_search,Manuelle Referenzsuche,Manual reference search
-meng,Menge Bibel,Menge Bibel
 modifier,Zusatztaste,Modifier
 movement_tolerance,Bewegungstoleranz,Movement tolerance
 name,Name,Name
-neu,Neue evangelistische Übersetzung,Neue evangelistische Übersetzung
-ngu,Neue Genfer Übersetzung,Neue Genfer Übersetzung
-nirv,New International Reader's Version,New International Reader's Version
-niv,New International Version,New International Version
-nlb,Neues Leben. Die Bibel,Neues Leben. Die Bibel
 None,Keine Aktion,No action
 notifications,Benachrichtigungen,Notifications
 notifications_none,Keine neuen Benachrichtigungen.,No new notifications.
@@ -54,17 +40,16 @@ ocr_auto,Automatische Texterkennung,Automatic text recognition
 paragraph_recognition,Absatzerkennung,Paragraph recognition
 poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
+retry_pause,Pause nach einem Fehler,Pause after a failure
 script,Skripte,Scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
-scripts_none,Keine Skripte geladen. Skripte kommen aus dem Skriptordner der Einstellungen.,No scripts loaded. Scripts come from the scripts folder of the settings.
 scripture,Bibelausgabe,Scripture
 scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
 scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.
 scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
 scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 shift,Umschalt,Shift
-slt,Schlachter,Schlachter
 tessdata_path,Tesseract Datenverzeichnis,Tesseract data folder
 translations,Übersetzungen,Translations
 tray_exit,Beenden,Exit
@@ -132,5 +117,4 @@ vk_w,W,W
 vk_x,X,X
 vk_y,Y,Y
 vk_z,Z,Z
-vxb,Volxbibel,Volxbibel
-zb,Zürcher Bibel,Zürcher Bibel
+web,Web,Web

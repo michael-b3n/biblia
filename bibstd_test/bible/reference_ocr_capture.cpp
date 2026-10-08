@@ -11,10 +11,10 @@
 
 #include <bibstd/data/pixel.hpp>
 #include <bibstd/data/plane.hpp>
+#include <bibstd/data/screen_types.hpp>
 #include <bibstd/math/value_range.hpp>
 #include <bibstd/txt/ocr_engine_tesseract.hpp>
 #include <bibstd/util/language.hpp>
-#include <bibstd/util/screen_types.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -53,18 +53,18 @@ auto report(const std::string& message) -> void
 /// Read an image of any supported format into a pixel plane.
 /// \return Pixel plane with the image content, an empty plane if the image cannot be read
 ///
-auto read_image(const std::filesystem::path& path) -> util::pixel_plane_type
+auto read_image(const std::filesystem::path& path) -> data::pixel_plane_type
 {
   auto* raw = pixRead(path.string().c_str());
   if(raw == nullptr)
   {
-    return util::pixel_plane_type{};
+    return data::pixel_plane_type{};
   }
   auto* rgb = pixConvertTo32(raw);
   pixDestroy(&raw);
   if(rgb == nullptr)
   {
-    return util::pixel_plane_type{};
+    return data::pixel_plane_type{};
   }
 
   const auto width = static_cast<std::uint32_t>(pixGetWidth(rgb));
@@ -72,7 +72,7 @@ auto read_image(const std::filesystem::path& path) -> util::pixel_plane_type
   const auto words_per_line = static_cast<std::size_t>(pixGetWpl(rgb));
   const auto* const data = pixGetData(rgb);
 
-  auto result = util::pixel_plane_type{width, height};
+  auto result = data::pixel_plane_type{width, height};
   for(auto y = std::uint32_t{0}; y < height; ++y)
   {
     const auto* const line = data + (static_cast<std::size_t>(y) * words_per_line);
@@ -148,7 +148,7 @@ auto duplicate_stem(const std::vector<std::filesystem::path>& images) -> std::op
 ///
 /// \return Everything the engine recognized on the image it was initialized with
 ///
-auto capture_of(const std::string& id, const txt::ocr_engine_tesseract& engine, const util::pixel_plane_type& image)
+auto capture_of(const std::string& id, const txt::ocr_engine_tesseract& engine, const data::pixel_plane_type& image)
   -> test_utils::capture_data
 {
   auto result = test_utils::capture_data{.id = id, .width = image.width(), .height = image.height()};
@@ -224,7 +224,7 @@ TEST_CASE("capture ocr data of the images in the ocr folder", "[.capture]")
       report(std::format("skipped, image cannot be read: {}", path.filename().string()));
       continue;
     }
-    engine.initialize(util::pixel_plane_view_type{image}, std::nullopt);
+    engine.initialize(data::pixel_plane_view_type{image}, std::nullopt);
     const auto data = capture_of(path.stem().string(), engine, image);
 
     const auto capture_path = std::filesystem::path{path}.replace_extension(".ocr");

@@ -40,6 +40,9 @@ class process_params;
 template<>
 class process_params<void> final
 {
+  // Variables
+  process_id_type process_id_;
+
 public: // Typedefs
   using value_type = void;
   using id_type = process_id_type;
@@ -53,9 +56,6 @@ public: // Accessors
   /// \return process ID
   ///
   [[nodiscard]] auto process_id() const -> id_type { return process_id_; }
-
-private: // Variables
-  id_type process_id_;
 };
 
 ///
@@ -65,6 +65,10 @@ template<typename ParamsType>
   requires(!std::is_void_v<ParamsType>)
 class process_params<ParamsType> final
 {
+  // Variables
+  process_id_type process_id_;
+  ParamsType params_;
+
 public: // Typedefs
   using value_type = ParamsType;
   using id_type = process_id_type;
@@ -91,10 +95,6 @@ public: // Accessors
   /// \return process_params_start parameters
   ///
   [[nodiscard]] auto operator->() const -> util::non_owning_ptr<const ParamsType> { return &params_; }
-
-private: // Variables
-  id_type process_id_;
-  ParamsType params_;
 };
 
 } // namespace bibstd::framework

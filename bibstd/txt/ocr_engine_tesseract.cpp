@@ -14,8 +14,14 @@
 #include <tesseract/baseapi.h>
 #include <tesseract/publictypes.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <filesystem>
 #include <optional>
+#include <ranges>
 #include <string>
+#include <system_error>
+#include <vector>
 
 namespace bibstd::txt
 {
@@ -83,6 +89,31 @@ auto get_bounding_box(const auto& ri, const auto level) -> std::optional<ocr_eng
   }
 }
 
+///
+/// Searches level by level, so the nearest folder is found first and nothing below it is opened.
+/// \return the folder "tessdata" nearest below \p folders, std::nullopt if none is found opening \p max_folders
+///
+[[nodiscard]] auto nearest_tessdata_folder(const std::vector<std::filesystem::path>& folders, const std::size_t max_folders)
+  -> std::optional<std::filesystem::path>
+{
+  auto error = std::error_code{};
+  const auto subfolders = [&error](const std::filesystem::path& folder)
+  {
+    return std::filesystem::directory_iterator{folder, std::filesystem::directory_options::skip_permission_denied, error} |
+           std::views::filter([&error](const auto& entry) { return entry.is_directory(error); }) |
+           std::views::transform([](const auto& entry) { return entry.path(); });
+  };
+  const auto opened = folders | std::views::take(max_folders);
+  if(std::ranges::empty(opened))
+  {
+    return std::nullopt;
+  }
+  const auto next = opened | std::views::transform(subfolders) | std::views::join | std::ranges::to<std::vector>();
+  const auto found = std::ranges::find(next, std::filesystem::path{"tessdata"}, &std::filesystem::path::filename);
+  return found != std::ranges::end(next) ? std::optional{*found}
+                                         : nearest_tessdata_folder(next, max_folders - std::ranges::size(opened));
+}
+
 } // namespace
 
 ///
@@ -91,32 +122,15 @@ auto ocr_engine_tesseract::tessdata_folder_finder() -> std::optional<std::filesy
 {
   const auto executable_folder_parent = system::filesystem::executable_folder().parent_path();
   const auto root = executable_folder_parent.parent_path();
-  const auto best_guess = executable_folder_parent / "share" / "tessdata";
+  auto best_guess = executable_folder_parent / "share" / "tessdata";
   if(std::filesystem::exists(best_guess))
   {
     return best_guess;
   }
-  auto result = std::optional<std::filesystem::path>{};
-  const auto is_tessdata_folder = [](const auto& e)
-  { return e.is_directory() && e.path().filename() == std::string_view{"tessdata"}; };
-  const auto search_folder_from = [&](const auto& root)
-  {
-    constexpr auto max_search_iterations = 1024;
-    auto counter = std::size_t{0};
-    auto continue_condition = [&]([[maybe_unused]] const auto&) { return !result || counter++ < max_search_iterations; };
-    for(const auto& entry :
-        std::filesystem::recursive_directory_iterator{root, std::filesystem::directory_options::skip_permission_denied} |
-          std::views::filter(is_tessdata_folder) | std::views::take_while(continue_condition))
-    {
-      result = entry.path();
-    }
-  };
-  search_folder_from(executable_folder_parent);
-  if(!result)
-  {
-    search_folder_from(root);
-  }
-  return result;
+  // Folders opened at most, the ones above the executable may hold a whole drive
+  static constexpr auto max_folders = std::size_t{1024};
+  const auto result = nearest_tessdata_folder({executable_folder_parent}, max_folders);
+  return result ? result : nearest_tessdata_folder({root}, max_folders);
 }
 
 ///
@@ -130,7 +144,8 @@ ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata
     throw util::exception("non existent tessdata path");
   }
   auto tessdata_string = tessdata_path.generic_string();
-  tesseract_->Init(tessdata_string.data(), language_map.at(language).data(), tesseract::OEM_LSTM_ONLY);
+  const auto lang = std::string{language_map.at(language)};
+  tesseract_->Init(tessdata_string.data(), lang.c_str(), tesseract::OEM_LSTM_ONLY);
   tesseract_->SetVariable("lstm_choice_mode", "2"); // set lstm_choice_mode to alternative symbol choices per character
 }
 

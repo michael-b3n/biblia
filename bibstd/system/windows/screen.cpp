@@ -25,7 +25,7 @@ namespace
 /// content as black.
 /// \return true if the region was captured, false otherwise
 ///
-auto capture_gdi(const util::screen_rect_type rect, util::pixel_plane_type& pix) -> bool
+auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix) -> bool
 {
   static std::mutex mtx;
   static std::vector<std::byte> pixels_bytes;
@@ -73,16 +73,13 @@ auto capture_gdi(const util::screen_rect_type rect, util::pixel_plane_type& pix)
   ReleaseDC(nullptr, hdc);
   assert(info.bmiHeader.biBitCount >= 24);
 
-  // The loaded pixel bytes are saved to a list of pixels in a row reversed order.
-  // This order makes the bitmap data directly compatible with tesseract.
-  // Since the Windows screen coordinate system origin is on top left,
-  // the highest row is the lowest row in the coordinate system of tesseract,
-  // where the origin is on the bottom left.
+  // The rows are kept in reversed order: tesseract has its origin at the bottom left,
+  // the Windows screen at the top left.
   const auto byte_count = info.bmiHeader.biBitCount / 8;
   const auto height = numeric_cast<std::uint32_t>(info.bmiHeader.biHeight);
   const auto width = numeric_cast<std::uint32_t>(info.bmiHeader.biWidth);
 
-  pix = util::pixel_plane_type(width, height);
+  pix = data::pixel_plane_type(width, height);
   std::ranges::for_each(
     util::ranges::index_view_to(height) | std::views::reverse,
     [&, counter = 0u](const auto row_idx) mutable

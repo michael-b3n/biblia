@@ -51,11 +51,7 @@ class Metrics final : public QObject
   Q_PROPERTY(int durationLong MEMBER durationLong_ CONSTANT)
   Q_PROPERTY(int durationDebounce MEMBER durationDebounce_ CONSTANT)
 
-public: // Structors
-  explicit Metrics(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
-  ~Metrics() noexcept override;
-
-private: // Variables
+  // Variables
   // Font sizes
   int fontSizeSmall_{8};
   int fontSizeBody_{9};
@@ -88,6 +84,10 @@ private: // Variables
   int durationMedium_{300};
   int durationLong_{3000};
   int durationDebounce_{500};
+
+public: // Structors
+  explicit Metrics(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  ~Metrics() noexcept override;
 };
 
 } // namespace bibqml

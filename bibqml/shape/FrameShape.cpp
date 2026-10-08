@@ -27,6 +27,19 @@ FrameShape::~FrameShape() noexcept = default;
 
 ///
 ///
+void FrameShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
+{
+  if((painter == nullptr) || width() <= strokeWidth_ || height() <= strokeWidth_)
+  {
+    return;
+  }
+
+  painter->setRenderHint(QPainter::Antialiasing, true);
+  painter->strokePath(buildPath(), QPen{strokeColor_, static_cast<qreal>(strokeWidth_)});
+}
+
+///
+///
 auto FrameShape::buildPath() const -> QPainterPath
 {
   // The line is stroked on its middle, so the outline is inset by half of its width
@@ -51,19 +64,6 @@ auto FrameShape::buildPath() const -> QPainterPath
   path.arcTo(QRectF{rect.left(), rect.top(), diameter, diameter}, 180.0, -90.0);
   path.lineTo(gapStart, rect.top());
   return path;
-}
-
-///
-///
-void FrameShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
-{
-  if((painter == nullptr) || width() <= strokeWidth_ || height() <= strokeWidth_)
-  {
-    return;
-  }
-
-  painter->setRenderHint(QPainter::Antialiasing, true);
-  painter->strokePath(buildPath(), QPen{strokeColor_, static_cast<qreal>(strokeWidth_)});
 }
 
 } // namespace bibqml

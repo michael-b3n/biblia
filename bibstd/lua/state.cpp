@@ -47,25 +47,6 @@ auto state::run_script(const std::string_view name, const std::string_view code)
 
 ///
 ///
-auto state::run(const std::function<sol::protected_function_result()>& code) -> std::optional<sol::object>
-{
-  if(data_->shutdown_flag)
-  {
-    LOG_ERROR("lua script failed: the state is stopped");
-    return std::nullopt;
-  }
-  const auto result = code();
-  if(!result.valid())
-  {
-    const sol::error error = result;
-    LOG_ERROR("lua script failed: {}", error.what());
-    return std::nullopt;
-  }
-  return result.return_count() > 0 ? result.get<sol::object>() : sol::make_object(data_->lua, sol::lua_nil);
-}
-
-///
-///
 auto state::free_parent(const util::path& p) -> std::optional<sol::table>
 {
   const auto& sections = p.sections();
@@ -98,6 +79,25 @@ auto state::free_parent(const util::path& p) -> std::optional<sol::table>
     return std::nullopt;
   }
   return parent;
+}
+
+///
+///
+auto state::run(const std::function<sol::protected_function_result()>& code) -> std::optional<sol::object>
+{
+  if(data_->shutdown_flag)
+  {
+    LOG_ERROR("lua script failed: the state is stopped");
+    return std::nullopt;
+  }
+  const auto result = code();
+  if(!result.valid())
+  {
+    const sol::error error = result;
+    LOG_ERROR("lua script failed: {}", error.what());
+    return std::nullopt;
+  }
+  return result.return_count() > 0 ? result.get<sol::object>() : sol::make_object(data_->lua, sol::lua_nil);
 }
 
 } // namespace bibstd::lua

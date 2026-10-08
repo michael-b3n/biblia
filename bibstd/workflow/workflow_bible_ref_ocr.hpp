@@ -2,12 +2,12 @@
 
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_range.hpp"
+#include "bibstd/data/screen_types.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/settings_base.hpp"
 #include "bibstd/util/language.hpp"
-#include "bibstd/util/screen_types.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <expected>
 #include <memory>
@@ -21,7 +21,7 @@ namespace bibstd::workflow
 ///
 /// Settings corresponding to workflow bible reference ocr.
 ///
-struct workflow_bible_ref_ocr_settings final : public framework::settings_base
+struct workflow_bible_ref_ocr_settings final : public workflow_settings_base
 {
   // Typedefs
   ///
@@ -54,20 +54,20 @@ class workflow_bible_ref_ocr final : public workflow_base<workflow_bible_ref_ocr
   // Typedefs
   struct params_t final
   {
-    util::pixel_plane_view_type image;
-    util::screen_coordinates_type position;
+    data::pixel_plane_view_type image;
+    data::screen_coordinates_type position;
   };
 
   struct result_t final
   {
     std::vector<bible::reference_range> reference_ranges;
-    std::optional<util::screen_rect_type> reference_bounding_box;
+    std::optional<data::screen_rect_type> reference_bounding_box;
   };
 
   struct find_references_result_t final
   {
     std::vector<bible::reference_range> ranges;
-    std::optional<util::screen_rect_type> bounding_box;
+    std::optional<data::screen_rect_type> bounding_box;
   };
 
   struct settings_t final

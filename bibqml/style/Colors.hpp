@@ -46,26 +46,7 @@ class Colors final : public QObject
   Q_PROPERTY(QColor bookHeader MEMBER bookHeader_ NOTIFY bookHeaderChanged)
   Q_PROPERTY(QColor bookHeaderText MEMBER bookHeaderText_ NOTIFY bookHeaderTextChanged)
 
-public: // Structors
-  explicit Colors(QObject* parent = nullptr);
-  ~Colors() noexcept override;
-
-signals:
-  void backgroundTransparentChanged();
-  void backgroundSolidChanged();
-  void backgroundSolidDarkerChanged();
-  void borderChanged();
-  void borderDarkerChanged();
-  void selectionChanged();
-  void pressedChanged();
-
-  void textChanged();
-  void verseBoxChanged();
-  void verseTextChanged();
-  void bookHeaderChanged();
-  void bookHeaderTextChanged();
-
-private: // Variables
+  // Variables
   // Base colors
   QColor green_{detail::toQColor("#7db356ff")};
   QColor greenDarker_{detail::toQColor("#5a8a38ff")};
@@ -87,6 +68,25 @@ private: // Variables
   QColor verseText_{detail::toQColor("#fef5deff")};
   QColor bookHeader_{detail::toQColor("#8f633dff")};
   QColor bookHeaderText_{detail::toQColor("#fef5deff")};
+
+public: // Structors
+  explicit Colors(QObject* parent = nullptr);
+  ~Colors() noexcept override;
+
+signals:
+  void backgroundTransparentChanged();
+  void backgroundSolidChanged();
+  void backgroundSolidDarkerChanged();
+  void borderChanged();
+  void borderDarkerChanged();
+  void selectionChanged();
+  void pressedChanged();
+
+  void textChanged();
+  void verseBoxChanged();
+  void verseTextChanged();
+  void bookHeaderChanged();
+  void bookHeaderTextChanged();
 };
 
 } // namespace bibqml

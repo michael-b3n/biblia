@@ -34,7 +34,6 @@ auto workflow_settings::data_folder() const -> const std::filesystem::path&
 auto workflow_settings::type_erased_settings() const -> std::vector<setting_data>
 {
   const auto lock = std::scoped_lock{mtx_};
-  auto retval = std::vector<setting_data>(settings_.size());
   const auto to_setting_data = [](const auto& data)
   {
     return setting_data{
@@ -42,11 +41,7 @@ auto workflow_settings::type_erased_settings() const -> std::vector<setting_data
       std::visit([](const auto& e) -> setting_type_erased_non_owning_ptr_variant_type { return e.get(); }, data.setting)
     };
   };
-  for(const auto [i, d] : settings_ | std::views::transform(to_setting_data) | std::views::enumerate)
-  {
-    retval.at(i) = d;
-  }
-  return retval;
+  return settings_ | std::views::transform(to_setting_data) | std::ranges::to<std::vector>();
 }
 
 ///

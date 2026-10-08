@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bibstd/util/screen_types.hpp>
+#include <bibstd/data/screen_types.hpp>
 
 #include <QPoint>
 #include <QRect>
@@ -16,7 +16,7 @@ namespace bibqml
 ///
 struct CursorPositionPair final
 {
-  bibstd::util::screen_coordinates_type native;
+  bibstd::data::screen_coordinates_type native;
   QPoint deviceIndependent;
 };
 
@@ -27,7 +27,7 @@ struct CursorPositionPair final
 /// \note This accesses the screens of the QML layer, it must be called on its thread.
 /// \return rectangle in device independent pixels, std::nullopt if no monitor or screen is under the cursor
 ///
-[[nodiscard]] auto toDeviceIndependent(const bibstd::util::screen_rect_type& rect, const CursorPositionPair& cursor)
+[[nodiscard]] auto toDeviceIndependent(const bibstd::data::screen_rect_type& rect, const CursorPositionPair& cursor)
   -> std::optional<QRect>;
 
 } // namespace bibqml

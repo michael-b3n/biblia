@@ -4,15 +4,15 @@
 #include "bibstd/data/plane.hpp"
 #include "bibstd/math/rect.hpp"
 
-namespace bibstd::util
+namespace bibstd::data
 {
 
 ///
-/// This class contains common definitions for screen related code.
+/// Types of the screen and of its pixels.
 ///
 using screen_rect_type = math::rect<std::int32_t>;
 using screen_coordinates_type = screen_rect_type::coordinates_type;
-using pixel_plane_type = data::plane<data::pixel>;
-using pixel_plane_view_type = data::plane_view<const data::pixel>;
+using pixel_plane_type = plane<pixel>;
+using pixel_plane_view_type = plane_view<const pixel>;
 
-} // namespace bibstd::util
+} // namespace bibstd::data

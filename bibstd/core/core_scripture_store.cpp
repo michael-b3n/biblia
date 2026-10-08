@@ -106,27 +106,29 @@ auto core_scripture_store::import(const std::filesystem::path& source) -> std::s
   }
   std::ignore = std::filesystem::create_directories(folder_, error);
 
-  auto imported = std::size_t{0};
-  for(const auto& file :
-      regular_files(source, error) | std::views::filter([](const auto& path) { return container_type_of(path).has_value(); }))
+  const auto take_over = [&](const std::filesystem::path& file)
   {
     // Read before the copy, so a file this store cannot load never reaches the folder
     auto scripture = read(file);
     if(!scripture)
     {
       LOG_WARN("scripture file not taken over: file_name=\"{}\"", file.filename().string());
-      continue;
+      return false;
     }
     const auto target = folder_ / file.filename();
     if(!std::filesystem::copy_file(file, target, std::filesystem::copy_options::overwrite_existing, error))
     {
       LOG_ERROR("failed to copy scripture file: file_name=\"{}\", {}", file.filename().string(), error.message());
-      continue;
+      return false;
     }
     LOG_INFO("scripture file copied: file_name=\"{}\"", file.filename().string());
     scripture_files_.insert_or_assign(target, std::move(scripture));
-    ++imported;
-  }
+    return true;
+  };
+  const auto imported = static_cast<std::size_t>(std::ranges::count_if(
+    regular_files(source, error) | std::views::filter([](const auto& path) { return container_type_of(path).has_value(); }),
+    take_over
+  ));
   if(imported > 0)
   {
     name_scriptures();

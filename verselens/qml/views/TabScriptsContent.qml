@@ -86,23 +86,12 @@ Item
             {
               // Properties
               Layout.fillWidth: true
-              text: scriptRow.modelData.id + ": " + scriptRow.modelData.functions.join(", ")
+              text: scriptRow.modelData.functions.join(", ")
               font.pointSize: Metrics.fontSizeSmall
               color: Colors.borderDarker
               wrapMode: Text.WordWrap
             }
           }
-        }
-
-        TextSimple
-        {
-          // Properties
-          anchors.centerIn: parent
-          width: parent.width
-          visible: scriptList.count === 0
-          text: Translations.name("scripts_none", Translations.language)
-          horizontalAlignment: Text.AlignHCenter
-          wrapMode: Text.WordWrap
         }
       }
     }

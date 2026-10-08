@@ -35,13 +35,13 @@ namespace
 [[nodiscard]] auto reference_bounding_box(
   const bible::reference_ocr::reference_position_data& position_data,
   const bible::reference_parser::index_range_type& index_range
-) -> std::optional<util::screen_rect_type>
+) -> std::optional<data::screen_rect_type>
 {
   decltype(auto) boxes = position_data.character_bounding_boxes;
   const auto begin = std::ranges::next(std::ranges::cbegin(boxes), std::min(index_range.begin, boxes.size()));
   const auto end = std::ranges::next(std::ranges::cbegin(boxes), std::min(index_range.end, boxes.size()));
 
-  auto result = std::optional<util::screen_rect_type>{};
+  auto result = std::optional<data::screen_rect_type>{};
   std::ranges::for_each(
     std::ranges::subrange(begin, end) | std::views::filter([](const auto& box) { return box.has_value(); }),
     [&](const auto& box) { result = result ? math::surrounding_rect(*result, *box) : *box; }
@@ -118,7 +118,7 @@ auto limit_to(
   const std::vector<typename framework::setting_validator_list<T>::plain_underlying_type>& available
 ) -> void
 {
-  // Only an empty list of a non optional setting is refused, the lists given here always hold line recognition.
+  // Only an empty list of a plain setting is refused, the lists given here always hold line recognition.
   std::ignore = std::get<typename framework::setting_validator_list<T>::sptr_type>(setting->validator)->available(available);
 }
 
@@ -127,7 +127,7 @@ auto limit_to(
 ///
 ///
 workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : framework::settings_base{std::move(workflow_settings)}
+  : workflow_settings_base{std::move(workflow_settings)}
   , tessdata_path{workflow_settings_->create_setting("ocr.tessdata_path", txt::ocr_engine_tesseract::tessdata_folder_finder())}
   , character_recognition_ocr_engine{workflow_settings_->create_setting(
       "ocr.character_recognition_ocr_engine",

@@ -155,10 +155,8 @@ bool SimpleListModel::move(const QModelIndex& from, const QModelIndex& to)
     return false;
   }
 
-  // beginMoveRows() uses "insert before" semantics for destinationChild.
-  // Moving a row further down within the same parent requires the target
-  // to be one past the desired final index, since the source row is
-  // removed first, shifting everything after it back by one.
+  // beginMoveRows() inserts before destinationChild. A row moved down is removed first,
+  // so its target is one past the final index.
   const int destinationChild = (toRow > fromRow) ? toRow + 1 : toRow;
 
   if(!beginMoveRows(QModelIndex(), fromRow, fromRow, QModelIndex(), destinationChild))

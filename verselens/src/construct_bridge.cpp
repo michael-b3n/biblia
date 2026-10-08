@@ -7,7 +7,6 @@
 #include <bibstd/workflow/workflow_hotkey.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
 
 #include <bibqml/bridge/BridgeApplication.hpp>
 #include <bibqml/bridge/BridgeBibleRefLookup.hpp>

@@ -4,7 +4,6 @@
 #include <bibstd/util/log.hpp>
 
 #include <algorithm>
-#include <utility>
 
 namespace bibqml
 {

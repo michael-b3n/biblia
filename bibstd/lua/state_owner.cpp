@@ -1,7 +1,7 @@
 #include "bibstd/lua/state_owner.hpp"
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/function_cast.hpp"
 #include "bibstd/lua/names.hpp"
-#include "bibstd/lua/scripts.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/non_owning_ptr.hpp"
@@ -48,7 +48,7 @@ auto check_stop(const util::non_owning_ptr<lua_State> lua, [[maybe_unused]] cons
 ///
 [[nodiscard]] auto embedded(const std::string& file_name) -> std::optional<std::string>
 {
-  return scripts::find(file_name).transform([](const auto& script) { return std::string{script.code}; });
+  return internal::find(file_name).transform([](const auto& script) { return std::string{script.code}; });
 }
 
 } // namespace
@@ -75,14 +75,14 @@ state_owner::state_owner()
   system[names::value_shutdown_flag] = sol::make_light(data_->shutdown_flag);
   (*s)[names::node_root] = s->create_table_with(names::node_interface, s->create_table(), names::node_system, system);
 
-  const auto init = scripts::find(names::embedded_script_init);
+  const auto init = internal::find(names::embedded_script_init);
   if(!init)
   {
     throw util::exception{std::format("lua init failed: no embedded \"{}\"", names::embedded_script_init)};
   }
   // The file names of the other embedded scripts, init.lua runs them and each adds itself to the tree
   const auto files =
-    scripts::all() | std::views::filter([](const auto& script) { return script.name != names::embedded_script_init; }) |
+    internal::all() | std::views::filter([](const auto& script) { return script.name != names::embedded_script_init; }) |
     std::views::transform([](const auto& script) { return std::string{script.name}; }) | std::ranges::to<std::vector>();
   const auto chunk = s->load(init->code, std::format("@{}", init->name), sol::load_mode::text);
   if(!chunk.valid())

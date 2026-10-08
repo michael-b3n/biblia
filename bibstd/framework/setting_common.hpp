@@ -8,6 +8,7 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -71,13 +72,8 @@ template<typename E>
   requires(std::is_enum_v<E>)
 auto to_type_erased_setting(const std::vector<E>& v) -> auto
 {
-  auto result = std::vector<std::string>{};
-  result.reserve(v.size());
-  for(const auto& item : v)
-  {
-    result.emplace_back(to_type_erased_setting(item));
-  }
-  return result;
+  return v | std::views::transform([](const auto& item) { return to_type_erased_setting(item); }) |
+         std::ranges::to<std::vector<std::string>>();
 }
 
 ///
@@ -112,13 +108,8 @@ template<typename T>
   requires(std::is_same_v<T, std::vector<typename T::value_type>> && std::is_enum_v<typename T::value_type>)
 auto from_type_erased_setting(const std::vector<std::string>& v) -> T
 {
-  auto result = T{};
-  result.reserve(v.size());
-  for(const auto& item : v)
-  {
-    result.emplace_back(from_type_erased_setting<typename T::value_type>(item));
-  }
-  return result;
+  return v | std::views::transform([](const auto& item) { return from_type_erased_setting<typename T::value_type>(item); }) |
+         std::ranges::to<T>();
 }
 
 ///
