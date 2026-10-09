@@ -49,7 +49,7 @@ VerseLens installs for the current user and starts at sign-in, which can be turn
 
 ### Scriptures
 
-VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and put the zip files into `%LOCALAPPDATA%\verselens\scriptures`. They are loaded on start. `Scripture > Folder` names another folder.
+VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and put the zip files into `%LOCALAPPDATA%\verselens\scriptures`. An install from the Microsoft Store keeps this folder inside its package data, `Scripture > Folder` shows where. They are loaded on start. `Scripture > Folder` names another folder.
 
 ### Scripts
 

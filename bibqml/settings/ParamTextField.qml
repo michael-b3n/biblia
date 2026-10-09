@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import BibQml
 
 ///
@@ -23,15 +24,18 @@ ParamBase
     text: root.value === undefined ? "" : root.value.toString()
     font.pointSize: Metrics.fontSizeParam
     color: Colors.text
+    selectionColor: Colors.borderDarker
+    selectedTextColor: Colors.backgroundSolid
     renderType: Text.CurveRendering
     verticalAlignment: Text.AlignVCenter
 
     padding: Metrics.paddingParamContent
     topPadding: Metrics.spacingSmall
     bottomPadding: Metrics.spacingSmall
-    // The edited text is kept clear of the postfix standing at the right edge
-    rightPadding: postfixText.width > 0 ? postfixText.width + 2 * Metrics.paddingParamContent
-                                        : Metrics.paddingParamContent
+    // The edited text is kept clear of the postfix and the path button standing at the right edge
+    rightPadding: postfixText.width + pathButton.width > 0
+                  ? postfixText.width + pathButton.width + 2 * Metrics.paddingParamContent
+                  : Metrics.paddingParamContent
     width: root.availableWidth
     implicitHeight: root.lineHeight + input.topPadding + input.bottomPadding
 
@@ -78,6 +82,49 @@ ParamBase
       anchors.rightMargin: Metrics.paddingParamContent
       anchors.verticalCenter: parent.verticalCenter
       text: root.postfix
+    }
+
+    Loader
+    {
+      id: pathButton
+
+      // Properties
+      anchors.right: postfixText.left
+      anchors.verticalCenter: parent.verticalCenter
+      active: root.valueType === SettingsListModel.PathValueType
+
+      // Components
+      sourceComponent: ButtonIconSimple
+      {
+        // Properties
+        svgSource: Icons.folderOpen
+        iconSize: Metrics.iconSize
+
+        // Connections
+        onClicked:
+        {
+          folderDialog.currentFolder = LocalPath.toUrl(input.text)
+          folderDialog.open()
+        }
+
+        // Components
+        HoverHandler
+        {
+          // Properties
+          cursorShape: Qt.ArrowCursor
+        }
+
+        FolderDialog
+        {
+          id: folderDialog
+
+          // Properties
+          title: root.title
+
+          // Connections
+          onAccepted: { root.paramValueChanged(LocalPath.fromUrl(folderDialog.selectedFolder)) }
+        }
+      }
     }
 
     Timer
