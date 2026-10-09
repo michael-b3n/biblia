@@ -33,7 +33,7 @@ Uninstall versions 1.x ("Bible Assistant") first, they do not update to 2.x.
 Requires Windows 10 or later.
 
 ### Scriptures
-VerseLens ships without scriptures. To read passages in VerseLens, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and put the zip files into `%LOCALAPPDATA%\verselens\scriptures`. They are loaded on start, the folder can be changed in the settings.
+VerseLens ships without scriptures. To read passages in VerseLens, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and put the zip files into `%LOCALAPPDATA%\verselens\scriptures`. An install from the Microsoft Store keeps this folder inside its package data, the folder setting shows where. The files are loaded on start, the folder can be changed in the settings.
 
 ### Release
 On the branch `release/verselens_v<major>`, set `APP_VERSION_MAJOR` and `APP_VERSION_MINOR` in `verselens/CMakeLists.txt`, then tag and push:
