@@ -2,8 +2,8 @@ import QtQuick
 import BibQml
 
 ///
-/// Transparent window covering a whole screen, drawing the speech bubble shape around the
-/// window whose rect it is given. It never takes any input.
+/// Transparent window covering the screen of the window whose rect it is given, drawing the
+/// speech bubble shape around that window. It never takes any input.
 ///
 Window
 {
@@ -19,16 +19,20 @@ Window
   // Geometry the bubble is drawn with, it only follows the requested one while the bubble is shown
   property rect currentBubbleRect: Qt.rect(0, 0, 0, 0)
   property point currentTailPosition: Qt.point(0, 0)
+  // Area the window covers: the screen, and the bubble where it reaches beyond that screen
+  readonly property rect coveredArea: Placement.united(
+    root.screenGeometry, Placement.grown(root.bubbleRect, Metrics.spacingSmall)
+  )
 
   color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
   // The window follows the phase it is told directly, see MainWindow for why its visibility is
   // not derived from the fade of its shape.
   visible: root.shown
-  x: root.screenGeometry.x
-  y: root.screenGeometry.y
-  width: root.screenGeometry.width
-  height: root.screenGeometry.height
+  x: root.coveredArea.x
+  y: root.coveredArea.y
+  width: root.coveredArea.width
+  height: root.coveredArea.height
 
   // Connections
   onBubbleRectChanged: { root.takeGeometry() }
