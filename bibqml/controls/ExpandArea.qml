@@ -3,7 +3,7 @@ import BibQml
 
 ///
 /// Mouse area that lets the call site resize what it covers by dragging one of its four corners.
-/// It only reports the deltas of the drag, where its target ends up is up to the call site.
+/// It only reports the edges a drag starts at, resizing the target is up to the call site.
 /// Everything but the corners is left to the content, which is why this area never moves its
 /// target. That is the job of a MoveArea.
 ///
@@ -17,7 +17,7 @@ Item
 
   // Signals
   signal released(mouse: MouseEvent)
-  signal expandRequested(deltaX: int, deltaY: int, deltaWidth: int, deltaHeight: int)
+  signal expandRequested(edges: int)
 
   // Components
   ///
@@ -33,17 +33,11 @@ Item
     width: root.expandAreaWidth
     height: root.expandAreaWidth
     cursorShape: Qt.SizeFDiagCursor
-    deltaXMultiplier: 1
-    deltaYMultiplier: 1
-    deltaWidthMultiplier: -1
-    deltaHeightMultiplier: -1
+    edges: Qt.TopEdge | Qt.LeftEdge
 
     // Connections
     onReleased: (mouse) => { root.released(mouse) }
-    onResizeRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-    {
-      root.requestExpand(deltaX, deltaY, deltaWidth, deltaHeight)
-    }
+    onResizeRequested: (edges) => { root.requestExpand(edges) }
   }
 
   ExpandCorner
@@ -56,17 +50,11 @@ Item
     width: root.expandAreaWidth
     height: root.expandAreaWidth
     cursorShape: Qt.SizeBDiagCursor
-    deltaXMultiplier: 0
-    deltaYMultiplier: 1
-    deltaWidthMultiplier: 1
-    deltaHeightMultiplier: -1
+    edges: Qt.TopEdge | Qt.RightEdge
 
     // Connections
     onReleased: (mouse) => { root.released(mouse) }
-    onResizeRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-    {
-      root.requestExpand(deltaX, deltaY, deltaWidth, deltaHeight)
-    }
+    onResizeRequested: (edges) => { root.requestExpand(edges) }
   }
 
   ExpandCorner
@@ -79,17 +67,11 @@ Item
     width: root.expandAreaWidth
     height: root.expandAreaWidth
     cursorShape: Qt.SizeBDiagCursor
-    deltaXMultiplier: 1
-    deltaYMultiplier: 0
-    deltaWidthMultiplier: -1
-    deltaHeightMultiplier: 1
+    edges: Qt.BottomEdge | Qt.LeftEdge
 
     // Connections
     onReleased: (mouse) => { root.released(mouse) }
-    onResizeRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-    {
-      root.requestExpand(deltaX, deltaY, deltaWidth, deltaHeight)
-    }
+    onResizeRequested: (edges) => { root.requestExpand(edges) }
   }
 
   ExpandCorner
@@ -102,28 +84,22 @@ Item
     width: root.expandAreaWidth
     height: root.expandAreaWidth
     cursorShape: Qt.SizeFDiagCursor
-    deltaXMultiplier: 0
-    deltaYMultiplier: 0
-    deltaWidthMultiplier: 1
-    deltaHeightMultiplier: 1
+    edges: Qt.BottomEdge | Qt.RightEdge
 
     // Connections
     onReleased: (mouse) => { root.released(mouse) }
-    onResizeRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-    {
-      root.requestExpand(deltaX, deltaY, deltaWidth, deltaHeight)
-    }
+    onResizeRequested: (edges) => { root.requestExpand(edges) }
   }
 
   // Functions
   ///
-  /// Reports the resize a corner was dragged by, if this area may be resized at all.
+  /// Reports the edges a drag of a corner starts at, if this area may be resized at all.
   ///
-  function requestExpand(deltaX, deltaY, deltaWidth, deltaHeight)
+  function requestExpand(edges)
   {
     if(root.expandable)
     {
-      root.expandRequested(deltaX, deltaY, deltaWidth, deltaHeight)
+      root.expandRequested(edges)
     }
   }
 }

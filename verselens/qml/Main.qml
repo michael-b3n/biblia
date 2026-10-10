@@ -214,7 +214,7 @@ QtObject
     id: bubble
 
     // Properties
-    screenGeometry: mainPlacement.screenGeometry
+    screenGeometry: main.screenGeometry
     bubbleRect: mainPlacement.area
     tailPosition: root.tailPosition
     // A pinned main window does not belong to a position on the screen, so it shows no tail.
@@ -252,6 +252,8 @@ QtObject
     mainRect: mainPlacement.area
     pinned: mainPlacement.pinned
     shown: root.windowShown
+    minimumWidth: mainPlacement.minimalWidth
+    minimumHeight: mainPlacement.minimalHeight
 
     // Connections
     onVisibleChanged: { Qt.callLater(root.raiseWindows) }
@@ -263,11 +265,7 @@ QtObject
         mainPlacement.storePinnedPosition()
       }
     }
-    onMoveRequested: (deltaX, deltaY) => { mainPlacement.moveBy(deltaX, deltaY) }
-    onExpandRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-    {
-      mainPlacement.resizeBy(deltaX, deltaY, deltaWidth, deltaHeight)
-    }
+    onDragged: (area) => { mainPlacement.applyUserArea(area) }
     onCloseClicked: { Qt.callLater(root.closeWindow) }
     onPinClicked: { mainPlacement.setPinned(!mainPlacement.pinned) }
   }

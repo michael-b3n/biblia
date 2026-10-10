@@ -4,7 +4,8 @@ import BibQml
 ///
 /// Window carrying the content. It has no decoration of its own, it is resized by the corners
 /// of its expand area, moved by the free space of its header and framed by the speech bubble
-/// behind it.
+/// behind it. Both drags are handed to the system, only it takes the window across screens of
+/// different scaling.
 ///
 Window
 {
@@ -21,6 +22,11 @@ Window
   required property bool pinned
   required property bool shown
 
+  // Screen the window is on
+  readonly property rect screenGeometry: Qt.rect(Screen.virtualX, Screen.virtualY, Screen.width, Screen.height)
+  // Whether the system moves or resizes the window at the moment, only then it reports its area
+  property bool dragging: false
+
   color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
   visible: root.shown
@@ -31,10 +37,15 @@ Window
 
   // Signals
   signal released()
-  signal moveRequested(deltaX: int, deltaY: int)
-  signal expandRequested(deltaX: int, deltaY: int, deltaWidth: int, deltaHeight: int)
+  signal dragged(area: rect)
   signal closeClicked()
   signal pinClicked()
+
+  // Connections
+  onXChanged: { root.reportDrag() }
+  onYChanged: { root.reportDrag() }
+  onWidthChanged: { root.reportDrag() }
+  onHeightChanged: { root.reportDrag() }
 
   // Components
   Item
@@ -89,11 +100,8 @@ Window
       expandAreaWidth: Metrics.spacingLarge
 
       // Connections
-      onReleased: { root.released() }
-      onExpandRequested: (deltaX, deltaY, deltaWidth, deltaHeight) =>
-      {
-        root.expandRequested(deltaX, deltaY, deltaWidth, deltaHeight)
-      }
+      onReleased: { root.endDrag() }
+      onExpandRequested: (edges) => { root.dragging = root.startSystemResize(edges) }
 
       // Components
       MainTabLayout
@@ -113,9 +121,30 @@ Window
         // Connections
         onCloseClicked: { root.closeClicked() }
         onPinClicked: { root.pinClicked() }
-        onReleased: { root.released() }
-        onMoveRequested: (deltaX, deltaY) => { root.moveRequested(deltaX, deltaY) }
+        onReleased: { root.endDrag() }
+        onMoveRequested: { root.dragging = root.startSystemMove() }
       }
     }
+  }
+
+  // Functions
+  ///
+  /// Reports the area the system dragged the window to.
+  ///
+  function reportDrag()
+  {
+    if(root.dragging)
+    {
+      root.dragged(Qt.rect(root.x, root.y, root.width, root.height))
+    }
+  }
+
+  ///
+  /// Ends the drag of the system.
+  ///
+  function endDrag()
+  {
+    root.dragging = false
+    root.released()
   }
 }

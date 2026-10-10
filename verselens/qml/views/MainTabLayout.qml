@@ -35,7 +35,7 @@ Item
   signal closeClicked()
   signal pinClicked()
   signal released()
-  signal moveRequested(deltaX: int, deltaY: int)
+  signal moveRequested()
 
   // Connections
   ///
@@ -134,7 +134,7 @@ Item
 
         // Connections
         onReleased: { root.released() }
-        onMoveRequested: (deltaX, deltaY) => { root.moveRequested(deltaX, deltaY) }
+        onMoveRequested: { root.moveRequested() }
       }
 
       ///
