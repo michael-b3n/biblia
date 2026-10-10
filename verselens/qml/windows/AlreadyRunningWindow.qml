@@ -118,7 +118,13 @@ Window
           movable: true
 
           // Connections
-          onMoveRequested: (deltaX, deltaY) => { root.moveBy(deltaX, deltaY) }
+          // The notice leaves the middle of its screen for good and stays where the system drops it.
+          onMoveRequested:
+          {
+            /*no binding*/ root.x = root.x
+            /*no binding*/ root.y = root.y
+            root.startSystemMove()
+          }
 
           // Components
           TextSimple
@@ -164,16 +170,5 @@ Window
         horizontalAlignment: Text.AlignLeft
       }
     }
-  }
-
-  // Functions
-  ///
-  /// Moves the notice by the given delta. It belongs to no position on the screen, so it only
-  /// ends up where the user drags it.
-  ///
-  function moveBy(deltaX: int, deltaY: int)
-  {
-    /*no binding*/ root.x += deltaX
-    /*no binding*/ root.y += deltaY
   }
 }

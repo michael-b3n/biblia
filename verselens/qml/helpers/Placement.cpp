@@ -48,9 +48,9 @@ QRectF Placement::screenGeometryAt(const QPointF& position) const
 
 ///
 ///
-QRectF Placement::screenGeometryOf(const QRectF& rect) const
+QRectF Placement::united(const QRectF& first, const QRectF& second) const
 {
-  return screenGeometryAt(rect.center());
+  return first.united(second);
 }
 
 ///
@@ -62,14 +62,13 @@ QRectF Placement::grown(const QRectF& source, const qreal amount) const
 
 ///
 ///
-QRectF Placement::insideScreen(const QRectF& target, const QRectF& screen) const
+QRectF Placement::reachable(const QRectF& target) const
 {
-  return {
-    std::clamp(target.x(), screen.left(), std::max(screen.left(), screen.right() - target.width())),
-    std::clamp(target.y(), screen.top(), std::max(screen.top(), screen.bottom() - target.height())),
-    target.width(),
-    target.height()
-  };
+  const auto shown = std::ranges::any_of(
+    QGuiApplication::screens(), [&](const QScreen* const screen) { return target.intersects(screen->geometry()); }
+  );
+  // No screen is at the target then, which leaves the primary one
+  return shown ? target : insideScreen(target, screenGeometryAt(target.center()));
 }
 
 ///
@@ -77,19 +76,6 @@ QRectF Placement::insideScreen(const QRectF& target, const QRectF& screen) const
 QRectF Placement::centeredSquare(const QPointF& center, const qreal size, const QRectF& screen) const
 {
   return insideScreen(QRectF{center.x() - (size / 2.0), center.y() - (size / 2.0), size, size}, screen);
-}
-
-///
-///
-QRectF Placement::clippedToScreen(
-  const QRectF& target, const QRectF& screen, const qreal minimalWidth, const qreal minimalHeight
-) const
-{
-  const auto left = std::max(target.left(), screen.left());
-  const auto top = std::max(target.top(), screen.top());
-  const auto right = std::min(target.right(), screen.right());
-  const auto bottom = std::min(target.bottom(), screen.bottom());
-  return {left, top, std::max(right - left, minimalWidth), std::max(bottom - top, minimalHeight)};
 }
 
 ///
@@ -107,6 +93,18 @@ QPointF Placement::borderPointTowards(const QRectF& rect, const qreal gap, const
   const auto position = towards.center();
   return {
     std::clamp(position.x(), grownRect.left(), grownRect.right()), std::clamp(position.y(), grownRect.top(), grownRect.bottom())
+  };
+}
+
+///
+///
+QRectF Placement::insideScreen(const QRectF& target, const QRectF& screen) const
+{
+  return {
+    std::clamp(target.x(), screen.left(), std::max(screen.left(), screen.right() - target.width())),
+    std::clamp(target.y(), screen.top(), std::max(screen.top(), screen.bottom() - target.height())),
+    target.width(),
+    target.height()
   };
 }
 
