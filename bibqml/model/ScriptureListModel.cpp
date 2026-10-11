@@ -516,6 +516,8 @@ void ScriptureListModel::fetchLoad(const Load& load, const std::stop_token& toke
 ///
 void ScriptureListModel::fetchCopyright()
 {
+  // One at a time, so the copyright posted last is the one read last
+  const auto lock = std::scoped_lock{copyrightMtx_};
   post([this, copyright = bibqml::scriptureCopyright(*workflowScripture_)]() { scriptureCopyright(copyright); });
 }
 

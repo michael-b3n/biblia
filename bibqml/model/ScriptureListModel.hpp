@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
+#include <mutex>
 #include <stop_token>
 #include <vector>
 
@@ -107,6 +108,7 @@ class ScriptureListModel final : public QAbstractListModel
   QString scriptureCopyright_;
   bibstd::signal::signal_type<void(Load, std::stop_token)> loadRequested_;
   bibstd::signal::signal_type<void()> copyrightRequested_;
+  mutable std::mutex copyrightMtx_;
   bibstd::framework::queued_connections connections_;
   const std::unique_ptr<MachineHolder> machine_;
 
