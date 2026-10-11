@@ -129,7 +129,7 @@ class workflow_scripture final
   mutable std::mutex mtx_;
   std::optional<std::map<std::string, script_scripture_t>> script_scriptures_; // by name in the app, guarded by mtx_
   // One update of the script scriptures at a time
-  std::mutex scripts_mtx_;
+  mutable std::mutex scripts_mtx_;
   framework::queued_connections connections_;
 
 public: // Constants

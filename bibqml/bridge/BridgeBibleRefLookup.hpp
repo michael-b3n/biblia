@@ -64,7 +64,6 @@ public: // Modifiers
   Q_INVOKABLE void lookupChapter(const QString& bookId, int chapter);
 
   ///
-  /// Wait for the lookup on its way, its end is not reported any more.
   /// This will stop the frontend backend communication.
   ///
   void disconnect();

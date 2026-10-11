@@ -248,7 +248,6 @@ void BridgeBibleRefOcr::runManualSearch()
 ///
 void BridgeBibleRefOcr::applyAutoSearch()
 {
-  // Each request reads the setting anew, so the last one leaves the search as the setting says
   const auto lock = std::scoped_lock{autoSearchMtx_};
   const auto enabled = autoSearchSetting_->value();
   const auto result = enabled ? workflowBibleRefOcrAuto_->start({}) : workflowBibleRefOcrAuto_->stop({});

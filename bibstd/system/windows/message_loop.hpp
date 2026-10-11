@@ -10,8 +10,8 @@ namespace bibstd::system
 {
 
 ///
-/// Thread running a Windows message loop, for what Windows binds to a thread: a registered
-/// hotkey, the window of a tray icon. Work is handed to that thread as messages to its window.
+/// Thread running a Windows message loop, for what Windows binds to a thread.
+/// Work is handed to that thread as messages to its window.
 ///
 class message_loop final
 {

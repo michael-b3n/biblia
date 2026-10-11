@@ -65,8 +65,7 @@ class BridgeBibleRefOcr final : public QObject
   bool manualSearchRunning_{false};
   bool autoSearchRunning_{false};
   QPoint cursorPosition_{0, 0};
-  // One request to the auto search at a time: stopping it joins its run on the thread pool
-  std::mutex autoSearchMtx_;
+  mutable std::mutex autoSearchMtx_;
   bibstd::framework::queued_connections connections_;
 
 public: // Typedefs

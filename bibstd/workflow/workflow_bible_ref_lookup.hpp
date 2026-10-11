@@ -49,7 +49,7 @@ class workflow_bible_ref_lookup final : public workflow_base<workflow_bible_ref_
 
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
-  std::mutex mtx_; // one lookup or update at a time
+  mutable std::mutex mtx_;
   framework::queued_connections connections_;
 
 public: // Typedefs
