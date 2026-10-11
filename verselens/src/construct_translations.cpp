@@ -77,7 +77,7 @@ translations_instance::translations_instance(
         Qt::QueuedConnection
       );
     },
-    executor_
+    connections_
   );
 }
 
@@ -103,7 +103,7 @@ translations_instance::~translations_instance() noexcept = default;
 ///
 auto translations_instance::disconnect() -> void
 {
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///

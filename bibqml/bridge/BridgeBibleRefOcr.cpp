@@ -1,7 +1,6 @@
 #include "bibqml/bridge/BridgeBibleRefOcr.hpp"
 
 #include <bibstd/framework/setting.hpp>
-#include <bibstd/framework/thread_pool.hpp>
 #include <bibstd/math/rect.hpp>
 #include <bibstd/system/screen.hpp>
 #include <bibstd/util/enum.hpp>
@@ -142,14 +141,13 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
     )}
   , clickActionSetting_{createClickActionSetting(*workflowSettings)}
   , autoSearchSetting_{createAutoSearchSetting(*workflowSettings)}
-  , autoSearchExecutor_{bibstd::framework::thread_pool::strand_id()}
 {
-  executor_.connect(*manualSearchSig_, [this]() { runManualSearch(); });
+  connections_.connect(*manualSearchSig_, [this]() { runManualSearch(); });
 
   workflowBibleRefOcrAuto_->connect_queued(
     &bibstd::workflow::workflow_bible_ref_ocr_auto_sigs::detecting,
     [this](const auto& started) { notifyAutoSearchDetecting(started.detection_id); },
-    executor_
+    connections_
   );
   workflowBibleRefOcrAuto_->connect_queued(
     &bibstd::workflow::workflow_bible_ref_ocr_auto_sigs::detected,
@@ -161,11 +159,11 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
         notifyAutoSearchDetection(detected->detection_id, detected->reference_ranges.front(), detected->reference_bounding_box);
       }
     },
-    executor_
+    connections_
   );
 
   autoSearchSetting_->signal_adapter.connect_queued(
-    &bibstd::framework::setting_signals::value_changed, [this]() { applyAutoSearch(); }, autoSearchExecutor_
+    &bibstd::framework::setting_signals::value_changed, [this]() { applyAutoSearch(); }, connections_
   );
   // An unchanged setting emits nothing, so a search left on is started here. Starting is the one
   // half that does not wait for a run, so it needs no thread of its own
@@ -202,8 +200,7 @@ void BridgeBibleRefOcr::setAutoSearch(const bool enabled)
 ///
 void BridgeBibleRefOcr::disconnect()
 {
-  executor_.disconnect();
-  autoSearchExecutor_.disconnect();
+  connections_.disconnect();
 }
 
 ///
@@ -251,6 +248,8 @@ void BridgeBibleRefOcr::runManualSearch()
 ///
 void BridgeBibleRefOcr::applyAutoSearch()
 {
+  // Each request reads the setting anew, so the last one leaves the search as the setting says
+  const auto lock = std::scoped_lock{autoSearchMtx_};
   const auto enabled = autoSearchSetting_->value();
   const auto result = enabled ? workflowBibleRefOcrAuto_->start({}) : workflowBibleRefOcrAuto_->stop({});
   if(result)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bibstd/framework/synchronized_executor.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -35,7 +35,7 @@ class BridgeScript final : public QObject
   const std::shared_ptr<bibstd::workflow::workflow_script> workflowScript_;
   bool loading_{false};
   QVariantList scripts_;
-  bibstd::framework::synchronized_executor executor_;
+  bibstd::framework::queued_connections connections_;
 
 public: // Structors
   explicit BridgeScript(

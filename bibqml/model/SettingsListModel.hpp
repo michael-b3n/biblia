@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bibstd/framework/synchronized_executor.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 #include <bibstd/workflow/workflow_settings.hpp>
 
@@ -84,7 +84,7 @@ private: // Typedefs
   // Variables
   std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings_;
   std::vector<Entry> entries_;
-  bibstd::framework::synchronized_executor executor_;
+  bibstd::framework::queued_connections connections_;
 
 public: // Typedefs
   enum Role
