@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bibstd/execution/scope.hpp"
 #include "bibstd/framework/queued_connections.hpp"
 #include "bibstd/signal/common.hpp"
 #include "bibstd/system/hotkey_common.hpp"
@@ -43,6 +44,8 @@ class workflow_hotkey final : public workflow_base<void>
 
   // Variables
   const std::shared_ptr<workflow_settings> workflow_settings_;
+  // Before the guard: the hotkeys end first, then the signals they started
+  execution::scope scope_;
   const util::shared_scope_guard hotkey_guard_;
   mutable std::mutex mtx_;
   std::unordered_map<std::string, callback_data> callbacks_;

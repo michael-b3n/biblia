@@ -26,7 +26,8 @@ public: // Static modifiers
   static auto init() -> util::shared_scope_guard;
 
   ///
-  /// Register global callback to specified key and key modifier.
+  /// Register global callback to specified key and key modifier. It is called on the thread
+  /// of the implementation and has to return quickly, whatever takes time is queued by the caller.
   ///
   static auto register_callback(key key, key_modifier mod, std::function<void()>&& callback) -> void;
 

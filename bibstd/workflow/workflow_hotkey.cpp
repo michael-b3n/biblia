@@ -1,4 +1,5 @@
 #include "bibstd/workflow/workflow_hotkey.hpp"
+#include "bibstd/execution/launch.hpp"
 #include "bibstd/framework/setting.hpp"
 #include "bibstd/system/hotkey.hpp"
 #include "bibstd/util/contains.hpp"
@@ -125,13 +126,17 @@ auto workflow_hotkey::apply_hotkey_impl(const path_type& path) -> void
     system::hotkey::register_callback(
       combination.first,
       combination.second,
-      // Called on the thread pool already, see system::hotkey
-      [sig = std::weak_ptr{data.shared_sig}]()
+      // Called on the thread of the hotkeys, which must not wait for the slots
+      [this, sig = std::weak_ptr{data.shared_sig}]()
       {
-        if(auto s = sig.lock())
+        const auto emit_signal = [sig]()
         {
-          (*s)();
-        }
+          if(auto s = sig.lock())
+          {
+            (*s)();
+          }
+        };
+        execution::launch(emit_signal, scope_);
       }
     );
     data.registered = combination;

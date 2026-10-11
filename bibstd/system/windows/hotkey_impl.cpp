@@ -1,5 +1,4 @@
 #include "bibstd/system/windows/hotkey_impl.hpp"
-#include "bibstd/execution/launch.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/log.hpp"
@@ -120,11 +119,6 @@ auto hotkey_impl::init() -> util::shared_scope_guard
     []()
     {
       const auto lock = std::scoped_lock{mtx};
-      if(scope_)
-      {
-        // A callback that is running finishes first, with the loop still there
-        scope_->stop();
-      }
       if(loop_)
       {
         // Posted, so it runs after the requests on their way. The loop ends once it ran.
@@ -138,7 +132,6 @@ auto hotkey_impl::init() -> util::shared_scope_guard
         );
       }
       loop_.reset();
-      scope_.reset();
       cv_init.notify_all();
     }
   );
@@ -150,12 +143,11 @@ auto hotkey_impl::init() -> util::shared_scope_guard
     }
     try
     {
-      scope_ = std::make_unique<execution::scope>();
       loop_ = std::make_unique<message_loop>(&hotkey_impl::handle_message);
     }
     catch(...)
     {
-      // The guard closes what exists and takes the lock for it
+      // The guard takes the lock when it goes
       lock.unlock();
       throw;
     }
@@ -169,7 +161,7 @@ auto hotkey_impl::register_callback(
   const hotkey_common::key key, const hotkey_common::key_modifier mod, std::function<void()>&& callback
 ) -> void
 {
-  assert(loop_ && scope_);
+  assert(loop_);
   auto register_hotkey = [key, mod, window = static_cast<HWND>(loop_->window()), c = std::move(callback)]() mutable
   {
     const auto hotkey_id = new_hotkey_id();
@@ -191,7 +183,7 @@ auto hotkey_impl::register_callback(
 ///
 auto hotkey_impl::unregister_callback(const hotkey_common::key key, const hotkey_common::key_modifier mod) -> void
 {
-  assert(loop_ && scope_);
+  assert(loop_);
   auto unregister_hotkey = [key, mod, window = static_cast<HWND>(loop_->window())]()
   {
     if(id_map_.contains({key, mod}))
@@ -219,8 +211,7 @@ auto hotkey_impl::handle_message(const unsigned int message, const std::uintptr_
     LOG_ERROR("no callback registered for hotkey_id={}", wparam);
     return;
   }
-  auto callback = it->second;
-  execution::launch(std::move(callback), *scope_);
+  it->second();
 }
 
 } // namespace bibstd::system
