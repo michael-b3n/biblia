@@ -243,6 +243,7 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   auto imported = std::size_t{0};
   try
   {
+    const auto update_lock = std::scoped_lock{update_mtx_};
     {
       const auto lock = std::scoped_lock{mtx_};
       imported = core_scripture_store_->import(params->folder);
@@ -329,10 +330,10 @@ auto workflow_scripture::update_scripts() -> void
 {
   // The name in the script, then the name of the script, e.g. "LUT (Bibleserver)"
   static constexpr auto script_scripture_name = "{} ({})";
-  // Two loadings may report at the same time, the later update reads the later scripts
-  const auto scripts_lock = std::scoped_lock{scripts_mtx_};
   try
   {
+    // Two loadings may report at the same time, the later update reads the later scripts
+    const auto update_lock = std::scoped_lock{update_mtx_};
     // The scriptures of a script by their names in the app
     const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
     {
