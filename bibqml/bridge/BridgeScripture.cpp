@@ -1,5 +1,6 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
 
+#include <bibstd/execution/launch.hpp>
 #include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
@@ -23,32 +24,7 @@ BridgeScripture::BridgeScripture(
   workflowScripture_->connect_queued(
     &bibstd::workflow::workflow_scripture_sigs::scriptures_changed,
     [this]() { QMetaObject::invokeMethod(this, [this]() { updateAvailable(); }, Qt::QueuedConnection); },
-    executor_
-  );
-  workflowScripture_->connect_queued(
-    &bibstd::workflow::workflow_scripture_sigs::import_ended,
-    [this](const bibstd::framework::process_id_type processId, const std::size_t imported)
-    {
-      QMetaObject::invokeMethod(
-        this,
-        [this, processId, imported]()
-        {
-          if(processId_ != processId)
-          {
-            return;
-          }
-          if(importRunning_)
-          {
-            importRunning_ = false;
-            emit importRunningChanged();
-          }
-          updateAvailable();
-          emit importEnded(static_cast<int>(imported));
-        },
-        Qt::QueuedConnection
-      );
-    },
-    executor_
+    connections_
   );
   // After connecting, so no change is missed
   available_ = workflowScripture_->scripture_count() > 0;
@@ -74,18 +50,33 @@ void BridgeScripture::importFolder(const QUrl& folder)
     return;
   }
   const auto params = bibstd::workflow::workflow_scripture::import_params{{.folder = localFolder.toStdString()}};
-  processId_ = params.process_id();
   importRunning_ = true;
   emit importRunningChanged();
   LOG_DEBUG("start scripture import: folder=\"{}\"", localFolder.toStdString());
-  workflowScripture_->import_scriptures(params);
+  auto finish = [this](const std::size_t imported)
+  {
+    if(importRunning_)
+    {
+      importRunning_ = false;
+      emit importRunningChanged();
+    }
+    updateAvailable();
+    emit importEnded(static_cast<int>(imported));
+  };
+  auto import = [this, params, finish = std::move(finish)]()
+  {
+    const auto imported = workflowScripture_->import_scriptures(params);
+    QMetaObject::invokeMethod(this, [finish, imported]() { finish(imported); }, Qt::QueuedConnection);
+  };
+  bibstd::execution::launch(std::move(import), scope_);
 }
 
 ///
 ///
 void BridgeScripture::disconnect()
 {
-  executor_.disconnect();
+  connections_.disconnect();
+  scope_.stop();
 }
 
 ///

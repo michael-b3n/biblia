@@ -17,10 +17,10 @@ using any_signal_type = signal_type<any_return_type(any_argument_type)>;
 } // namespace detail
 
 ///
-/// Concept for executors that can be used with the adapter.
+/// Concept for what queues the slots of the adapter, \see queued_connections.
 ///
 template<typename T>
-concept executor_kind = requires(
+concept connector_kind = requires(
   T t,
   detail::any_signal_type& sig,
   detail::any_signal_type::slot_type slot,
@@ -60,18 +60,16 @@ public: // Modifiers
   auto connect_extended(auto sig_projection, auto&& slot) const -> connection_type;
 
   ///
-  ///  Connect a slot to the signal specified by the projection, ensuring the slot is called
-  /// in the context of the provided executor. The lifetime of the executor must exceed the lifetime of the slot. The slot
-  /// connection is bound to the lifetime of the executor.
+  /// Connect a slot to the signal specified by the projection, the slot is queued by \p connections
+  /// instead of being called by the emitting thread. The connection ends with \p connections.
   ///
-  auto connect_queued(auto sig_projection, auto&& slot, executor_kind auto& executor) const -> void;
+  auto connect_queued(auto sig_projection, auto&& slot, connector_kind auto& connections) const -> void;
 
   ///
-  /// Connect a slot to the signal specified by the projection, allowing extended functionality and ensuring
-  /// the slot is called in the context of the provided executor. The lifetime of the executor must exceed the lifetime of the
-  /// slot. The slot connection is bound to the lifetime of the executor.
+  /// Connect an extended slot to the signal specified by the projection, the slot is queued by \p connections
+  /// instead of being called by the emitting thread. The connection ends with \p connections.
   ///
-  auto connect_queued_extended(auto sig_projection, auto&& slot, executor_kind auto& executor) const -> void;
+  auto connect_queued_extended(auto sig_projection, auto&& slot, connector_kind auto& connections) const -> void;
 
 protected: // Accessors
   ///
@@ -100,17 +98,17 @@ auto adapter<T>::connect_extended(auto sig_projection, auto&& slot) const -> con
 ///
 ///
 template<std::default_initializable T>
-auto adapter<T>::connect_queued(auto sig_projection, auto&& slot, executor_kind auto& executor) const -> void
+auto adapter<T>::connect_queued(auto sig_projection, auto&& slot, connector_kind auto& connections) const -> void
 {
-  executor.connect(std::invoke(sig_projection, sigs_), std::forward<decltype(slot)>(slot));
+  connections.connect(std::invoke(sig_projection, sigs_), std::forward<decltype(slot)>(slot));
 }
 
 ///
 ///
 template<std::default_initializable T>
-auto adapter<T>::connect_queued_extended(auto sig_projection, auto&& slot, executor_kind auto& executor) const -> void
+auto adapter<T>::connect_queued_extended(auto sig_projection, auto&& slot, connector_kind auto& connections) const -> void
 {
-  executor.connect_extended(std::invoke(sig_projection, sigs_), std::forward<decltype(slot)>(slot));
+  connections.connect_extended(std::invoke(sig_projection, sigs_), std::forward<decltype(slot)>(slot));
 }
 
 ///

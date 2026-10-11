@@ -1,6 +1,7 @@
 #include "bibqml/bridge/BridgeBibleRefLookup.hpp"
 #include "bibqml/util/ScriptureAccess.hpp"
 
+#include <bibstd/execution/launch.hpp>
 #include <bibstd/util/format.hpp>
 #include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
@@ -22,25 +23,6 @@ BridgeBibleRefLookup::BridgeBibleRefLookup(
   , workflowBibleRefLookup_{std::move(workflowBibleRefLookup)}
   , workflowScripture_{std::move(workflowScripture)}
 {
-  workflowBibleRefLookup_->connect_queued(
-    &bibstd::workflow::workflow_bible_ref_lookup_sigs::ended,
-    [this](const bibstd::framework::process_id_type processId)
-    {
-      QMetaObject::invokeMethod(
-        this,
-        [this, processId]()
-        {
-          if(processId_ == processId && running_)
-          {
-            running_ = false;
-            emit runningChanged(running_);
-          }
-        },
-        Qt::QueuedConnection
-      );
-    },
-    executor_
-  );
 }
 
 ///
@@ -89,7 +71,7 @@ void BridgeBibleRefLookup::lookupChapter(const QString& bookId, const int chapte
 ///
 void BridgeBibleRefLookup::disconnect()
 {
-  executor_.disconnect();
+  scope_.stop();
 }
 
 ///
@@ -104,7 +86,21 @@ void BridgeBibleRefLookup::start(std::vector<bibstd::bible::reference_range>&& r
     emit runningChanged(running_);
   }
   LOG_DEBUG("start bible reference lookup: references=[{}]", bibstd::util::format::join(params->references, ", "));
-  workflowBibleRefLookup_->lookup(params);
+  auto finish = [this, processId = params.process_id()]()
+  {
+    // A newer lookup took over in the meantime, only its end is of interest.
+    if(processId_ == processId && running_)
+    {
+      running_ = false;
+      emit runningChanged(running_);
+    }
+  };
+  auto lookup = [this, params, finish = std::move(finish)]() mutable
+  {
+    workflowBibleRefLookup_->lookup(params);
+    QMetaObject::invokeMethod(this, std::move(finish), Qt::QueuedConnection);
+  };
+  bibstd::execution::launch(std::move(lookup), scope_);
 }
 
 } // namespace bibqml

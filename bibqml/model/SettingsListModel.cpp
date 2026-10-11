@@ -147,7 +147,7 @@ SettingsListModel::SettingsListModel(
       LOG_DEBUG("notify setting created: path=\"{}\"", path)
       QMetaObject::invokeMethod(this, [this, path]() { appendSetting(path); }, Qt::QueuedConnection);
     },
-    executor_
+    connections_
   );
 }
 
@@ -249,7 +249,7 @@ Qt::ItemFlags SettingsListModel::flags([[maybe_unused]] const QModelIndex& /*ind
 ///
 void SettingsListModel::disconnect()
 {
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///
@@ -294,7 +294,7 @@ void SettingsListModel::addSetting(const std::string& path, const auto& setting)
         Qt::QueuedConnection
       );
     },
-    executor_
+    connections_
   );
   setting->signal_adapter.connect_queued(
     &bibstd::framework::setting_signals::validator_changed,
@@ -316,7 +316,7 @@ void SettingsListModel::addSetting(const std::string& path, const auto& setting)
         }
       );
     },
-    executor_
+    connections_
   );
 }
 

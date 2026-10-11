@@ -1,6 +1,7 @@
 #pragma once
 
-#include "bibstd/framework/active_worker.hpp"
+#include "bibstd/execution/scope.hpp"
+#include "bibstd/system/windows/message_loop.hpp"
 #include "bibstd/util/scope_guard.hpp"
 
 #include <tray.hpp>
@@ -24,11 +25,11 @@ class tray final
 {
   // Variables
   inline static std::mutex mtx_;
-  inline static std::unique_ptr<framework::active_worker> worker_{};
+  inline static bool active_{false};
+  inline static std::unique_ptr<message_loop> loop_{};
+  inline static std::unique_ptr<execution::scope> scope_{};
+  // The tray window belongs to the loop thread, the tray is only used there
   inline static std::unique_ptr<Tray::Tray> tray_{nullptr};
-  // Thread the tray window belongs to, it is woken up by a message to run queued tasks
-  inline static unsigned long thread_id_{0};
-  inline static std::map<int, std::function<void()>> callback_map_{};
 
 public: // Typedefs
   ///
@@ -56,12 +57,6 @@ public: // Static modifiers
   /// \p index is the position in the list the tray was initialized with, \p text is UTF-8 encoded.
   ///
   static auto set_text(std::size_t index, std::string text) -> void;
-
-private: // Static helpers
-  ///
-  /// Dispatch one message of the tray thread and queue the next call on \p worker.
-  ///
-  static auto get_message(framework::active_worker& worker) -> void;
 };
 
 } // namespace bibstd::system

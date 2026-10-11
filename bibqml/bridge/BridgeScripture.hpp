@@ -1,7 +1,7 @@
 #pragma once
 
-#include <bibstd/framework/process_params.hpp>
-#include <bibstd/framework/synchronized_executor.hpp>
+#include <bibstd/execution/scope.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -34,10 +34,10 @@ class BridgeScripture final : public QObject
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
-  bibstd::framework::process_id_type processId_;
   bool available_{false};
   bool importRunning_{false};
-  bibstd::framework::synchronized_executor executor_;
+  bibstd::framework::queued_connections connections_;
+  bibstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeScripture(

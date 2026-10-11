@@ -1,8 +1,8 @@
 #pragma once
 
 #include <bibstd/bible/reference_range.hpp>
+#include <bibstd/execution/scope.hpp>
 #include <bibstd/framework/process_params.hpp>
-#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -39,7 +39,7 @@ class BridgeBibleRefLookup final : public QObject
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
   bibstd::framework::process_id_type processId_;
   bool running_{false};
-  bibstd::framework::synchronized_executor executor_;
+  bibstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeBibleRefLookup(
@@ -64,7 +64,6 @@ public: // Modifiers
   Q_INVOKABLE void lookupChapter(const QString& bookId, int chapter);
 
   ///
-  /// Disconnect all signal connections.
   /// This will stop the frontend backend communication.
   ///
   void disconnect();

@@ -125,7 +125,7 @@ void SettingBinding::bind()
       setting->signal_adapter.connect_queued(
         &bibstd::framework::setting_signals::value_changed,
         [this]() { QMetaObject::invokeMethod(this, [this]() { emit valueChanged(); }, Qt::QueuedConnection); },
-        executor_
+        connections_
       );
     },
     *setting_

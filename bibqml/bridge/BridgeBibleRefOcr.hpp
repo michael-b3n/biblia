@@ -5,8 +5,8 @@
 #include <bibstd/bible/reference_range.hpp>
 #include <bibstd/data/screen_types.hpp>
 #include <bibstd/framework/process_params.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/framework/setting_type_erased.hpp>
-#include <bibstd/framework/synchronized_executor.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 #include <bibstd/workflow/workflow_hotkey.hpp>
 
@@ -17,6 +17,7 @@
 #include <QtQml/qqmlregistration.h>
 
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 
@@ -64,10 +65,8 @@ class BridgeBibleRefOcr final : public QObject
   bool manualSearchRunning_{false};
   bool autoSearchRunning_{false};
   QPoint cursorPosition_{0, 0};
-  bibstd::framework::synchronized_executor executor_;
-  // Carries the auto search requests alone, on a strand of its own: stopping the search joins its
-  // run, which must neither happen on the thread of the QML layer nor delay what the other one does
-  bibstd::framework::synchronized_executor autoSearchExecutor_;
+  mutable std::mutex autoSearchMtx_;
+  bibstd::framework::queued_connections connections_;
 
 public: // Typedefs
   ///

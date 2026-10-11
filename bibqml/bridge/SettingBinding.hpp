@@ -2,7 +2,7 @@
 
 #include "bibqml/util/SettingConversion.hpp"
 
-#include <bibstd/framework/synchronized_executor.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
@@ -40,7 +40,7 @@ class SettingBinding final : public QObject
   const QString path_;
   const QVariant defaultValue_;
   std::optional<SettingVariantType> setting_;
-  bibstd::framework::synchronized_executor executor_;
+  bibstd::framework::queued_connections connections_;
 
 public: // Structors
   ///

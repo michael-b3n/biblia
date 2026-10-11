@@ -1,7 +1,7 @@
 #pragma once
 
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/framework/synchronized_executor.hpp>
+#include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/signal/common.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
+#include <mutex>
 #include <stop_token>
 #include <vector>
 
@@ -107,7 +108,8 @@ class ScriptureListModel final : public QAbstractListModel
   QString scriptureCopyright_;
   bibstd::signal::signal_type<void(Load, std::stop_token)> loadRequested_;
   bibstd::signal::signal_type<void()> copyrightRequested_;
-  bibstd::framework::synchronized_executor executor_{bibstd::framework::thread_pool::strand_id()};
+  mutable std::mutex copyrightMtx_;
+  bibstd::framework::queued_connections connections_;
   const std::unique_ptr<MachineHolder> machine_;
 
 public: // Typedefs

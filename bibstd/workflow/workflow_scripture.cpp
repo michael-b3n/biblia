@@ -91,13 +91,12 @@ workflow_scripture::workflow_scripture(
   std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
 )
   : workflow_base{std::move(workflow_settings)}
-  , thread_pool_guard_{framework::thread_pool::init()}
   , workflow_script_{std::move(workflow_script)}
   , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().scripture_folder->value()))
 {
   update_scripture_name_setting();
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
-  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, executor_);
+  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, connections_);
 }
 
 ///
@@ -105,14 +104,14 @@ workflow_scripture::workflow_scripture(
 workflow_scripture::~workflow_scripture() noexcept
 {
   // No slot reaches the workflow once disconnected, a request on the way ends with its script
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///
 ///
 auto workflow_scripture::scripture_count() const -> std::size_t
 {
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   return scripture_names().size();
 }
 
@@ -239,39 +238,26 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
 
 ///
 ///
-auto workflow_scripture::import_scriptures(const import_params& params) -> void
+auto workflow_scripture::import_scriptures(const import_params& params) -> std::size_t
 {
+  auto imported = std::size_t{0};
   try
   {
-    framework::thread_pool::queue_task(
-      [this, params]()
-      {
-        auto imported = std::size_t{0};
-        try
-        {
-          {
-            const auto lock = std::scoped_lock{mtx_};
-            imported = core_scripture_store_->import(params->folder);
-          }
-          if(imported != 0)
-          {
-            update_scripture_name_setting();
-          }
-        }
-        catch(...)
-        {
-          LOG_ERROR("exception occurred: {}", util::exception_report());
-        }
-        notify(&signals_type::import_ended, params.process_id(), imported);
-      },
-      strand_id_
-    );
+    const auto update_lock = std::scoped_lock{update_mtx_};
+    {
+      const auto lock = std::scoped_lock{scriptures_mtx_};
+      imported = core_scripture_store_->import(params->folder);
+    }
+    if(imported != 0)
+    {
+      update_scripture_name_setting();
+    }
   }
   catch(...)
   {
     LOG_ERROR("exception occurred: {}", util::exception_report());
-    notify(&signals_type::import_ended, params.process_id(), std::size_t{0});
   }
+  return imported;
 }
 
 ///
@@ -302,7 +288,7 @@ auto workflow_scripture::selected_name(const std::optional<std::string>& name) c
 auto workflow_scripture::stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>
 {
   const auto selected = selected_name(name);
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   decltype(auto) scriptures = core_scripture_store_->scriptures();
   const auto it = selected ? scriptures.find(*selected) : std::ranges::end(scriptures);
   return it != std::ranges::end(scriptures) ? it->second : nullptr;
@@ -312,7 +298,7 @@ auto workflow_scripture::stored(const std::optional<std::string>& name) const ->
 ///
 auto workflow_scripture::script_scripture(const std::string& name) const -> std::optional<script_scripture_t>
 {
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   if(!script_scriptures_)
   {
     return std::nullopt;
@@ -346,6 +332,8 @@ auto workflow_scripture::update_scripts() -> void
   static constexpr auto script_scripture_name = "{} ({})";
   try
   {
+    // Two loadings may report at the same time, the later update reads the later scripts
+    const auto update_lock = std::scoped_lock{update_mtx_};
     // The scriptures of a script by their names in the app
     const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
     {
@@ -366,7 +354,7 @@ auto workflow_scripture::update_scripts() -> void
     auto scriptures = scripts | std::views::transform(of_script) | std::views::join |
                       std::ranges::to<std::map<std::string, script_scripture_t>>();
     {
-      const auto lock = std::scoped_lock{mtx_};
+      const auto lock = std::scoped_lock{scriptures_mtx_};
       script_scriptures_ = std::move(scriptures);
     }
     update_scripture_name_setting();
@@ -390,7 +378,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   auto preferred = std::optional<std::string>{};
   auto scripts_loaded = false;
   {
-    const auto lock = std::scoped_lock{mtx_};
+    const auto lock = std::scoped_lock{scriptures_mtx_};
     decltype(auto) scriptures = core_scripture_store_->scriptures();
     names = scripture_names();
     scripts_loaded = script_scriptures_.has_value();

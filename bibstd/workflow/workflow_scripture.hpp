@@ -2,8 +2,7 @@
 
 #include "bibstd/bible/scripture.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/synchronized_executor.hpp"
-#include "bibstd/framework/thread_pool.hpp"
+#include "bibstd/framework/queued_connections.hpp"
 #include "bibstd/lua/script_table.hpp"
 #include "bibstd/signal/adapter.hpp"
 #include "bibstd/signal/common.hpp"
@@ -40,7 +39,6 @@ namespace bibstd::workflow
 ///
 struct workflow_scripture_sigs final
 {
-  signal::signal_type<void(framework::process_id_type, std::size_t)> import_ended;
   signal::signal_type<void()> scriptures_changed;
 };
 
@@ -68,7 +66,6 @@ public: // Variables
 /// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
 /// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
-/// - import_ended: Emitted when an import ended. Slots receive the process ID and the number of imported files.
 /// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
 ///
 class workflow_scripture final
@@ -127,13 +124,12 @@ class workflow_scripture final
   };
 
   // Variables
-  const framework::thread_pool::strand_id_type strand_id_{framework::thread_pool::strand_id()};
-  const util::shared_scope_guard thread_pool_guard_;
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
-  mutable std::mutex mtx_;
-  std::optional<std::map<std::string, script_scripture_t>> script_scriptures_; // by name in the app, guarded by mtx_
-  framework::synchronized_executor executor_{strand_id_};
+  mutable std::mutex update_mtx_;
+  mutable std::mutex scriptures_mtx_;
+  std::optional<std::map<std::string, script_scripture_t>> script_scriptures_;
+  framework::queued_connections connections_;
 
 public: // Constants
   static constexpr auto default_versifications = []()
@@ -239,10 +235,10 @@ public: // Accessors
 public: // Modifiers
   ///
   /// Take the scripture files of the folder named in the params into the scripture folder and
-  /// load them, \see core_scripture_store::import. The work is done outside of the calling thread.
-  /// \note import_ended is emitted once the import is over, also if it took over nothing.
+  /// load them, \see core_scripture_store::import. Blocks until the import is over, a failure is logged.
+  /// \return number of imported files
   ///
-  auto import_scriptures(const import_params& params) -> void;
+  [[nodiscard]] auto import_scriptures(const import_params& params) -> std::size_t;
 
 private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;

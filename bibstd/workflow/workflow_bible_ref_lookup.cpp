@@ -50,12 +50,21 @@ workflow_bible_ref_lookup::workflow_bible_ref_lookup(
   std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
 )
   : workflow_base{std::move(workflow_settings)}
-  , thread_pool_guard_{framework::thread_pool::init()}
   , workflow_script_{std::move(workflow_script)}
 {
+  const auto translations_changed = [this]()
+  {
+    const auto lock = std::scoped_lock{mtx_};
+    update_translations();
+  };
+  const auto scripts_loaded = [this]()
+  {
+    const auto lock = std::scoped_lock{mtx_};
+    update_scripts();
+  };
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
-  settings().script->connect_queued(&framework::setting_signals::value_changed, [this]() { update_translations(); }, executor_);
-  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, executor_);
+  settings().script->connect_queued(&framework::setting_signals::value_changed, translations_changed, connections_);
+  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, scripts_loaded, connections_);
 }
 
 ///
@@ -63,7 +72,7 @@ workflow_bible_ref_lookup::workflow_bible_ref_lookup(
 workflow_bible_ref_lookup::~workflow_bible_ref_lookup() noexcept
 {
   // No slot reaches the workflow once disconnected
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///
@@ -72,35 +81,21 @@ auto workflow_bible_ref_lookup::lookup(const params& params) -> void
 {
   try
   {
-    framework::thread_pool::queue_task(
-      [this, params]()
+    const auto open = [](const std::string& url)
+    {
+      if(!system::open_browser::open(url))
       {
-        try
-        {
-          const auto open = [](const std::string& url)
-          {
-            if(!system::open_browser::open(url))
-            {
-              LOG_WARN("failed to open the browser: url=\"{}\"", url);
-            }
-          };
-          std::ranges::for_each(
-            params->references, [&](const auto& reference_range) { std::ranges::for_each(urls(reference_range), open); }
-          );
-        }
-        catch(...)
-        {
-          LOG_ERROR("exception occurred: {}", util::exception_report());
-        }
-        notify(&signals_type::ended, params.process_id());
-      },
-      strand_id_
+        LOG_WARN("failed to open the browser: url=\"{}\"", url);
+      }
+    };
+    const auto lock = std::scoped_lock{mtx_};
+    std::ranges::for_each(
+      params->references, [&](const auto& reference_range) { std::ranges::for_each(urls(reference_range), open); }
     );
   }
   catch(...)
   {
     LOG_ERROR("exception occurred: {}", util::exception_report());
-    notify(&signals_type::ended, params.process_id());
   }
 }
 

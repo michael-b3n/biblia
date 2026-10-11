@@ -39,7 +39,7 @@ BridgeScript::BridgeScript(
         Qt::QueuedConnection
       );
     },
-    executor_
+    connections_
   );
   updateScripts();
 }
@@ -66,7 +66,7 @@ void BridgeScript::loadScripts()
 ///
 void BridgeScript::disconnect()
 {
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///

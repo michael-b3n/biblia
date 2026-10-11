@@ -189,13 +189,13 @@ ScriptureListModel::ScriptureListModel(
   // The rows hold the texts of one scripture, another one or other scripts fetch them again
   const auto changed = [this]() { post([this]() { applyScriptureChange(); }); };
   workflowScripture_->settings().scripture_name->connect_queued(
-    &bibstd::framework::setting_signals::value_changed, changed, executor_
+    &bibstd::framework::setting_signals::value_changed, changed, connections_
   );
-  workflowScripture_->connect_queued(&bibstd::workflow::workflow_scripture_sigs::scriptures_changed, changed, executor_);
+  workflowScripture_->connect_queued(&bibstd::workflow::workflow_scripture_sigs::scriptures_changed, changed, connections_);
 
   // Fetching blocks while a script answers, so it is left to the thread pool
-  executor_.connect(loadRequested_, [this](const Load& load, const std::stop_token& token) { fetchLoad(load, token); });
-  executor_.connect(copyrightRequested_, [this]() { fetchCopyright(); });
+  connections_.connect(loadRequested_, [this](const Load& load, const std::stop_token& token) { fetchLoad(load, token); });
+  connections_.connect(copyrightRequested_, [this]() { fetchCopyright(); });
   copyrightRequested_();
 }
 
@@ -342,7 +342,7 @@ void ScriptureListModel::clear()
 ///
 void ScriptureListModel::disconnect()
 {
-  executor_.disconnect();
+  connections_.disconnect();
 }
 
 ///
@@ -516,6 +516,8 @@ void ScriptureListModel::fetchLoad(const Load& load, const std::stop_token& toke
 ///
 void ScriptureListModel::fetchCopyright()
 {
+  // One at a time, so the copyright posted last is the one read last
+  const auto lock = std::scoped_lock{copyrightMtx_};
   post([this, copyright = bibqml::scriptureCopyright(*workflowScripture_)]() { scriptureCopyright(copyright); });
 }
 
