@@ -1,10 +1,14 @@
 #include "bibstd/system/tray.hpp"
-#include "bibstd/framework/thread_pool.hpp"
+#include "bibstd/execution/execution.hpp"
+#include "bibstd/execution/launch.hpp"
+#include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
+#include "bibstd/util/non_owning_ptr.hpp"
 #include "bibstd/util/visit_helper.hpp"
 
 #include <algorithm>
-#include <future>
+#include <condition_variable>
+#include <utility>
 
 namespace bibstd::system
 {
@@ -42,73 +46,91 @@ namespace
 auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> util::shared_scope_guard
 {
   static util::shared_scope_guard::creator guard_creator;
-  static util::shared_scope_guard thread_pool_guard;
   static std::condition_variable cv_init;
 
   auto lock = std::unique_lock{mtx_};
   auto guard = guard_creator.create(
     []()
     {
-      const auto lock = std::scoped_lock{mtx_};
-      tray_->exit();
-      // The tray thread may still run a task using the tray, so it is joined first. reset() stores nullptr
-      // in worker_ before the destructor joins, so the tray thread must not reach the worker through worker_.
-      worker_.reset();
-      tray_.reset();
-      thread_pool_guard.reset();
+      auto scope = decltype(scope_){};
+      auto loop = decltype(loop_){};
+      {
+        // Not held any longer, a callback that is waited for below may call set_text
+        const auto lock = std::scoped_lock{mtx_};
+        scope = std::move(scope_);
+        loop = std::move(loop_);
+      }
+      try
+      {
+        auto close = []
+        {
+          if(tray_)
+          {
+            tray_->exit();
+            tray_.reset();
+          }
+        };
+        if(loop)
+        {
+          loop->call(close);
+        }
+      }
+      catch(...)
+      {
+        LOG_ERROR("exception occurred: {}", util::exception_report());
+      }
+      scope.reset();
+      loop.reset();
+      {
+        const auto lock = std::scoped_lock{mtx_};
+        active_ = false;
+      }
       cv_init.notify_all();
     }
   );
   if(guard.is_initial_instance())
   {
-    if(worker_)
+    cv_init.wait(lock, []() { return !active_; });
+    active_ = true;
+    try
     {
-      cv_init.wait(lock, []() { return !worker_; });
+      scope_ = std::make_unique<execution::scope>();
+      loop_ = std::make_unique<message_loop>();
     }
-    thread_pool_guard = framework::thread_pool::init();
-    worker_ = std::make_unique<framework::active_worker>();
-    std::promise<void> promise{};
-    auto future = promise.get_future();
-    worker_->queue_task(
-      [&]
-      {
-        static constexpr auto void_callback_wrapper = [](const auto& callback)
+    catch(...)
+    {
+      // The guard closes what exists and takes the lock for it
+      lock.unlock();
+      throw;
+    }
+    auto create = [&, scope = util::non_owning_ptr<execution::scope>{scope_.get()}]
+    {
+      // The callbacks are called by the tray on the loop thread and run on the thread pool
+      const auto run = [scope](std::function<void()> f)
+      { execution::launch(ex::schedule(ex::get_parallel_scheduler()) | ex::then(std::move(f)), *scope); };
+      const auto void_callback_wrapper = [run](const auto& callback) { return [callback, run]() { run(callback); }; };
+      const auto toggle_callback_wrapper = [run](const auto& callback)
+      { return [callback, run](bool flag) { run(callback(flag)); }; };
+      tray_ = std::make_unique<Tray::Tray>("system_tray_identifier", Tray::Icon(icon.buffer));
+      std::ranges::for_each(
+        entries,
+        [&](const auto& entry)
         {
-          return [callback]()
-          {
-            auto f = callback;
-            framework::thread_pool::queue_task(std::move(f));
-          };
-        };
-        static constexpr auto toggle_callback_wrapper = [](const auto& callback)
-        {
-          return [callback](bool flag)
-          {
-            auto f = callback(flag);
-            framework::thread_pool::queue_task(std::move(f));
-          };
-        };
-        thread_id_ = GetCurrentThreadId();
-        tray_ = std::make_unique<Tray::Tray>("system_tray_identifier", Tray::Icon(icon.buffer));
-        std::ranges::for_each(
-          entries,
-          [&](const auto& entry)
-          {
-            util::visit_lambdas(
-              entry,
-              [&](const button& v) { tray_->addEntry(Tray::Button(to_ansi(v.text), void_callback_wrapper(v.callback))); },
-              [&](const label& v) { tray_->addEntry(Tray::Label(to_ansi(v.text))); },
-              [&]([[maybe_unused]] const separator& /*v*/) { tray_->addEntry(Tray::Separator()); },
-              [&](const toggle& v)
-              { tray_->addEntry(Tray::Toggle(to_ansi(v.text), v.state, toggle_callback_wrapper(v.callback))); }
-            );
-          }
-        );
-        promise.set_value();
-        worker_->queue_task([&worker = *worker_] { get_message(worker); });
-      }
-    );
-    future.get();
+          util::visit_lambdas(
+            entry,
+            [&](const button& v) { tray_->addEntry(Tray::Button(to_ansi(v.text), void_callback_wrapper(v.callback))); },
+            [&](const label& v) { tray_->addEntry(Tray::Label(to_ansi(v.text))); },
+            [&]([[maybe_unused]] const separator& /*v*/) { tray_->addEntry(Tray::Separator()); },
+            [&](const toggle& v)
+            { tray_->addEntry(Tray::Toggle(to_ansi(v.text), v.state, toggle_callback_wrapper(v.callback))); }
+          );
+        }
+      );
+    };
+    const auto loop = util::non_owning_ptr<message_loop>{loop_.get()};
+    // Released first: an exception of the tray reaches the caller, the guard then closes what exists
+    lock.unlock();
+    loop->call(create);
   }
   return guard;
 }
@@ -118,50 +140,24 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
 auto tray::set_text(const std::size_t index, std::string text) -> void
 {
   const auto lock = std::scoped_lock{mtx_};
-  if(!worker_)
+  if(!loop_)
   {
     return;
   }
-  // The menu belongs to the tray thread, so it is rebuilt there.
-  worker_->queue_task(
-    [index, text = to_ansi(text)]() mutable
-    {
-      if(!tray_)
-      {
-        return;
-      }
-      const auto entries = tray_->getEntries();
-      if(index < entries.size())
-      {
-        entries[index]->setText(std::move(text));
-      }
-    }
-  );
-  // The tray thread waits for a message, the task only runs once it got one.
-  PostThreadMessage(thread_id_, WM_NULL, 0, 0);
-}
-
-///
-///
-auto tray::get_message(framework::active_worker& worker) -> void
-{
-  static MSG msg;
-  if(const auto ret = GetMessage(&msg, nullptr, 0, 0); ret != 0)
+  // The menu belongs to the loop thread, so it is rebuilt there.
+  auto rebuild = [index, text = to_ansi(text)]() mutable
   {
-    if(ret == -1)
+    if(!tray_)
     {
-      const std::source_location loc = std::source_location::current();
-      LOG_ERROR("error getting message in file: {}:{}:{}", loc.file_name(), loc.line(), loc.column());
+      return;
     }
-    else
+    const auto entries = tray_->getEntries();
+    if(index < entries.size())
     {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
+      entries[index]->setText(std::move(text));
     }
-    // On exit a message may still arrive while the worker joins this thread. worker_ is nullptr by then, but
-    // the worker itself lives until the join returns and its shut down queue drops the task.
-    worker.queue_task([&worker] { get_message(worker); });
-  }
+  };
+  loop_->post(std::move(rebuild));
 }
 
 } // namespace bibstd::system

@@ -1,6 +1,6 @@
 #include "bibstd/system/windows/hotkey_impl.hpp"
-#include "bibstd/framework/task_queue.hpp"
-#include "bibstd/framework/thread_pool.hpp"
+#include "bibstd/execution/execution.hpp"
+#include "bibstd/execution/launch.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/log.hpp"
@@ -8,9 +8,9 @@
 #include "bibstd/system/windows/win.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <condition_variable>
-#include <future>
 #include <mutex>
 #include <ranges>
 
@@ -106,35 +106,6 @@ auto new_hotkey_id() -> int
   return hotkey_id.fetch_add(1);
 }
 
-///
-/// Create a static MSG object for message handling.
-/// \return Reference to static MSG object
-///
-auto message() -> MSG&
-{
-  static MSG msg;
-  return msg;
-}
-
-///
-/// Message handler for Windows hotkey callbacks.
-///
-auto message_handler(const MSG& msg, const std::map<int, std::function<void()>>& callback_map) -> void
-{
-  if(msg.message == WM_HOTKEY)
-  {
-    if(callback_map.contains(msg.wParam))
-    {
-      auto callback = callback_map.at(msg.wParam);
-      framework::thread_pool::queue_task(std::move(callback));
-    }
-    else
-    {
-      LOG_ERROR("no callback registered for hotkey_id={}", msg.wParam);
-    }
-  }
-}
-
 } // namespace
 
 ///
@@ -143,7 +114,6 @@ auto hotkey_impl::init() -> util::shared_scope_guard
 {
   static std::mutex mtx;
   static util::shared_scope_guard::creator guard_creator{};
-  static util::shared_scope_guard thread_pool_guard;
   static std::condition_variable cv_init;
 
   auto lock = std::unique_lock{mtx};
@@ -151,50 +121,45 @@ auto hotkey_impl::init() -> util::shared_scope_guard
     []()
     {
       const auto lock = std::scoped_lock{mtx};
-      listen_to_msg_ = false;
-      std::promise<void> promise;
-      auto future = promise.get_future();
-      worker_->queue_task(
-        [&]()
-        {
-          std::ranges::for_each(callback_map_ | std::views::keys, [](const auto id) { UnregisterHotKey(nullptr, id); });
-          promise.set_value();
-        }
-      );
-      PostThreadMessage(windows_thread_id_.load().value(), WM_QUIT, 0, 0);
-      future.get();
-      worker_.reset();
-      thread_pool_guard.reset();
+      if(scope_)
+      {
+        // A callback that is running finishes first, with the loop still there
+        scope_->stop();
+      }
+      if(loop_)
+      {
+        // Posted, so it runs after the requests on their way. The loop ends once it ran.
+        loop_->post(
+          [window = static_cast<HWND>(loop_->window())]
+          {
+            std::ranges::for_each(callback_map_ | std::views::keys, [&](const auto id) { UnregisterHotKey(window, id); });
+            callback_map_.clear();
+            id_map_.clear();
+          }
+        );
+      }
+      loop_.reset();
+      scope_.reset();
       cv_init.notify_all();
     }
   );
   if(guard.is_initial_instance())
   {
-    if(worker_)
+    if(loop_)
     {
-      cv_init.wait(lock, []() { return !worker_; });
+      cv_init.wait(lock, []() { return !loop_; });
     }
-    thread_pool_guard = framework::thread_pool::init();
-    worker_ = std::make_unique<framework::active_worker>();
-    std::promise<void> promise;
-    auto future = promise.get_future();
-    worker_->queue_task(
-      [&]()
-      {
-        windows_thread_id_ = GetCurrentThreadId();
-        worker_->queue_task(
-          [&]()
-          {
-            // PeekMessage to create the message queue for this thread.
-            // This is needed such that PostThreadMessage can post messages to it.
-            PeekMessage(&message(), nullptr, 0, 0, PM_REMOVE);
-            promise.set_value();
-          }
-        );
-        worker_->queue_task(get_message);
-      }
-    );
-    future.get();
+    try
+    {
+      scope_ = std::make_unique<execution::scope>();
+      loop_ = std::make_unique<message_loop>(&hotkey_impl::handle_message);
+    }
+    catch(...)
+    {
+      // The guard closes what exists and takes the lock for it
+      lock.unlock();
+      throw;
+    }
   }
   return guard;
 }
@@ -205,71 +170,58 @@ auto hotkey_impl::register_callback(
   const hotkey_common::key key, const hotkey_common::key_modifier mod, std::function<void()>&& callback
 ) -> void
 {
-  assert(windows_thread_id_.load().has_value());
-  const auto hotkey_id = new_hotkey_id();
-  register_queue_.queue(
-    [key, mod, hotkey_id, c = std::forward<decltype(callback)>(callback)]() mutable
+  assert(loop_ && scope_);
+  auto register_hotkey = [key, mod, window = static_cast<HWND>(loop_->window()), c = std::move(callback)]() mutable
+  {
+    const auto hotkey_id = new_hotkey_id();
+    callback_map_[hotkey_id] = std::move(c);
+    id_map_[std::pair{key, mod}] = hotkey_id;
+    if(RegisterHotKey(window, hotkey_id, key_modifier_map.at(mod), key_map.at(key)))
     {
-      callback_map_[hotkey_id] = std::move(c);
-      id_map_[std::pair{key, mod}] = hotkey_id;
-      if(RegisterHotKey(nullptr, hotkey_id, key_modifier_map.at(mod), key_map.at(key)))
-      {
-        LOG_DEBUG("registered hotkey: id={}, key={}, modifier={}", hotkey_id, util::to_integral(key), util::to_integral(mod));
-      }
-      else
-      {
-        LOG_ERROR("failed to register hotkey: key={}, modifier={}", util::to_integral(key), util::to_integral(mod));
-      }
+      LOG_DEBUG("registered hotkey: id={}, key={}, modifier={}", hotkey_id, util::to_integral(key), util::to_integral(mod));
     }
-  );
-  PostThreadMessage(windows_thread_id_.load().value(), WM_NULL, 0, 0);
+    else
+    {
+      LOG_ERROR("failed to register hotkey: key={}, modifier={}", util::to_integral(key), util::to_integral(mod));
+    }
+  };
+  loop_->post(std::move(register_hotkey));
 }
 
 ///
 ///
 auto hotkey_impl::unregister_callback(const hotkey_common::key key, const hotkey_common::key_modifier mod) -> void
 {
-  assert(windows_thread_id_.load().has_value());
-  register_queue_.queue(
-    [key, mod]()
+  assert(loop_ && scope_);
+  auto unregister_hotkey = [key, mod, window = static_cast<HWND>(loop_->window())]()
+  {
+    if(id_map_.contains({key, mod}))
     {
-      if(id_map_.contains({key, mod}))
-      {
-        const auto key_id = id_map_.at({key, mod});
-        UnregisterHotKey(nullptr, key_id);
-        id_map_.erase({key, mod});
-        callback_map_.erase(key_id);
-      }
+      const auto key_id = id_map_.at({key, mod});
+      UnregisterHotKey(window, key_id);
+      id_map_.erase({key, mod});
+      callback_map_.erase(key_id);
     }
-  );
-  PostThreadMessage(windows_thread_id_.load().value(), WM_NULL, 0, 0);
+  };
+  loop_->post(std::move(unregister_hotkey));
 }
 
 ///
 ///
-auto hotkey_impl::get_message() -> void
+auto hotkey_impl::handle_message(const unsigned int message, const std::uintptr_t wparam) -> void
 {
-  if(listen_to_msg_)
+  if(message != WM_HOTKEY)
   {
-    if(const auto ret = GetMessage(&message(), nullptr, 0, 0); ret != 0)
-    {
-      if(ret == -1)
-      {
-        LOG_ERROR("error getting message in {}", std::source_location::current().function_name());
-      }
-      else
-      {
-        while(!register_queue_.empty())
-        {
-          register_queue_.try_do_task();
-        }
-        TranslateMessage(&message());
-        message_handler(message(), callback_map_);
-        DispatchMessage(&message());
-      }
-      worker_->queue_task(get_message);
-    }
+    return;
   }
+  const auto it = callback_map_.find(static_cast<int>(wparam));
+  if(it == std::cend(callback_map_))
+  {
+    LOG_ERROR("no callback registered for hotkey_id={}", wparam);
+    return;
+  }
+  auto callback = it->second;
+  execution::launch(ex::schedule(ex::get_parallel_scheduler()) | ex::then(std::move(callback)), *scope_);
 }
 
 } // namespace bibstd::system
