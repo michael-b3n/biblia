@@ -111,7 +111,7 @@ workflow_scripture::~workflow_scripture() noexcept
 ///
 auto workflow_scripture::scripture_count() const -> std::size_t
 {
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   return scripture_names().size();
 }
 
@@ -245,7 +245,7 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   {
     const auto update_lock = std::scoped_lock{update_mtx_};
     {
-      const auto lock = std::scoped_lock{mtx_};
+      const auto lock = std::scoped_lock{scriptures_mtx_};
       imported = core_scripture_store_->import(params->folder);
     }
     if(imported != 0)
@@ -288,7 +288,7 @@ auto workflow_scripture::selected_name(const std::optional<std::string>& name) c
 auto workflow_scripture::stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>
 {
   const auto selected = selected_name(name);
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   decltype(auto) scriptures = core_scripture_store_->scriptures();
   const auto it = selected ? scriptures.find(*selected) : std::ranges::end(scriptures);
   return it != std::ranges::end(scriptures) ? it->second : nullptr;
@@ -298,7 +298,7 @@ auto workflow_scripture::stored(const std::optional<std::string>& name) const ->
 ///
 auto workflow_scripture::script_scripture(const std::string& name) const -> std::optional<script_scripture_t>
 {
-  const auto lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{scriptures_mtx_};
   if(!script_scriptures_)
   {
     return std::nullopt;
@@ -354,7 +354,7 @@ auto workflow_scripture::update_scripts() -> void
     auto scriptures = scripts | std::views::transform(of_script) | std::views::join |
                       std::ranges::to<std::map<std::string, script_scripture_t>>();
     {
-      const auto lock = std::scoped_lock{mtx_};
+      const auto lock = std::scoped_lock{scriptures_mtx_};
       script_scriptures_ = std::move(scriptures);
     }
     update_scripture_name_setting();
@@ -378,7 +378,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   auto preferred = std::optional<std::string>{};
   auto scripts_loaded = false;
   {
-    const auto lock = std::scoped_lock{mtx_};
+    const auto lock = std::scoped_lock{scriptures_mtx_};
     decltype(auto) scriptures = core_scripture_store_->scriptures();
     names = scripture_names();
     scripts_loaded = script_scriptures_.has_value();

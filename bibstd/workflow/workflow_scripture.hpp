@@ -126,10 +126,9 @@ class workflow_scripture final
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
-  mutable std::mutex mtx_;
-  std::optional<std::map<std::string, script_scripture_t>> script_scriptures_; // by name in the app, guarded by mtx_
-  // One update of the scriptures at a time, taken by nothing a listener can call
   mutable std::mutex update_mtx_;
+  mutable std::mutex scriptures_mtx_;
+  std::optional<std::map<std::string, script_scripture_t>> script_scriptures_;
   framework::queued_connections connections_;
 
 public: // Constants
