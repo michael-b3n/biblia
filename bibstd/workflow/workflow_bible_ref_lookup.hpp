@@ -2,11 +2,8 @@
 
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/framework/process_params.hpp"
-#include "bibstd/framework/synchronized_executor.hpp"
-#include "bibstd/framework/thread_pool.hpp"
+#include "bibstd/framework/queued_connections.hpp"
 #include "bibstd/lua/script_table.hpp"
-#include "bibstd/signal/adapter.hpp"
-#include "bibstd/signal/common.hpp"
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
@@ -14,20 +11,13 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace bibstd::workflow
 {
-
-///
-/// Signals for workflow bible reference lookup.
-///
-struct workflow_bible_ref_lookup_sigs final
-{
-  signal::signal_type<void(framework::process_id_type)> ended;
-};
 
 ///
 /// Settings corresponding to workflow bible reference lookup.
@@ -48,12 +38,8 @@ public: // Variables
 /// of a reference, the workflow opens it in the browser. Scripts offering the two manifests below can be chosen,
 /// the chosen one tells the translations of the setting "lookup.translations". Until the user chooses, it is the
 /// script offering the most translations.
-/// Signal IDs to connect to:
-/// - ended: Emitted once the urls of a lookup are opened, also if there were none. Slots receive its process ID.
 ///
-class workflow_bible_ref_lookup final
-  : public workflow_base<workflow_bible_ref_lookup_settings>
-  , public signal::adapter<workflow_bible_ref_lookup_sigs>
+class workflow_bible_ref_lookup final : public workflow_base<workflow_bible_ref_lookup_settings>
 {
   // Typedefs
   struct params_t final
@@ -62,10 +48,9 @@ class workflow_bible_ref_lookup final
   };
 
   // Variables
-  const util::shared_scope_guard thread_pool_guard_;
-  const framework::thread_pool::strand_id_type strand_id_{framework::thread_pool::strand_id()};
   const std::shared_ptr<workflow_script> workflow_script_;
-  framework::synchronized_executor executor_{strand_id_};
+  std::mutex mtx_; // one lookup or update at a time
+  framework::queued_connections connections_;
 
 public: // Typedefs
   using params = framework::process_params<params_t>;
@@ -100,8 +85,8 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Look up bible references outside of the calling thread: the url of each chapter is opened in the default
-  /// web browser, then ended is emitted. A reference over several books is looked up at its first verse only.
+  /// Look up bible references: the url of each chapter is opened in the default web browser. Blocks until
+  /// then, a failure is logged. A reference over several books is looked up at its first verse only.
   ///
   auto lookup(const params& params) -> void;
 

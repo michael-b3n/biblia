@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibstd/framework/synchronized_executor.hpp"
+#include "bibstd/framework/queued_connections.hpp"
 #include "bibstd/signal/common.hpp"
 #include "bibstd/system/hotkey_common.hpp"
 #include "bibstd/util/scope_guard.hpp"
@@ -38,12 +38,11 @@ class workflow_hotkey final : public workflow_base<void>
     setting_type<hotkey_type::key> key_setting;
 
     std::optional<std::pair<hotkey_type::key, hotkey_type::key_modifier>> registered;
-    framework::synchronized_executor executor;
+    framework::queued_connections connections;
   };
 
   // Variables
   const std::shared_ptr<workflow_settings> workflow_settings_;
-  const util::shared_scope_guard thread_pool_guard_;
   const util::shared_scope_guard hotkey_guard_;
   mutable std::mutex mtx_;
   std::unordered_map<std::string, callback_data> callbacks_;

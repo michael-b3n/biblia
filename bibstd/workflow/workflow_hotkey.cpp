@@ -1,6 +1,5 @@
 #include "bibstd/workflow/workflow_hotkey.hpp"
 #include "bibstd/framework/setting.hpp"
-#include "bibstd/framework/thread_pool.hpp"
 #include "bibstd/system/hotkey.hpp"
 #include "bibstd/util/contains.hpp"
 #include "bibstd/util/enum.hpp"
@@ -53,7 +52,6 @@ namespace
 ///
 workflow_hotkey::workflow_hotkey(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_{std::move(workflow_settings)}
-  , thread_pool_guard_{framework::thread_pool::init()}
   , hotkey_guard_{system::hotkey::init()}
 {
 }
@@ -90,7 +88,7 @@ auto workflow_hotkey::register_callback(const path_type& path, const key_modifie
       const auto lock = std::scoped_lock{mtx_};
       apply_hotkey_impl(path);
     },
-    data.executor
+    data.connections
   );
   data.key_setting->connect_queued(
     &framework::setting_signals::value_changed,
@@ -99,7 +97,7 @@ auto workflow_hotkey::register_callback(const path_type& path, const key_modifie
       const auto lock = std::scoped_lock{mtx_};
       apply_hotkey_impl(path);
     },
-    data.executor
+    data.connections
   );
   apply_hotkey_impl(path);
   return shared_sig;
@@ -127,17 +125,13 @@ auto workflow_hotkey::apply_hotkey_impl(const path_type& path) -> void
     system::hotkey::register_callback(
       combination.first,
       combination.second,
+      // Called on the thread pool already, see system::hotkey
       [sig = std::weak_ptr{data.shared_sig}]()
       {
-        framework::thread_pool::queue_task(
-          [sig]()
-          {
-            if(auto s = sig.lock())
-            {
-              (*s)();
-            }
-          }
-        );
+        if(auto s = sig.lock())
+        {
+          (*s)();
+        }
       }
     );
     data.registered = combination;
