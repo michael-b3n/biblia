@@ -137,10 +137,7 @@ auto hotkey_impl::init() -> util::shared_scope_guard
   );
   if(guard.is_initial_instance())
   {
-    if(loop_)
-    {
-      cv_init.wait(lock, []() { return !loop_; });
-    }
+    cv_init.wait(lock, []() { return !loop_; });
     try
     {
       loop_ = std::make_unique<message_loop>(&hotkey_impl::handle_message);
