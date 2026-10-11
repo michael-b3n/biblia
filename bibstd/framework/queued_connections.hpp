@@ -1,6 +1,5 @@
 #pragma once
 
-#include "bibstd/execution/execution.hpp"
 #include "bibstd/execution/launch.hpp"
 #include "bibstd/execution/scope.hpp"
 #include "bibstd/signal/common.hpp"
@@ -121,7 +120,7 @@ auto queued_connections::queued(S slot) -> F
     const auto lock = std::scoped_lock{gate->mtx};
     if(!gate->closed)
     {
-      execution::launch(ex::schedule(ex::get_parallel_scheduler()) | ex::then(std::move(task)), scope_);
+      execution::launch(std::move(task), scope_);
     }
   };
 }

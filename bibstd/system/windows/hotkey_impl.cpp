@@ -1,5 +1,4 @@
 #include "bibstd/system/windows/hotkey_impl.hpp"
-#include "bibstd/execution/execution.hpp"
 #include "bibstd/execution/launch.hpp"
 #include "bibstd/util/const_map.hpp"
 #include "bibstd/util/enum.hpp"
@@ -221,7 +220,7 @@ auto hotkey_impl::handle_message(const unsigned int message, const std::uintptr_
     return;
   }
   auto callback = it->second;
-  execution::launch(ex::schedule(ex::get_parallel_scheduler()) | ex::then(std::move(callback)), *scope_);
+  execution::launch(std::move(callback), *scope_);
 }
 
 } // namespace bibstd::system

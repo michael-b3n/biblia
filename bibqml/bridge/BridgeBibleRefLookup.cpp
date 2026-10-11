@@ -100,9 +100,7 @@ void BridgeBibleRefLookup::start(std::vector<bibstd::bible::reference_range>&& r
     workflowBibleRefLookup_->lookup(params);
     QMetaObject::invokeMethod(this, std::move(finish), Qt::QueuedConnection);
   };
-  bibstd::execution::launch(
-    bibstd::ex::schedule(bibstd::ex::get_parallel_scheduler()) | bibstd::ex::then(std::move(lookup)), scope_
-  );
+  bibstd::execution::launch(std::move(lookup), scope_);
 }
 
 } // namespace bibqml

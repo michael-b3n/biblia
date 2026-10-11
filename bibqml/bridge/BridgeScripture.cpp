@@ -68,9 +68,7 @@ void BridgeScripture::importFolder(const QUrl& folder)
     const auto imported = workflowScripture_->import_scriptures(params);
     QMetaObject::invokeMethod(this, [finish, imported]() { finish(imported); }, Qt::QueuedConnection);
   };
-  bibstd::execution::launch(
-    bibstd::ex::schedule(bibstd::ex::get_parallel_scheduler()) | bibstd::ex::then(std::move(import)), scope_
-  );
+  bibstd::execution::launch(std::move(import), scope_);
 }
 
 ///

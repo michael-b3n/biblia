@@ -1,5 +1,4 @@
 #include "bibstd/system/tray.hpp"
-#include "bibstd/execution/execution.hpp"
 #include "bibstd/execution/launch.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
@@ -106,8 +105,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
     auto create = [&, scope = util::non_owning_ptr<execution::scope>{scope_.get()}]
     {
       // The callbacks are called by the tray on the loop thread and run on the thread pool
-      const auto run = [scope](std::function<void()> f)
-      { execution::launch(ex::schedule(ex::get_parallel_scheduler()) | ex::then(std::move(f)), *scope); };
+      const auto run = [scope](std::function<void()> f) { execution::launch(std::move(f), *scope); };
       const auto void_callback_wrapper = [run](const auto& callback) { return [callback, run]() { run(callback); }; };
       const auto toggle_callback_wrapper = [run](const auto& callback)
       { return [callback, run](bool flag) { run(callback(flag)); }; };
