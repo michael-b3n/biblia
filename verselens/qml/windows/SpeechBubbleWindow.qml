@@ -23,12 +23,13 @@ Window
   readonly property rect coveredArea: Placement.united(
     root.screenGeometry, Placement.grown(root.bubbleRect, Metrics.spacingSmall)
   )
+  // Whether the last frame on the screen shows the shape
+  property bool contentPresented: false
 
   color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
-  // The window follows the phase it is told directly, see MainWindow for why its visibility is
-  // not derived from the fade of its shape.
-  visible: root.shown
+  // Follows the phase and stays until its shape is off the screen, see MainWindow
+  visible: root.shown || root.contentPresented
   x: root.coveredArea.x
   y: root.coveredArea.y
   width: root.coveredArea.width
@@ -38,6 +39,7 @@ Window
   onBubbleRectChanged: { root.takeGeometry() }
   onTailPositionChanged: { root.takeGeometry() }
   onShownChanged: { root.takeGeometry() }
+  onFrameSwapped: { root.contentPresented = shape.opacity > 0 }
 
   // Components
   SpeechBubbleShape

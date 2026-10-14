@@ -27,10 +27,15 @@ Window
   readonly property rect screenGeometry: Qt.rect(Screen.virtualX, Screen.virtualY, Screen.width, Screen.height)
   // Whether the system moves or resizes the window at the moment, only then it reports its area
   property bool dragging: false
+  // Whether the last frame on the screen shows content
+  property bool contentPresented: false
 
   color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-  visible: root.shown
+  // The window follows the phase it is told, a fade would tie it to an animation that only runs
+  // while it is on the screen. It only goes once its content is off the screen: Windows shows the
+  // last frame of a window that comes back.
+  visible: root.shown || root.contentPresented
   x: root.mainRect.x
   y: root.mainRect.y
   width: root.mainRect.width
@@ -43,6 +48,7 @@ Window
   signal pinClicked()
 
   // Connections
+  onFrameSwapped: { root.contentPresented = content.opacity > 0 }
   onXChanged: { root.reportDrag() }
   onYChanged: { root.reportDrag() }
   onWidthChanged: { root.reportDrag() }

@@ -19,13 +19,14 @@ Window
 
   // Area the window covers, it follows the requested one animated
   property rect currentRect: Qt.rect(0, 0, 0, 0)
+  // Whether the last frame on the screen shows content
+  property bool contentPresented: false
 
   color: "transparent"
   // The overlay must not take the focus away from the window the user is reading.
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
-  // The window follows the phase it is told directly, see MainWindow for why its visibility is
-  // not derived from the fade of its content.
-  visible: root.shown
+  // Follows the phase and stays until its content is off the screen, see MainWindow
+  visible: root.shown || root.contentPresented
   x: root.currentRect.x
   y: root.currentRect.y
   width: root.currentRect.width
@@ -42,6 +43,7 @@ Window
   onOverlayRectChanged: { Qt.callLater(root.applyOverlayRect) }
   onLoadingChanged: { Qt.callLater(root.applyOverlayRect) }
   onShownChanged: { Qt.callLater(root.applyOverlayRect) }
+  onFrameSwapped: { root.contentPresented = content.opacity > 0 }
 
   // Animations
   PropertyAnimation
