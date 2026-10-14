@@ -116,19 +116,21 @@ class workflow_scripture final
     std::filesystem::path folder;
   };
 
-  // Scripture of a script, \see update_scripts
   struct script_scripture_t final
   {
     workflow_script::script_name_type script;
-    std::string name; // in the script
+    std::string name;
   };
+
+  using script_scriptures_t = std::map<std::string, script_scripture_t>;
+  using source_t = std::variant<std::shared_ptr<bible::scripture>, script_scriptures_t::value_type>;
 
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
   mutable std::mutex update_mtx_;
   mutable std::mutex scriptures_mtx_;
-  std::optional<std::map<std::string, script_scripture_t>> script_scriptures_;
+  std::optional<script_scriptures_t> script_scriptures_;
   framework::queued_connections connections_;
 
 public: // Constants
@@ -243,10 +245,10 @@ public: // Modifiers
 private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;
-  [[nodiscard]] auto stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>;
-  [[nodiscard]] auto script_scripture(const std::string& name) const -> std::optional<script_scripture_t>;
+  [[nodiscard]] auto find(const std::optional<std::string>& name) const -> std::optional<source_t>;
   template<script_manifest M>
-  [[nodiscard]] auto run_script(typename M::input input) const -> std::optional<typename M::output>;
+  [[nodiscard]] auto run_script(const script_scripture_t& scripture, typename M::input input) const
+    -> std::optional<typename M::output>;
   auto update_scripts() -> void;
   auto update_scripture_name_setting() -> void;
 };
