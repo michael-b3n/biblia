@@ -7,7 +7,7 @@ import BibQml
 /// behind it. Both drags are handed to the system, only it takes the window across screens of
 /// different scaling.
 ///
-Window
+FadingWindow
 {
   id: root
 
@@ -21,21 +21,13 @@ Window
   required property BridgeScript bridgeScript
   required property rect mainRect
   required property bool pinned
-  required property bool shown
 
   // Screen the window is on
   readonly property rect screenGeometry: Qt.rect(Screen.virtualX, Screen.virtualY, Screen.width, Screen.height)
   // Whether the system moves or resizes the window at the moment, only then it reports its area
   property bool dragging: false
-  // Whether the last frame on the screen shows content
-  property bool contentPresented: false
 
-  color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-  // The window follows the phase it is told, a fade would tie it to an animation that only runs
-  // while it is on the screen. It only goes once its content is off the screen: Windows shows the
-  // last frame of a window that comes back.
-  visible: root.shown || root.contentPresented
   x: root.mainRect.x
   y: root.mainRect.y
   width: root.mainRect.width
@@ -48,20 +40,18 @@ Window
   signal pinClicked()
 
   // Connections
-  onFrameSwapped: { root.contentPresented = content.opacity > 0 }
   onXChanged: { root.reportDrag() }
   onYChanged: { root.reportDrag() }
   onWidthChanged: { root.reportDrag() }
   onHeightChanged: { root.reportDrag() }
 
   // Components
-  Item
+  ExpandArea
   {
-    id: content
-
     // Properties
     anchors.fill: parent
-    opacity: 0
+    expandable: true
+    expandAreaWidth: Metrics.spacingLarge
     // Holds the keyboard focus of the window, which is what lets it answer the escape key
     focus: true
 
@@ -75,63 +65,30 @@ Window
       root.closeClicked()
       event.accepted = true
     }
-
-    // Animations
-    // The window appears animated and disappears at once: what it shows belongs to the search
-    // that asked for it, so it must not linger over what the user turns to next.
-    states: State
-    {
-      name: "shown"
-      when: root.shown
-
-      PropertyChanges { content.opacity: 1 }
-    }
-    transitions: Transition
-    {
-      to: "shown"
-
-      NumberAnimation
-      {
-        property: "opacity"
-        duration: Metrics.durationShort
-        easing.type: Easing.InOutQuad
-      }
-    }
+    onReleased: { root.endDrag() }
+    onExpandRequested: (edges) => { root.dragging = root.startSystemResize(edges) }
 
     // Components
-    ExpandArea
+    MainTabLayout
     {
       // Properties
+      listModelSettings: root.listModelSettings
+      listModelScripture: root.listModelScripture
+      bridgeBibleRefOcr: root.bridgeBibleRefOcr
+      bridgeBibleRefLookup: root.bridgeBibleRefLookup
+      bridgeApplication: root.bridgeApplication
+      bridgeScripture: root.bridgeScripture
+      bridgeScript: root.bridgeScript
+      pinned: root.pinned
+      movable: true
+
       anchors.fill: parent
-      expandable: true
-      expandAreaWidth: Metrics.spacingLarge
 
       // Connections
+      onCloseClicked: { root.closeClicked() }
+      onPinClicked: { root.pinClicked() }
       onReleased: { root.endDrag() }
-      onExpandRequested: (edges) => { root.dragging = root.startSystemResize(edges) }
-
-      // Components
-      MainTabLayout
-      {
-        // Properties
-        listModelSettings: root.listModelSettings
-        listModelScripture: root.listModelScripture
-        bridgeBibleRefOcr: root.bridgeBibleRefOcr
-        bridgeBibleRefLookup: root.bridgeBibleRefLookup
-        bridgeApplication: root.bridgeApplication
-        bridgeScripture: root.bridgeScripture
-        bridgeScript: root.bridgeScript
-        pinned: root.pinned
-        movable: true
-
-        anchors.fill: parent
-
-        // Connections
-        onCloseClicked: { root.closeClicked() }
-        onPinClicked: { root.pinClicked() }
-        onReleased: { root.endDrag() }
-        onMoveRequested: { root.dragging = root.startSystemMove() }
-      }
+      onMoveRequested: { root.dragging = root.startSystemMove() }
     }
   }
 

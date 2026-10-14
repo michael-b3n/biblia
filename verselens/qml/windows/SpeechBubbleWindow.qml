@@ -5,7 +5,7 @@ import BibQml
 /// Transparent window covering the screen of the window whose rect it is given, drawing the
 /// speech bubble shape around that window. It never takes any input.
 ///
-Window
+FadingWindow
 {
   id: root
 
@@ -14,7 +14,6 @@ Window
   required property rect bubbleRect
   required property point tailPosition
   required property bool tailVisible
-  required property bool shown
 
   // Geometry the bubble is drawn with, it only follows the requested one while the bubble is shown
   property rect currentBubbleRect: Qt.rect(0, 0, 0, 0)
@@ -23,13 +22,8 @@ Window
   readonly property rect coveredArea: Placement.united(
     root.screenGeometry, Placement.grown(root.bubbleRect, Metrics.spacingSmall)
   )
-  // Whether the last frame on the screen shows the shape
-  property bool contentPresented: false
 
-  color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
-  // Follows the phase and stays until its shape is off the screen, see MainWindow
-  visible: root.shown || root.contentPresented
   x: root.coveredArea.x
   y: root.coveredArea.y
   width: root.coveredArea.width
@@ -39,15 +33,11 @@ Window
   onBubbleRectChanged: { root.takeGeometry() }
   onTailPositionChanged: { root.takeGeometry() }
   onShownChanged: { root.takeGeometry() }
-  onFrameSwapped: { root.contentPresented = shape.opacity > 0 }
 
   // Components
   SpeechBubbleShape
   {
-    id: shape
-
     // Properties
-    opacity: 0
     radius: Metrics.radiusLarge
     tailVisible: root.tailVisible
     tailPositionX: root.currentTailPosition.x - root.x
@@ -58,27 +48,6 @@ Window
     bubbleHeight: root.currentBubbleRect.height
     strokeColor: Colors.border
     fillColor: Colors.backgroundTransparent
-
-    // Animations
-    // The frame appears animated and disappears at once, together with the window it frames.
-    states: State
-    {
-      name: "shown"
-      when: root.shown
-
-      PropertyChanges { shape.opacity: 1 }
-    }
-    transitions: Transition
-    {
-      to: "shown"
-
-      NumberAnimation
-      {
-        property: "opacity"
-        duration: Metrics.durationShort
-        easing.type: Easing.InOutQuad
-      }
-    }
   }
 
   // Functions

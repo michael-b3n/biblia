@@ -7,26 +7,20 @@ import BibQml
 /// cursor and reports itself by a segment traveling along its border, once the reference is found
 /// it grows onto it. It times out, the content below it may have scrolled away by then.
 ///
-Window
+FadingWindow
 {
   id: root
 
   // Properties
   required property rect overlayRect
   required property bool loading
-  required property bool shown
   required property int timeout
 
   // Area the window covers, it follows the requested one animated
   property rect currentRect: Qt.rect(0, 0, 0, 0)
-  // Whether the last frame on the screen shows content
-  property bool contentPresented: false
 
-  color: "transparent"
   // The overlay must not take the focus away from the window the user is reading.
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
-  // Follows the phase and stays until its content is off the screen, see MainWindow
-  visible: root.shown || root.contentPresented
   x: root.currentRect.x
   y: root.currentRect.y
   width: root.currentRect.width
@@ -43,7 +37,6 @@ Window
   onOverlayRectChanged: { Qt.callLater(root.applyOverlayRect) }
   onLoadingChanged: { Qt.callLater(root.applyOverlayRect) }
   onShownChanged: { Qt.callLater(root.applyOverlayRect) }
-  onFrameSwapped: { root.contentPresented = content.opacity > 0 }
 
   // Animations
   PropertyAnimation
@@ -58,147 +51,116 @@ Window
   }
 
   // Components
-  Item
+  DashedBorder
   {
-    id: content
+    id: dashedBorder
 
     // Properties
+    borderWidth: root.width
+    borderHeight: root.height
+    radius: Metrics.radiusLarge
+    strokeWidth: Metrics.borderThick
+    segmentRatio: 0.25
+  }
+
+  Rectangle
+  {
+    // Properties
+    // The reference below shall stay readable, so the area is only tinted while it is hovered.
+    // Note the opacity never drops to zero, fully transparent pixels of a translucent window
+    // are not hit by mouse events, which would make the overlay unclickable.
     anchors.fill: parent
-    opacity: 0
+    color: Colors.selection
+    opacity: mouseArea.containsMouse ? 0.3 : 0.02
+    border.color: Colors.border
+    border.width: mouseArea.containsMouse ? Metrics.border : 0
+    radius: Metrics.radiusLarge
 
     // Animations
-    // The button appears animated and disappears at once, together with the window it belongs to.
-    states: State
+    Behavior on opacity
     {
-      name: "shown"
-      when: root.shown
-
-      PropertyChanges { content.opacity: 1 }
-    }
-    transitions: Transition
-    {
-      to: "shown"
-
       NumberAnimation
       {
-        property: "opacity"
+        duration: Metrics.durationShort
+        easing.type: Easing.InOutQuad
+      }
+    }
+  }
+
+  Shape
+  {
+    // Properties
+    anchors.fill: parent
+    opacity: root.loading ? 1 : 0
+
+    // Animations
+    Behavior on opacity
+    {
+      NumberAnimation
+      {
         duration: Metrics.durationShort
         easing.type: Easing.InOutQuad
       }
     }
 
     // Components
-    DashedBorder
+    ShapePath
     {
-      id: dashedBorder
-
       // Properties
-      borderWidth: content.width
-      borderHeight: content.height
-      radius: Metrics.radiusLarge
+      strokeColor: Colors.border
       strokeWidth: Metrics.borderThick
-      segmentRatio: 0.25
-    }
-
-    Rectangle
-    {
-      // Properties
-      // The reference below shall stay readable, so the area is only tinted while it is hovered.
-      // Note the opacity never drops to zero, fully transparent pixels of a translucent window
-      // are not hit by mouse events, which would make the overlay unclickable.
-      anchors.fill: parent
-      color: Colors.selection
-      opacity: mouseArea.containsMouse ? 0.3 : 0.02
-      border.color: Colors.border
-      border.width: mouseArea.containsMouse ? Metrics.border : 0
-      radius: Metrics.radiusLarge
-
-      // Animations
-      Behavior on opacity
-      {
-        NumberAnimation
-        {
-          duration: Metrics.durationShort
-          easing.type: Easing.InOutQuad
-        }
-      }
-    }
-
-    Shape
-    {
-      // Properties
-      anchors.fill: parent
-      opacity: root.loading ? 1 : 0
-
-      // Animations
-      Behavior on opacity
-      {
-        NumberAnimation
-        {
-          duration: Metrics.durationShort
-          easing.type: Easing.InOutQuad
-        }
-      }
+      fillColor: "transparent"
+      capStyle: ShapePath.RoundCap
+      strokeStyle: ShapePath.DashLine
+      // The pattern covers the whole border, so that exactly one segment travels along it.
+      dashPattern: dashedBorder.dashPattern
 
       // Components
-      ShapePath
+      PathRectangle
       {
         // Properties
-        strokeColor: Colors.border
-        strokeWidth: Metrics.borderThick
-        fillColor: "transparent"
-        capStyle: ShapePath.RoundCap
-        strokeStyle: ShapePath.DashLine
-        // The pattern covers the whole border, so that exactly one segment travels along it.
-        dashPattern: dashedBorder.dashPattern
+        // The stroke is centered on the path, so it is inset to stay inside the button.
+        x: Metrics.borderThick / 2
+        y: Metrics.borderThick / 2
+        width: root.width - Metrics.borderThick
+        height: root.height - Metrics.borderThick
+        radius: Metrics.radiusLarge
+      }
 
-        // Components
-        PathRectangle
-        {
-          // Properties
-          // The stroke is centered on the path, so it is inset to stay inside the button.
-          x: Metrics.borderThick / 2
-          y: Metrics.borderThick / 2
-          width: content.width - Metrics.borderThick
-          height: content.height - Metrics.borderThick
-          radius: Metrics.radiusLarge
-        }
-
-        // Animations
-        NumberAnimation on dashOffset
-        {
-          running: root.shown && root.loading
-          loops: Animation.Infinite
-          from: 0
-          to: dashedBorder.period
-          duration: Metrics.durationLong
-        }
+      // Animations
+      NumberAnimation on dashOffset
+      {
+        running: root.shown && root.loading
+        loops: Animation.Infinite
+        from: 0
+        to: dashedBorder.period
+        duration: Metrics.durationLong
       }
     }
+  }
 
-    MouseArea
-    {
-      id: mouseArea
+  MouseArea
+  {
+    id: mouseArea
 
-      // Properties
-      anchors.fill: parent
-      enabled: !root.loading
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
+    // Properties
+    anchors.fill: parent
+    enabled: !root.loading
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
 
-      // Connections
-      onClicked: { root.clicked() }
-    }
+    // Connections
+    onClicked: { root.clicked() }
+  }
 
-    Timer
-    {
-      // Properties
-      interval: root.timeout
-      running: root.shown && !root.loading && !mouseArea.containsMouse
+  Timer
+  {
+    // Properties
+    interval: root.timeout
+    running: root.shown && !root.loading && !mouseArea.containsMouse
 
-      // Connections
-      onTriggered: { root.timedOut() }
-    }
+    // Connections
+    onTriggered: { root.timedOut() }
   }
 
   // Functions
