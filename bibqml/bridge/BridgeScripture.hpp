@@ -4,6 +4,7 @@
 #include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
+#include <QList>
 #include <QObject>
 #include <qtmetamacros.h>
 #include <QtQml/qqmlregistration.h>
@@ -48,11 +49,11 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Take the scripture files of \p folder into the scripture folder and load them. The folder is
-  /// expected as the URL a file dialog reports. Only one import runs at a time, a call made while
-  /// one runs is ignored.
+  /// Take the scripture \p files into the scripture folder and load them. The files are expected as
+  /// the URLs a file dialog reports. Only one import runs at a time, a call made while one runs is
+  /// ignored, as is one naming no local file.
   ///
-  Q_INVOKABLE void importFolder(const QUrl& folder);
+  Q_INVOKABLE void importFiles(const QList<QUrl>& files);
 
   ///
   /// Disconnect all signal connections.

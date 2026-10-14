@@ -204,6 +204,36 @@ TEST_CASE("core_scripture_store takes over the scripture files of a folder", "[c
   CHECK(!std::filesystem::exists(target / "nested.zip"));
 }
 
+TEST_CASE("core_scripture_store takes over a single scripture file", "[core]")
+{
+  const auto source = fill_with_one_scripture(test_folder("import_file_source"), 2);
+  if(source.empty())
+  {
+    SKIP(std::format("no scriptures in {}", BIBSTD_TEST_SCRIPTURE_DIR));
+  }
+  const auto target = test_folder("import_file_target");
+  core_scripture_store store{target};
+  CHECK(store.import(source / "scripture_0.zip") == 1);
+  CHECK(store.scriptures().size() == 1);
+  CHECK(std::filesystem::exists(target / "scripture_0.zip"));
+  CHECK(!std::filesystem::exists(target / "scripture_1.zip"));
+}
+
+TEST_CASE("core_scripture_store leaves a single file it cannot read where it is", "[core]")
+{
+  const auto source = test_folder("import_unreadable_file_source");
+  const auto target = test_folder("import_unreadable_file_target");
+  touch(source / "scripture.zip");
+  touch(source / "notes.txt");
+
+  core_scripture_store store{target};
+  CHECK(store.import(source / "scripture.zip") == 0);
+  CHECK(store.import(source / "notes.txt") == 0);
+  CHECK(store.import(source / "missing.zip") == 0);
+  CHECK(store.scriptures().empty());
+  CHECK(std::filesystem::is_empty(target));
+}
+
 TEST_CASE("core_scripture_store holds a scripture once after importing it twice", "[core]")
 {
   const auto scriptures = core_scripture_store{BIBSTD_TEST_SCRIPTURE_DIR};
@@ -227,6 +257,7 @@ TEST_CASE("core_scripture_store takes nothing from its own folder", "[core]")
 
   core_scripture_store store{folder};
   CHECK(store.import(folder) == 0);
+  CHECK(store.import(folder / "scripture.zip") == 0);
   CHECK(std::filesystem::exists(folder / "scripture.zip"));
 }
 

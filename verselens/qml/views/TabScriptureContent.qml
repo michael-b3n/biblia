@@ -561,18 +561,20 @@ Item
       }
     }
 
-    FolderDialog
+    FileDialog
     {
       id: importDialog
 
       // Properties
       title: Translations.name("scriptures_import", Translations.language)
+      fileMode: FileDialog.OpenFiles
+      nameFilters: [Translations.name("scriptures_import_filter", Translations.language) + " (*.zip)"]
 
       // Connections
       onAccepted:
       {
         emptyState.nothingImported = false
-        root.bridgeScripture.importFolder(importDialog.selectedFolder)
+        root.bridgeScripture.importFiles(importDialog.selectedFiles)
       }
     }
   }

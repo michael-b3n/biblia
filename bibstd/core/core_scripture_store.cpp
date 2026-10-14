@@ -95,12 +95,13 @@ auto core_scripture_store::scriptures() const -> const scripture_map_type&
 auto core_scripture_store::import(const std::filesystem::path& source) -> std::size_t
 {
   auto error = std::error_code{};
-  if(!std::filesystem::is_directory(source, error))
+  const auto is_file = std::filesystem::is_regular_file(source, error);
+  if(!is_file && !std::filesystem::is_directory(source, error))
   {
-    LOG_WARN("scripture import folder not found: folder=\"{}\"", source.generic_string());
+    LOG_WARN("scripture import source not found: source=\"{}\"", source.generic_string());
     return 0;
   }
-  if(std::filesystem::equivalent(source, folder_, error))
+  if(std::filesystem::equivalent(is_file ? source.parent_path() : source, folder_, error))
   {
     return 0;
   }
@@ -126,7 +127,8 @@ auto core_scripture_store::import(const std::filesystem::path& source) -> std::s
     return true;
   };
   const auto imported = static_cast<std::size_t>(std::ranges::count_if(
-    regular_files(source, error) | std::views::filter([](const auto& path) { return container_type_of(path).has_value(); }),
+    (is_file ? std::vector{source} : regular_files(source, error) | std::ranges::to<std::vector>()) |
+      std::views::filter([](const auto& path) { return container_type_of(path).has_value(); }),
     take_over
   ));
   if(imported > 0)

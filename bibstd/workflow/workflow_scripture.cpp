@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
+#include <functional>
 #include <memory>
 #include <ranges>
 #include <tuple>
@@ -271,7 +272,11 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
     const auto update_lock = std::scoped_lock{update_mtx_};
     {
       const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
-      imported = core_scripture_store_->import(params->folder);
+      imported = std::ranges::fold_left(
+        params->sources | std::views::transform([this](const auto& source) { return core_scripture_store_->import(source); }),
+        std::size_t{0},
+        std::plus{}
+      );
     }
     if(imported != 0)
     {

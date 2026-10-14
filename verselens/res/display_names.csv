@@ -45,8 +45,9 @@ script,Skripte,Scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
 scripture,Bibelausgabe,Scripture
-scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
-scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.
+scriptures_import,Bibelausgaben wählen,Choose scriptures
+scriptures_import_empty,Aus diesen Dateien konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from these files.
+scriptures_import_filter,ZIP-Archive,Zip archives
 scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
 scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 shift,Umschalt,Shift

@@ -56,9 +56,9 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Take every supported file directly inside \p source into the folder of this store, replacing
-  /// a file of the same name. Every file is read once, before it is copied: one that holds no
-  /// scripture data is logged and left where it is, so the folder only holds loadable files.
+  /// Take the file \p source, or every supported file directly inside the folder \p source, into the folder of this store,
+  /// replacing a file of the same name. Every file is read once, before it is copied: one that holds no scripture data is
+  /// logged and left where it is, so the folder only holds loadable files.
   /// \return number of files taken over
   ///
   auto import(const std::filesystem::path& source) -> std::size_t;

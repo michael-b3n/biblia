@@ -6,8 +6,12 @@
 
 #include <QMetaObject>
 
+#include <algorithm>
 #include <cstddef>
+#include <filesystem>
+#include <ranges>
 #include <utility>
+#include <vector>
 
 namespace bibqml
 {
@@ -36,23 +40,29 @@ BridgeScripture::~BridgeScripture() noexcept = default;
 
 ///
 ///
-void BridgeScripture::importFolder(const QUrl& folder)
+void BridgeScripture::importFiles(const QList<QUrl>& files)
 {
   if(importRunning_)
   {
     return;
   }
-  // Empty for anything that does not name a folder of this machine, which is nothing to import from
-  const auto localFolder = folder.toLocalFile();
-  if(localFolder.isEmpty())
+  std::ranges::for_each(
+    files | std::views::filter([](const QUrl& file) { return !file.isLocalFile(); }),
+    [](const QUrl& file)
+    { LOG_WARN("scripture import skipped: no local file provided: url=\"{}\"", file.toString().toStdString()); }
+  );
+  auto sources =
+    files | std::views::filter(&QUrl::isLocalFile) |
+    std::views::transform([](const QUrl& file) { return std::filesystem::path{file.toLocalFile().toStdString()}; }) |
+    std::ranges::to<std::vector>();
+  if(sources.empty())
   {
-    LOG_WARN("scripture import failed: no local folder provided: url=\"{}\"", folder.toString().toStdString());
     return;
   }
-  const auto params = bibstd::workflow::workflow_scripture::import_params{{.folder = localFolder.toStdString()}};
+  LOG_DEBUG("start scripture import: files={}", sources.size());
+  const auto params = bibstd::workflow::workflow_scripture::import_params{{.sources = std::move(sources)}};
   importRunning_ = true;
   emit importRunningChanged();
-  LOG_DEBUG("start scripture import: folder=\"{}\"", localFolder.toStdString());
   auto finish = [this](const std::size_t imported)
   {
     if(importRunning_)

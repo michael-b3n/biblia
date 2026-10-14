@@ -113,7 +113,7 @@ class workflow_scripture final
 
   struct import_params_t final
   {
-    std::filesystem::path folder;
+    std::vector<std::filesystem::path> sources;
   };
 
   struct script_scripture_t final
@@ -236,8 +236,8 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Take the scripture files of the folder named in the params into the scripture folder and
-  /// load them, \see core_scripture_store::import. Blocks until the import is over, a failure is logged.
+  /// Take the scripture files named in the params, or those of the folders named there, into the scripture
+  /// folder and load them, \see core_scripture_store::import. Blocks until the import is over, a failure is logged.
   /// \return number of imported files
   ///
   [[nodiscard]] auto import_scriptures(const import_params& params) -> std::size_t;
