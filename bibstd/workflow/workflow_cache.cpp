@@ -11,9 +11,11 @@ namespace bibstd::workflow
 
 ///
 ///
-workflow_cache::workflow_cache(std::shared_ptr<workflow_script> workflow_script)
+workflow_cache::workflow_cache(
+  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+)
   : workflow_script_{std::move(workflow_script)}
-  , folder_{workflow_script_->settings().folder->value() / workflow_script_settings::cache_folder_name}
+  , folder_{workflow_settings->data_folder() / folder_name}
 {
   // Last, scripts may call into the workflow from here on
   registrations_ << workflow_script_->register_function(

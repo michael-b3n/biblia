@@ -77,11 +77,10 @@ scripture_fixture::scripture_fixture(
 {
   if(stored)
   {
-    // The default scripture folder of the data folder
-    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::default_folder_name);
-    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::default_folder_name / stored->filename());
+    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::folder_name);
+    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::folder_name / stored->filename());
   }
-  const auto scripts_folder = folder.path() / "user_scripts";
+  const auto scripts_folder = folder.path() / "scripts";
   std::filesystem::create_directories(scripts_folder);
   std::ranges::for_each(
     scripts,
@@ -98,7 +97,7 @@ scripture_fixture::scripture_fixture(
     const auto writer = std::make_shared<workflow_settings>(folder.path().string());
     std::ignore = workflow_scripture_settings{writer}.scripture_name->value(selected);
   }
-  const auto settings = test_utils::make_script_settings(folder.path(), true, scripts_folder);
+  const auto settings = test_utils::make_script_settings(folder.path(), true);
   script = std::make_shared<workflow_script>(settings);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does
@@ -133,7 +132,7 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
   auto fixture = scripture_fixture{"workflow_scripture_offers_the_scriptures_of_a_script", {{"test", scripture_script}}};
   const auto& scripture = *fixture.scripture;
   REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Script test)"; }));
-  CHECK(scripture.scripture_count() == 2);
+  CHECK(test_utils::scripture_names_of(scripture, "Script test").size() == 2);
   // Named after the name of the script, the script is asked with its own names. The first scripture is selected.
   CHECK(scripture.settings().scripture_name->value() == "AAA (Script test)");
 
@@ -189,7 +188,9 @@ TEST_CASE("workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", "[wo
     "workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", {{"test", scripture_script}}, "BBB (Script test)"
   };
   // The scripts load while the workflows are constructed, the name of a former run survives it
-  REQUIRE(test_utils::wait_until([&]() { return fixture.scripture->scripture_count() == 2; }));
+  REQUIRE(
+    test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
+  );
   CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
   CHECK(fixture.scripture->information({{}}));
 }
@@ -210,7 +211,9 @@ TEST_CASE("workflow_scripture_keeps_the_name_of_a_script_next_to_stored_scriptur
     };
     // Kept while the scripts load, although the stored scripture is known already, and after
     CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
-    REQUIRE(test_utils::wait_until([&]() { return fixture.scripture->scripture_count() == 3; }));
+    REQUIRE(
+      test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
+    );
     CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
   }
 
@@ -237,7 +240,9 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_all_scripts", "[workflow]
   };
   const auto& scripture = *fixture.scripture;
   // Of the scripts offering all manifests, the same names told apart by the script
-  REQUIRE(test_utils::wait_until([&]() { return scripture.scripture_count() == 4; }));
+  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script c_complete").size() == 2; }));
+  CHECK(test_utils::scripture_names_of(scripture, "Script b_complete").size() == 2);
+  CHECK(test_utils::scripture_names_of(scripture, "Script a_partial").empty());
   const auto information = scripture.information({{"BBB (Script c_complete)"}});
   REQUIRE(information);
   CHECK(information->name == "BBB (Script c_complete)");
@@ -249,7 +254,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
 {
   auto fixture = scripture_fixture{"workflow_scripture_follows_the_scripts_loaded_anew", {{"first", scripture_script}}};
   const auto& scripture = *fixture.scripture;
-  const auto scripts = fixture.folder.path() / "user_scripts";
+  const auto scripts = fixture.folder.path() / "scripts";
   REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Script first)"; }));
   const auto changed = [&]()
   {
@@ -260,21 +265,22 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   // While the app runs: a script added, its scriptures join the others and the selected one stays
   test_utils::write_file(
     scripts / "added.lua",
-    "return {name = 'Second', functions = {['scripture.names'] = function() return {names = {'CCC'}} end, "
+    "return {name = 'Second', functions = {['scripture.names'] = function() return {names = {'AAC'}} end, "
     "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
     "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}}"
   );
   test_utils::load_scripts(*fixture.script);
-  REQUIRE(test_utils::wait_until([&]() { return scripture.scripture_count() == 3; }));
+  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Second").size() == 1; }));
+  CHECK(test_utils::scripture_names_of(scripture, "Script first").size() == 2);
   CHECK(scripture.settings().scripture_name->value() == "AAA (Script first)");
-  CHECK(scripture.information({{"CCC (Second)"}}));
+  CHECK(scripture.information({{"AAC (Second)"}}));
   CHECK(scripture.information({{"BBB (Script first)"}}));
 
   // A script removed, its scriptures are gone and the selected one moves to one that is left
   std::filesystem::remove(scripts / "first.lua");
   test_utils::load_scripts(*fixture.script);
-  REQUIRE(test_utils::wait_until([&]() { return scripture.scripture_count() == 1; }));
-  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "CCC (Second)"; }));
+  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script first").empty(); }));
+  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAC (Second)"; }));
   CHECK_FALSE(scripture.information({{"AAA (Script first)"}}));
   const auto passage = scripture.passage({
     {.reference = john(16), .scripture_name = std::nullopt}
@@ -298,9 +304,9 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   const auto validator = scripture.settings().scripture_name->connect(&framework::setting_signals::validator_changed, count);
 
   // The selected scripture goes with its script, so the names and the name change
-  std::filesystem::remove(fixture.folder.path() / "user_scripts" / "first.lua");
+  std::filesystem::remove(fixture.folder.path() / "scripts" / "first.lua");
   test_utils::write_file(
-    fixture.folder.path() / "user_scripts" / "second.lua",
+    fixture.folder.path() / "scripts" / "second.lua",
     std::format("return {{name = 'Second', functions = (function() {} end)()}}", scripture_script)
   );
   test_utils::load_scripts(*fixture.script);

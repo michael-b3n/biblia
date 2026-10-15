@@ -5,7 +5,7 @@ import BibQml
 /// Transparent window covering the screen of the window whose rect it is given, drawing the
 /// speech bubble shape around that window. It never takes any input.
 ///
-Window
+FadingWindow
 {
   id: root
 
@@ -14,7 +14,6 @@ Window
   required property rect bubbleRect
   required property point tailPosition
   required property bool tailVisible
-  required property bool shown
 
   // Geometry the bubble is drawn with, it only follows the requested one while the bubble is shown
   property rect currentBubbleRect: Qt.rect(0, 0, 0, 0)
@@ -24,11 +23,7 @@ Window
     root.screenGeometry, Placement.grown(root.bubbleRect, Metrics.spacingSmall)
   )
 
-  color: "transparent"
   flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
-  // The window follows the phase it is told directly, see MainWindow for why its visibility is
-  // not derived from the fade of its shape.
-  visible: root.shown
   x: root.coveredArea.x
   y: root.coveredArea.y
   width: root.coveredArea.width
@@ -42,10 +37,7 @@ Window
   // Components
   SpeechBubbleShape
   {
-    id: shape
-
     // Properties
-    opacity: 0
     radius: Metrics.radiusLarge
     tailVisible: root.tailVisible
     tailPositionX: root.currentTailPosition.x - root.x
@@ -56,27 +48,6 @@ Window
     bubbleHeight: root.currentBubbleRect.height
     strokeColor: Colors.border
     fillColor: Colors.backgroundTransparent
-
-    // Animations
-    // The frame appears animated and disappears at once, together with the window it frames.
-    states: State
-    {
-      name: "shown"
-      when: root.shown
-
-      PropertyChanges { shape.opacity: 1 }
-    }
-    transitions: Transition
-    {
-      to: "shown"
-
-      NumberAnimation
-      {
-        property: "opacity"
-        duration: Metrics.durationShort
-        easing.type: Easing.InOutQuad
-      }
-    }
   }
 
   // Functions

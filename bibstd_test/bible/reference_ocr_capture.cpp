@@ -209,12 +209,7 @@ TEST_CASE("capture ocr data of the images in the ocr folder", "[.capture]")
     FAIL(std::format("two images share the stem \"{}\", rename one of them", *duplicate));
   }
 
-  const auto tessdata = txt::ocr_engine_tesseract::tessdata_folder_finder();
-  if(!tessdata)
-  {
-    FAIL("no tessdata folder found, the capture needs the traineddata the application ships");
-  }
-  auto engine = txt::ocr_engine_tesseract{*tessdata, util::language::german};
+  auto engine = txt::ocr_engine_tesseract{BIBSTD_TEST_TESSDATA_DIR, util::language::german};
 
   for(const auto& path : images)
   {

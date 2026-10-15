@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
-#include <map>
+#include <functional>
 #include <memory>
 #include <ranges>
 #include <tuple>
@@ -44,9 +44,6 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
       setting_value_t<decltype(scripture_name)>{},
       std::make_shared<framework::setting_validator_list<setting_value_t<decltype(scripture_name)>>>()
     )}
-  , scripture_folder{workflow_settings_->create_setting(
-      "scripture.folder", workflow_settings_->data_folder() / default_folder_name
-    )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
       std::string{bible::versification::default_kjv::name},
@@ -55,6 +52,7 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
       )
     )}
+  , folder{workflow_settings_->data_folder() / folder_name}
 {
   // The default value set above must be one of the default versifications, else it would be invalid.
   static_assert(meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
@@ -92,7 +90,7 @@ workflow_scripture::workflow_scripture(
 )
   : workflow_base{std::move(workflow_settings)}
   , workflow_script_{std::move(workflow_script)}
-  , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().scripture_folder->value()))
+  , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().folder))
 {
   update_scripture_name_setting();
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
@@ -119,24 +117,32 @@ auto workflow_scripture::scripture_count() const -> std::size_t
 ///
 auto workflow_scripture::information(const scripture_params& params) const -> std::optional<bible::scripture_info>
 {
+  using result_type = std::optional<bible::scripture_info>;
   try
   {
-    if(const auto scripture = stored(params->scripture_name))
-    {
-      return scripture->information();
-    }
-    const auto name = selected_name(params->scripture_name);
-    const auto output = name ? run_script<information_manifest>({*name}) : std::nullopt;
-    if(!output)
+    const auto source = find(params->scripture_name);
+    if(!source)
     {
       return std::nullopt;
     }
-    return bible::scripture_info{
-      .name = *name,
-      .abbreviation = output->get<"abbreviation">().value_or(""),
-      .language = output->get<"language">().value_or(""),
-      .copyright = output->get<"copyright">(),
-    };
+    return util::visit_lambdas(
+      *source,
+      [](const std::shared_ptr<bible::scripture>& scripture) -> result_type { return scripture->information(); },
+      [this](const script_scriptures_t::value_type& entry) -> result_type
+      {
+        const auto output = run_script<information_manifest>(entry.second, {entry.first});
+        if(!output)
+        {
+          return std::nullopt;
+        }
+        return bible::scripture_info{
+          .name = entry.first,
+          .abbreviation = output->get<"abbreviation">().value_or(""),
+          .language = output->get<"language">().value_or(""),
+          .copyright = output->get<"copyright">(),
+        };
+      }
+    );
   }
   catch(...)
   {
@@ -150,23 +156,31 @@ auto workflow_scripture::information(const scripture_params& params) const -> st
 auto workflow_scripture::book_information(const scripture_params& params, const bible::book_id book) const
   -> std::optional<bible::book_name>
 {
+  using result_type = std::optional<bible::book_name>;
   try
   {
-    if(const auto scripture = stored(params->scripture_name))
-    {
-      return scripture->book_information(book);
-    }
-    const auto name = selected_name(params->scripture_name);
-    const auto output = name ? run_script<book_manifest>({*name, std::string{util::enum_name(book)}}) : std::nullopt;
-    if(!output || std::apply([](const auto&... names) { return !(names || ...); }, output->values()))
+    const auto source = find(params->scripture_name);
+    if(!source)
     {
       return std::nullopt;
     }
-    return bible::book_name{
-      .abbreviation = output->get<"abbreviation">().value_or(""),
-      .short_name = output->get<"short_name">().value_or(""),
-      .long_name = output->get<"long_name">().value_or(""),
-    };
+    return util::visit_lambdas(
+      *source,
+      [book](const std::shared_ptr<bible::scripture>& scripture) -> result_type { return scripture->book_information(book); },
+      [this, book](const script_scriptures_t::value_type& entry) -> result_type
+      {
+        const auto output = run_script<book_manifest>(entry.second, {entry.first, std::string{util::enum_name(book)}});
+        if(!output || std::apply([](const auto&... names) { return !(names || ...); }, output->values()))
+        {
+          return std::nullopt;
+        }
+        return bible::book_name{
+          .abbreviation = output->get<"abbreviation">().value_or(""),
+          .short_name = output->get<"short_name">().value_or(""),
+          .long_name = output->get<"long_name">().value_or(""),
+        };
+      }
+    );
   }
   catch(...)
   {
@@ -179,9 +193,10 @@ auto workflow_scripture::book_information(const scripture_params& params, const 
 ///
 auto workflow_scripture::versification_or_fallback(const scripture_params& params) const -> versification_wrapper_type
 {
-  if(auto scripture = stored(params->scripture_name))
+  const auto source = find(params->scripture_name);
+  if(const auto* scripture = source ? std::get_if<std::shared_ptr<bible::scripture>>(&*source) : nullptr)
   {
-    return versification_wrapper_type{std::move(scripture)};
+    return versification_wrapper_type{*scripture};
   }
   return versification_wrapper_type{default_versifications.at(settings().fallback_versification->value())};
 }
@@ -196,37 +211,46 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
   try
   {
     const auto& ref = params->reference;
-    if(const auto scripture = stored(params->scripture_name))
-    {
-      if(auto passage = scripture->passage(ref))
-      {
-        return passage_result_t{.passage = std::move(*passage)};
-      }
-      LOG_WARN("passage not found: reference=\"{}\"", ref);
-      return std::unexpected{std::string{verse_not_found}};
-    }
-    const auto name = selected_name(params->scripture_name);
-    if(!name || !script_scripture(*name))
+    const auto source = find(params->scripture_name);
+    if(!source)
     {
       return std::unexpected{std::string{scripture_not_found}};
     }
-    const auto output = run_script<passage_manifest>({
-      *name,
-      std::string{util::enum_name(ref.book())},
-      static_cast<std::int64_t>(ref.chapter().value),
-      static_cast<std::int64_t>(ref.verse().value),
-    });
-    const auto content = output ? output->get<"text">() : std::nullopt;
-    if(!content)
-    {
-      // What the script reports, e.g. a web page it could not fetch
-      const auto error = output ? output->get<"error">() : std::string{script_failed};
-      return std::unexpected{error.value_or(std::string{verse_not_found})};
-    }
-    using markup = bible::passage_markup;
-    return passage_result_t{
-      .passage = {.ref = ref, .content = markup::section(markup::paragraph_undefined, markup::escaped_xml(*content))}
-    };
+    return util::visit_lambdas(
+      *source,
+      [&ref](const std::shared_ptr<bible::scripture>& scripture) -> passage_result
+      {
+        if(auto passage = scripture->passage(ref))
+        {
+          return passage_result_t{.passage = std::move(*passage)};
+        }
+        LOG_WARN("passage not found: reference=\"{}\"", ref);
+        return std::unexpected{std::string{verse_not_found}};
+      },
+      [this, &ref](const script_scriptures_t::value_type& entry) -> passage_result
+      {
+        const auto output = run_script<passage_manifest>(
+          entry.second,
+          {
+            entry.first,
+            std::string{util::enum_name(ref.book())},
+            static_cast<std::int64_t>(ref.chapter().value),
+            static_cast<std::int64_t>(ref.verse().value),
+          }
+        );
+        const auto content = output ? output->get<"text">() : std::nullopt;
+        if(!content)
+        {
+          // What the script reports, e.g. a web page it could not fetch
+          const auto error = output ? output->get<"error">() : std::string{script_failed};
+          return std::unexpected{error.value_or(std::string{verse_not_found})};
+        }
+        using markup = bible::passage_markup;
+        return passage_result_t{
+          .passage = {.ref = ref, .content = markup::section(markup::paragraph_undefined, markup::escaped_xml(*content))}
+        };
+      }
+    );
   }
   catch(...)
   {
@@ -246,7 +270,11 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
     const auto update_lock = std::scoped_lock{update_mtx_};
     {
       const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
-      imported = core_scripture_store_->import(params->folder);
+      imported = std::ranges::fold_left(
+        params->sources | std::views::transform([this](const auto& source) { return core_scripture_store_->import(source); }),
+        std::size_t{0},
+        std::plus{}
+      );
     }
     if(imported != 0)
     {
@@ -268,7 +296,7 @@ auto workflow_scripture::scripture_names() const -> std::vector<std::string>
   auto names = scriptures | std::views::keys | std::ranges::to<std::vector>();
   if(script_scriptures_)
   {
-    // The folder's, \see stored
+    // A file shadows a script scripture of the same name, as in find
     names.append_range(
       *script_scriptures_ | std::views::keys | std::views::filter([&](const auto& n) { return !scriptures.contains(n); })
     );
@@ -285,43 +313,37 @@ auto workflow_scripture::selected_name(const std::optional<std::string>& name) c
 
 ///
 ///
-auto workflow_scripture::stored(const std::optional<std::string>& name) const -> std::shared_ptr<bible::scripture>
+auto workflow_scripture::find(const std::optional<std::string>& name) const -> std::optional<source_t>
 {
   const auto selected = selected_name(name);
+  if(!selected)
+  {
+    return std::nullopt;
+  }
+  // Copied, so the lock is not held while a script runs
   const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
   decltype(auto) scriptures = core_scripture_store_->scriptures();
-  const auto it = selected ? scriptures.find(*selected) : std::ranges::end(scriptures);
-  return it != std::ranges::end(scriptures) ? it->second : nullptr;
-}
-
-///
-///
-auto workflow_scripture::script_scripture(const std::string& name) const -> std::optional<script_scripture_t>
-{
-  const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+  if(const auto it = scriptures.find(*selected); it != std::ranges::end(scriptures))
+  {
+    return source_t{it->second};
+  }
   if(!script_scriptures_)
   {
     return std::nullopt;
   }
-  const auto it = script_scriptures_->find(name);
-  return it != script_scriptures_->cend() ? std::optional{it->second} : std::nullopt;
+  const auto it = script_scriptures_->find(*selected);
+  return it != script_scriptures_->cend() ? std::optional{source_t{*it}} : std::nullopt;
 }
 
 ///
 ///
 template<script_manifest M>
-auto workflow_scripture::run_script(typename M::input input) const -> std::optional<typename M::output>
+auto workflow_scripture::run_script(const script_scripture_t& scripture, typename M::input input) const
+  -> std::optional<typename M::output>
 {
-  auto& name = input.template get<"name">();
-  // Copied, so the lock is not held while the script runs
-  const auto scripture = script_scripture(name);
-  if(!scripture)
-  {
-    return std::nullopt;
-  }
   // The script knows the scripture by its own name
-  name = scripture->name;
-  return workflow_script_->run<M>(scripture->script, input);
+  input.template get<"name">() = scripture.name;
+  return workflow_script_->run<M>(scripture.script, input);
 }
 
 ///
@@ -351,8 +373,7 @@ auto workflow_scripture::update_scripts() -> void
              std::ranges::to<std::vector>();
     };
     const auto scripts = workflow_script_->scripts<names_manifest, information_manifest, book_manifest, passage_manifest>();
-    auto scriptures = scripts | std::views::transform(of_script) | std::views::join |
-                      std::ranges::to<std::map<std::string, script_scripture_t>>();
+    auto scriptures = scripts | std::views::transform(of_script) | std::views::join | std::ranges::to<script_scriptures_t>();
     {
       const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
       script_scriptures_ = std::move(scriptures);

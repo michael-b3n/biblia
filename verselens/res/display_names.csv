@@ -14,11 +14,11 @@ character_recognition_ocr_engine,Zeichenerkennung,Character recognition
 click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
+custom_tessdata_path,Eigenes Tesseract-Datenverzeichnis,Custom Tesseract data folder
 dwell_duration,Verweildauer,Dwell duration
 enabled,Aktiviert,Enabled
 english,Englisch,English
 fallback_versification_name,Ersatz-Verszählung,Fallback versification
-folder,Ordner,Folder
 german,Deutsch,German
 hide_window,Fenster ausgeblendet,Window hidden
 hotkey,Tastenkürzel,Shortcut
@@ -42,15 +42,17 @@ poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
 retry_pause,Pause nach einem Fehler,Pause after a failure
 script,Skripte,Scripts
+scripts_import,Skripte importieren,Import scripts
+scripts_import_filter,Lua-Skripte,Lua scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
 scripture,Bibelausgabe,Scripture
-scriptures_import,Ordner mit Bibelausgaben wählen,Choose a folder with scriptures
-scriptures_import_empty,Aus diesem Ordner konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from this folder.
+scriptures_import,Bibelausgaben wählen,Choose scriptures
+scriptures_import_empty,Aus diesen Dateien konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from these files.
+scriptures_import_filter,ZIP-Archive,Zip archives
 scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
 scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 shift,Umschalt,Shift
-tessdata_path,Tesseract Datenverzeichnis,Tesseract data folder
 translations,Übersetzungen,Translations
 tray_exit,Beenden,Exit
 tray_open_github,GitHub öffnen,Open GitHub

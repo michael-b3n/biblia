@@ -19,8 +19,9 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
   const auto run = [](const workflow_script& script, const std::string& code)
   { return script.state()->safe_script(code, sol::script_pass_on_error); };
   {
-    const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
-    const auto cache = workflow_cache{script};
+    const auto settings = test_utils::make_script_settings(folder.path());
+    const auto script = std::make_shared<workflow_script>(settings);
+    const auto cache = workflow_cache{settings, script};
     CHECK(run(*script, "return root.interface.workflow.cache.get('a', 'key') == nil").get<bool>());
     run(
       *script,
@@ -33,23 +34,25 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
     CHECK_FALSE(run(*script, "root.interface.workflow.cache.get('', 'key')").valid());
   }
   // Kept beyond the run, apart for each name
-  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
-  auto cache = workflow_cache{script};
+  const auto settings = test_utils::make_script_settings(folder.path());
+  const auto script = std::make_shared<workflow_script>(settings);
+  auto cache = workflow_cache{settings, script};
   CHECK(run(*script, "return root.interface.workflow.cache.get('a', 'key')").get<std::string>() == "value a");
   CHECK(run(*script, "return root.interface.workflow.cache.get('b', 'key')").get<std::string>() == "value b");
   CHECK(run(*script, "return root.interface.workflow.cache.get('a', 'gone') == nil").get<bool>());
   CHECK(cache.get(util::identifier{"a"}, "key") == "value a");
-  CHECK(std::filesystem::exists(folder.path() / "scripts" / "cache" / "a.sqlite"));
-  CHECK(std::filesystem::exists(folder.path() / "scripts" / "cache" / "___a.sqlite"));
-  CHECK_FALSE(std::filesystem::exists(folder.path() / "scripts" / "a.sqlite"));
+  CHECK(std::filesystem::exists(folder.path() / "cache" / "a.sqlite"));
+  CHECK(std::filesystem::exists(folder.path() / "cache" / "___a.sqlite"));
+  CHECK_FALSE(std::filesystem::exists(folder.path() / "a.sqlite"));
 }
 
 TEST_CASE("workflow_cache_takes_its_functions_back_on_destruction", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_cache_takes_its_functions_back_on_destruction"};
-  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
+  const auto settings = test_utils::make_script_settings(folder.path());
+  const auto script = std::make_shared<workflow_script>(settings);
   {
-    const auto cache = workflow_cache{script};
+    const auto cache = workflow_cache{settings, script};
     CHECK(script->state()->script("return type(root.interface.workflow.cache.get) == 'function'").get<bool>());
   }
   // Only them, the scripts go on

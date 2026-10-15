@@ -49,15 +49,15 @@ VerseLens installs for the current user and starts at sign-in, which can be turn
 
 ### Scriptures
 
-VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and put the zip files into `%LOCALAPPDATA%\verselens\scriptures`. An install from the Microsoft Store keeps this folder inside its package data, `Scripture > Folder` shows where. They are loaded on start. `Scripture > Folder` names another folder.
+VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/) and import the zip files in the scripture tab. They are kept in `%LOCALAPPDATA%\verselens\scriptures` and loaded on start.
 
 ### Scripts
 
 Lua scripts build the urls of the lookup and can offer scriptures too, e.g. by fetching the verses from a web page.
 
 - The scripts for bibleserver.com and bible.com are part of the app, see [bibstd/lua/bundled](bibstd/lua/bundled).
-- Scripts of your own are the `*.lua` files of `%LOCALAPPDATA%\verselens\scripts`, `Scripts > Folder` names another folder. They are loaded after the start and with `Load scripts` in the scripts tab, unless `Scripts > Enabled` is turned off.
-- [example.lua](bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Copied into the script folder it is inactive until its `enabled` is set.
+- Scripts of your own are the `*.lua` files of `%LOCALAPPDATA%\verselens\scripts`, `Import scripts` in the scripts tab copies them there. They are loaded after the start and with `Load scripts` in the scripts tab, unless `Scripts > Enabled` is turned off.
+- [example.lua](bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Imported it is inactive until its `enabled` is set.
 - Mind the terms of use of the pages a script reads and the copyright of the translations.
 - Writing scripts: [doc/lua_scripts.md](doc/lua_scripts.md).
 

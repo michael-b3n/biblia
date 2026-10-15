@@ -128,7 +128,9 @@ auto limit_to(
 ///
 workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_base{std::move(workflow_settings)}
-  , tessdata_path{workflow_settings_->create_setting("ocr.tessdata_path", txt::ocr_engine_tesseract::tessdata_folder_finder())}
+  , custom_tessdata_path{workflow_settings_->create_setting(
+      "ocr.custom_tessdata_path", setting_value_t<decltype(custom_tessdata_path)>{}
+    )}
   , character_recognition_ocr_engine{workflow_settings_->create_setting(
       "ocr.character_recognition_ocr_engine",
       setting_value_t<decltype(character_recognition_ocr_engine)>{},
@@ -260,19 +262,24 @@ auto workflow_bible_ref_ocr::load_ocr_engines() -> void
   {
     ocr_engines_.emplace_back(std::move(ocr_engine_system));
   }
-  if(!settings().tessdata_path->value() || !std::filesystem::exists(*settings().tessdata_path->value()))
+  auto path = txt::ocr_engine_tesseract::shipped_tessdata_folder();
+  if(const auto custom = settings().custom_tessdata_path->value(); custom && !custom->empty())
   {
-    if(const auto found_tessdata_folder = txt::ocr_engine_tesseract::tessdata_folder_finder())
+    if(std::filesystem::exists(*custom))
     {
-      LOG_WARN("tessdata path setting invalid: used_alternative_folder=\"{}\"", found_tessdata_folder->generic_string());
-      settings().tessdata_path->value(found_tessdata_folder);
+      path = *custom;
+    }
+    else
+    {
+      LOG_WARN("custom tessdata path not found: folder=\"{}\"", custom->generic_string());
     }
   }
-  const auto path = settings().tessdata_path->value();
-  if(path && std::filesystem::exists(*path))
+  if(!std::filesystem::exists(path))
   {
-    ocr_engines_.emplace_back(std::make_unique<txt::ocr_engine_tesseract>(*path, settings().language->value()));
+    LOG_ERROR("tessdata folder not found: folder=\"{}\"", path.generic_string());
+    return;
   }
+  ocr_engines_.emplace_back(std::make_unique<txt::ocr_engine_tesseract>(path, settings().language->value()));
 }
 
 ///

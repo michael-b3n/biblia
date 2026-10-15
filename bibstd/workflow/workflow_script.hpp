@@ -11,6 +11,7 @@
 #include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <concepts>
+#include <cstddef>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -46,12 +47,11 @@ public: // Structors
   ~workflow_script_settings() noexcept override = default;
 
 public: // Constants
-  static constexpr auto default_folder_name = "scripts";
-  static constexpr auto cache_folder_name = "cache";
+  static constexpr auto folder_name = "scripts";
 
 public: // Variables
   const setting_type<bool> enabled;
-  const setting_type<std::filesystem::path> folder;
+  const std::filesystem::path folder;
 };
 
 ///
@@ -79,10 +79,10 @@ class workflow_script final
   static constexpr auto lua_node = "workflow"; // below root, the node of all workflow registrations
 
   // Variables
+  const lua::state_owner state_owner_;
   mutable std::mutex mtx_;
   std::map<std::string, std::set<util::path>> scripts_; // the functions of the loaded scripts by name
-  const lua::state_owner state_owner_;
-  std::jthread loader_; // last, it joins before the members it uses are destroyed
+  std::jthread loader_;                                 // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
   using script_name_type = decltype(scripts_)::key_type;
@@ -112,6 +112,13 @@ public: // Modifiers
   /// running ends after its script first.
   ///
   auto load_scripts() -> void;
+
+  ///
+  /// Copy the Lua script \p files into the script folder, replacing a file of the same name. They run once the
+  /// scripts are loaded anew, \see load_scripts.
+  /// \return number of files copied, the others are logged
+  ///
+  [[nodiscard]] auto import_scripts(const std::vector<std::filesystem::path>& files) -> std::size_t;
 
   ///
   /// Register a function for scripts at workflow.\p p, e.g. "web.fetch", \see lua::state::register_function

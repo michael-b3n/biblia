@@ -4,12 +4,12 @@ Lua scripts offer scriptures or the lookup of references in the browser.
 
 | Scripts | Where | Loaded |
 |---|---|---|
-| Bundled | [bibstd/lua/bundled](../bibstd/lua/bundled), part of the app | Always, first |
-| User | `*.lua` in `%LOCALAPPDATA%\verselens\scripts`, or in `Scripts > Folder` | Unless `Scripts > Enabled` is turned off, in the order of their file names |
+| Bundled | [bibstd/lua/bundled](../bibstd/lua/bundled), part of the app, and `bibstd/lua/private` where a build has it | Always, first |
+| User | `*.lua` in `%LOCALAPPDATA%\verselens\scripts`, copied there with `Import scripts` in the scripts tab | Unless `Scripts > Enabled` is turned off, in the order of their file names |
 
 Scripts load once after the start. A changed script or setting takes effect on the next start, or right away with `Load scripts` in the scripts tab, which lists the loaded scripts and their functions.
 
-[example.lua](../bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Copied into the script folder it is inactive until its `enabled` is set.
+[example.lua](../bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Imported it is inactive until its `enabled` is set.
 
 ## A script
 
@@ -80,7 +80,7 @@ A script offering the two functions below opens references in the browser, `Look
 | Function | Description |
 |---|---|
 | `workflow.web.fetch(url)` | The content of the web page at `url` (http or https), or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410), `timeout` (30 s), `init_failed`, else `request_failed`. The script waits for the page and other scripts wait meanwhile. A url that failed is not requested again for the time of `Web > Pause after a failure`, 60 s unless changed, the reason is answered from memory. |
-| `workflow.cache.get(name, key)`, `workflow.cache.set(name, key, value)` | Text values kept beyond the run of the app. `name` is of letters, digits, `_` and `-`, a script names its own cache. `value = nil` removes the key. Each cache is the SQLite file `cache/<name>.sqlite` of the script folder, other programs may read and change it meanwhile. A failing cache is logged and holds nothing. |
+| `workflow.cache.get(name, key)`, `workflow.cache.set(name, key, value)` | Text values kept beyond the run of the app. `name` is of letters, digits, `_` and `-`, a script names its own cache. `value = nil` removes the key. Each cache is the SQLite file `cache/<name>.sqlite` of the local data folder, whatever folder the script is in, other programs may read and change it meanwhile. A failing cache is logged and holds nothing. |
 | `util` | Strings: `split`, `trim`, `starts_with`, `ends_with`. Tables: `keys`, `contains`, `map`, `filter`, `copy`. Inspection: `dump`, `at`. Log of the app: `log_debug`, `log_info`, `log_warning`, `log_error`, each taking values like `print` does. |
 
 A function called the wrong way, e.g. with a value of another type, raises an error like the functions of Lua do, `pcall` catches it. A failure the script can not prevent, e.g. a missing web page, is no error: the function returns `nil` and the reason, like `io.open`.

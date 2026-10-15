@@ -39,6 +39,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString code MEMBER code_ CONSTANT)
   Q_PROPERTY(QString copyright MEMBER copyright_ CONSTANT)
   Q_PROPERTY(QString dragHandle MEMBER dragHandle_ CONSTANT)
+  Q_PROPERTY(QString fileImport MEMBER fileImport_ CONSTANT)
   Q_PROPERTY(QString folderOpen MEMBER folderOpen_ CONSTANT)
   Q_PROPERTY(QString loading MEMBER loading_ CONSTANT)
   Q_PROPERTY(QString openInBrowser MEMBER openInBrowser_ CONSTANT)
@@ -58,6 +59,7 @@ class Icons final : public QObject
   QString code_{detail::toIconUrl("code.svg")};
   QString copyright_{detail::toIconUrl("copyright.svg")};
   QString dragHandle_{detail::toIconUrl("drag_handle.svg")};
+  QString fileImport_{detail::toIconUrl("file_import.svg")};
   QString folderOpen_{detail::toIconUrl("folder_open.svg")};
   QString loading_{detail::toIconUrl("loading.svg")};
   QString openInBrowser_{detail::toIconUrl("open_in_browser.svg")};

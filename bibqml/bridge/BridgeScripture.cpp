@@ -1,4 +1,5 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
+#include "bibqml/util/LocalPath.hpp"
 
 #include <bibstd/execution/launch.hpp>
 #include <bibstd/util/log.hpp>
@@ -36,23 +37,21 @@ BridgeScripture::~BridgeScripture() noexcept = default;
 
 ///
 ///
-void BridgeScripture::importFolder(const QUrl& folder)
+void BridgeScripture::importFiles(const QList<QUrl>& files)
 {
   if(importRunning_)
   {
     return;
   }
-  // Empty for anything that does not name a folder of this machine, which is nothing to import from
-  const auto localFolder = folder.toLocalFile();
-  if(localFolder.isEmpty())
+  auto sources = LocalPath::toLocalPaths(files);
+  if(sources.empty())
   {
-    LOG_WARN("scripture import failed: no local folder provided: url=\"{}\"", folder.toString().toStdString());
     return;
   }
-  const auto params = bibstd::workflow::workflow_scripture::import_params{{.folder = localFolder.toStdString()}};
+  LOG_DEBUG("start scripture import: files={}", sources.size());
+  const auto params = bibstd::workflow::workflow_scripture::import_params{{.sources = std::move(sources)}};
   importRunning_ = true;
   emit importRunningChanged();
-  LOG_DEBUG("start scripture import: folder=\"{}\"", localFolder.toStdString());
   auto finish = [this](const std::size_t imported)
   {
     if(importRunning_)

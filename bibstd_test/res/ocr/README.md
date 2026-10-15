@@ -25,4 +25,4 @@ build/bibstd_test/bibstd_test.exe "[.capture]"
 
 - The capture is hidden from ctest, it needs the real tesseract engine.
 - This folder is the `BIBSTD_TEST_OCR_DIR` define of `bibstd_test/CMakeLists.txt`.
-- The tessdata folder is found at runtime by `ocr_engine_tesseract::tessdata_folder_finder`.
+- The tessdata folder is the one the app ships, the `BIBSTD_TEST_TESSDATA_DIR` define.
