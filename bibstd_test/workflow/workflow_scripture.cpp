@@ -77,9 +77,8 @@ scripture_fixture::scripture_fixture(
 {
   if(stored)
   {
-    // The default scripture folder of the data folder
-    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::default_folder_name);
-    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::default_folder_name / stored->filename());
+    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::folder_name);
+    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::folder_name / stored->filename());
   }
   const auto scripts_folder = folder.path() / "user_scripts";
   std::filesystem::create_directories(scripts_folder);

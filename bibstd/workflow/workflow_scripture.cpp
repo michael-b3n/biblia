@@ -44,9 +44,6 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
       setting_value_t<decltype(scripture_name)>{},
       std::make_shared<framework::setting_validator_list<setting_value_t<decltype(scripture_name)>>>()
     )}
-  , scripture_folder{workflow_settings_->create_setting(
-      "scripture.folder", workflow_settings_->data_folder() / default_folder_name
-    )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
       std::string{bible::versification::default_kjv::name},
@@ -55,6 +52,7 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
       )
     )}
+  , folder{workflow_settings_->data_folder() / folder_name}
 {
   // The default value set above must be one of the default versifications, else it would be invalid.
   static_assert(meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
@@ -92,7 +90,7 @@ workflow_scripture::workflow_scripture(
 )
   : workflow_base{std::move(workflow_settings)}
   , workflow_script_{std::move(workflow_script)}
-  , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().scripture_folder->value()))
+  , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().folder))
 {
   update_scripture_name_setting();
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"

@@ -52,17 +52,17 @@ public: // Structors
   ~workflow_scripture_settings() noexcept override = default;
 
 public: // Constants
-  static constexpr auto default_folder_name = "scriptures";
+  static constexpr auto folder_name = "scriptures";
 
 public: // Variables
   const setting_type<std::optional<std::string>> scripture_name;
-  const setting_type<std::filesystem::path> scripture_folder;
   const setting_type<std::string> fallback_versification;
+  const std::filesystem::path folder;
 };
 
 ///
-/// Workflow for scripture. The scriptures are the zip files in the folder of the setting "scripture.folder",
-/// by default the folder "scriptures" in the local data folder. They are loaded on construction.
+/// Workflow for scripture. The scriptures are the zip files in the folder "scriptures" of the local data folder,
+/// loaded on construction and added by import_scriptures.
 /// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
 /// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
 /// Signal IDs to connect to:
