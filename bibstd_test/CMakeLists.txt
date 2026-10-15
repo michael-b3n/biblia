@@ -34,17 +34,17 @@ target_compile_definitions(bibstd_test
 )
 
 #
-# Provide the OCR image folder. The tessdata folder the capture needs is located at runtime by
-# ocr_engine_tesseract::tessdata_folder_finder, see bibstd_test/res/ocr/README.md.
+# Provide the OCR image folder and the tessdata folder the app ships, see bibstd_test/res/ocr/README.md.
 #
+cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH BIBSTD_TEST_ROOT_DIR)
 target_compile_definitions(bibstd_test
   PRIVATE BIBSTD_TEST_OCR_DIR="${CMAKE_CURRENT_LIST_DIR}/res/ocr"
+          BIBSTD_TEST_TESSDATA_DIR="${BIBSTD_TEST_ROOT_DIR}/verselens/res/tessdata"
 )
 
 #
 # Provide the example Lua scripts, which are installed with the app.
 #
-cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH BIBSTD_TEST_ROOT_DIR)
 target_compile_definitions(bibstd_test
   PRIVATE BIBSTD_TEST_LUA_EXAMPLES_DIR="${BIBSTD_TEST_ROOT_DIR}/bibstd/lua/examples"
 )

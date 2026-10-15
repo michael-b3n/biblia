@@ -21,6 +21,7 @@
 #include <ranges>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <vector>
 
 namespace bibstd::workflow
@@ -245,6 +246,29 @@ TEST_CASE("workflow_script_loads_the_user_scripts", "[workflow]")
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"a (a)", "nil (b)", "ran (e)"});
   CHECK(workflow.state()->script("return shared == nil").get<bool>());
+}
+
+TEST_CASE("workflow_script_loads_the_custom_folder_after_the_default_one", "[workflow]")
+{
+  const auto folder = test_utils::temp_folder{"workflow_script_loads_the_custom_folder_after_the_default_one"};
+  const auto custom = folder.path() / "custom";
+  std::filesystem::create_directories(folder.path() / "scripts");
+  std::filesystem::create_directories(custom);
+  test_utils::write_file(folder.path() / "scripts" / "a.lua", report("a", "'default'"));
+  test_utils::write_file(custom / "b.lua", report("b", "'custom'"));
+  // Same name as the one of the default folder, which keeps its function
+  test_utils::write_file(custom / "c.lua", report("a", "'custom'"));
+
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, custom)};
+  test_utils::load_scripts(workflow);
+  CHECK(reports(workflow) == std::vector<std::string>{"default (a)", "custom (b)"});
+
+  for(const auto& again : {folder.path() / "scripts", folder.path() / "gone", std::filesystem::path{}})
+  {
+    std::ignore = workflow.settings().custom_script_path->value(again);
+    test_utils::load_scripts(workflow);
+    CHECK(reports(workflow) == std::vector<std::string>{"default (a)"});
+  }
 }
 
 TEST_CASE("workflow_script_loads_the_scripts_anew", "[workflow]")

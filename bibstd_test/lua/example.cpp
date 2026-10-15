@@ -50,7 +50,7 @@ example_fixture::example_fixture(const std::string_view name, const bool activat
   test_utils::write_file(scripts / "example.lua", code);
   const auto settings = test_utils::make_script_settings(folder.path(), true, scripts);
   script = std::make_shared<workflow::workflow_script>(settings);
-  cache = std::make_shared<workflow::workflow_cache>(script);
+  cache = std::make_shared<workflow::workflow_cache>(settings, script);
   scripture = std::make_shared<workflow::workflow_scripture>(settings, script);
   // Last, as the app does
   test_utils::load_scripts(*script);
@@ -81,8 +81,8 @@ TEST_CASE("example_script_provides_a_scripture", "[lua]")
   });
   REQUIRE(passage);
   CHECK(passage->passage.content == R"(<p data-id="undefined">Example text of john 3,16</p>)");
-  // Kept in the cache of the script
-  CHECK(std::filesystem::exists(fixture.folder.path() / "user_scripts" / "cache" / "example.sqlite"));
+  // Kept in the cache of the data folder, whatever folder the script is in
+  CHECK(std::filesystem::exists(fixture.folder.path() / "cache" / "example.sqlite"));
 }
 
 } // namespace bibstd::lua

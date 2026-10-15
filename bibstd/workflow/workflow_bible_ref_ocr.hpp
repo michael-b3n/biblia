@@ -39,7 +39,7 @@ struct workflow_bible_ref_ocr_settings final : public workflow_settings_base
   workflow_bible_ref_ocr_settings(std::shared_ptr<workflow_settings> workflow_settings);
 
   // Variables
-  const setting_type<std::optional<std::filesystem::path>> tessdata_path;
+  const setting_type<std::optional<std::filesystem::path>> custom_tessdata_path;
   const setting_type<std::optional<std::string>> character_recognition_ocr_engine;
   const setting_type<std::optional<std::string>> layout_recognition_ocr_engine;
   const setting_type<ocr_recognition_algorithm> recognition_algorithm;
@@ -95,8 +95,8 @@ public: // Typedefs
 public: // Structors
   ///
   /// Constructor for workflow_bible_ref_ocr.
-  /// If tesseract is used for OCR, a valid tessdata path is required:
-  /// \see txt::ocr_engine_tesseract::tessdata_folder_finder.
+  /// Tesseract reads the tessdata folder of the setting "ocr.custom_tessdata_path", else the one the app ships:
+  /// \see txt::ocr_engine_tesseract::shipped_tessdata_folder.
   ///
   workflow_bible_ref_ocr(
     std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_scripture> workflow_scripture

@@ -47,11 +47,11 @@ public: // Structors
 
 public: // Constants
   static constexpr auto default_folder_name = "scripts";
-  static constexpr auto cache_folder_name = "cache";
 
 public: // Variables
   const setting_type<bool> enabled;
-  const setting_type<std::filesystem::path> folder;
+  const setting_type<std::optional<std::filesystem::path>> custom_script_path;
+  const std::filesystem::path default_folder;
 };
 
 ///

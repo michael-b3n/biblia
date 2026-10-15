@@ -26,7 +26,7 @@ auto construct_backend() -> backend_instance
   auto workflow_settings = std::make_shared<bibstd::workflow::workflow_settings>(version::data_folder_name);
   auto workflow_script = std::make_shared<bibstd::workflow::workflow_script>(workflow_settings);
   auto workflow_web = std::make_shared<bibstd::workflow::workflow_web>(workflow_settings, workflow_script);
-  auto workflow_cache = std::make_shared<bibstd::workflow::workflow_cache>(workflow_script);
+  auto workflow_cache = std::make_shared<bibstd::workflow::workflow_cache>(workflow_settings, workflow_script);
   auto workflow_hotkey = std::make_shared<bibstd::workflow::workflow_hotkey>(workflow_settings);
   auto workflow_scripture = std::make_shared<bibstd::workflow::workflow_scripture>(workflow_settings, workflow_script);
   auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(workflow_settings, workflow_scripture);

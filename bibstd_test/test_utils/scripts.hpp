@@ -26,7 +26,7 @@ namespace bibstd::test_utils
     const auto writer = std::make_shared<workflow::workflow_settings>(data_folder.string());
     const auto settings = workflow::workflow_script_settings{writer};
     std::ignore = settings.enabled->value(enabled);
-    std::ignore = settings.folder->value(scripts.empty() ? data_folder / "scripts" : scripts);
+    std::ignore = settings.custom_script_path->value(scripts);
   }
   return std::make_shared<workflow::workflow_settings>(data_folder.string());
 }

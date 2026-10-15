@@ -14,6 +14,8 @@ character_recognition_ocr_engine,Zeichenerkennung,Character recognition
 click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
+custom_script_path,Eigener Skriptordner,Custom script folder
+custom_tessdata_path,Eigenes Tesseract-Datenverzeichnis,Custom Tesseract data folder
 dwell_duration,Verweildauer,Dwell duration
 enabled,Aktiviert,Enabled
 english,Englisch,English
@@ -51,7 +53,6 @@ scriptures_import_filter,ZIP-Archive,Zip archives
 scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
 scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 shift,Umschalt,Shift
-tessdata_path,Tesseract Datenverzeichnis,Tesseract data folder
 translations,Übersetzungen,Translations
 tray_exit,Beenden,Exit
 tray_open_github,GitHub öffnen,Open GitHub

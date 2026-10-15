@@ -4,6 +4,7 @@
 #include "bibstd/util/identifier.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/workflow/workflow_settings.hpp"
 
 #include <filesystem>
 #include <map>
@@ -28,6 +29,9 @@ namespace bibstd::workflow
 ///
 class workflow_cache final : public workflow_base<void>
 {
+  // Constants
+  static constexpr auto folder_name = "cache";
+
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::filesystem::path folder_;
@@ -36,7 +40,7 @@ class workflow_cache final : public workflow_base<void>
   lua::registration registrations_;
 
 public: // Structors
-  explicit workflow_cache(std::shared_ptr<workflow_script> workflow_script);
+  workflow_cache(std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script);
   ~workflow_cache() noexcept override;
 
 public: // Modifiers
