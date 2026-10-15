@@ -5,6 +5,7 @@
 #include "bibstd/util/log.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -13,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -56,10 +58,7 @@ namespace
 workflow_script_settings::workflow_script_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_base{std::move(workflow_settings)}
   , enabled{workflow_settings_->create_setting("script.enabled", true)}
-  , custom_script_path{workflow_settings_->create_setting(
-      "script.custom_script_path", setting_value_t<decltype(custom_script_path)>{}
-    )}
-  , default_folder{workflow_settings_->data_folder() / default_folder_name}
+  , folder{workflow_settings_->data_folder() / folder_name}
 {
 }
 
@@ -93,6 +92,36 @@ auto workflow_script::state() const -> lua::state
 auto workflow_script::load_scripts() -> void
 {
   loader_ = std::jthread{[this](const std::stop_token& stop_token) { load(stop_token); }};
+}
+
+///
+///
+auto workflow_script::import_scripts(const std::vector<std::filesystem::path>& files) -> std::size_t
+{
+  const auto& folder = settings().folder;
+  auto error = std::error_code{};
+  std::ignore = std::filesystem::create_directories(folder, error);
+  const auto copy = [&](const std::filesystem::path& file)
+  {
+    if(
+      file.extension() != ".lua" || !std::filesystem::is_regular_file(file, error) ||
+      std::filesystem::equivalent(file.parent_path(), folder, error)
+    )
+    {
+      LOG_WARN("script file not imported: file=\"{}\"", file.generic_string());
+      return false;
+    }
+    const auto target = folder / file.filename();
+    const auto replaced = std::filesystem::exists(target, error);
+    if(!std::filesystem::copy_file(file, target, std::filesystem::copy_options::overwrite_existing, error))
+    {
+      LOG_ERROR("failed to copy script file: file=\"{}\", error={}", file.generic_string(), error.message());
+      return false;
+    }
+    LOG_INFO("script file {}: file_name=\"{}\"", replaced ? "replaced" : "copied", file.filename().string());
+    return true;
+  };
+  return static_cast<std::size_t>(std::ranges::count_if(files, copy));
 }
 
 ///
@@ -162,7 +191,7 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
     );
     if(settings().enabled->value())
     {
-      const auto& folder = settings().default_folder;
+      const auto& folder = settings().folder;
       auto error = std::error_code{};
       if(!std::filesystem::exists(folder, error))
       {
@@ -172,18 +201,6 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
         }
       }
       load_folder(folder, stop_token);
-
-      if(const auto custom = settings().custom_script_path->value(); custom && !custom->empty())
-      {
-        if(!std::filesystem::is_directory(*custom, error))
-        {
-          LOG_WARN("custom script path not found: folder=\"{}\"", custom->generic_string());
-        }
-        else if(!std::filesystem::equivalent(*custom, folder, error))
-        {
-          load_folder(*custom, stop_token);
-        }
-      }
     }
   }
   catch(...)
@@ -256,9 +273,7 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
       // The first one keeps the function
       if(kept[function.string()].valid())
       {
-        LOG_ERROR(
-          "lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, function.string()
-        );
+        LOG_WARN("lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, function.string());
         return;
       }
       kept[function.string()] = value;

@@ -2,10 +2,14 @@
 
 #include <bibstd/util/non_owning_ptr.hpp>
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QtQmlIntegration/qqmlintegration.h>
 #include <QUrl>
+
+#include <filesystem>
+#include <vector>
 
 namespace bibqml
 {
@@ -19,6 +23,13 @@ class LocalPath final : public QObject
   Q_OBJECT
   QML_ELEMENT
   QML_SINGLETON
+
+public: // Static
+  ///
+  /// \return the local paths of \p urls as a file dialog reports them,
+  /// one naming nothing on this machine is logged and left out
+  ///
+  [[nodiscard]] static auto toLocalPaths(const QList<QUrl>& urls) -> std::vector<std::filesystem::path>;
 
 public: // Structors
   explicit LocalPath(bibstd::util::non_owning_ptr<QObject> parent = nullptr);

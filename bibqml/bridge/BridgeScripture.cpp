@@ -1,4 +1,5 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
+#include "bibqml/util/LocalPath.hpp"
 
 #include <bibstd/execution/launch.hpp>
 #include <bibstd/util/log.hpp>
@@ -6,12 +7,8 @@
 
 #include <QMetaObject>
 
-#include <algorithm>
 #include <cstddef>
-#include <filesystem>
-#include <ranges>
 #include <utility>
-#include <vector>
 
 namespace bibqml
 {
@@ -46,15 +43,7 @@ void BridgeScripture::importFiles(const QList<QUrl>& files)
   {
     return;
   }
-  std::ranges::for_each(
-    files | std::views::filter([](const QUrl& file) { return !file.isLocalFile(); }),
-    [](const QUrl& file)
-    { LOG_WARN("scripture import skipped: no local file provided: url=\"{}\"", file.toString().toStdString()); }
-  );
-  auto sources =
-    files | std::views::filter(&QUrl::isLocalFile) |
-    std::views::transform([](const QUrl& file) { return std::filesystem::path{file.toLocalFile().toStdString()}; }) |
-    std::ranges::to<std::vector>();
+  auto sources = LocalPath::toLocalPaths(files);
   if(sources.empty())
   {
     return;

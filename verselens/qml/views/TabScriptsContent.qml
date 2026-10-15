@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import BibQml
 
 ///
-/// Content of the scripts tab: the loaded scripts with the functions they offer, and the button to load them anew.
+/// Content of the scripts tab: the loaded scripts with the functions they offer, and the buttons to import scripts
+/// and to load them anew.
 ///
 Item
 {
@@ -97,6 +99,21 @@ Item
     }
 
     ///
+    /// Copies script files into the script folder and loads them.
+    ///
+    ButtonIconTextSimple
+    {
+      // Properties
+      Layout.fillWidth: true
+      svgSource: Icons.fileImport
+      text: Translations.name("scripts_import", Translations.language)
+      enabled: !root.bridgeScript.loading
+
+      // Connections
+      onClicked: { importDialog.open() }
+    }
+
+    ///
     /// Takes changes of the scripts and of their settings without a restart.
     ///
     ButtonIconTextSimple
@@ -110,5 +127,18 @@ Item
       // Connections
       onClicked: { root.bridgeScript.loadScripts() }
     }
+  }
+
+  FileDialog
+  {
+    id: importDialog
+
+    // Properties
+    title: Translations.name("scripts_import", Translations.language)
+    fileMode: FileDialog.OpenFiles
+    nameFilters: [Translations.name("scripts_import_filter", Translations.language) + " (*.lua)"]
+
+    // Connections
+    onAccepted: { root.bridgeScript.importFiles(importDialog.selectedFiles) }
   }
 }

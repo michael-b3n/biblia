@@ -14,6 +14,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace bibstd::lua
 {
@@ -38,7 +39,7 @@ struct example_fixture final
 example_fixture::example_fixture(const std::string_view name, const bool activate)
   : folder{name}
 {
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   auto code = test_utils::read_file(std::filesystem::path{BIBSTD_TEST_LUA_EXAMPLES_DIR} / "example.lua");
   const auto inactive = std::string{"local enabled = false"};
@@ -48,7 +49,7 @@ example_fixture::example_fixture(const std::string_view name, const bool activat
     code.replace(code.find(inactive), inactive.size(), "local enabled = true");
   }
   test_utils::write_file(scripts / "example.lua", code);
-  const auto settings = test_utils::make_script_settings(folder.path(), true, scripts);
+  const auto settings = test_utils::make_script_settings(folder.path(), true);
   script = std::make_shared<workflow::workflow_script>(settings);
   cache = std::make_shared<workflow::workflow_cache>(settings, script);
   scripture = std::make_shared<workflow::workflow_scripture>(settings, script);
@@ -61,27 +62,27 @@ example_fixture::example_fixture(const std::string_view name, const bool activat
 TEST_CASE("example_script_is_inactive_as_installed", "[lua]")
 {
   const auto fixture = example_fixture{"example_script_is_inactive_as_installed", false};
-  CHECK(fixture.script->scripts<workflow::workflow_scripture::passage_manifest>().empty());
-  CHECK(fixture.scripture->scripture_count() == 0);
+  CHECK_FALSE(fixture.script->scripts<workflow::workflow_scripture::passage_manifest>().contains("Example"));
+  CHECK(test_utils::scripture_names_of(*fixture.scripture, "Example").empty());
 }
 
 TEST_CASE("example_script_provides_a_scripture", "[lua]")
 {
   const auto fixture = example_fixture{"example_script_provides_a_scripture", true};
   const auto& scripture = *fixture.scripture;
-  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "DEMO (Example)"; }));
-  CHECK(scripture.scripture_count() == 1);
-  const auto information = scripture.information({{}});
+  REQUIRE(test_utils::wait_until([&]() { return !test_utils::scripture_names_of(scripture, "Example").empty(); }));
+  CHECK(test_utils::scripture_names_of(scripture, "Example") == std::vector<std::string>{"DEMO (Example)"});
+  const auto information = scripture.information({{"DEMO (Example)"}});
   REQUIRE(information);
   CHECK(information->copyright == "Example script");
-  CHECK(scripture.book_information({{}}, bible::book_id::john) == bible::book_name{.short_name = "John"});
+  CHECK(scripture.book_information({{"DEMO (Example)"}}, bible::book_id::john) == bible::book_name{.short_name = "John"});
 
   const auto passage = scripture.passage({
-    {.reference = bible::reference::create_unguarded(bible::book_id::john, 3, 16), .scripture_name = std::nullopt}
+    {.reference = bible::reference::create_unguarded(bible::book_id::john, 3, 16), .scripture_name = "DEMO (Example)"}
   });
   REQUIRE(passage);
   CHECK(passage->passage.content == R"(<p data-id="undefined">Example text of john 3,16</p>)");
-  // Kept in the cache of the data folder, whatever folder the script is in
+  // Kept in the cache of the data folder
   CHECK(std::filesystem::exists(fixture.folder.path() / "cache" / "example.sqlite"));
 }
 

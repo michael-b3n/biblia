@@ -388,33 +388,35 @@ Item
   }
 
   ///
-  /// Copyright of the scripture the verses are taken from. Only the icon floats over the verses
-  /// instead of taking room from them, the statement itself is told on hover. A scripture that
-  /// states no copyright shows nothing.
+  /// The copyright of the scripture shown and the import of scripture files. They float over the verses
+  /// instead of taking room from them.
   ///
-  Item
+  RowLayout
   {
-    id: copyrightNote
+    id: cornerControls
 
     // Properties
-    readonly property string statement: root.listModelScripture.scriptureCopyright
-    readonly property bool available: copyrightNote.statement !== ""
-
     anchors.bottom: parent.bottom
     anchors.right: parent.right
     anchors.margins: Metrics.spacingTiny
-    width: Metrics.controlHeight - Metrics.spacingSmall
-    height: copyrightNote.width
-    visible: copyrightNote.available
+    spacing: Metrics.spacingTiny
     z: 1
 
     // Components
+    ///
+    /// Copyright of the scripture the verses are taken from, told on hover. A scripture that states no
+    /// copyright shows nothing.
+    ///
     VectorImage
     {
       id: copyrightIcon
 
       // Properties
-      anchors.fill: parent
+      readonly property string statement: root.listModelScripture.scriptureCopyright
+
+      Layout.preferredWidth: Metrics.controlHeight - Metrics.spacingSmall
+      Layout.preferredHeight: Metrics.controlHeight - Metrics.spacingSmall
+      visible: copyrightIcon.statement !== ""
       opacity: copyrightArea.containsMouse ? 1 : 0.3
       source: Icons.copyright
       preferredRendererType: VectorImage.CurveRenderer
@@ -441,53 +443,67 @@ Item
       }
     }
 
-    ///
-    /// The statement, shown above the icon while it is hovered.
-    ///
-    Rectangle
+    ButtonIconSimple
     {
-      id: copyrightStatement
+      // Properties
+      Layout.preferredWidth: Metrics.controlHeight - Metrics.spacingSmall
+      Layout.preferredHeight: Metrics.controlHeight - Metrics.spacingSmall
+      visible: root.scripturesAvailable
+      enabled: !root.bridgeScripture.importRunning
+      svgSource: Icons.fileImport
+
+      // Connections
+      onClicked: { importDialog.open() }
+    }
+  }
+
+  ///
+  /// The copyright statement, shown above the corner while its icon is hovered.
+  ///
+  Rectangle
+  {
+    id: copyrightStatement
+
+    // Properties
+    readonly property int maximumWidth: root.width - 2 * Metrics.spacingSmall
+
+    anchors.right: cornerControls.right
+    anchors.bottom: cornerControls.top
+    anchors.bottomMargin: Metrics.spacingTiny
+    width: copyrightStatementText.contentWidth + 2 * Metrics.spacingSmall
+    height: copyrightStatementText.contentHeight + 2 * Metrics.spacingSmall
+    visible: copyrightStatement.opacity > 0
+    opacity: copyrightArea.containsMouse ? 1 : 0
+    color: Colors.backgroundSolid
+    border.color: Colors.border
+    border.width: Metrics.border
+    radius: Metrics.radiusMedium
+    z: 1
+
+    // Animations
+    Behavior on opacity
+    {
+      NumberAnimation
+      {
+        duration: Metrics.durationShort
+        easing.type: Easing.InOutQuad
+      }
+    }
+
+    // Components
+    Text
+    {
+      id: copyrightStatementText
 
       // Properties
-      readonly property int maximumWidth: root.width - 2 * Metrics.spacingSmall
-
-      anchors.right: parent.right
-      anchors.bottom: parent.top
-      anchors.bottomMargin: Metrics.spacingTiny
-      width: copyrightStatementText.contentWidth + 2 * Metrics.spacingSmall
-      height: copyrightStatementText.contentHeight + 2 * Metrics.spacingSmall
-      visible: copyrightStatement.opacity > 0
-      opacity: copyrightArea.containsMouse ? 1 : 0
-      color: Colors.backgroundSolid
-      border.color: Colors.border
-      border.width: Metrics.border
-      radius: Metrics.radiusMedium
-
-      // Animations
-      Behavior on opacity
-      {
-        NumberAnimation
-        {
-          duration: Metrics.durationShort
-          easing.type: Easing.InOutQuad
-        }
-      }
-
-      // Components
-      Text
-      {
-        id: copyrightStatementText
-
-        // Properties
-        x: Metrics.spacingSmall
-        y: Metrics.spacingSmall
-        width: copyrightStatement.maximumWidth - 2 * Metrics.spacingSmall
-        text: copyrightNote.statement
-        wrapMode: Text.WordWrap
-        font.pointSize: Metrics.fontSizeSmall
-        color: Colors.text
-        renderType: Text.CurveRendering
-      }
+      x: Metrics.spacingSmall
+      y: Metrics.spacingSmall
+      width: copyrightStatement.maximumWidth - 2 * Metrics.spacingSmall
+      text: copyrightIcon.statement
+      wrapMode: Text.WordWrap
+      font.pointSize: Metrics.fontSizeSmall
+      color: Colors.text
+      renderType: Text.CurveRendering
     }
   }
 
@@ -528,7 +544,7 @@ Item
         Layout.preferredHeight: 2 * Metrics.controlHeight
         enabled: !root.bridgeScripture.importRunning
         opacity: importButton.enabled ? 1 : 0.5
-        svgSource: Icons.folderOpen
+        svgSource: Icons.fileImport
         iconSize: Math.round(1.5 * Metrics.controlHeight)
 
         // Animations
@@ -560,22 +576,22 @@ Item
         wrapMode: Text.WordWrap
       }
     }
+  }
 
-    FileDialog
+  FileDialog
+  {
+    id: importDialog
+
+    // Properties
+    title: Translations.name("scriptures_import", Translations.language)
+    fileMode: FileDialog.OpenFiles
+    nameFilters: [Translations.name("scriptures_import_filter", Translations.language) + " (*.zip)"]
+
+    // Connections
+    onAccepted:
     {
-      id: importDialog
-
-      // Properties
-      title: Translations.name("scriptures_import", Translations.language)
-      fileMode: FileDialog.OpenFiles
-      nameFilters: [Translations.name("scriptures_import_filter", Translations.language) + " (*.zip)"]
-
-      // Connections
-      onAccepted:
-      {
-        emptyState.nothingImported = false
-        root.bridgeScripture.importFiles(importDialog.selectedFiles)
-      }
+      emptyState.nothingImported = false
+      root.bridgeScripture.importFiles(importDialog.selectedFiles)
     }
   }
 }

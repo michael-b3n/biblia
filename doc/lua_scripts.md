@@ -4,12 +4,12 @@ Lua scripts offer scriptures or the lookup of references in the browser.
 
 | Scripts | Where | Loaded |
 |---|---|---|
-| Bundled | [bibstd/lua/bundled](../bibstd/lua/bundled), part of the app | Always, first |
-| User | `*.lua` in `%LOCALAPPDATA%\verselens\scripts`, or in `Scripts > Folder` | Unless `Scripts > Enabled` is turned off, in the order of their file names |
+| Bundled | [bibstd/lua/bundled](../bibstd/lua/bundled), part of the app, and `bibstd/lua/private` where a build has it | Always, first |
+| User | `*.lua` in `%LOCALAPPDATA%\verselens\scripts`, copied there with `Import scripts` in the scripts tab | Unless `Scripts > Enabled` is turned off, in the order of their file names |
 
 Scripts load once after the start. A changed script or setting takes effect on the next start, or right away with `Load scripts` in the scripts tab, which lists the loaded scripts and their functions.
 
-[example.lua](../bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Copied into the script folder it is inactive until its `enabled` is set.
+[example.lua](../bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Imported it is inactive until its `enabled` is set.
 
 ## A script
 

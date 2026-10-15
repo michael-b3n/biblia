@@ -75,7 +75,7 @@ lookup_fixture::lookup_fixture(
 )
   : folder{name}
 {
-  const auto scripts_folder = folder.path() / "user_scripts";
+  const auto scripts_folder = folder.path() / "scripts";
   std::filesystem::create_directories(scripts_folder);
   std::ranges::for_each(
     scripts, [&](const auto& entry) { test_utils::write_file(scripts_folder / entry.first, entry.second); }
@@ -87,7 +87,7 @@ lookup_fixture::lookup_fixture(
     std::ignore = settings.script->value(selected);
     std::ignore = settings.translations->value(translations);
   }
-  const auto settings = test_utils::make_script_settings(folder.path(), !scripts.empty(), scripts_folder);
+  const auto settings = test_utils::make_script_settings(folder.path(), !scripts.empty());
   script = std::make_shared<workflow_script>(settings);
   lookup = std::make_shared<workflow_bible_ref_lookup>(settings, script);
   // Last, as the app does
@@ -153,7 +153,7 @@ TEST_CASE("workflow_bible_ref_lookup_follows_the_chosen_script", "[workflow]")
   REQUIRE(test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
 
   // The script is gone, the lookup is the one of the script offering the most translations, not of the first one
-  std::filesystem::remove(fixture.folder.path() / "user_scripts" / "mine.lua");
+  std::filesystem::remove(fixture.folder.path() / "scripts" / "mine.lua");
   test_utils::load_scripts(*fixture.script);
   REQUIRE(test_utils::wait_until([&]() { return settings.script->value() == "Bibleserver"; }));
   CHECK(test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));

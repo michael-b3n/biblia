@@ -37,7 +37,7 @@ namespace bibstd::lua::bundled
 {
 
 ///
-/// \return the scripts of bibstd/lua/bundled, loaded like the scripts of the user
+/// \return the scripts of bibstd/lua/bundled and bibstd/lua/private
 ///
 [[nodiscard]] auto all() -> std::span<const embedded_script>;
 

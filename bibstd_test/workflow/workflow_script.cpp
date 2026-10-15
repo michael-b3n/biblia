@@ -21,7 +21,6 @@
 #include <ranges>
 #include <string>
 #include <thread>
-#include <tuple>
 #include <vector>
 
 namespace bibstd::workflow
@@ -231,7 +230,7 @@ TEST_CASE("workflow_script_rejects_a_taken_name", "[workflow]")
 TEST_CASE("workflow_script_loads_the_user_scripts", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_loads_the_user_scripts"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   // Each script reports what it sees
   test_utils::write_file(scripts / "a.lua", "shared = 'a' " + report("a", "shared"));
@@ -242,43 +241,44 @@ TEST_CASE("workflow_script_loads_the_user_scripts", "[workflow]")
   test_utils::write_file(scripts / "e.lua", report("e", "'ran'"));
   test_utils::write_file(scripts / "f.txt", report("f", "'ran'"));
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"a (a)", "nil (b)", "ran (e)"});
   CHECK(workflow.state()->script("return shared == nil").get<bool>());
 }
 
-TEST_CASE("workflow_script_loads_the_custom_folder_after_the_default_one", "[workflow]")
+TEST_CASE("workflow_script_imports_scripts_into_its_folder", "[workflow]")
 {
-  const auto folder = test_utils::temp_folder{"workflow_script_loads_the_custom_folder_after_the_default_one"};
-  const auto custom = folder.path() / "custom";
-  std::filesystem::create_directories(folder.path() / "scripts");
-  std::filesystem::create_directories(custom);
-  test_utils::write_file(folder.path() / "scripts" / "a.lua", report("a", "'default'"));
-  test_utils::write_file(custom / "b.lua", report("b", "'custom'"));
-  // Same name as the one of the default folder, which keeps its function
-  test_utils::write_file(custom / "c.lua", report("a", "'custom'"));
+  const auto folder = test_utils::temp_folder{"workflow_script_imports_scripts_into_its_folder"};
+  const auto source = folder.path() / "source";
+  std::filesystem::create_directories(source);
+  test_utils::write_file(source / "a.lua", report("a", "'first'"));
+  test_utils::write_file(source / "b.txt", report("b", "'ran'"));
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, custom)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  CHECK(workflow.import_scripts({source / "a.lua", source / "b.txt", source / "gone.lua"}) == 1);
   test_utils::load_scripts(workflow);
-  CHECK(reports(workflow) == std::vector<std::string>{"default (a)", "custom (b)"});
+  CHECK(reports(workflow) == std::vector<std::string>{"first (a)"});
 
-  for(const auto& again : {folder.path() / "scripts", folder.path() / "gone", std::filesystem::path{}})
-  {
-    std::ignore = workflow.settings().custom_script_path->value(again);
-    test_utils::load_scripts(workflow);
-    CHECK(reports(workflow) == std::vector<std::string>{"default (a)"});
-  }
+  // A file of the same name is replaced, one of the folder itself is not copied onto itself
+  test_utils::write_file(source / "a.lua", report("a", "'second'"));
+  CHECK(workflow.import_scripts({source / "a.lua"}) == 1);
+  CHECK(workflow.import_scripts({workflow.settings().folder / "a.lua"}) == 0);
+  // A function loaded before stays, the file loaded later offering it too is logged
+  test_utils::write_file(source / "c.lua", report("a", "'third'"));
+  CHECK(workflow.import_scripts({source / "c.lua"}) == 1);
+  test_utils::load_scripts(workflow);
+  CHECK(reports(workflow) == std::vector<std::string>{"second (a)"});
 }
 
 TEST_CASE("workflow_script_loads_the_scripts_anew", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_loads_the_scripts_anew"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(scripts / "a.lua", report("a", "'first'"));
   test_utils::write_file(scripts / "b.lua", report("b", "'b'"));
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"first (a)", "b (b)"});
 
@@ -292,12 +292,12 @@ TEST_CASE("workflow_script_loads_the_scripts_anew", "[workflow]")
 TEST_CASE("workflow_script_ends_loading_once_destroyed", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_ends_loading_once_destroyed"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(scripts / "a.lua", "while true do end");
   test_utils::write_file(scripts / "b.lua", "return {}");
 
-  auto workflow = std::make_unique<workflow_script>(test_utils::make_script_settings(folder.path(), true, scripts));
+  auto workflow = std::make_unique<workflow_script>(test_utils::make_script_settings(folder.path(), true));
   auto loaded = std::atomic<bool>{false};
   const auto connection = workflow->connect(&workflow_script_sigs::scripts_loaded, [&]() { loaded = true; });
   workflow->load_scripts();
@@ -311,7 +311,7 @@ TEST_CASE("workflow_script_ends_loading_once_destroyed", "[workflow]")
 TEST_CASE("workflow_script_loads_no_bytecode", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_loads_no_bytecode"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   {
     const auto workflow = workflow_script{test_utils::make_script_settings(folder.path())};
@@ -322,7 +322,7 @@ TEST_CASE("workflow_script_loads_no_bytecode", "[workflow]")
     scripts / "b.lua", report("b", "load(string.dump(function() end)) == nil and dofile == nil and loadfile == nil")
   );
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"true (b)"});
 }
@@ -341,7 +341,7 @@ TEST_CASE("workflow_script_creates_a_missing_folder", "[workflow]")
 TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_loads_the_bundled_scripts"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(scripts / "a.lua", report("a", "'ran'"));
   // A script of the name of a bundled one adds its functions to it
@@ -349,7 +349,7 @@ TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 
   SECTION("without the scripts of the user")
   {
-    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false, scripts)};
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false)};
     test_utils::load_scripts(workflow);
     CHECK(std::ranges::contains(names(workflow.scripts()), std::string{"Bibleserver"}));
     CHECK(reports(workflow).empty());
@@ -357,7 +357,7 @@ TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 
   SECTION("before the scripts of the user")
   {
-    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
     test_utils::load_scripts(workflow);
     CHECK(user_names(workflow, folder) == std::vector<std::string>{"a"});
     CHECK(reports(workflow) == std::vector<std::string>{"ran (Bibleserver)", "ran (a)"});
@@ -367,7 +367,7 @@ TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_offers_the_scripts_of_manifests"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(
     scripts / "both.lua", "return {name = 'Both', functions = {['test.a'] = function() end, ['test.b'] = function() end}}"
@@ -379,7 +379,7 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   // A script returning no table offers nothing
   test_utils::write_file(scripts / "none.lua", "return 1");
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   CHECK(names(workflow.scripts<a_manifest>()) == std::vector<std::string>{"Both", "One"});
   CHECK(names(workflow.scripts<a_manifest, b_manifest>()) == std::vector<std::string>{"Both"});
@@ -391,7 +391,7 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
 TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_knows_a_script_by_its_name"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   const auto script = [](const std::string& description, const std::string& value)
   { return "return {" + description + " functions = {['test.report'] = function() return {value = '" + value + "'} end}}"; };
@@ -411,7 +411,7 @@ TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
   // No functions
   test_utils::write_file(scripts / "9.lua", "return {name = 'No functions'}");
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   REQUIRE(user_names(workflow, folder) == std::vector<std::string>{"Alpha page.com", "Zeta"});
   CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha page.com)", "first (Zeta)"});
@@ -423,7 +423,7 @@ TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
 TEST_CASE("workflow_script_runs_a_function", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_runs_a_function"};
-  const auto scripts = folder.path() / "user_scripts";
+  const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(
     scripts / "echo.lua",
@@ -446,7 +446,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
       } }
     )"
   );
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true, scripts)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   const auto input = [](const std::string& text)
   {

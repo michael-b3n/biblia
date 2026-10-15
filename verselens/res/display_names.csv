@@ -14,7 +14,6 @@ character_recognition_ocr_engine,Zeichenerkennung,Character recognition
 click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
-custom_script_path,Eigener Skriptordner,Custom script folder
 custom_tessdata_path,Eigenes Tesseract-Datenverzeichnis,Custom Tesseract data folder
 dwell_duration,Verweildauer,Dwell duration
 enabled,Aktiviert,Enabled
@@ -43,6 +42,8 @@ poll_interval,Abfrageintervall,Poll interval
 recognition_algorithm,Erkennungsverfahren,Recognition algorithm
 retry_pause,Pause nach einem Fehler,Pause after a failure
 script,Skripte,Scripts
+scripts_import,Skripte importieren,Import scripts
+scripts_import_filter,Lua-Skripte,Lua scripts
 scripts_load,Skripte laden,Load scripts
 scripts_loaded,Geladene Skripte,Loaded scripts
 scripture,Bibelausgabe,Scripture

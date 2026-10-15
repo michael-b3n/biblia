@@ -11,6 +11,7 @@
 #include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <concepts>
+#include <cstddef>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -46,12 +47,11 @@ public: // Structors
   ~workflow_script_settings() noexcept override = default;
 
 public: // Constants
-  static constexpr auto default_folder_name = "scripts";
+  static constexpr auto folder_name = "scripts";
 
 public: // Variables
   const setting_type<bool> enabled;
-  const setting_type<std::optional<std::filesystem::path>> custom_script_path;
-  const std::filesystem::path default_folder;
+  const std::filesystem::path folder;
 };
 
 ///
@@ -112,6 +112,13 @@ public: // Modifiers
   /// running ends after its script first.
   ///
   auto load_scripts() -> void;
+
+  ///
+  /// Copy the Lua script \p files into the script folder, replacing a file of the same name. They run once the
+  /// scripts are loaded anew, \see load_scripts.
+  /// \return number of files copied, the others are logged
+  ///
+  [[nodiscard]] auto import_scripts(const std::vector<std::filesystem::path>& files) -> std::size_t;
 
   ///
   /// Register a function for scripts at workflow.\p p, e.g. "web.fetch", \see lua::state::register_function

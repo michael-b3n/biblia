@@ -103,6 +103,7 @@ auto core_scripture_store::import(const std::filesystem::path& source) -> std::s
   }
   if(std::filesystem::equivalent(is_file ? source.parent_path() : source, folder_, error))
   {
+    LOG_WARN("scripture import skipped, the source is in the scripture folder: source=\"{}\"", source.generic_string());
     return 0;
   }
   std::ignore = std::filesystem::create_directories(folder_, error);
@@ -117,12 +118,13 @@ auto core_scripture_store::import(const std::filesystem::path& source) -> std::s
       return false;
     }
     const auto target = folder_ / file.filename();
+    const auto replaced = scripture_files_.contains(target);
     if(!std::filesystem::copy_file(file, target, std::filesystem::copy_options::overwrite_existing, error))
     {
       LOG_ERROR("failed to copy scripture file: file_name=\"{}\", {}", file.filename().string(), error.message());
       return false;
     }
-    LOG_INFO("scripture file copied: file_name=\"{}\"", file.filename().string());
+    LOG_INFO("scripture file {}: file_name=\"{}\"", replaced ? "replaced" : "copied", file.filename().string());
     scripture_files_.insert_or_assign(target, std::move(scripture));
     return true;
   };

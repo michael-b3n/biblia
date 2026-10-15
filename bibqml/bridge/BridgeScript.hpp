@@ -1,14 +1,19 @@
 #pragma once
 
+#include <bibstd/execution/scope.hpp>
 #include <bibstd/framework/queued_connections.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
+#include <QList>
 #include <QObject>
 #include <qtmetamacros.h>
 #include <QtQml/qqmlregistration.h>
+#include <QUrl>
 #include <QVariantList>
 
+#include <filesystem>
 #include <memory>
+#include <vector>
 
 namespace bibstd::workflow
 {
@@ -21,7 +26,7 @@ namespace bibqml
 
 ///
 /// QML bridge for workflow_script.
-/// This lists the loaded user scripts and loads them anew, e.g. once they or their settings changed.
+/// This lists the loaded user scripts, imports script files and loads the scripts anew.
 ///
 class BridgeScript final : public QObject
 {
@@ -36,6 +41,7 @@ class BridgeScript final : public QObject
   bool loading_{false};
   QVariantList scripts_;
   bibstd::framework::queued_connections connections_;
+  bibstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeScript(
@@ -50,12 +56,19 @@ public: // Modifiers
   Q_INVOKABLE void loadScripts();
 
   ///
+  /// Copy the script \p files into the script folder and load the scripts anew, \see workflow_script::import_scripts.
+  /// The files are expected as the URLs a file dialog reports. A call made while the scripts load is ignored.
+  ///
+  Q_INVOKABLE void importFiles(const QList<QUrl>& files);
+
+  ///
   /// Disconnect all signal connections.
   /// This will stop the frontend backend communication.
   ///
   void disconnect();
 
 private: // Implementation
+  void load(std::vector<std::filesystem::path> files);
   void updateScripts();
 
 signals:

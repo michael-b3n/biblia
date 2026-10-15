@@ -1,5 +1,7 @@
 #include "bibqml/bridge/BridgeScript.hpp"
+#include "bibqml/util/LocalPath.hpp"
 
+#include <bibstd/execution/launch.hpp>
 #include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 
@@ -7,8 +9,11 @@
 #include <QStringList>
 #include <QVariantMap>
 
+#include <filesystem>
 #include <ranges>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 namespace bibqml
 {
@@ -52,14 +57,14 @@ BridgeScript::~BridgeScript() noexcept = default;
 ///
 void BridgeScript::loadScripts()
 {
-  if(loading_)
-  {
-    return;
-  }
-  loading_ = true;
-  emit loadingChanged();
-  LOG_DEBUG("load scripts anew");
-  workflowScript_->load_scripts();
+  load({});
+}
+
+///
+///
+void BridgeScript::importFiles(const QList<QUrl>& files)
+{
+  load(LocalPath::toLocalPaths(files));
 }
 
 ///
@@ -67,6 +72,27 @@ void BridgeScript::loadScripts()
 void BridgeScript::disconnect()
 {
   connections_.disconnect();
+  scope_.stop();
+}
+
+///
+///
+void BridgeScript::load(std::vector<std::filesystem::path> files)
+{
+  if(loading_)
+  {
+    return;
+  }
+  loading_ = true;
+  emit loadingChanged();
+  LOG_DEBUG("load scripts anew: files_to_import={}", files.size());
+  // Starting the loading waits for the one before to end, scripts_loaded ends the loading here
+  auto importAndLoad = [this, files = std::move(files)]()
+  {
+    std::ignore = workflowScript_->import_scripts(files);
+    workflowScript_->load_scripts();
+  };
+  bibstd::execution::launch(std::move(importAndLoad), scope_);
 }
 
 ///
