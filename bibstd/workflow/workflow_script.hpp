@@ -79,10 +79,10 @@ class workflow_script final
   static constexpr auto lua_node = "workflow"; // below root, the node of all workflow registrations
 
   // Variables
+  const lua::state_owner state_owner_;
   mutable std::mutex mtx_;
   std::map<std::string, std::set<util::path>> scripts_; // the functions of the loaded scripts by name
-  const lua::state_owner state_owner_;
-  std::jthread loader_; // last, it joins before the members it uses are destroyed
+  std::jthread loader_;                                 // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
   using script_name_type = decltype(scripts_)::key_type;
