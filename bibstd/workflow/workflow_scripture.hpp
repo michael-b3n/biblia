@@ -61,12 +61,10 @@ public: // Variables
 };
 
 ///
-/// Workflow for scripture. The scriptures are the zip files in the folder "scriptures" of the local data folder,
-/// loaded on construction and added by import_scriptures.
-/// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
-/// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
+/// Workflow for scripture. Scriptures are either loaded via local files or provided by dedicated scripts.
+/// Scriptures provided without versification take the fallback versification (KJV by default).
 /// Signal IDs to connect to:
-/// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
+/// - scriptures_changed: Emitted when the scriptures of the scripts changed.
 ///
 class workflow_scripture final
   : public workflow_base<workflow_scripture_settings>
@@ -128,10 +126,10 @@ class workflow_scripture final
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
-  mutable std::mutex update_mtx_;
-  mutable std::mutex scriptures_mtx_;
+  mutable std::mutex mtx_;
   std::optional<script_scriptures_t> script_scriptures_;
   framework::queued_connections connections_;
+  lua::registration registrations_;
 
 public: // Constants
   static constexpr auto default_versifications = []()

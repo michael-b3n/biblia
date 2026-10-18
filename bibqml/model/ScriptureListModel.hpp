@@ -1,8 +1,8 @@
 #pragma once
 
 #include <bibstd/bible/reference.hpp>
+#include <bibstd/execution/scope.hpp>
 #include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/signal/common.hpp>
 #include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QAbstractListModel>
@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
-#include <mutex>
+#include <optional>
 #include <stop_token>
 #include <vector>
 
@@ -93,7 +93,7 @@ class ScriptureListModel final : public QAbstractListModel
     // Events
     struct e_reset final { Load load; };
     struct e_page final { Load load; };
-    struct e_loaded final { std::stop_token token; std::vector<Entry> entries; };
+    struct e_loaded final { std::stop_token token; std::vector<Entry> entries; std::optional<QString> copyright; };
     struct e_clear final {};
     struct e_scripture_changed final {};
     // clang-format on
@@ -106,10 +106,8 @@ class ScriptureListModel final : public QAbstractListModel
   std::deque<Entry> entries_;
   int referenceRow_{0};
   QString scriptureCopyright_;
-  bibstd::signal::signal_type<void(Load, std::stop_token)> loadRequested_;
-  bibstd::signal::signal_type<void()> copyrightRequested_;
-  mutable std::mutex copyrightMtx_;
   bibstd::framework::queued_connections connections_;
+  bibstd::execution::scope scope_;
   const std::unique_ptr<MachineHolder> machine_;
 
 public: // Typedefs
@@ -194,7 +192,7 @@ private: // Implementation, on the thread of the model
   void scriptureCopyright(const QString& copyright);
   template<typename Event>
   [[nodiscard]] bool dispatch(const Event& event);
-  void provideLoad(const std::stop_token& token, std::vector<Entry> entries);
+  void provideLoad(const std::stop_token& token, std::vector<Entry> entries, std::optional<QString> copyright);
   void applyScriptureChange();
   void resetRows(std::vector<Entry> entries, int row);
   void prependRows(std::vector<Entry> entries);
@@ -211,8 +209,6 @@ private: // Implementation, on the thread pool
   template<typename Task>
   void post(Task&& task);
   void fetchLoad(const Load& load, const std::stop_token& token);
-  void fetchCopyright();
-  [[nodiscard]] Entry fetchEntry(const bibstd::bible::reference& ref) const;
 };
 
 } // namespace bibqml
