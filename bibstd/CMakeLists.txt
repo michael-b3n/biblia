@@ -105,3 +105,33 @@ endif()
 #
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH BIBSTD_INCLUDE_DIR)
 target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
+
+#
+# The script reference doc/lua_api.md, generated from the comments tagged \lua, \see tools/gen_lua_doc.lua.
+# CI turns the update off, so the test fails for a doc not committed with its sources.
+#
+option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
+find_program(BIBSTD_LUA_EXECUTABLE NAMES lua5.4 lua REQUIRED)
+file(GLOB BIBSTD_LUA_DOC_SOURCES CONFIGURE_DEPENDS RELATIVE "${CMAKE_SOURCE_DIR}"
+  "${CMAKE_CURRENT_LIST_DIR}/workflow/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/workflow/*.hpp"
+)
+list(APPEND BIBSTD_LUA_DOC_SOURCES bibstd/lua/names.hpp bibstd/lua/state.hpp bibstd/lua/internal/interface_util.lua)
+
+if(BIBSTD_LUA_DOC_UPDATE)
+  list(TRANSFORM BIBSTD_LUA_DOC_SOURCES PREPEND "${CMAKE_SOURCE_DIR}/" OUTPUT_VARIABLE BIBSTD_LUA_DOC_DEPENDS)
+  add_custom_command(
+    OUTPUT "${CMAKE_SOURCE_DIR}/doc/lua_api.md"
+    COMMAND ${BIBSTD_LUA_EXECUTABLE} tools/gen_lua_doc.lua doc/lua_api.md ${BIBSTD_LUA_DOC_SOURCES}
+    DEPENDS "${CMAKE_SOURCE_DIR}/tools/gen_lua_doc.lua" ${BIBSTD_LUA_DOC_DEPENDS}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Generating doc/lua_api.md"
+    VERBATIM
+  )
+  add_custom_target(lua_doc ALL DEPENDS "${CMAKE_SOURCE_DIR}/doc/lua_api.md")
+endif()
+
+add_test(
+  NAME lua_doc
+  COMMAND ${BIBSTD_LUA_EXECUTABLE} tools/gen_lua_doc.lua --check doc/lua_api.md ${BIBSTD_LUA_DOC_SOURCES}
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)

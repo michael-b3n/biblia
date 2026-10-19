@@ -110,35 +110,76 @@ workflow_scripture::workflow_scripture(
 
   registrations_
     // Settings
+    ///
+    /// \lua The name of the scripture shown, `Scripture > Name`, `nil` for none.
+    ///
     << workflow_script_->register_setting(*settings().scripture_name)
+    ///
+    /// \lua The versification of scriptures that have none, those of scripts included,
+    /// `Scripture > Fallback versification`.
+    ///
     << workflow_script_->register_setting(*settings().fallback_versification)
 
     // Functions
+    ///
+    /// \lua
+    /// \return the number of scriptures, those of the scripts included
+    ///
     << workflow_script_->register_function("scripture.scripture_count", [this]() { return scripture_count(); })
+    ///
+    /// \lua
+    /// \return the identifiers of the books, e.g. `john`
+    ///
     << workflow_script_->register_function(
          "scripture.book_names",
          []() { return util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
        )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \return its name, `nil` if there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.name",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.name; }); }
        )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \return its abbreviation, `nil` if there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.abbreviation",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.abbreviation; }); }
        )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \return its language, `nil` if there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.language",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.language; }); }
        )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \return its copyright, `nil` if it has none or there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.copyright",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).and_then([](const auto& info) { return info.copyright; }); }
        )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return its abbreviation in the scripture, `nil` if it has none or there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.book_abbreviation",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
@@ -147,6 +188,12 @@ workflow_scripture::workflow_scripture(
              .transform([](const auto& names) { return names.abbreviation; });
          }
        )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return its short name in the scripture, `nil` if it has none or there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.book_short_name",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
@@ -155,6 +202,12 @@ workflow_scripture::workflow_scripture(
              .transform([](const auto& names) { return names.short_name; });
          }
        )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return its long name in the scripture, `nil` if it has none or there is no such scripture
+    ///
     << workflow_script_->register_function(
          "scripture.book_long_name",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
@@ -163,6 +216,14 @@ workflow_scripture::workflow_scripture(
              .transform([](const auto& names) { return names.long_name; });
          }
        )
+    ///
+    /// \lua A script asking for a passage of its own scripture calls itself.
+    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \param chapter the chapter
+    /// \param verse the verse
+    /// \return the verse with the markup of the app, or `nil` and the reason, e.g. `scripture not found`
+    ///
     << workflow_script_->register_function(
          "scripture.passage",
          [this](

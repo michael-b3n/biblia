@@ -152,8 +152,14 @@ public: // Typedefs
   using passage_result = std::expected<passage_result_t, std::string>;
   using import_params = framework::process_params<import_params_t>;
 
-  // Manifests of a script offering scriptures, \see doc/lua_scripts.md
+  // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
+  ///
+  /// \lua A script offering the four `scripture` manifests offers scriptures, several scripts may. They join those of
+  /// `Scripture > Name`, named after their script, e.g. `LUT (Bibleserver)`, and use the fallback versification.
+  /// Mind the copyright of the translations.
+  /// \return names the scriptures the script offers, e.g. `{ "ABC" }`
+  ///
   struct names_manifest final
   {
     static inline const util::path id{"scripture.names"};
@@ -161,6 +167,13 @@ public: // Typedefs
     using output = lua::script_table<lua::field<"names", std::vector<std::string>>>;
   };
 
+  ///
+  /// \lua About a scripture.
+  /// \param name one of the names the script offers
+  /// \return abbreviation its abbreviation
+  /// \return language its language
+  /// \return copyright its copyright, shown below the verses
+  ///
   struct information_manifest final
   {
     static inline const util::path id{"scripture.information"};
@@ -171,6 +184,14 @@ public: // Typedefs
       lua::field<"copyright", std::optional<std::string>>>;
   };
 
+  ///
+  /// \lua The names of a book in a scripture.
+  /// \param name one of the names the script offers
+  /// \param book the identifier of the app, e.g. `john`
+  /// \return abbreviation its abbreviation
+  /// \return short_name its short name, shown, without one the identifier
+  /// \return long_name its long name
+  ///
   struct book_manifest final
   {
     static inline const util::path id{"scripture.book"};
@@ -181,6 +202,16 @@ public: // Typedefs
       lua::field<"long_name", std::optional<std::string>>>;
   };
 
+  ///
+  /// \lua A verse. It is asked for every verse shown and the app keeps nothing, so the script asks `workflow.cache`
+  /// first. A script reading web pages fetches the whole chapter once and keeps its verses there, \see `example.lua`.
+  /// \param name one of the names the script offers
+  /// \param book the identifier of the app, e.g. `john`
+  /// \param chapter the chapter
+  /// \param verse the verse
+  /// \return text its plain text, markup of a page is shown as text
+  /// \return error shown in place of a verse without \p text, without one `verse not found`
+  ///
   struct passage_manifest final
   {
     static inline const util::path id{"scripture.passage"};
