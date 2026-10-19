@@ -179,7 +179,7 @@ Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 workflow.setting.scripture.default_name: string?
 ```
 
-The name of the default scripture, `Scripture > Default Name`, `nil` for none. Functions called with `nil` as scripture name use it, so without a default scripture they find no scripture.
+The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as scripture name use it, so without a default scripture they find no scripture.
 
 [Setting functions](#setting-functions): `get()`, `set(value: string?)`, `postfix()`
 

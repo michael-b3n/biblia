@@ -147,7 +147,7 @@ struct ScriptureListModel::MachineBuilder final
 
     // clang-format off
     return sfsm::sfsm{
-      sfsm::states<sm::s_idle, sm::s_loading>{{}, {}},
+      sfsm::states<sm::s_idle, sm::s_loading, sm::s_exit>{{}, {}, {}},
       sfsm::on_exit<sm::s_loading>(stop),
 
       make_transition<sm::s_idle,    sm::e_reset,             sm::s_loading>(action(fetchReset)),
@@ -157,7 +157,9 @@ struct ScriptureListModel::MachineBuilder final
       make_transition<sm::s_loading, sm::e_clear,             sm::s_idle   >(),
       make_transition<sm::s_loading, sm::e_scripture_changed, sm::s_loading>(guard(resetOnTheWay), action(fetchAgain)),
       make_transition<sm::s_loading, sm::e_scripture_changed, sm::s_loading>(action(fetchRowsAgain)),
-      make_transition<sm::s_idle,    sm::e_scripture_changed, sm::s_loading>(guard(hasRows), action(fetchRowsAgain))
+      make_transition<sm::s_idle,    sm::e_scripture_changed, sm::s_loading>(guard(hasRows), action(fetchRowsAgain)),
+      make_transition<sm::s_idle,    sm::e_exit,              sm::s_exit   >(),
+      make_transition<sm::s_loading, sm::e_exit,              sm::s_exit   >()
     };
     // clang-format on
   }
@@ -346,6 +348,7 @@ void ScriptureListModel::clear()
 void ScriptureListModel::disconnect()
 {
   connections_.disconnect();
+  std::ignore = dispatch(sm::e_exit{});
   scope_.stop();
 }
 

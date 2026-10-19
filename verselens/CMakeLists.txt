@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 4.3)
 #
 # Include cmake functions
 #
-include(helper_functions)
+include(incbin)
+include(git_info)
+include(mingw)
 
 #
 # Define app information

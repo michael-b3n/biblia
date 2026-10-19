@@ -49,7 +49,7 @@ auto scripture::passage(const reference& ref) const -> std::optional<bible::pass
   {
     return it->second;
   }
-  LOG_ERROR("verse not found: {}", ref);
+  LOG_DEBUG("passage not found: {}", ref);
   return std::nullopt;
 }
 

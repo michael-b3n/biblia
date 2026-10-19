@@ -111,7 +111,7 @@ workflow_scripture::workflow_scripture(
   registrations_
     // Settings
     ///
-    /// \lua The name of the default scripture, `Scripture > Default Name`, `nil` for none. Functions called with `nil` as
+    /// \lua The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as
     /// scripture name use it, so without a default scripture they find no scripture.
     ///
     << workflow_script_->register_setting(*settings().default_scripture_name)
@@ -367,7 +367,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
         {
           return passage_result_t{.passage = std::move(*passage)};
         }
-        LOG_WARN("passage not found: reference=\"{}\"", ref);
+        LOG_DEBUG("passage not found: reference=\"{}\"", ref);
         return std::unexpected{std::string{verse_not_found}};
       },
       [this, &ref](const script_scriptures_t::value_type& entry) -> passage_result

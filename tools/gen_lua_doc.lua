@@ -3,12 +3,24 @@
 --- register_function, a register_setting, a setting function of lua::state or a manifest struct, and the --- blocks
 --- above the functions of util. Names, parameters and types come from the code. The comment adds the description
 --- and a \param or \return line for each parameter, input and output.
---- Usage: lua gen_lua_doc.lua [--check] <output> <source>...
+--- Usage: lua gen_lua_doc.lua [--check] <output> <source>..., where @<file> stands for the sources listed in a file.
 ---
 
 local check = arg[1] == "--check"
 local output = arg[check and 2 or 1]
-local sources = { table.unpack(arg, check and 3 or 2) }
+local sources = {}
+for _, argument in ipairs({ table.unpack(arg, check and 3 or 2) }) do
+  if argument:sub(1, 1) == "@" then
+    for line in io.lines(argument:sub(2)) do
+      local source = line:match("^%s*(.-)%s*$")
+      if source ~= "" then
+        sources[#sources + 1] = source
+      end
+    end
+  else
+    sources[#sources + 1] = argument
+  end
+end
 local errors = {}
 
 ---
@@ -114,25 +126,30 @@ local function lua_type(cpp, erased)
 end
 
 ---
---- \return the comment blocks of \p text with the line prefix \p prefix, each with its lines and the code after it
+--- \return the comment blocks of \p text with the line prefix \p prefix, each with its lines and the position of the
+--- code after it in \p text
 ---
 local function blocks(text, prefix)
-  local lines, result, current = {}, {}, nil
-  for line in (text .. "\n"):gmatch("(.-)\n") do
-    lines[#lines + 1] = line
-  end
-  for i, line in ipairs(lines) do
+  local result, current = {}, nil
+  for position, line in (text .. "\n"):gmatch("()([^\n]*)\n") do
     local content = line:match("^%s*" .. prefix .. " ?(.*)$")
     if content and not content:match("^[/%-]") then
-      current = current or { lines = {} }
+      current = current or { lines = {}, text = text }
       current.lines[#current.lines + 1] = content
     elseif current then
-      current.rest = table.concat(lines, "\n", i)
+      current.position = position
       result[#result + 1] = current
       current = nil
     end
   end
   return result
+end
+
+---
+--- \return the captures of \p pattern, anchored with ^, matched against the code after \p block
+---
+local function after(block, pattern)
+  return block.text:match(pattern, block.position)
 end
 
 ---
@@ -261,15 +278,13 @@ local function one_line(doc)
   return table.concat(parts, " ")
 end
 
-local cpp_sources = {}
+local cpp_sources, texts, all_cpp = {}, {}, {}
 for _, source in ipairs(sources) do
   if source:match("%.[ch]pp$") then
-    cpp_sources[#cpp_sources + 1] = { path = source, text = assert(read(source), source) }
+    texts[source] = assert(read(source), source)
+    cpp_sources[#cpp_sources + 1] = { path = source, text = texts[source] }
+    all_cpp[#all_cpp + 1] = texts[source]
   end
-end
-local all_cpp = {}
-for i, source in ipairs(cpp_sources) do
-  all_cpp[i] = source.text
 end
 all_cpp = table.concat(all_cpp, "\n")
 
@@ -310,7 +325,7 @@ local function add_cpp(file, block, documented)
   end
   local registration = "^%s*[%w_]*%s*<<%s*[%w_]+%->register_"
 
-  local path, parameters = block.rest:match(registration .. "function%(%s*\"([^\"]+)\"%s*,%s*%b[]%s*(%b())")
+  local path, parameters = after(block, registration .. "function%(%s*\"([^\"]+)\"%s*,%s*%b[]%s*(%b())")
   if path then
     local name = lua_node .. "." .. path
     local names, typed = typed_parameters(file, name, parameters)
@@ -325,10 +340,12 @@ local function add_cpp(file, block, documented)
     return
   end
 
-  local member = block.rest:match(registration .. "setting%(%s*%*settings%(%)%.([%w_]+)%s*%)")
+  local member = after(block, registration .. "setting%(%s*%*settings%(%)%.([%w_]+)%s*%)")
   if member then
-    local setting_path = all_cpp:match(member .. "%s*{%s*workflow_settings_%->create_setting%(%s*\"([^\"]+)\"")
-    local cpp = all_cpp:match("setting_type(%b<>)%s+" .. member .. "%s*;")
+    -- The settings of a workflow are in its own source and header, other workflows may use the same member name
+    local own = (texts[file] or "") .. "\n" .. (texts[(file:gsub("%.cpp$", ".hpp"))] or "")
+    local setting_path = own:match("%f[%w_]" .. member .. "%s*{%s*workflow_settings_%->create_setting%(%s*\"([^\"]+)\"")
+    local cpp = own:match("setting_type(%b<>)%s+" .. member .. "%s*;")
     local type = cpp and lua_type(cpp:sub(2, -2), true)
     if not setting_path or not type then
       fail(file, "no path or no Lua type found for the setting %s", member)
@@ -348,7 +365,7 @@ local function add_cpp(file, block, documented)
   end
 
   local constant, setting_parameters =
-    block.rest:match("^%s*node%.set_function%(%s*names::([%w_]+)%s*,%s*function_cast%(%s*%b[]%s*(%b())")
+    after(block, "^%s*node%.set_function%(%s*names::([%w_]+)%s*,%s*function_cast%(%s*%b[]%s*(%b())")
   if constant then
     local name = all_cpp:match(constant .. "%s*=%s*\"([^\"]+)\"")
     if not name then
@@ -366,7 +383,7 @@ local function add_cpp(file, block, documented)
     return
   end
 
-  local struct, body = block.rest:match("^%s*struct%s+([%w_]+)%s+final%s*(%b{})")
+  local struct, body = after(block, "^%s*struct%s+([%w_]+)%s+final%s*(%b{})")
   local id = body and body:match("util::path%s+id%s*{%s*\"([^\"]+)\"%s*}")
   if id then
     local names, tables = { input = {}, output = {} }, {}
@@ -403,7 +420,7 @@ end
 for _, source in ipairs(cpp_sources) do
   local documented = {}
   for _, block in ipairs(blocks(source.text, "///")) do
-    if block.rest and table.concat(block.lines, "\n"):match("\\lua") then
+    if table.concat(block.lines, "\n"):match("\\lua") then
       add_cpp(source.path, block, documented)
     end
   end
@@ -413,7 +430,7 @@ for _, source in ipairs(cpp_sources) do
   end)
   for call, rest in code:gmatch("%->register_(%a+)%(%s*([^\n]*)") do
     local key = call == "function" and rest:match("^\"([^\"]+)\"") or call == "setting" and rest:match("^%*settings%(%)%.([%w_]+)")
-    if not documented[key or ""] then
+    if (call == "function" or call == "setting") and not documented[key or ""] then
       fail(source.path, "register_%s of %s has no \\lua comment above it", call, key or rest)
     end
   end
@@ -445,7 +462,7 @@ for _, source in ipairs(sources) do
       end
       -- Only a block tagged \lua has a line per parameter, the others are comments over declarations
       local tagged = #signatures > 0
-      local name, parameters = (block.rest or ""):match("^function%s+(util%.[%w_]+)%s*(%b())")
+      local name, parameters = after(block, "^function%s+(util%.[%w_]+)%s*(%b())")
       if name then
         signatures[#signatures + 1] = name .. parameters
       end

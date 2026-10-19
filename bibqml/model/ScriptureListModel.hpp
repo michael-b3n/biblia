@@ -89,6 +89,7 @@ class ScriptureListModel final : public QAbstractListModel
     // States
     struct s_idle final {};
     struct s_loading final { Load load; std::stop_source stop; };
+    struct s_exit final {};
 
     // Events
     struct e_reset final { Load load; };
@@ -96,6 +97,7 @@ class ScriptureListModel final : public QAbstractListModel
     struct e_loaded final { std::stop_token token; std::vector<Entry> entries; std::optional<QString> copyright; };
     struct e_clear final {};
     struct e_scripture_changed final {};
+    struct e_exit final {};
     // clang-format on
   };
   struct MachineBuilder;

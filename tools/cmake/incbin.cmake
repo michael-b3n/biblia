@@ -55,35 +55,3 @@ function(configure_incbin_source label template output)
     add_incbin_resources(${output} ${ARGN})
   endif()
 endfunction(configure_incbin_source)
-
-#
-# Set the mingw root path variable named by \p mingw_root_dir, the parent of the compiler's bin folder.
-#
-function(set_mingw_path mingw_root_dir)
-  cmake_path(GET CMAKE_CXX_COMPILER PARENT_PATH MINGW_BIN_DIRECTORY)
-  cmake_path(GET MINGW_BIN_DIRECTORY PARENT_PATH MINGW_ROOT_DIRECTORY)
-  set(${mingw_root_dir} "${MINGW_ROOT_DIRECTORY}" PARENT_SCOPE)
-endfunction(set_mingw_path)
-
-#
-# Set the git information variables named by \p git_sha1 and \p git_date.
-#
-function(generate_git_info git_sha1 git_date)
-  find_package(Git REQUIRED)
-
-  # the commit's SHA1, and whether the building assistant was dirty or not
-  execute_process(COMMAND
-    ${GIT_EXECUTABLE} describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE GIT_SHA1
-    COMMAND_ERROR_IS_FATAL ANY OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(${git_sha1} "${GIT_SHA1}" PARENT_SCOPE)
-
-  # the date of the commit
-  execute_process(COMMAND
-    ${GIT_EXECUTABLE} log -1 --format=%ad --date=local
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE GIT_DATE
-    COMMAND_ERROR_IS_FATAL ANY OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(${git_date} "${GIT_DATE}" PARENT_SCOPE)
-endfunction(generate_git_info)
