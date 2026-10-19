@@ -19,11 +19,12 @@ workflow_cache::workflow_cache(
 {
   registrations_
     ///
-    /// \lua Reads a text value kept beyond the run of the app. Each cache is the SQLite file `cache/<name>.sqlite` of the
-    /// local data folder, other programs may read and change it meanwhile. A failing cache is logged and holds nothing.
-    /// \param name the cache, of letters, digits, `_` and `-`, a script names its own
+    /// \lua Reads a text value from a cache. A cache keeps its values after the app closes. Each cache is the SQLite file
+    /// `cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is
+    /// logged and holds nothing.
+    /// \param name the cache, made of letters, digits, `_` and `-`. Each script uses its own cache.
     /// \param key the key of the value
-    /// \return the value, `nil` for none
+    /// \return the value, or `nil` if there is none
     ///
     << workflow_script_->register_function(
          "cache.get", [this](const std::string& name, const std::string& key) { return get(util::identifier{name}, key); }

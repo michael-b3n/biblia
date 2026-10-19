@@ -17,8 +17,8 @@ end
 --- \lua util.log_info(...)
 --- \lua util.log_warning(...)
 --- \lua util.log_error(...)
---- Write to the log of the app at that level. Scripts have no console and no print.
---- \param ... the values, written like print does
+--- Writes to the app log at that level. Scripts have no console and no print.
+--- \param ... the values, written like print writes them
 ---
 for _, level in ipairs({ "debug", "info", "warning", "error" }) do
   local log = root.system["log_" .. level]

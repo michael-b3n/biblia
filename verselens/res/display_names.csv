@@ -15,6 +15,7 @@ click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
 custom_tessdata_path,Eigenes Tesseract-Datenverzeichnis,Custom Tesseract data folder
+default_name,Standard Name,Default Name
 dwell_duration,Verweildauer,Dwell duration
 enabled,Aktiviert,Enabled
 english,Englisch,English

@@ -41,10 +41,10 @@ namespace
 ///
 workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_base{std::move(workflow_settings)}
-  , scripture_name{workflow_settings_->create_setting(
-      "scripture.name",
-      setting_value_t<decltype(scripture_name)>{},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(scripture_name)>>>()
+  , default_scripture_name{workflow_settings_->create_setting(
+      "scripture.default_name",
+      setting_value_t<decltype(default_scripture_name)>{},
+      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
     )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
@@ -111,11 +111,12 @@ workflow_scripture::workflow_scripture(
   registrations_
     // Settings
     ///
-    /// \lua The name of the scripture shown, `Scripture > Name`, `nil` for none.
+    /// \lua The name of the default scripture, `Scripture > Default Name`, `nil` for none. Functions called with `nil` as
+    /// scripture name use it, so without a default scripture they find no scripture.
     ///
-    << workflow_script_->register_setting(*settings().scripture_name)
+    << workflow_script_->register_setting(*settings().default_scripture_name)
     ///
-    /// \lua The versification of scriptures that have none, those of scripts included,
+    /// \lua The versification for scriptures that have none, including those of scripts,
     /// `Scripture > Fallback versification`.
     ///
     << workflow_script_->register_setting(*settings().fallback_versification)
@@ -123,31 +124,31 @@ workflow_scripture::workflow_scripture(
     // Functions
     ///
     /// \lua
-    /// \return the number of scriptures, those of the scripts included
+    /// \return the number of scriptures, including those of scripts
     ///
     << workflow_script_->register_function("scripture.scripture_count", [this]() { return scripture_count(); })
     ///
     /// \lua
-    /// \return the identifiers of the books, e.g. `john`
+    /// \return the identifiers of all books, e.g. `john`
     ///
     << workflow_script_->register_function(
-         "scripture.book_names",
+         "scripture.book_identifiers",
          []() { return util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
        )
     ///
     /// \lua
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
-    /// \return its full name, `nil` if there is no such scripture
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its name, or `nil` if there is no such scripture
     ///
     << workflow_script_->register_function(
-         "scripture.full_name",
+         "scripture.name",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.name; }); }
        )
     ///
     /// \lua
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
-    /// \return its abbreviation, `nil` if there is no such scripture
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its abbreviation, or `nil` if there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.abbreviation",
@@ -156,8 +157,8 @@ workflow_scripture::workflow_scripture(
        )
     ///
     /// \lua
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
-    /// \return its language, `nil` if there is no such scripture
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its language, or `nil` if there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.language",
@@ -166,8 +167,8 @@ workflow_scripture::workflow_scripture(
        )
     ///
     /// \lua
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
-    /// \return its copyright, `nil` if it has none or there is no such scripture
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its copyright, or `nil` if it has none or there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.copyright",
@@ -176,9 +177,9 @@ workflow_scripture::workflow_scripture(
        )
     ///
     /// \lua An unknown book raises an error.
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param scripture_name the scripture, `nil` for the default scripture
     /// \param book_id the identifier of the book, e.g. `john`
-    /// \return its abbreviation in the scripture, `nil` if it has none or there is no such scripture
+    /// \return the abbreviation of the book, or `nil` if it has none or there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.book_abbreviation",
@@ -190,9 +191,9 @@ workflow_scripture::workflow_scripture(
        )
     ///
     /// \lua An unknown book raises an error.
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param scripture_name the scripture, `nil` for the default scripture
     /// \param book_id the identifier of the book, e.g. `john`
-    /// \return its short name in the scripture, `nil` if it has none or there is no such scripture
+    /// \return the short name of the book, or `nil` if it has none or there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.book_short_name",
@@ -204,9 +205,9 @@ workflow_scripture::workflow_scripture(
        )
     ///
     /// \lua An unknown book raises an error.
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \param scripture_name the scripture, `nil` for the default scripture
     /// \param book_id the identifier of the book, e.g. `john`
-    /// \return its long name in the scripture, `nil` if it has none or there is no such scripture
+    /// \return the long name of the book, or `nil` if it has none or there is no such scripture
     ///
     << workflow_script_->register_function(
          "scripture.book_long_name",
@@ -217,8 +218,8 @@ workflow_scripture::workflow_scripture(
          }
        )
     ///
-    /// \lua A script asking for a passage of its own scripture calls itself.
-    /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
+    /// \lua A script that asks for a passage of its own scripture calls itself.
+    /// \param scripture_name the scripture, `nil` for the default scripture
     /// \param book_id the identifier of the book, e.g. `john`
     /// \param chapter the chapter
     /// \param verse the verse
@@ -449,7 +450,7 @@ auto workflow_scripture::scripture_names() const -> std::vector<std::string>
 ///
 auto workflow_scripture::selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>
 {
-  return name ? name : settings().scripture_name->value();
+  return name ? name : settings().default_scripture_name->value();
 }
 
 ///
@@ -546,21 +547,21 @@ auto workflow_scripture::update_scripture_name_setting() -> void
       preferred = it->first;
     }
   }
-  const auto name = settings().scripture_name->value();
+  const auto name = settings().default_scripture_name->value();
   if(!scripts_loaded && name)
   {
     // Until the scripts are loaded, the name may be one of theirs.
     // If not here, validator would drop the existing value.
     names.push_back(*name);
   }
-  std::ignore = list_validator(settings().scripture_name)->available(names);
+  std::ignore = list_validator(settings().default_scripture_name)->available(names);
 
   // A setting naming a scripture that is not loaded leaves every lookup without one. That is what
   // a name left over from scriptures that are gone does, so it is pointed at a loaded scripture.
   const auto name_contained = name.has_value() && util::contains(names, *name);
   if(!(name_contained || names.empty()))
   {
-    settings().scripture_name->value(preferred ? *preferred : names.front());
+    settings().default_scripture_name->value(preferred ? *preferred : names.front());
   }
 }
 

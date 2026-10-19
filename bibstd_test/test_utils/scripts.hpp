@@ -60,7 +60,7 @@ inline auto load_scripts(workflow::workflow_script& workflow) -> void
 {
   using validator_type = framework::setting_validator_list<std::optional<std::string>>::sptr_type;
   const auto suffix = std::format(" ({})", script);
-  return std::get<validator_type>(scripture.settings().scripture_name->validator)->available() |
+  return std::get<validator_type>(scripture.settings().default_scripture_name->validator)->available() |
          std::views::filter([&](const auto& name) { return name.ends_with(suffix); }) | std::ranges::to<std::vector>();
 }
 

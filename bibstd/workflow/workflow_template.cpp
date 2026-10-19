@@ -28,15 +28,9 @@ workflow_template::workflow_template(
   : workflow_base{std::move(workflow_settings)}
   , workflow_script_{std::move(workflow_script)}
 {
-  // Last, scripts may call into the workflow from here on. A failed registration is logged by the state.
-  ///
-  /// \lua Starts the template workflow, the pattern of new workflows. It never starts.
-  /// \param value the value to start with
-  /// \return true if it started
-  ///
-  registrations_ << workflow_script_->register_function(
-    "template.start", [this](int value) { return start(params{{.value = value}}).has_value(); }
-  );
+  // registrations_ << workflow_script_->register_function(
+  //   "template.start", [this](int value) { return start(params{{.value = value}}).has_value(); }
+  // );
   // registrations_ << workflow_script_->register_setting(*settings().plain_bool);
 }
 

@@ -55,14 +55,14 @@ public: // Constants
   static constexpr auto folder_name = "scriptures";
 
 public: // Variables
-  const setting_type<std::optional<std::string>> scripture_name;
+  const setting_type<std::optional<std::string>> default_scripture_name;
   const setting_type<std::string> fallback_versification;
   const std::filesystem::path folder;
 };
 
 ///
 /// Workflow for scripture. Scriptures are either loaded via local files or provided by dedicated scripts.
-/// Scriptures provided without versification take the fallback versification (KJV by default).
+/// Scriptures provided without versification take the fallback versification.
 /// Signal IDs to connect to:
 /// - scriptures_changed: Emitted when the scriptures of the scripts changed.
 ///
@@ -155,9 +155,9 @@ public: // Typedefs
   // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
   ///
-  /// \lua A script offering the four `scripture` manifests offers scriptures, several scripts may. They join those of
-  /// `Scripture > Name`, named after their script, e.g. `LUT (Bibleserver)`, and use the fallback versification.
-  /// Mind the copyright of the translations.
+  /// \lua A script that offers all four `scripture` manifests offers scriptures, and several scripts may do so.
+  /// The app lists them with its other scriptures, named after the script, e.g. `LUT (Bibleserver)`, and uses the
+  /// fallback versification for them. Respect the copyright of the translations.
   /// \return names the scriptures the script offers, e.g. `{ "ABC" }`
   ///
   struct names_manifest final
@@ -168,7 +168,7 @@ public: // Typedefs
   };
 
   ///
-  /// \lua About a scripture.
+  /// \lua Information about a scripture.
   /// \param name one of the names the script offers
   /// \return abbreviation its abbreviation
   /// \return language its language
@@ -189,7 +189,7 @@ public: // Typedefs
   /// \param name one of the names the script offers
   /// \param book the identifier of the app, e.g. `john`
   /// \return abbreviation its abbreviation
-  /// \return short_name its short name, shown, without one the identifier
+  /// \return short_name its short name, shown in the app. Without one the app shows the identifier.
   /// \return long_name its long name
   ///
   struct book_manifest final
@@ -203,14 +203,14 @@ public: // Typedefs
   };
 
   ///
-  /// \lua A verse. It is asked for every verse shown and the app keeps nothing, so the script asks `workflow.cache`
-  /// first. A script reading web pages fetches the whole chapter once and keeps its verses there, \see `example.lua`.
+  /// \lua A verse. The app asks for every verse it shows and keeps nothing,
+  /// so the script may ask `workflow.cache` first.
   /// \param name one of the names the script offers
   /// \param book the identifier of the app, e.g. `john`
   /// \param chapter the chapter
   /// \param verse the verse
-  /// \return text its plain text, markup of a page is shown as text
-  /// \return error shown in place of a verse without \p text, without one `verse not found`
+  /// \return text its plain text. The app shows markup of a web page as text.
+  /// \return error shown in place of a verse without \p text. Without one the app shows `verse not found`.
   ///
   struct passage_manifest final
   {

@@ -32,15 +32,16 @@ workflow_web::workflow_web(
 {
   registrations_
     ///
-    /// \lua The time to wait after a failed request, `Web > Pause after a failure`.
+    /// \lua How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
+    /// request a failed url again right away.
     ///
     << workflow_script_->register_setting(*settings().retry_pause)
     ///
-    /// \lua Fetches a web page. The script waits for it and other scripts wait meanwhile. A url that failed is not
-    /// requested again for the time of `Web > Pause after a failure`, the reason is answered from memory.
+    /// \lua Fetches a web page. The script waits for the page, and other scripts wait too. During
+    /// `Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
     /// \param url the address of the page, http or https
     /// \return the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
-    /// `timeout` (30 s), `init_failed`, else `request_failed`
+    /// `timeout` (after 30 s), `init_failed` or `request_failed`
     ///
     << workflow_script_->register_function("web.fetch", [this](const std::string& url) { return fetch(url); });
 }

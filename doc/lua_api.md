@@ -6,7 +6,7 @@ What the app asks of scripts and what it offers them. How scripts work: [lua_scr
 
 ## Manifests
 
-The functions a script offers, each named after a manifest, which defines its input and output.
+A script offers functions named after manifests. A manifest defines the input and output of its function.
 
 ### lookup.translations
 
@@ -15,7 +15,7 @@ input:  { language: string }
 output: { names: string[], defaults: string[]? }
 ```
 
-A script offering this and `lookup.url` opens references in the browser, `Lookup > Scripts` chooses one by its name. Until the user chooses, it is the script offering the most translations. Mind the terms of use of the pages a script reads.
+A script that offers this and `lookup.url` opens references in the browser. `Lookup > Scripts` chooses the script by its name. Until the user chooses, the app uses the script with the most translations. Respect the terms of use of the web pages a script reads.
 
 **Input**
 
@@ -23,8 +23,8 @@ A script offering this and `lookup.url` opens references in the browser, `Lookup
 
 **Output**
 
-- `names`: the translations to choose from in `Lookup > Translations`, may be empty. They are shown as they are, the bundled scripts offer full names, e.g. `Lutherbibel`, and know the abbreviations of the urls.
-- `defaults`: the ones chosen as long as the user chose none
+- `names`: the translations to choose from in `Lookup > Translations`, may be empty. The app shows them as they are, so the bundled scripts offer full names, e.g. `Lutherbibel`, and map them to url abbreviations.
+- `defaults`: the translations used until the user chooses some
 
 Source: [workflow_bible_ref_lookup.hpp](../bibstd/workflow/workflow_bible_ref_lookup.hpp)
 
@@ -35,11 +35,11 @@ input:  { translations: string[], book: string, chapter: integer, verse_begin: i
 output: { url: string? }
 ```
 
-A reference over several chapters asks per chapter, each url is opened in a tab of its own.
+For a reference over several chapters the app asks once per chapter and opens each url in its own tab.
 
 **Input**
 
-- `translations`: the names chosen, in the order chosen
+- `translations`: the chosen translations, in the order chosen
 - `book`: the identifier of the app, e.g. `john`
 - `chapter`: the chapter
 - `verse_begin`: the first verse
@@ -47,7 +47,7 @@ A reference over several chapters asks per chapter, each url is opened in a tab 
 
 **Output**
 
-- `url`: the web page showing the verses, or none. Only a valid `http` or `https` url is opened, so encode what is not ASCII.
+- `url`: the web page that shows the verses, or none. The app opens only a valid `http` or `https` url, so encode characters that are not ASCII.
 
 Source: [workflow_bible_ref_lookup.hpp](../bibstd/workflow/workflow_bible_ref_lookup.hpp)
 
@@ -58,7 +58,7 @@ input:  {}
 output: { names: string[] }
 ```
 
-A script offering the four `scripture` manifests offers scriptures, several scripts may. They join those of `Scripture > Name`, named after their script, e.g. `LUT (Bibleserver)`, and use the fallback versification. Mind the copyright of the translations.
+A script that offers all four `scripture` manifests offers scriptures, and several scripts may do so. The app lists them with its other scriptures, named after the script, e.g. `LUT (Bibleserver)`, and uses the fallback versification for them. Respect the copyright of the translations.
 
 **Output**
 
@@ -73,7 +73,7 @@ input:  { name: string }
 output: { abbreviation: string?, language: string?, copyright: string? }
 ```
 
-About a scripture.
+Information about a scripture.
 
 **Input**
 
@@ -104,7 +104,7 @@ The names of a book in a scripture.
 **Output**
 
 - `abbreviation`: its abbreviation
-- `short_name`: its short name, shown, without one the identifier
+- `short_name`: its short name, shown in the app. Without one the app shows the identifier.
 - `long_name`: its long name
 
 Source: [workflow_scripture.hpp](../bibstd/workflow/workflow_scripture.hpp)
@@ -116,7 +116,7 @@ input:  { name: string, book: string, chapter: integer, verse: integer }
 output: { text: string?, error: string? }
 ```
 
-A verse. It is asked for every verse shown and the app keeps nothing, so the script asks `workflow.cache` first. A script reading web pages fetches the whole chapter once and keeps its verses there, see `example.lua`.
+A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `workflow.cache` first.
 
 **Input**
 
@@ -127,16 +127,18 @@ A verse. It is asked for every verse shown and the app keeps nothing, so the scr
 
 **Output**
 
-- `text`: its plain text, markup of a page is shown as text
-- `error`: shown in place of a verse without `text`, without one `verse not found`
+- `text`: its plain text. The app shows markup of a web page as text.
+- `error`: shown in place of a verse without `text`. Without one the app shows `verse not found`.
 
 Source: [workflow_scripture.hpp](../bibstd/workflow/workflow_scripture.hpp)
 
 ## workflow
 
-What the app offers scripts, by workflow. A function called the wrong way, e.g. with a value of another type, raises an error like the functions of Lua do, `pcall` catches it. A failure the script can not prevent, e.g. a missing web page, is no error: the function returns `nil` and the reason, like `io.open`. A setting is at `workflow.setting` and its path, a table of the [setting functions](#setting-functions).
+What the app offers scripts, by workflow. Calling a function with wrong arguments raises an error, like the functions of Lua do. `pcall` catches it. A failure the script cannot prevent, e.g. a missing web page, is not an error: the function returns `nil` and the reason, like `io.open`. Settings are at `workflow.setting` followed by their path. Each setting has the [setting functions](#setting-functions).
 
 ### workflow.cache
+
+Source: [workflow_cache.cpp](../bibstd/workflow/workflow_cache.cpp)
 
 #### workflow.cache.get
 
@@ -144,16 +146,14 @@ What the app offers scripts, by workflow. A function called the wrong way, e.g. 
 workflow.cache.get(name: string, key: string)
 ```
 
-Reads a text value kept beyond the run of the app. Each cache is the SQLite file `cache/<name>.sqlite` of the local data folder, other programs may read and change it meanwhile. A failing cache is logged and holds nothing.
+Reads a text value from a cache. A cache keeps its values after the app closes. Each cache is the SQLite file `cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is logged and holds nothing.
 
 **Parameters**
 
-- `name`: the cache, of letters, digits, `_` and `-`, a script names its own
+- `name`: the cache, made of letters, digits, `_` and `-`. Each script uses its own cache.
 - `key`: the key of the value
 
-**Returns** the value, `nil` for none
-
-Source: [workflow_cache.cpp](../bibstd/workflow/workflow_cache.cpp)
+**Returns** the value, or `nil` if there is none
 
 #### workflow.cache.set
 
@@ -169,23 +169,19 @@ Writes a text value to a cache, see `workflow.cache.get`.
 - `key`: the key of the value
 - `value`: the value, `nil` removes the key
 
-Source: [workflow_cache.cpp](../bibstd/workflow/workflow_cache.cpp)
-
 ### workflow.scripture
 
-#### workflow.setting.scripture.name
-
-```
-workflow.setting.scripture.name: string?
-```
-
-The name of the scripture shown, `Scripture > Name`, `nil` for none.
-
-- [`workflow.setting.scripture.name.get()`](#get)
-- [`workflow.setting.scripture.name.set(value: string?)`](#set)
-- [`workflow.setting.scripture.name.postfix()`](#postfix)
-
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+
+#### workflow.setting.scripture.default_name
+
+```
+workflow.setting.scripture.default_name: string?
+```
+
+The name of the default scripture, `Scripture > Default Name`, `nil` for none. Functions called with `nil` as scripture name use it, so without a default scripture they find no scripture.
+
+[Setting functions](#setting-functions): `get()`, `set(value: string?)`, `postfix()`
 
 #### workflow.setting.scripture.fallback_versification_name
 
@@ -193,13 +189,9 @@ Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 workflow.setting.scripture.fallback_versification_name: string
 ```
 
-The versification of scriptures that have none, those of scripts included, `Scripture > Fallback versification`.
+The versification for scriptures that have none, including those of scripts, `Scripture > Fallback versification`.
 
-- [`workflow.setting.scripture.fallback_versification_name.get()`](#get)
-- [`workflow.setting.scripture.fallback_versification_name.set(value: string)`](#set)
-- [`workflow.setting.scripture.fallback_versification_name.postfix()`](#postfix)
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+[Setting functions](#setting-functions): `get()`, `set(value: string)`, `postfix()`
 
 #### workflow.scripture.scripture_count
 
@@ -207,33 +199,27 @@ Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 workflow.scripture.scripture_count()
 ```
 
-**Returns** the number of scriptures, those of the scripts included
+**Returns** the number of scriptures, including those of scripts
 
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
-
-#### workflow.scripture.book_names
+#### workflow.scripture.book_identifiers
 
 ```
-workflow.scripture.book_names()
+workflow.scripture.book_identifiers()
 ```
 
-**Returns** the identifiers of the books, e.g. `john`
+**Returns** the identifiers of all books, e.g. `john`
 
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
-
-#### workflow.scripture.full_name
+#### workflow.scripture.name
 
 ```
-workflow.scripture.full_name(scripture_name: string?)
+workflow.scripture.name(scripture_name: string?)
 ```
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 
-**Returns** its full name, `nil` if there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** its name, or `nil` if there is no such scripture
 
 #### workflow.scripture.abbreviation
 
@@ -243,11 +229,9 @@ workflow.scripture.abbreviation(scripture_name: string?)
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 
-**Returns** its abbreviation, `nil` if there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** its abbreviation, or `nil` if there is no such scripture
 
 #### workflow.scripture.language
 
@@ -257,11 +241,9 @@ workflow.scripture.language(scripture_name: string?)
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 
-**Returns** its language, `nil` if there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** its language, or `nil` if there is no such scripture
 
 #### workflow.scripture.copyright
 
@@ -271,11 +253,9 @@ workflow.scripture.copyright(scripture_name: string?)
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 
-**Returns** its copyright, `nil` if it has none or there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** its copyright, or `nil` if it has none or there is no such scripture
 
 #### workflow.scripture.book_abbreviation
 
@@ -287,12 +267,10 @@ An unknown book raises an error.
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 - `book_id`: the identifier of the book, e.g. `john`
 
-**Returns** its abbreviation in the scripture, `nil` if it has none or there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** the abbreviation of the book, or `nil` if it has none or there is no such scripture
 
 #### workflow.scripture.book_short_name
 
@@ -304,12 +282,10 @@ An unknown book raises an error.
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 - `book_id`: the identifier of the book, e.g. `john`
 
-**Returns** its short name in the scripture, `nil` if it has none or there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** the short name of the book, or `nil` if it has none or there is no such scripture
 
 #### workflow.scripture.book_long_name
 
@@ -321,12 +297,10 @@ An unknown book raises an error.
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 - `book_id`: the identifier of the book, e.g. `john`
 
-**Returns** its long name in the scripture, `nil` if it has none or there is no such scripture
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+**Returns** the long name of the book, or `nil` if it has none or there is no such scripture
 
 #### workflow.scripture.passage
 
@@ -334,38 +308,20 @@ Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 workflow.scripture.passage(scripture_name: string?, book_id: string, chapter: integer, verse: integer)
 ```
 
-A script asking for a passage of its own scripture calls itself.
+A script that asks for a passage of its own scripture calls itself.
 
 **Parameters**
 
-- `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
+- `scripture_name`: the scripture, `nil` for the default scripture
 - `book_id`: the identifier of the book, e.g. `john`
 - `chapter`: the chapter
 - `verse`: the verse
 
 **Returns** the verse with the markup of the app, or `nil` and the reason, e.g. `scripture not found`
 
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
-
-### workflow.template
-
-#### workflow.template.start
-
-```
-workflow.template.start(value: integer)
-```
-
-Starts the template workflow, the pattern of new workflows. It never starts.
-
-**Parameters**
-
-- `value`: the value to start with
-
-**Returns** true if it started
-
-Source: [workflow_template.cpp](../bibstd/workflow/workflow_template.cpp)
-
 ### workflow.web
+
+Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
 
 #### workflow.setting.web.retry_pause
 
@@ -373,13 +329,9 @@ Source: [workflow_template.cpp](../bibstd/workflow/workflow_template.cpp)
 workflow.setting.web.retry_pause: integer
 ```
 
-The time to wait after a failed request, `Web > Pause after a failure`.
+How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may request a failed url again right away.
 
-- [`workflow.setting.web.retry_pause.get()`](#get)
-- [`workflow.setting.web.retry_pause.set(value: integer)`](#set)
-- [`workflow.setting.web.retry_pause.postfix()`](#postfix)
-
-Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
+[Setting functions](#setting-functions): `get()`, `set(value: integer)`, `postfix()`
 
 #### workflow.web.fetch
 
@@ -387,53 +339,21 @@ Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
 workflow.web.fetch(url: string)
 ```
 
-Fetches a web page. The script waits for it and other scripts wait meanwhile. A url that failed is not requested again for the time of `Web > Pause after a failure`, the reason is answered from memory.
+Fetches a web page. The script waits for the page, and other scripts wait too. During `Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
 
 **Parameters**
 
 - `url`: the address of the page, http or https
 
-**Returns** the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410), `timeout` (30 s), `init_failed`, else `request_failed`
-
-Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
+**Returns** the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410), `timeout` (after 30 s), `init_failed` or `request_failed`
 
 ## Setting functions
 
-The functions of each setting, `T` is the type of the setting.
+Each setting has these functions. `T` is the type of the setting.
 
-### get
-
-```
-setting.get()
-```
-
-**Returns** the value of the setting
-
-Source: [state.hpp](../bibstd/lua/state.hpp)
-
-### set
-
-```
-setting.set(value: T)
-```
-
-Changes the setting, as the user does in the settings.
-
-**Parameters**
-
-- `value`: the new value
-
-**Returns** false if the setting refused `value` or clamped it to its range
-
-Source: [state.hpp](../bibstd/lua/state.hpp)
-
-### postfix
-
-```
-setting.postfix()
-```
-
-**Returns** the text shown behind the value, e.g. its unit, empty for none
+- `get()`: Returns the value of the setting.
+- `set(value: T)`: Changes the setting, like the user does in the settings. `value`: the new value. Returns false if the setting rejected `value` or limited it to its range.
+- `postfix()`: Returns the text shown after the value, e.g. its unit, or an empty text.
 
 Source: [state.hpp](../bibstd/lua/state.hpp)
 
@@ -441,129 +361,17 @@ Source: [state.hpp](../bibstd/lua/state.hpp)
 
 Helpers written in Lua.
 
-### util.log_debug, util.log_info, util.log_warning, util.log_error
-
-```
-util.log_debug(...)
-util.log_info(...)
-util.log_warning(...)
-util.log_error(...)
-```
-
-Write to the log of the app at that level. Scripts have no console and no print.
-
-**Parameters**
-
-- `...`: the values, written like print does
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.split
-
-```
-util.split(s, separator)
-```
-
-**Returns** the parts of `s` between the occurrences of the plain string `separator`, empty parts are kept
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.trim
-
-```
-util.trim(s)
-```
-
-**Returns** `s` without the white space at its start and end
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.starts_with
-
-```
-util.starts_with(s, prefix)
-```
-
-**Returns** true if `s` starts with `prefix`
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.ends_with
-
-```
-util.ends_with(s, suffix)
-```
-
-**Returns** true if `s` ends with `suffix`
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.keys
-
-```
-util.keys(t)
-```
-
-**Returns** the keys of `t` as list, in no particular order
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.contains
-
-```
-util.contains(t, value)
-```
-
-**Returns** true if a value of `t` equals `value`
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.map
-
-```
-util.map(t, f)
-```
-
-**Returns** the list of `f` applied to every element of the list `t`
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.filter
-
-```
-util.filter(t, predicate)
-```
-
-**Returns** the elements of the list `t` for which `predicate` is true, in their order
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.copy
-
-```
-util.copy(value)
-```
-
-**Returns** a deep copy of `value`, tables referenced more than once stay shared in the copy and cycles are kept
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.dump
-
-```
-util.dump(value)
-```
-
-**Returns** readable text of `value`, tables are expanded with sorted keys
-
-Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)
-
-### util.at
-
-```
-util.at(path)
-```
-
-**Returns** the value at `path` of sections separated by "." in what scripts see, nil if a section is missing
+- `util.log_debug(...)`, `util.log_info(...)`, `util.log_warning(...)`, `util.log_error(...)`: Writes to the app log at that level. Scripts have no console and no print. `...`: the values, written like print writes them.
+- `util.split(s, separator)`: Returns the parts of `s` between the occurrences of the plain string `separator`, empty parts are kept.
+- `util.trim(s)`: Returns `s` without the white space at its start and end.
+- `util.starts_with(s, prefix)`: Returns true if `s` starts with `prefix`.
+- `util.ends_with(s, suffix)`: Returns true if `s` ends with `suffix`.
+- `util.keys(t)`: Returns the keys of `t` as list, in no particular order.
+- `util.contains(t, value)`: Returns true if a value of `t` equals `value`.
+- `util.map(t, f)`: Returns the list of `f` applied to every element of the list `t`.
+- `util.filter(t, predicate)`: Returns the elements of the list `t` for which `predicate` is true, in their order.
+- `util.copy(value)`: Returns a deep copy of `value`, tables referenced more than once stay shared in the copy and cycles are kept.
+- `util.dump(value)`: Returns readable text of `value`, tables are expanded with sorted keys.
+- `util.at(path)`: Returns the value at `path` of sections separated by "." in what scripts see, nil if a section is missing.
 
 Source: [interface_util.lua](../bibstd/lua/internal/interface_util.lua)

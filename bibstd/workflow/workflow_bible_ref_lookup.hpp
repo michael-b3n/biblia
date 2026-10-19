@@ -57,13 +57,13 @@ public: // Typedefs
 
   // Manifests of a script offering the lookup, \see doc/lua_api.md
   ///
-  /// \lua A script offering this and `lookup.url` opens references in the browser, `Lookup > Scripts` chooses one by
-  /// its name. Until the user chooses, it is the script offering the most translations. Mind the terms of use of the
-  /// pages a script reads.
+  /// \lua A script that offers this and `lookup.url` opens references in the browser. `Lookup > Scripts` chooses the
+  /// script by its name. Until the user chooses, the app uses the script with the most translations. Respect the terms
+  /// of use of the web pages a script reads.
   /// \param language the language of the user, `english` or `german`
-  /// \return names the translations to choose from in `Lookup > Translations`, may be empty. They are shown as they
-  /// are, the bundled scripts offer full names, e.g. `Lutherbibel`, and know the abbreviations of the urls.
-  /// \return defaults the ones chosen as long as the user chose none
+  /// \return names the translations to choose from in `Lookup > Translations`, may be empty. The app shows them as
+  /// they are, so the bundled scripts offer full names, e.g. `Lutherbibel`, and map them to url abbreviations.
+  /// \return defaults the translations used until the user chooses some
   ///
   struct translations_manifest final
   {
@@ -75,14 +75,14 @@ public: // Typedefs
   };
 
   ///
-  /// \lua A reference over several chapters asks per chapter, each url is opened in a tab of its own.
-  /// \param translations the names chosen, in the order chosen
+  /// \lua For a reference over several chapters the app asks once per chapter and opens each url in its own tab.
+  /// \param translations the chosen translations, in the order chosen
   /// \param book the identifier of the app, e.g. `john`
   /// \param chapter the chapter
   /// \param verse_begin the first verse
   /// \param verse_end the last verse
-  /// \return url the web page showing the verses, or none. Only a valid `http` or `https` url is opened, so encode
-  /// what is not ASCII.
+  /// \return url the web page that shows the verses, or none. The app opens only a valid `http` or `https` url, so
+  /// encode characters that are not ASCII.
   ///
   struct url_manifest final
   {

@@ -31,9 +31,7 @@ public: // Variables
 };
 
 ///
-/// Workflow web, fetches web pages. Registered for scripts as workflow.web.fetch, they parse the page themselves.
-/// A url that failed is not requested again before the setting "web.retry_pause" is over,
-/// 60 s by default: a script may ask for it once per verse.
+/// Workflow web, fetches web pages.
 ///
 class workflow_web final : public workflow_base<workflow_web_settings>
 {
@@ -59,8 +57,8 @@ public: // Structors
 
 public: // Operations
   ///
-  /// \return the web page at \p url, or why it failed: the name of a core_fetch_web_content::error_code.
-  /// Blocks until it is fetched, a failure is answered from memory during the retry pause.
+  /// \return the web page at \p url, or why it failed: the name of the error.
+  /// Blocks until it is fetched. During the retry pause a failed url gets the same failure without a request.
   ///
   [[nodiscard]] auto fetch(std::string_view url) const -> page_type;
 };
