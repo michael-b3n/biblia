@@ -59,7 +59,7 @@ Lua scripts build the urls of the lookup and can offer scriptures too, e.g. by f
 - Scripts of your own are the `*.lua` files of `%LOCALAPPDATA%\verselens\scripts`, `Import scripts` in the scripts tab copies them there. They are loaded after the start and with `Load scripts` in the scripts tab, unless `Scripts > Enabled` is turned off.
 - [example.lua](bibstd/lua/examples/example.lua) is installed with the app in `share/scripts`. Imported it is inactive until its `enabled` is set.
 - Mind the terms of use of the pages a script reads and the copyright of the translations.
-- Writing scripts: [doc/lua_scripts.md](doc/lua_scripts.md).
+- Writing scripts: [doc/lua_scripts.md](doc/lua_scripts.md), what the app offers them: [doc/lua_api.md](doc/lua_api.md).
 
 ### Release
 

@@ -12,7 +12,7 @@ runs:
       shell: msys2 {0}
       run: |
         git config --global --add safe.directory '*'
-        cmake --preset gcc-release
+        cmake --preset gcc-release -DBIBSTD_LUA_DOC_UPDATE=OFF
 
     - name: Build
       shell: msys2 {0}

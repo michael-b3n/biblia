@@ -12,8 +12,14 @@ local function text(...)
   return table.concat(texts, "\t")
 end
 
--- util.log_debug, util.log_info, util.log_warning and util.log_error write their values to the log of the app at
--- that level. Scripts have no console, so there is no print.
+---
+--- \lua util.log_debug(...)
+--- \lua util.log_info(...)
+--- \lua util.log_warning(...)
+--- \lua util.log_error(...)
+--- Writes to the app log at that level. Scripts have no console and no print.
+--- \param ... the values, written like print writes them
+---
 for _, level in ipairs({ "debug", "info", "warning", "error" }) do
   local log = root.system["log_" .. level]
   util["log_" .. level] = function(...)

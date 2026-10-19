@@ -1,4 +1,5 @@
 #include "bibstd/workflow/workflow_scripture.hpp"
+#include "bibstd/bible/common.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/core/core_scripture_store.hpp"
 #include "bibstd/util/contains.hpp"
@@ -15,6 +16,7 @@
 #include <format>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <tuple>
 #include <utility>
@@ -39,10 +41,10 @@ namespace
 ///
 workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings)
   : workflow_settings_base{std::move(workflow_settings)}
-  , scripture_name{workflow_settings_->create_setting(
-      "scripture.name",
-      setting_value_t<decltype(scripture_name)>{},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(scripture_name)>>>()
+  , default_scripture_name{workflow_settings_->create_setting(
+      "scripture.default_name",
+      setting_value_t<decltype(default_scripture_name)>{},
+      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
     )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
@@ -93,15 +95,156 @@ workflow_scripture::workflow_scripture(
   , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().folder))
 {
   update_scripture_name_setting();
-  // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
+
   workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, connections_);
+
+  static constexpr auto book_id_of = [](const std::string_view book_id) -> bible::book_id
+  {
+    const auto id = util::to_enum<bible::book_id>(book_id);
+    if(!id)
+    {
+      throw util::exception{std::format("invalid book name: book=\"{}\"", book_id)};
+    }
+    return *id;
+  };
+
+  registrations_
+    // Settings
+    ///
+    /// \lua The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as
+    /// scripture name use it, so without a default scripture they find no scripture.
+    ///
+    << workflow_script_->register_setting(*settings().default_scripture_name)
+    ///
+    /// \lua The versification for scriptures that have none, including those of scripts,
+    /// `Scripture > Fallback versification`.
+    ///
+    << workflow_script_->register_setting(*settings().fallback_versification)
+
+    // Functions
+    ///
+    /// \lua
+    /// \return the number of scriptures, including those of scripts
+    ///
+    << workflow_script_->register_function("scripture.scripture_count", [this]() { return scripture_count(); })
+    ///
+    /// \lua
+    /// \return the identifiers of all books, e.g. `john`
+    ///
+    << workflow_script_->register_function(
+         "scripture.book_identifiers",
+         []() { return util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
+       )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its name, or `nil` if there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.name",
+         [this](const std::optional<std::string>& scripture_name)
+         { return information({{scripture_name}}).transform([](const auto& info) { return info.name; }); }
+       )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its abbreviation, or `nil` if there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.abbreviation",
+         [this](const std::optional<std::string>& scripture_name)
+         { return information({{scripture_name}}).transform([](const auto& info) { return info.abbreviation; }); }
+       )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its language, or `nil` if there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.language",
+         [this](const std::optional<std::string>& scripture_name)
+         { return information({{scripture_name}}).transform([](const auto& info) { return info.language; }); }
+       )
+    ///
+    /// \lua
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \return its copyright, or `nil` if it has none or there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.copyright",
+         [this](const std::optional<std::string>& scripture_name)
+         { return information({{scripture_name}}).and_then([](const auto& info) { return info.copyright; }); }
+       )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return the abbreviation of the book, or `nil` if it has none or there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.book_abbreviation",
+         [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
+         {
+           return book_information({{scripture_name}}, book_id_of(book_id))
+             .transform([](const auto& names) { return names.abbreviation; });
+         }
+       )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return the short name of the book, or `nil` if it has none or there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.book_short_name",
+         [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
+         {
+           return book_information({{scripture_name}}, book_id_of(book_id))
+             .transform([](const auto& names) { return names.short_name; });
+         }
+       )
+    ///
+    /// \lua An unknown book raises an error.
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \return the long name of the book, or `nil` if it has none or there is no such scripture
+    ///
+    << workflow_script_->register_function(
+         "scripture.book_long_name",
+         [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
+         {
+           return book_information({{scripture_name}}, book_id_of(book_id))
+             .transform([](const auto& names) { return names.long_name; });
+         }
+       )
+    ///
+    /// \lua A script that asks for a passage of its own scripture calls itself.
+    /// \param scripture_name the scripture, `nil` for the default scripture
+    /// \param book_id the identifier of the book, e.g. `john`
+    /// \param chapter the chapter
+    /// \param verse the verse
+    /// \return the verse with the markup of the app, or `nil` and the reason, e.g. `scripture not found`
+    ///
+    << workflow_script_->register_function(
+         "scripture.passage",
+         [this](
+           const std::optional<std::string>& scripture_name,
+           const std::string& book_id,
+           std::uint32_t chapter,
+           std::uint32_t verse
+         )
+         {
+           const auto reference = bible::reference::create_unguarded(book_id_of(book_id), chapter, verse);
+           const auto params = passage_params_t{.reference = reference, .scripture_name = scripture_name};
+           return passage(params).transform([](const auto& result) { return result.passage.content; });
+         }
+       );
 }
 
 ///
 ///
 workflow_scripture::~workflow_scripture() noexcept
 {
-  // No slot reaches the workflow once disconnected, a request on the way ends with its script
   connections_.disconnect();
 }
 
@@ -109,7 +252,7 @@ workflow_scripture::~workflow_scripture() noexcept
 ///
 auto workflow_scripture::scripture_count() const -> std::size_t
 {
-  const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+  const auto scriptures_lock = std::scoped_lock{mtx_};
   return scripture_names().size();
 }
 
@@ -224,7 +367,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
         {
           return passage_result_t{.passage = std::move(*passage)};
         }
-        LOG_WARN("passage not found: reference=\"{}\"", ref);
+        LOG_DEBUG("passage not found: reference=\"{}\"", ref);
         return std::unexpected{std::string{verse_not_found}};
       },
       [this, &ref](const script_scriptures_t::value_type& entry) -> passage_result
@@ -267,9 +410,8 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   auto imported = std::size_t{0};
   try
   {
-    const auto update_lock = std::scoped_lock{update_mtx_};
     {
-      const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+      const auto scriptures_lock = std::scoped_lock{mtx_};
       imported = std::ranges::fold_left(
         params->sources | std::views::transform([this](const auto& source) { return core_scripture_store_->import(source); }),
         std::size_t{0},
@@ -308,7 +450,7 @@ auto workflow_scripture::scripture_names() const -> std::vector<std::string>
 ///
 auto workflow_scripture::selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>
 {
-  return name ? name : settings().scripture_name->value();
+  return name ? name : settings().default_scripture_name->value();
 }
 
 ///
@@ -321,7 +463,7 @@ auto workflow_scripture::find(const std::optional<std::string>& name) const -> s
     return std::nullopt;
   }
   // Copied, so the lock is not held while a script runs
-  const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+  const auto scriptures_lock = std::scoped_lock{mtx_};
   decltype(auto) scriptures = core_scripture_store_->scriptures();
   if(const auto it = scriptures.find(*selected); it != std::ranges::end(scriptures))
   {
@@ -354,9 +496,6 @@ auto workflow_scripture::update_scripts() -> void
   static constexpr auto script_scripture_name = "{} ({})";
   try
   {
-    // Two loadings may report at the same time, the later update reads the later scripts
-    const auto update_lock = std::scoped_lock{update_mtx_};
-    // The scriptures of a script by their names in the app
     const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
     {
       const auto output = workflow_script_->run<names_manifest>(script.first, {});
@@ -375,7 +514,7 @@ auto workflow_scripture::update_scripts() -> void
     const auto scripts = workflow_script_->scripts<names_manifest, information_manifest, book_manifest, passage_manifest>();
     auto scriptures = scripts | std::views::transform(of_script) | std::views::join | std::ranges::to<script_scriptures_t>();
     {
-      const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+      const auto scriptures_lock = std::scoped_lock{mtx_};
       script_scriptures_ = std::move(scriptures);
     }
     update_scripture_name_setting();
@@ -399,7 +538,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   auto preferred = std::optional<std::string>{};
   auto scripts_loaded = false;
   {
-    const auto scriptures_lock = std::scoped_lock{scriptures_mtx_};
+    const auto scriptures_lock = std::scoped_lock{mtx_};
     decltype(auto) scriptures = core_scripture_store_->scriptures();
     names = scripture_names();
     scripts_loaded = script_scriptures_.has_value();
@@ -408,21 +547,21 @@ auto workflow_scripture::update_scripture_name_setting() -> void
       preferred = it->first;
     }
   }
-  const auto name = settings().scripture_name->value();
+  const auto name = settings().default_scripture_name->value();
   if(!scripts_loaded && name)
   {
     // Until the scripts are loaded, the name may be one of theirs.
     // If not here, validator would drop the existing value.
     names.push_back(*name);
   }
-  std::ignore = list_validator(settings().scripture_name)->available(names);
+  std::ignore = list_validator(settings().default_scripture_name)->available(names);
 
   // A setting naming a scripture that is not loaded leaves every lookup without one. That is what
   // a name left over from scriptures that are gone does, so it is pointed at a loaded scripture.
   const auto name_contained = name.has_value() && util::contains(names, *name);
   if(!(name_contained || names.empty()))
   {
-    settings().scripture_name->value(preferred ? *preferred : names.front());
+    settings().default_scripture_name->value(preferred ? *preferred : names.front());
   }
 }
 

@@ -55,18 +55,16 @@ public: // Constants
   static constexpr auto folder_name = "scriptures";
 
 public: // Variables
-  const setting_type<std::optional<std::string>> scripture_name;
+  const setting_type<std::optional<std::string>> default_scripture_name;
   const setting_type<std::string> fallback_versification;
   const std::filesystem::path folder;
 };
 
 ///
-/// Workflow for scripture. The scriptures are the zip files in the folder "scriptures" of the local data folder,
-/// loaded on construction and added by import_scriptures.
-/// More scriptures come from the scripts implementing the four manifests below, named after their script, e.g.
-/// "LUT (Bibleserver)". Scriptures from scripts use the fallback versification.
+/// Workflow for scripture. Scriptures are either loaded via local files or provided by dedicated scripts.
+/// Scriptures provided without versification take the fallback versification.
 /// Signal IDs to connect to:
-/// - scriptures_changed: Emitted when the scriptures of the scripts changed, e.g. once the scripts are loaded.
+/// - scriptures_changed: Emitted when the scriptures of the scripts changed.
 ///
 class workflow_scripture final
   : public workflow_base<workflow_scripture_settings>
@@ -128,10 +126,10 @@ class workflow_scripture final
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
-  mutable std::mutex update_mtx_;
-  mutable std::mutex scriptures_mtx_;
+  mutable std::mutex mtx_;
   std::optional<script_scriptures_t> script_scriptures_;
   framework::queued_connections connections_;
+  lua::registration registrations_;
 
 public: // Constants
   static constexpr auto default_versifications = []()
@@ -154,8 +152,14 @@ public: // Typedefs
   using passage_result = std::expected<passage_result_t, std::string>;
   using import_params = framework::process_params<import_params_t>;
 
-  // Manifests of a script offering scriptures, \see doc/lua_scripts.md
+  // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
+  ///
+  /// \lua A script that offers all four `scripture` manifests offers scriptures, and several scripts may do so.
+  /// The app lists them with its other scriptures, named after the script, e.g. `LUT (Bibleserver)`, and uses the
+  /// fallback versification for them. Respect the copyright of the translations.
+  /// \return names the scriptures the script offers, e.g. `{ "ABC" }`
+  ///
   struct names_manifest final
   {
     static inline const util::path id{"scripture.names"};
@@ -163,6 +167,13 @@ public: // Typedefs
     using output = lua::script_table<lua::field<"names", std::vector<std::string>>>;
   };
 
+  ///
+  /// \lua Information about a scripture.
+  /// \param name one of the names the script offers
+  /// \return abbreviation its abbreviation
+  /// \return language its language
+  /// \return copyright its copyright, shown below the verses
+  ///
   struct information_manifest final
   {
     static inline const util::path id{"scripture.information"};
@@ -173,6 +184,14 @@ public: // Typedefs
       lua::field<"copyright", std::optional<std::string>>>;
   };
 
+  ///
+  /// \lua The names of a book in a scripture.
+  /// \param name one of the names the script offers
+  /// \param book the identifier of the app, e.g. `john`
+  /// \return abbreviation its abbreviation
+  /// \return short_name its short name, shown in the app. Without one the app shows the identifier.
+  /// \return long_name its long name
+  ///
   struct book_manifest final
   {
     static inline const util::path id{"scripture.book"};
@@ -183,6 +202,16 @@ public: // Typedefs
       lua::field<"long_name", std::optional<std::string>>>;
   };
 
+  ///
+  /// \lua A verse. The app asks for every verse it shows and keeps nothing,
+  /// so the script may ask `workflow.cache` first.
+  /// \param name one of the names the script offers
+  /// \param book the identifier of the app, e.g. `john`
+  /// \param chapter the chapter
+  /// \param verse the verse
+  /// \return text its plain text. The app shows markup of a web page as text.
+  /// \return error shown in place of a verse without \p text. Without one the app shows `verse not found`.
+  ///
   struct passage_manifest final
   {
     static inline const util::path id{"scripture.passage"};

@@ -34,6 +34,9 @@ TEST_CASE("path", "[util]")
   CHECK(path{"a.b"}.contains(path{"a.b"}));
   CHECK_FALSE(path{"a.b"}.contains(path{"a"}));
   CHECK_FALSE(path{"a.b"}.contains(path{"a.bc"}));
+  CHECK(path{"a.b"} / path{"c.d"} == path{"a.b.c.d"});
+  CHECK(path{} / path{"a"} == path{"a"});
+  CHECK(path{"a"} / path{} == path{"a"});
 }
 
 } // namespace bibstd::util

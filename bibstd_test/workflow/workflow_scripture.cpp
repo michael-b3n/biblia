@@ -95,7 +95,7 @@ scripture_fixture::scripture_fixture(
   if(selected)
   {
     const auto writer = std::make_shared<workflow_settings>(folder.path().string());
-    std::ignore = workflow_scripture_settings{writer}.scripture_name->value(selected);
+    std::ignore = workflow_scripture_settings{writer}.default_scripture_name->value(selected);
   }
   const auto settings = test_utils::make_script_settings(folder.path(), true);
   script = std::make_shared<workflow_script>(settings);
@@ -131,10 +131,12 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
 {
   auto fixture = scripture_fixture{"workflow_scripture_offers_the_scriptures_of_a_script", {{"test", scripture_script}}};
   const auto& scripture = *fixture.scripture;
-  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Script test)"; }));
+  REQUIRE(
+    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script test)"; })
+  );
   CHECK(test_utils::scripture_names_of(scripture, "Script test").size() == 2);
   // Named after the name of the script, the script is asked with its own names. The first scripture is selected.
-  CHECK(scripture.settings().scripture_name->value() == "AAA (Script test)");
+  CHECK(scripture.settings().default_scripture_name->value() == "AAA (Script test)");
 
   const auto information = scripture.information({{"BBB (Script test)"}});
   REQUIRE(information);
@@ -182,6 +184,45 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
   }));
 }
 
+TEST_CASE("workflow_scripture_offers_the_scriptures_to_scripts", "[workflow]")
+{
+  auto fixture = scripture_fixture{"workflow_scripture_offers_the_scriptures_to_scripts", {{"test", scripture_script}}};
+  REQUIRE(
+    test_utils::wait_until([&]()
+                           { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script test)"; })
+  );
+  const auto run = [&](const std::string& code)
+  {
+    return fixture.script->state()->safe_script(
+      "local workflow = root.interface.workflow return " + code, sol::script_pass_on_error
+    );
+  };
+  const auto text = [&](const std::string& code)
+  {
+    const auto result = run(code);
+    return result.get_type() == sol::type::string ? std::optional{result.get<std::string>()} : std::nullopt;
+  };
+
+  CHECK(run("workflow.scripture.scripture_count()").get<std::size_t>() == fixture.scripture->scripture_count());
+  CHECK(text("workflow.scripture.book_identifiers()[1]") == "genesis");
+  // nil is the selected scripture
+  CHECK(text("workflow.scripture.name(nil)") == "AAA (Script test)");
+  CHECK(text("workflow.scripture.abbreviation('BBB (Script test)')") == "BBB");
+  CHECK(text("workflow.scripture.language(nil)") == "de");
+  CHECK(text("workflow.scripture.copyright(nil)") == "(c) AAA");
+  CHECK(text("workflow.scripture.name('XXX')") == std::nullopt);
+  CHECK(text("workflow.scripture.book_short_name(nil, 'john')") == "Johannes");
+  CHECK(text("workflow.scripture.book_long_name(nil, 'john')") == "");
+  CHECK(text("workflow.scripture.book_abbreviation(nil, 'mark')") == std::nullopt);
+  CHECK(text("workflow.scripture.passage(nil, 'john', 3, 16)") == R"(<p data-id="undefined">&lt;b&gt;AAA john 3,16</p>)");
+  // No passage tells why
+  CHECK(text("select(2, workflow.scripture.passage(nil, 'john', 3, 2))") == "no such verse");
+  CHECK(text("select(2, workflow.scripture.passage('XXX', 'john', 3, 16))") == "scripture not found");
+  // Called the wrong way
+  CHECK_FALSE(run("workflow.scripture.book_short_name(nil, 'nobook')").valid());
+  CHECK_FALSE(run("workflow.scripture.passage(nil, 'john', -1, 16)").valid());
+}
+
 TEST_CASE("workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", "[workflow]")
 {
   auto fixture = scripture_fixture{
@@ -191,7 +232,7 @@ TEST_CASE("workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", "[wo
   REQUIRE(
     test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
   );
-  CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
+  CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
   CHECK(fixture.scripture->information({{}}));
 }
 
@@ -210,11 +251,11 @@ TEST_CASE("workflow_scripture_keeps_the_name_of_a_script_next_to_stored_scriptur
       "workflow_scripture_keeps_the_name_of_a_script_offered", {{"test", scripture_script}}, "BBB (Script test)", stored
     };
     // Kept while the scripts load, although the stored scripture is known already, and after
-    CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
+    CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
     REQUIRE(
       test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
     );
-    CHECK(fixture.scripture->settings().scripture_name->value() == "BBB (Script test)");
+    CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
   }
 
   SECTION("gone from the script")
@@ -223,7 +264,7 @@ TEST_CASE("workflow_scripture_keeps_the_name_of_a_script_next_to_stored_scriptur
       "workflow_scripture_keeps_the_name_of_a_script_gone", {{"test", scripture_script}}, "CCC (Script test)", stored
     };
     // Pointed at the stored scripture once the scripts are loaded
-    const auto& name = fixture.scripture->settings().scripture_name;
+    const auto& name = fixture.scripture->settings().default_scripture_name;
     CHECK(test_utils::wait_until([&]() { return name->value() && !name->value()->ends_with("(Script test)"); }));
   }
 }
@@ -255,7 +296,9 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   auto fixture = scripture_fixture{"workflow_scripture_follows_the_scripts_loaded_anew", {{"first", scripture_script}}};
   const auto& scripture = *fixture.scripture;
   const auto scripts = fixture.folder.path() / "scripts";
-  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Script first)"; }));
+  REQUIRE(
+    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
+  );
   const auto changed = [&]()
   {
     auto count = std::make_shared<std::atomic<int>>(0);
@@ -272,7 +315,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   test_utils::load_scripts(*fixture.script);
   REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Second").size() == 1; }));
   CHECK(test_utils::scripture_names_of(scripture, "Script first").size() == 2);
-  CHECK(scripture.settings().scripture_name->value() == "AAA (Script first)");
+  CHECK(scripture.settings().default_scripture_name->value() == "AAA (Script first)");
   CHECK(scripture.information({{"AAC (Second)"}}));
   CHECK(scripture.information({{"BBB (Script first)"}}));
 
@@ -280,7 +323,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   std::filesystem::remove(scripts / "first.lua");
   test_utils::load_scripts(*fixture.script);
   REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script first").empty(); }));
-  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAC (Second)"; }));
+  CHECK(test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAC (Second)"; }));
   CHECK_FALSE(scripture.information({{"AAA (Script first)"}}));
   const auto passage = scripture.passage({
     {.reference = john(16), .scripture_name = std::nullopt}
@@ -296,12 +339,15 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   auto fixture =
     scripture_fixture{"workflow_scripture_changes_the_name_setting_without_its_lock", {{"first", scripture_script}}};
   const auto& scripture = *fixture.scripture;
-  REQUIRE(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Script first)"; }));
+  REQUIRE(
+    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
+  );
   // Listeners called right where the setting changes, each calls back into the workflow
   auto counted = std::make_shared<std::atomic<int>>(0);
   const auto count = [&scripture, counted]() { *counted += static_cast<int>(scripture.scripture_count()) + 1; };
-  const auto value = scripture.settings().scripture_name->connect(&framework::setting_signals::value_changed, count);
-  const auto validator = scripture.settings().scripture_name->connect(&framework::setting_signals::validator_changed, count);
+  const auto value = scripture.settings().default_scripture_name->connect(&framework::setting_signals::value_changed, count);
+  const auto validator =
+    scripture.settings().default_scripture_name->connect(&framework::setting_signals::validator_changed, count);
 
   // The selected scripture goes with its script, so the names and the name change
   std::filesystem::remove(fixture.folder.path() / "scripts" / "first.lua");
@@ -310,7 +356,7 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
     std::format("return {{name = 'Second', functions = (function() {} end)()}}", scripture_script)
   );
   test_utils::load_scripts(*fixture.script);
-  CHECK(test_utils::wait_until([&]() { return scripture.settings().scripture_name->value() == "AAA (Second)"; }));
+  CHECK(test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Second)"; }));
   CHECK(test_utils::wait_until([&]() { return *counted > 0; }));
 }
 
@@ -325,7 +371,8 @@ TEST_CASE("workflow_scripture_passage_ends_on_stop", "[workflow]")
   };
   // The passage is of the selected scripture
   REQUIRE(
-    test_utils::wait_until([&]() { return fixture.scripture->settings().scripture_name->value() == "AAA (Script endless)"; })
+    test_utils::wait_until([&]()
+                           { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script endless)"; })
   );
   auto passage = std::async(
     std::launch::async,

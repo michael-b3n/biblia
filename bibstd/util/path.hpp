@@ -28,12 +28,16 @@ class path final
 public: // Structors
   path() = default;
   path(const util::string::string_view_type auto& p);
-  // Not a string, it is a range as well
   path(const std::ranges::input_range auto& sections)
     requires(!util::string::string_view_type<decltype(sections)>);
 
 public: // Operators
   auto operator<=>(const path& other) const = default;
+
+  ///
+  /// \return this path followed by the sections of \p other
+  ///
+  [[nodiscard]] auto operator/(const path& other) const -> path;
 
 public: // Accessors
   ///

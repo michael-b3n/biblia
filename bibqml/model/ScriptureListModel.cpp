@@ -2,6 +2,7 @@
 #include "bibqml/util/ScriptureAccess.hpp"
 
 #include <bibstd/bible/versification.hpp>
+#include <bibstd/execution/launch.hpp>
 #include <bibstd/framework/setting.hpp>
 #include <bibstd/util/enum.hpp>
 #include <bibstd/util/log.hpp>
@@ -87,7 +88,7 @@ using Step = std::optional<bibstd::bible::reference> (bibstd::bible::versificati
 }
 
 ///
-/// Read the text of a verse from the scripture of the setting "scripture.name". Blocks while a script answers.
+/// Read the text of a verse from the scripture of the setting "scripture.default_name". Blocks while a script answers.
 /// \return markup of the verse, or as plain text why there is none
 ///
 [[nodiscard]] auto verseText(const bibstd::workflow::workflow_scripture& workflowScripture, const bibstd::bible::reference& ref)
@@ -135,12 +136,18 @@ struct ScriptureListModel::MachineBuilder final
       self.startFetch(loading);
     };
     const auto apply = [&self](sm::s_loading& loading, const sm::e_loaded& event)
-    { self.applyLoad(loading.load, event.entries); };
+    {
+      self.applyLoad(loading.load, event.entries);
+      if(event.copyright)
+      {
+        self.scriptureCopyright(*event.copyright);
+      }
+    };
     const auto stop = [](sm::s_loading& loading) { loading.stop.request_stop(); };
 
     // clang-format off
     return sfsm::sfsm{
-      sfsm::states<sm::s_idle, sm::s_loading>{{}, {}},
+      sfsm::states<sm::s_idle, sm::s_loading, sm::s_exit>{{}, {}, {}},
       sfsm::on_exit<sm::s_loading>(stop),
 
       make_transition<sm::s_idle,    sm::e_reset,             sm::s_loading>(action(fetchReset)),
@@ -150,7 +157,9 @@ struct ScriptureListModel::MachineBuilder final
       make_transition<sm::s_loading, sm::e_clear,             sm::s_idle   >(),
       make_transition<sm::s_loading, sm::e_scripture_changed, sm::s_loading>(guard(resetOnTheWay), action(fetchAgain)),
       make_transition<sm::s_loading, sm::e_scripture_changed, sm::s_loading>(action(fetchRowsAgain)),
-      make_transition<sm::s_idle,    sm::e_scripture_changed, sm::s_loading>(guard(hasRows), action(fetchRowsAgain))
+      make_transition<sm::s_idle,    sm::e_scripture_changed, sm::s_loading>(guard(hasRows), action(fetchRowsAgain)),
+      make_transition<sm::s_idle,    sm::e_exit,              sm::s_exit   >(),
+      make_transition<sm::s_loading, sm::e_exit,              sm::s_exit   >()
     };
     // clang-format on
   }
@@ -188,15 +197,10 @@ ScriptureListModel::ScriptureListModel(
 {
   // The rows hold the texts of one scripture, another one or other scripts fetch them again
   const auto changed = [this]() { post([this]() { applyScriptureChange(); }); };
-  workflowScripture_->settings().scripture_name->connect_queued(
+  workflowScripture_->settings().default_scripture_name->connect_queued(
     &bibstd::framework::setting_signals::value_changed, changed, connections_
   );
   workflowScripture_->connect_queued(&bibstd::workflow::workflow_scripture_sigs::scriptures_changed, changed, connections_);
-
-  // Fetching blocks while a script answers, so it is left to the thread pool
-  connections_.connect(loadRequested_, [this](const Load& load, const std::stop_token& token) { fetchLoad(load, token); });
-  connections_.connect(copyrightRequested_, [this]() { fetchCopyright(); });
-  copyrightRequested_();
 }
 
 ///
@@ -336,6 +340,7 @@ void ScriptureListModel::clear()
   entries_.clear();
   endResetModel();
   referenceRow(0);
+  scriptureCopyright(QString{});
 }
 
 ///
@@ -343,6 +348,8 @@ void ScriptureListModel::clear()
 void ScriptureListModel::disconnect()
 {
   connections_.disconnect();
+  std::ignore = dispatch(sm::e_exit{});
+  scope_.stop();
 }
 
 ///
@@ -379,9 +386,9 @@ bool ScriptureListModel::dispatch(const Event& event)
 
 ///
 ///
-void ScriptureListModel::provideLoad(const std::stop_token& token, std::vector<Entry> entries)
+void ScriptureListModel::provideLoad(const std::stop_token& token, std::vector<Entry> entries, std::optional<QString> copyright)
 {
-  if(dispatch(sm::e_loaded{.token = token, .entries = std::move(entries)}))
+  if(dispatch(sm::e_loaded{.token = token, .entries = std::move(entries), .copyright = std::move(copyright)}))
   {
     // Emitted once the machine is idle again, so a view asking right away is not refused
     emit loaded();
@@ -393,7 +400,6 @@ void ScriptureListModel::provideLoad(const std::stop_token& token, std::vector<E
 void ScriptureListModel::applyScriptureChange()
 {
   std::ignore = dispatch(sm::e_scripture_changed{});
-  copyrightRequested_();
 }
 
 ///
@@ -462,8 +468,9 @@ bool ScriptureListModel::hasRoomFor(const std::size_t count) const
 void ScriptureListModel::startFetch(sm::s_loading& loading)
 {
   loading.stop = std::stop_source{};
-  // Queued into the thread pool, \see fetchLoad
-  loadRequested_(loading.load, loading.stop.get_token());
+  bibstd::execution::launch(
+    [this, load = loading.load, token = loading.stop.get_token()]() { fetchLoad(load, token); }, scope_
+  );
 }
 
 ///
@@ -507,34 +514,27 @@ void ScriptureListModel::fetchLoad(const Load& load, const std::stop_token& toke
     {
       return;
     }
-    entries.push_back(fetchEntry(ref));
+    const auto bookId = bibstd::util::enum_name(ref.book());
+    entries.push_back(
+      Entry{
+        .ref = ref,
+        .verseText = verseText(*workflowScripture_, ref),
+        .bookId = QString::fromLatin1(bookId.data(), static_cast<qsizetype>(bookId.size())),
+        .bookName = bookName(*workflowScripture_, ref.book()),
+        .chapterNumber = ref.chapter().value,
+        .verseNumber = ref.verse().value,
+        .isHeader = ref.verse() == decltype(ref.verse()){1},
+      }
+    );
   }
-  post([this, token, entries = std::move(entries)]() mutable { provideLoad(token, std::move(entries)); });
-}
-
-///
-///
-void ScriptureListModel::fetchCopyright()
-{
-  // One at a time, so the copyright posted last is the one read last
-  const auto lock = std::scoped_lock{copyrightMtx_};
-  post([this, copyright = bibqml::scriptureCopyright(*workflowScripture_)]() { scriptureCopyright(copyright); });
-}
-
-///
-///
-ScriptureListModel::Entry ScriptureListModel::fetchEntry(const bibstd::bible::reference& ref) const
-{
-  const auto bookId = bibstd::util::enum_name(ref.book());
-  return Entry{
-    .ref = ref,
-    .verseText = verseText(*workflowScripture_, ref),
-    .bookId = QString::fromLatin1(bookId.data(), static_cast<qsizetype>(bookId.size())),
-    .bookName = bookName(*workflowScripture_, ref.book()),
-    .chapterNumber = ref.chapter().value,
-    .verseNumber = ref.verse().value,
-    .isHeader = ref.verse() == decltype(ref.verse()){1},
-  };
+  // Only a reset or a reload can show another scripture, a page keeps the copyright shown
+  auto copyright = std::optional<QString>{};
+  if(load.kind == LoadKind::Reset || load.kind == LoadKind::Reload)
+  {
+    copyright = bibqml::scriptureCopyright(*workflowScripture_);
+  }
+  post([this, token, entries = std::move(entries), copyright = std::move(copyright)]() mutable
+       { provideLoad(token, std::move(entries), std::move(copyright)); });
 }
 
 } // namespace bibqml

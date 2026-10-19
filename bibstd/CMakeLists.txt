@@ -30,7 +30,7 @@ target_sources(${PROJECT_NAME}
 # Compile the Lua scripts into the library, a new script in lua/internal or lua/bundled needs no other change.
 # The label is the namespace of the scripts, \see lua/embedded_scripts.hpp.
 #
-include(helper_functions)
+include(incbin)
 file(GLOB BIBSTD_LUA_INTERNAL CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/internal/*.lua")
 file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua" "${CMAKE_CURRENT_LIST_DIR}/lua/private/*.lua")
 configure_incbin_source(internal lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${BIBSTD_LUA_INTERNAL})
@@ -105,3 +105,11 @@ endif()
 #
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH BIBSTD_INCLUDE_DIR)
 target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
+
+#
+# The script reference doc/lua_api.md, from the comments tagged \lua in all app sources.
+# CI turns the update off, so the test fails for a doc not committed with its sources.
+#
+include(lua_doc)
+option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
+add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens bibstd/lua/internal/interface_util.lua)

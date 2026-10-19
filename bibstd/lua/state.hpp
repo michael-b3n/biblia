@@ -133,6 +133,10 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
   }
   auto registered = std::make_shared<const std::monostate>();
   auto node = parent->create_named(p.sections().back());
+  ///
+  /// \lua
+  /// \return the value of the setting
+  ///
   node.set_function(
     names::function_get,
     function_cast(
@@ -140,6 +144,11 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
       registered
     )
   );
+  ///
+  /// \lua Changes the setting, like the user does in the settings.
+  /// \param value the new value
+  /// \return false if the setting rejected \p value or limited it to its range
+  ///
   node.set_function(
     names::function_set,
     function_cast(
@@ -148,6 +157,10 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
       registered
     )
   );
+  ///
+  /// \lua
+  /// \return the text shown after the value, e.g. its unit, or an empty text
+  ///
   node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }, registered));
   return registration{data_, p, std::move(registered)};
 }

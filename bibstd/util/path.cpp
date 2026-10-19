@@ -9,6 +9,15 @@ namespace bibstd::util
 
 ///
 ///
+auto path::operator/(const path& other) const -> path
+{
+  auto result = *this;
+  result.sections_.append_range(other.sections_);
+  return result;
+}
+
+///
+///
 auto path::string() const -> std::string
 {
   return util::string::join(sections_, delimiter);

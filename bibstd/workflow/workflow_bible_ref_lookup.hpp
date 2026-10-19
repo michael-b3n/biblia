@@ -55,7 +55,16 @@ class workflow_bible_ref_lookup final : public workflow_base<workflow_bible_ref_
 public: // Typedefs
   using params = framework::process_params<params_t>;
 
-  // Manifests of a script offering the lookup, \see doc/lua_scripts.md
+  // Manifests of a script offering the lookup, \see doc/lua_api.md
+  ///
+  /// \lua A script that offers this and `lookup.url` opens references in the browser. `Lookup > Scripts` chooses the
+  /// script by its name. Until the user chooses, the app uses the script with the most translations. Respect the terms
+  /// of use of the web pages a script reads.
+  /// \param language the language of the user, `english` or `german`
+  /// \return names the translations to choose from in `Lookup > Translations`, may be empty. The app shows them as
+  /// they are, so the bundled scripts offer full names, e.g. `Lutherbibel`, and map them to url abbreviations.
+  /// \return defaults the translations used until the user chooses some
+  ///
   struct translations_manifest final
   {
     static inline const util::path id{"lookup.translations"};
@@ -65,6 +74,16 @@ public: // Typedefs
       lua::field<"defaults", std::optional<std::vector<std::string>>>>;
   };
 
+  ///
+  /// \lua For a reference over several chapters the app asks once per chapter and opens each url in its own tab.
+  /// \param translations the chosen translations, in the order chosen
+  /// \param book the identifier of the app, e.g. `john`
+  /// \param chapter the chapter
+  /// \param verse_begin the first verse
+  /// \param verse_end the last verse
+  /// \return url the web page that shows the verses, or none. The app opens only a valid `http` or `https` url, so
+  /// encode characters that are not ASCII.
+  ///
   struct url_manifest final
   {
     static inline const util::path id{"lookup.url"};
