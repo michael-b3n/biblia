@@ -241,6 +241,14 @@ all_cpp = table.concat(all_cpp, "\n")
 
 local functions, settings, setting_functions, manifests, utils = {}, {}, {}, {}, {}
 
+-- The nodes workflow_script registers at, e.g. workflow.web.fetch and workflow.setting.web.retry_pause
+local lua_node = all_cpp:match("lua_node%s*=%s*\"([^\"]+)\"")
+local setting_node = all_cpp:match("setting_node%s*=%s*\"([^\"]+)\"")
+if not lua_node or not setting_node then
+  io.stderr:write("lua_node or setting_node of workflow_script not found\n")
+  os.exit(1)
+end
+
 ---
 --- \return the names of the lambda \p parameters of \p what and the parameters typed for scripts
 ---
@@ -269,11 +277,12 @@ local function add_cpp(file, block, documented)
   local link = "<<%s*[%w_]+%->register_"
   local path, parameters = block.rest:match("^%s*[%w_]*%s*" .. link .. "function%(%s*\"([^\"]+)\"%s*,%s*%b[]%s*(%b())")
   if path then
-    local what = "workflow." .. path
+    local what = lua_node .. "." .. path
     local names, typed = typed_parameters(file, what, parameters)
-    documented[what] = true
+    documented[path] = true
     functions[#functions + 1] = {
       name = what,
+      group = path:match("^[^.]+"),
       file = file,
       signature = string.format("%s(%s)", what, typed),
       text = describe(file, what, lines, names, nil, true),
@@ -289,10 +298,12 @@ local function add_cpp(file, block, documented)
       fail(file, string.format("no path or no Lua type found for the setting %s", member))
       return
     end
-    local what = "workflow." .. setting_path
+    local what = string.format("%s.%s.%s", lua_node, setting_node, setting_path)
     documented[member] = true
     settings[#settings + 1] = {
       name = what,
+      group = setting_path:match("^[^.]+"),
+      type = type,
       file = file,
       signature = string.format("%s: %s", what, type),
       text = describe(file, what, lines, {}, nil, true),
@@ -311,6 +322,7 @@ local function add_cpp(file, block, documented)
     documented[constant] = true
     setting_functions[#setting_functions + 1] = {
       name = name,
+      typed = typed,
       file = file,
       signature = string.format("setting.%s(%s)", name, typed),
       text = describe(file, name, lines, names, nil, true),
@@ -361,8 +373,7 @@ for _, source in ipairs(cpp_sources) do
     return line:match("^%s*//") and "" or line
   end)
   for call, rest in code:gmatch("%->register_(%a+)%(%s*([^\n]*)") do
-    local key = call == "function" and rest:match("^\"([^\"]+)\"") and ("workflow." .. rest:match("^\"([^\"]+)\""))
-      or call == "setting" and rest:match("^%*settings%(%)%.([%w_]+)")
+    local key = call == "function" and rest:match("^\"([^\"]+)\"") or call == "setting" and rest:match("^%*settings%(%)%.([%w_]+)")
     if not key or not documented[key] then
       fail(source.path, string.format("register_%s of %s has no \\lua comment above it", call, key or rest))
     end
@@ -450,23 +461,67 @@ local root = output:gsub("[^/]+", ".."):gsub("/?%.%.$", "")
 root = root == "" and "" or (root .. "/")
 
 ---
+--- \return the anchor GitHub gives the heading \p heading
+---
+local function anchor(heading)
+  return (heading:lower():gsub("[^%w%s_%-]", ""):gsub("%s", "-"))
+end
+
+---
+--- \return the Markdown of \p entry below a heading of \p level
+---
+local function entry_markdown(entry, level)
+  local parts = { string.rep("#", level) .. " " .. entry.name, "```\n" .. entry.signature .. "\n```", entry.text }
+  parts[#parts + 1] = entry.links
+  parts[#parts + 1] = string.format("Source: [%s](%s%s)", entry.file:match("[^/]+$"), root, entry.file)
+  return table.concat(parts, "\n\n")
+end
+
+---
 --- \return the Markdown section \p title of \p entries
 ---
 local function section(title, intro, entries)
   local parts = { "## " .. title, intro }
   for _, entry in ipairs(entries) do
-    local file = entry.file:match("[^/]+$")
-    parts[#parts + 1] = string.format(
-      "### %s\n\n```\n%s\n```\n\n%s\n\nSource: [%s](%s%s)",
-      entry.name,
-      entry.signature,
-      entry.text,
-      file,
-      root,
-      entry.file
-    )
+    parts[#parts + 1] = entry_markdown(entry, 3)
   end
   return table.concat(parts, "\n\n")
+end
+
+---
+--- \return the Markdown section of the workflows, each with its settings and functions
+---
+local function workflow_section(intro)
+  local groups, names = {}, {}
+  for _, list in ipairs({ settings, functions }) do
+    for _, entry in ipairs(list) do
+      if not groups[entry.group] then
+        groups[entry.group] = {}
+        names[#names + 1] = entry.group
+      end
+      table.insert(groups[entry.group], entry)
+    end
+  end
+  table.sort(names)
+  local parts = { "## " .. lua_node, intro }
+  for _, name in ipairs(names) do
+    parts[#parts + 1] = string.format("### %s.%s", lua_node, name)
+    for _, entry in ipairs(groups[name]) do
+      parts[#parts + 1] = entry_markdown(entry, 4)
+    end
+  end
+  return table.concat(parts, "\n\n")
+end
+
+-- A setting lists its setting functions with its own type, each linked to its description
+for _, setting in ipairs(settings) do
+  local links = {}
+  for i, setting_function in ipairs(setting_functions) do
+    local typed = setting_function.typed:gsub("%f[%w_]T%f[^%w_]", setting.type)
+    links[i] =
+      string.format("- [`%s.%s(%s)`](#%s)", setting.name, setting_function.name, typed, anchor(setting_function.name))
+  end
+  setting.links = table.concat(links, "\n")
 end
 
 local doc = table.concat({
@@ -478,17 +533,12 @@ local doc = table.concat({
     "The functions a script offers, each named after a manifest, which defines its input and output.",
     manifests
   ),
-  section(
-    "Functions of the app",
-    "A function called the wrong way, e.g. with a value of another type, raises an error like the functions of Lua do, "
-      .. "`pcall` catches it. A failure the script can not prevent, e.g. a missing web page, is no error: the function "
-      .. "returns `nil` and the reason, like `io.open`.",
-    functions
-  ),
-  section(
-    "Settings",
-    "Settings of the app scripts read and change, each a table of the [setting functions](#setting-functions).",
-    settings
+  workflow_section(
+    "What the app offers scripts, by workflow. A function called the wrong way, e.g. with a value of another type, "
+      .. "raises an error like the functions of Lua do, `pcall` catches it. A failure the script can not prevent, e.g. "
+      .. "a missing web page, is no error: the function returns `nil` and the reason, like `io.open`. A setting is at "
+      .. string.format("`%s.%s` and its path, ", lua_node, setting_node)
+      .. "a table of the [setting functions](#setting-functions)."
   ),
   section("Setting functions", "The functions of each setting, `T` is the type of the setting.", setting_functions),
   section("util", "Helpers written in Lua.", utils),

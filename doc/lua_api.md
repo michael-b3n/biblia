@@ -132,11 +132,13 @@ A verse. It is asked for every verse shown and the app keeps nothing, so the scr
 
 Source: [workflow_scripture.hpp](../bibstd/workflow/workflow_scripture.hpp)
 
-## Functions of the app
+## workflow
 
-A function called the wrong way, e.g. with a value of another type, raises an error like the functions of Lua do, `pcall` catches it. A failure the script can not prevent, e.g. a missing web page, is no error: the function returns `nil` and the reason, like `io.open`.
+What the app offers scripts, by workflow. A function called the wrong way, e.g. with a value of another type, raises an error like the functions of Lua do, `pcall` catches it. A failure the script can not prevent, e.g. a missing web page, is no error: the function returns `nil` and the reason, like `io.open`. A setting is at `workflow.setting` and its path, a table of the [setting functions](#setting-functions).
 
-### workflow.cache.get
+### workflow.cache
+
+#### workflow.cache.get
 
 ```
 workflow.cache.get(name: string, key: string)
@@ -153,7 +155,7 @@ Reads a text value kept beyond the run of the app. Each cache is the SQLite file
 
 Source: [workflow_cache.cpp](../bibstd/workflow/workflow_cache.cpp)
 
-### workflow.cache.set
+#### workflow.cache.set
 
 ```
 workflow.cache.set(name: string, key: string, value: string?)
@@ -169,7 +171,37 @@ Writes a text value to a cache, see `workflow.cache.get`.
 
 Source: [workflow_cache.cpp](../bibstd/workflow/workflow_cache.cpp)
 
-### workflow.scripture.scripture_count
+### workflow.scripture
+
+#### workflow.setting.scripture.name
+
+```
+workflow.setting.scripture.name: string?
+```
+
+The name of the scripture shown, `Scripture > Name`, `nil` for none.
+
+- [`workflow.setting.scripture.name.get()`](#get)
+- [`workflow.setting.scripture.name.set(value: string?)`](#set)
+- [`workflow.setting.scripture.name.postfix()`](#postfix)
+
+Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+
+#### workflow.setting.scripture.fallback_versification_name
+
+```
+workflow.setting.scripture.fallback_versification_name: string
+```
+
+The versification of scriptures that have none, those of scripts included, `Scripture > Fallback versification`.
+
+- [`workflow.setting.scripture.fallback_versification_name.get()`](#get)
+- [`workflow.setting.scripture.fallback_versification_name.set(value: string)`](#set)
+- [`workflow.setting.scripture.fallback_versification_name.postfix()`](#postfix)
+
+Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
+
+#### workflow.scripture.scripture_count
 
 ```
 workflow.scripture.scripture_count()
@@ -179,7 +211,7 @@ workflow.scripture.scripture_count()
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.book_names
+#### workflow.scripture.book_names
 
 ```
 workflow.scripture.book_names()
@@ -189,7 +221,7 @@ workflow.scripture.book_names()
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.full_name
+#### workflow.scripture.full_name
 
 ```
 workflow.scripture.full_name(scripture_name: string?)
@@ -203,7 +235,7 @@ workflow.scripture.full_name(scripture_name: string?)
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.abbreviation
+#### workflow.scripture.abbreviation
 
 ```
 workflow.scripture.abbreviation(scripture_name: string?)
@@ -217,7 +249,7 @@ workflow.scripture.abbreviation(scripture_name: string?)
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.language
+#### workflow.scripture.language
 
 ```
 workflow.scripture.language(scripture_name: string?)
@@ -231,7 +263,7 @@ workflow.scripture.language(scripture_name: string?)
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.copyright
+#### workflow.scripture.copyright
 
 ```
 workflow.scripture.copyright(scripture_name: string?)
@@ -245,7 +277,7 @@ workflow.scripture.copyright(scripture_name: string?)
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.book_abbreviation
+#### workflow.scripture.book_abbreviation
 
 ```
 workflow.scripture.book_abbreviation(scripture_name: string?, book_id: string)
@@ -262,7 +294,7 @@ An unknown book raises an error.
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.book_short_name
+#### workflow.scripture.book_short_name
 
 ```
 workflow.scripture.book_short_name(scripture_name: string?, book_id: string)
@@ -279,7 +311,7 @@ An unknown book raises an error.
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.book_long_name
+#### workflow.scripture.book_long_name
 
 ```
 workflow.scripture.book_long_name(scripture_name: string?, book_id: string)
@@ -296,7 +328,7 @@ An unknown book raises an error.
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.passage
+#### workflow.scripture.passage
 
 ```
 workflow.scripture.passage(scripture_name: string?, book_id: string, chapter: integer, verse: integer)
@@ -315,7 +347,9 @@ A script asking for a passage of its own scripture calls itself.
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.template.start
+### workflow.template
+
+#### workflow.template.start
 
 ```
 workflow.template.start(value: integer)
@@ -331,7 +365,23 @@ Starts the template workflow, the pattern of new workflows. It never starts.
 
 Source: [workflow_template.cpp](../bibstd/workflow/workflow_template.cpp)
 
-### workflow.web.fetch
+### workflow.web
+
+#### workflow.setting.web.retry_pause
+
+```
+workflow.setting.web.retry_pause: integer
+```
+
+The time to wait after a failed request, `Web > Pause after a failure`.
+
+- [`workflow.setting.web.retry_pause.get()`](#get)
+- [`workflow.setting.web.retry_pause.set(value: integer)`](#set)
+- [`workflow.setting.web.retry_pause.postfix()`](#postfix)
+
+Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
+
+#### workflow.web.fetch
 
 ```
 workflow.web.fetch(url: string)
@@ -344,40 +394,6 @@ Fetches a web page. The script waits for it and other scripts wait meanwhile. A 
 - `url`: the address of the page, http or https
 
 **Returns** the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410), `timeout` (30 s), `init_failed`, else `request_failed`
-
-Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
-
-## Settings
-
-Settings of the app scripts read and change, each a table of the [setting functions](#setting-functions).
-
-### workflow.scripture.name
-
-```
-workflow.scripture.name: string?
-```
-
-The name of the scripture shown, `Scripture > Name`, `nil` for none.
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
-
-### workflow.scripture.fallback_versification_name
-
-```
-workflow.scripture.fallback_versification_name: string
-```
-
-The versification of scriptures that have none, those of scripts included, `Scripture > Fallback versification`.
-
-Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
-
-### workflow.web.retry_pause
-
-```
-workflow.web.retry_pause: integer
-```
-
-The time to wait after a failed request, `Web > Pause after a failure`.
 
 Source: [workflow_web.cpp](../bibstd/workflow/workflow_web.cpp)
 

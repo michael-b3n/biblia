@@ -76,7 +76,8 @@ class workflow_script final
   , public signal::adapter<workflow_script_sigs>
 {
   // Constants
-  static constexpr auto lua_node = "workflow"; // below root, the node of all workflow registrations
+  static constexpr auto lua_node = "workflow";    // below root, the node of all workflow registrations
+  static constexpr auto setting_node = "setting"; // below lua_node, the node of all settings
 
   // Variables
   const lua::state_owner state_owner_;
@@ -128,7 +129,7 @@ public: // Modifiers
   [[nodiscard]] auto register_function(const util::path& p, F&& function) const -> lua::registration;
 
   ///
-  /// Register \p setting for scripts at workflow and its own path, \see lua::state::register_setting
+  /// Register \p setting for scripts at workflow.setting and its own path, \see lua::state::register_setting
   /// \return the registration to keep, one of nothing if the path can not be registered, the reason is logged
   ///
   template<framework::underlying_setting_type T>
@@ -185,7 +186,7 @@ auto workflow_script::register_function(const util::path& p, F&& function) const
 template<framework::underlying_setting_type T>
 auto workflow_script::register_setting(framework::setting<T>& setting) const -> lua::registration
 {
-  return state().register_setting(lua_path(util::path{setting.path}), setting);
+  return state().register_setting(lua_path(util::path{setting_node} / util::path{setting.path}), setting);
 }
 
 ///

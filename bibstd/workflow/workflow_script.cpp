@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <iterator>
 #include <ranges>
@@ -135,7 +134,7 @@ auto workflow_script::shutdown() const noexcept -> void
 ///
 auto workflow_script::lua_path(const util::path& p) -> util::path
 {
-  return util::path{std::format("{}.{}", lua_node, p.string())};
+  return util::path{lua_node} / p;
 }
 
 ///
