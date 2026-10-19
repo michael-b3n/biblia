@@ -137,10 +137,10 @@ workflow_scripture::workflow_scripture(
     ///
     /// \lua
     /// \param scripture_name the scripture, `nil` for the one of `Scripture > Name`
-    /// \return its name, `nil` if there is no such scripture
+    /// \return its full name, `nil` if there is no such scripture
     ///
     << workflow_script_->register_function(
-         "scripture.name",
+         "scripture.full_name",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.name; }); }
        )

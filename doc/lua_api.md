@@ -189,17 +189,17 @@ workflow.scripture.book_names()
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 
-### workflow.scripture.name
+### workflow.scripture.full_name
 
 ```
-workflow.scripture.name(scripture_name: string?)
+workflow.scripture.full_name(scripture_name: string?)
 ```
 
 **Parameters**
 
 - `scripture_name`: the scripture, `nil` for the one of `Scripture > Name`
 
-**Returns** its name, `nil` if there is no such scripture
+**Returns** its full name, `nil` if there is no such scripture
 
 Source: [workflow_scripture.cpp](../bibstd/workflow/workflow_scripture.cpp)
 

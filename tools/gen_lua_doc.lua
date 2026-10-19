@@ -425,6 +425,22 @@ for _, source in ipairs(sources) do
   end
 end
 
+-- The state refuses a registration at a path taken by another or below it, the script would find the first one
+local registered = {}
+for _, list in ipairs({ settings, functions }) do
+  for _, entry in ipairs(list) do
+    for _, other in ipairs(registered) do
+      local a, b = entry.name, other.name
+      if a == b then
+        fail(entry.file, string.format("%s is registered twice, the state refuses one of them", a))
+      elseif a:find(b .. ".", 1, true) == 1 or b:find(a .. ".", 1, true) == 1 then
+        fail(entry.file, string.format("%s and %s overlap, the state refuses one of them", a, b))
+      end
+    end
+    registered[#registered + 1] = entry
+  end
+end
+
 if #errors > 0 then
   io.stderr:write(table.concat(errors, "\n"), "\n")
   os.exit(1)

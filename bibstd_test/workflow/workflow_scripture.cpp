@@ -203,11 +203,11 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_to_scripts", "[workflow]")
   CHECK(run("workflow.scripture.scripture_count()").get<std::size_t>() == fixture.scripture->scripture_count());
   CHECK(text("workflow.scripture.book_names()[1]") == "genesis");
   // nil is the selected scripture
-  CHECK(text("workflow.scripture.name(nil)") == "AAA (Script test)");
+  CHECK(text("workflow.scripture.full_name(nil)") == "AAA (Script test)");
   CHECK(text("workflow.scripture.abbreviation('BBB (Script test)')") == "BBB");
   CHECK(text("workflow.scripture.language(nil)") == "de");
   CHECK(text("workflow.scripture.copyright(nil)") == "(c) AAA");
-  CHECK(text("workflow.scripture.name('XXX')") == std::nullopt);
+  CHECK(text("workflow.scripture.full_name('XXX')") == std::nullopt);
   CHECK(text("workflow.scripture.book_short_name(nil, 'john')") == "Johannes");
   CHECK(text("workflow.scripture.book_long_name(nil, 'john')") == "");
   CHECK(text("workflow.scripture.book_abbreviation(nil, 'mark')") == std::nullopt);
