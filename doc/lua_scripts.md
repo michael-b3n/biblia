@@ -13,7 +13,7 @@ return {
 }
 ```
 
-[example.lua](../bibstd/lua/examples/example.lua) is a complete script. [lua_api.md](lua_api.md) lists the manifests and everything a script can call. The build generates it from the comments tagged `\lua` in the sources.
+[example.lua](../bibstd/lua/examples/example.lua) is a complete script. [lua_api.md](lua_api.md) lists the manifests and everything a script can call. The build generates it from the documented code, file by file: the C++ comments tagged `\lua` and the documented functions of the Lua files.
 
 ## Loading
 

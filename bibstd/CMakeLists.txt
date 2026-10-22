@@ -112,4 +112,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
 #
 include(lua_doc)
 option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
-add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens bibstd/lua/internal/interface_util.lua)
+add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens)
