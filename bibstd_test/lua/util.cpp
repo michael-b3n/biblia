@@ -58,6 +58,27 @@ TEST_CASE("lua_util", "[lua]")
     CHECK(keep(s.register_function("a.b.value", []() { return 3; })));
     CHECK(check("root.interface.util.at('a.b.value')() == 3 and root.interface.util.at('a.missing.value') == nil"));
   }
+
+  SECTION("xml")
+  {
+    s->script(
+      "x = root.interface.util.parse_xml('\\239\\187\\191<?xml version=\"1.0\"?>\\r\\n<!-- c --><!DOCTYPE a [ <!ENTITY e "
+      "\"v\"> ]><a k=\"1 &amp; 2\" q=\\'\"\\'>t&lt;&#65;&#x42;<b/>\\r\\n<![CDATA[<c>]]></a>')"
+    );
+    CHECK(check("x.name == 'a' and x.attributes.k == '1 & 2' and x.attributes.q == '\"' and #x.children == 3"));
+    CHECK(check("x.children[1] == 't<AB' and x.children[2].name == 'b' and x.children[3] == '\\n<c>'"));
+    const auto fails = [&](const std::string& xml)
+    { return s->script("return select(2, root.interface.util.parse_xml('" + xml + "')) ~= nil").get<bool>(); };
+    CHECK(fails("<a>&unknown;</a>"));
+    CHECK(fails("<a>x & y</a>"));
+    CHECK(fails("<a><b></a>"));
+    CHECK(fails("<a>"));
+    CHECK(fails("<a/><b/>"));
+    CHECK(fails("text"));
+    CHECK_THROWS(s->script("root.interface.util.parse_xml(1)"));
+    CHECK(check("root.interface.util.xml_text(root.interface.util.parse_xml('<a> <b>x</b> y</a>')) == ' x y'"));
+    CHECK(check("root.interface.util.xml_text(root.interface.util.parse_xml('<a> <b>x</b> y</a>'), true) == 'x y'"));
+  }
 }
 
 TEST_CASE("lua_state_register_takes_no_name_of_the_state", "[lua]")

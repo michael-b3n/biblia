@@ -113,6 +113,21 @@ function util.dump(value)
 function util.at(path)
 ```
 
+- Returns the element tree of the XML document `text`, or nil and the reason if it is not well-formed. An element
+is a table { name, attributes, children }, its attributes by name, its children elements and texts in their order.
+Comments, processing instructions and the document type are left out, CDATA sections are text.
+
+```lua
+function util.parse_xml(text)
+```
+
+- Returns the text of the element `element` of util.parse_xml and its descendants, with
+`without_layout` the texts of white space only left out, which lay a document out
+
+```lua
+function util.xml_text(element, without_layout)
+```
+
 ## bibstd/lua/internal/system_util.lua
 
 Remove what is at `path` of sections separated by "." in what scripts see, e.g. a function taken back, and the
