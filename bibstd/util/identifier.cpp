@@ -42,6 +42,13 @@ identifier::identifier(const std::string_view text)
 
 ///
 ///
+auto identifier::operator==(const std::string_view other) const -> bool
+{
+  return value_ == other;
+}
+
+///
+///
 auto identifier::from(const std::string_view text) -> std::optional<identifier>
 {
   return text.empty() ? std::nullopt : std::optional{identifier{text}};

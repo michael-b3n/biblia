@@ -1,6 +1,8 @@
 -- Bundled script, builds the urls opening bible references on bible.com.
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
+local bible_com = {}
+
 -- Book codes in the urls of bible.com, the same for every translation
 local codes = {
   genesis = "GEN", exodus = "EXO", leviticus = "LEV", numbers = "NUM", deuteronomy = "DEU", joshua = "JOS",
@@ -61,17 +63,16 @@ local function url(input)
   return { url = "https://www.bible.com/bible/" .. version.version .. "/" .. passage }
 end
 
-return {
-  -- Shown to the user
-  name = "Bible.com",
-  functions = {
-    ---
-    --- \return the translations to choose from and the one of the language \p input.language
-    ---
-    ["lookup.translations"] = function(input)
-      return { names = translations, defaults = defaults[input.language] }
-    end,
+---
+--- \return the translations to choose from and the one of the language \p input.language
+---
+bible_com["lookup.translations"] = function(input)
+  return { names = translations, defaults = defaults[input.language] }
+end
 
-    ["lookup.url"] = url,
-  },
-}
+bible_com["lookup.url"] = url
+
+-- Shown to the user
+bible_com.name = "Bible.com"
+bible_com.node = "bible_com"
+return bible_com

@@ -227,7 +227,7 @@ Reads a text value from a cache. A cache keeps its values after the app closes. 
 `cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is
 logged and holds nothing.
 
-- `name`: the cache, made of letters, digits, `_` and `-`. Each script uses its own cache.
+- `name`: the cache, made of letters, digits and `_`. Each script uses its own cache.
 - `key`: the key of the value
 - Returns the value, or `nil` if there is none
 

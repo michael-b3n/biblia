@@ -19,6 +19,9 @@ for _, name in ipairs({
   interface[name] = _G[name]
 end
 
+-- The nodes of the scripts, e.g. scripts.usx, the app adds them while it loads the scripts
+interface.scripts = {}
+
 local readonly = system.readonly
 for _, library in ipairs({ coroutine, math, string, table, utf8 }) do
   -- Their content never changes, the view reads them directly

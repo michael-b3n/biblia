@@ -2,7 +2,9 @@
 #include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/names.hpp"
 #include "bibstd/util/exception.hpp"
+#include "bibstd/util/identifier.hpp"
 #include "bibstd/util/log.hpp"
+#include "bibstd/util/string.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -178,6 +180,8 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
   {
     auto state = state_owner_.lock();
     state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system)[lua::names::node_scripts] = sol::lua_nil;
+    state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_interface)[lua::names::node_scripts] =
+      state->create_table();
     const auto lock = std::scoped_lock{mtx_};
     scripts_.clear();
   }
@@ -249,40 +253,70 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
   auto table = description.as<sol::table>();
   const auto text = [&](const std::string_view key) { return lua::value_cast<std::string>::from(table.get<sol::object>(key)); };
   const auto name = text(lua::names::script_name);
-  const auto functions = table.get<sol::object>(lua::names::script_functions);
-  if(!name || name->empty() || functions.get_type() != sol::type::table)
+  const auto node = text(lua::names::script_node);
+  // Other scripts write scripts.<node>, so it is a Lua name
+  static constexpr auto is_lua_name = [](const std::string& s)
   {
-    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name or no table of functions", file);
+    // clang-format off
+    static constexpr auto keywords = util::string::to_string_view_array(
+      "and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
+      "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while"
+    );
+    // clang-format on
+    return !s.empty() && (s.front() < '0' || s.front() > '9') && (util::identifier{s} == s) &&
+           !std::ranges::contains(keywords, s);
+  };
+  if(!name || name->empty() || !node || !is_lua_name(*node))
+  {
+    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name or no node", file);
     return;
   }
-  // Scripts of the same name are one script, e.g. the lookup and the scriptures of a web page
-  sol::table system = state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system);
-  sol::table kept = system[lua::names::node_scripts].get_or_create<sol::table>()[*name].get_or_create<sol::table>();
+  // The node is what other scripts see, the app runs the functions of the script there. Files of the same name are one
+  // script of one node, a node is one script's.
+  sol::table nodes =
+    state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_interface, lua::names::node_scripts);
+  sol::table scripts =
+    state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system)[lua::names::node_scripts]
+      .get_or_create<sol::table>();
+  const sol::object own = scripts[*name];
+  const sol::object taken = nodes[*node];
+  if((own.valid() || taken.valid()) && own != taken)
+  {
+    LOG_ERROR(
+      "lua script rejected: file=\"{}\", script=\"{}\", node=\"{}\", the script or the node is another's", file, *name, *node
+    );
+    return;
+  }
+  sol::table kept = nodes[*node].get_or_create<sol::table>();
+  scripts[*name] = kept;
   auto function_names = std::set<util::path>{};
-  functions.as<sol::table>().for_each(
+  table.for_each(
     [&](const sol::object& key, const sol::object& value)
     {
-      // Only named functions, so a workflow finds nothing it can not run
-      const auto function = key.get_type() == sol::type::string ? util::path{key.as<std::string>()} : util::path{};
-      if(function.empty() || value.get_type() != sol::type::function)
+      const auto entry = lua::value_cast<std::string>::from(key);
+      if(!entry || *entry == lua::names::script_name || *entry == lua::names::script_node)
       {
-        LOG_ERROR("lua script entry rejected: file=\"{}\", script=\"{}\", no named function", file, *name);
         return;
       }
-      // The first one keeps the function
-      if(kept[function.string()].valid())
+      // The first one keeps the entry
+      if(kept[*entry].valid())
       {
-        LOG_WARN("lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, function.string());
+        LOG_WARN("lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, *entry);
         return;
       }
-      kept[function.string()] = value;
-      function_names.insert(function);
+      kept[*entry] = value;
+      // Manifests are named with a dot, e.g. "scripture.read": a function of such a key is one the app may run
+      if(const auto function = util::path{*entry}; value.get_type() == sol::type::function && function.sections().size() > 1)
+      {
+        function_names.insert(function);
+      }
     }
   );
   LOG_INFO(
-    "lua script loaded: file=\"{}\", name=\"{}\", functions={}",
+    "lua script loaded: file=\"{}\", name=\"{}\", node=\"{}\", functions={}",
     file,
     *name,
+    *node,
     function_names | std::views::transform(&util::path::string)
   );
   const auto lock = std::scoped_lock{mtx_};

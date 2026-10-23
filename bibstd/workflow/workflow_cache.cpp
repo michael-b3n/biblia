@@ -22,7 +22,7 @@ workflow_cache::workflow_cache(
     /// \lua Reads a text value from a cache. A cache keeps its values after the app closes. Each cache is the SQLite file
     /// `cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is
     /// logged and holds nothing.
-    /// \param name the cache, made of letters, digits, `_` and `-`. Each script uses its own cache.
+    /// \param name the cache, made of letters, digits and `_`. Each script uses its own cache.
     /// \param key the key of the value
     /// \return the value, or `nil` if there is none
     ///

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
@@ -81,11 +82,17 @@ struct echo_manifest final
 ///
 [[nodiscard]] auto report(const std::string& name, const std::string& expression) -> std::string
 {
+  // The node of the name as the bundled scripts have it, e.g. "bibleserver"
+  auto node = name;
+  std::ranges::transform(
+    node, node.begin(), [](const unsigned char c) { return std::isalnum(c) != 0 ? static_cast<char>(std::tolower(c)) : '_'; }
+  );
   return std::format(
-    "local value = tostring({}) return {{name = '{}', "
-    "functions = {{['test.report'] = function() return {{value = value}} end}}}}",
+    "local value = tostring({}) return {{name = '{}', node = '{}', "
+    "['test.report'] = function() return {{value = value}} end}}",
     expression,
-    name
+    name,
+    node
   );
 }
 
@@ -370,11 +377,11 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(
-    scripts / "both.lua", "return {name = 'Both', functions = {['test.a'] = function() end, ['test.b'] = function() end}}"
+    scripts / "both.lua", "return {name = 'Both', node = 'both', ['test.a'] = function() end, ['test.b'] = function() end}"
   );
-  // Only named functions count
+  // Only functions named after a manifest count
   test_utils::write_file(
-    scripts / "one.lua", "return {name = 'One', functions = {['test.a'] = function() end, ['test.b'] = 1, function() end}}"
+    scripts / "one.lua", "return {name = 'One', node = 'one', ['test.a'] = function() end, ['test.b'] = 1, function() end}"
   );
   // A script returning no table offers nothing
   test_utils::write_file(scripts / "none.lua", "return 1");
@@ -394,22 +401,28 @@ TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
   const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   const auto script = [](const std::string& description, const std::string& value)
-  { return "return {" + description + " functions = {['test.report'] = function() return {value = '" + value + "'} end}}"; };
+  { return "return {" + description + " ['test.report'] = function() return {value = '" + value + "'} end}"; };
   // The name of the file plays no role, the name may be any text
-  test_utils::write_file(scripts / "1.lua", script("name = 'Zeta',", "first"));
-  test_utils::write_file(scripts / "2.lua", script("name = 'Alpha page.com',", "ran"));
+  test_utils::write_file(scripts / "1.lua", script("name = 'Zeta', node = 'zeta',", "first"));
+  test_utils::write_file(scripts / "2.lua", script("name = 'Alpha page.com', node = 'alpha',", "ran"));
   // Scripts of the same name are one script: a function it has is kept, another one is added
   test_utils::write_file(
     scripts / "3.lua",
-    "return {name = 'Zeta', functions = {['test.report'] = function() return {value = 'second'} end, "
-    "['test.a'] = function() end}}"
+    "return {name = 'Zeta', node = 'zeta', ['test.report'] = function() return {value = 'second'} end, "
+    "['test.a'] = function() end}"
   );
   // No name
-  test_utils::write_file(scripts / "5.lua", script("name = 5,", "ran"));
-  test_utils::write_file(scripts / "6.lua", script("", "ran"));
-  test_utils::write_file(scripts / "8.lua", script("name = '',", "ran"));
-  // No functions
-  test_utils::write_file(scripts / "9.lua", "return {name = 'No functions'}");
+  test_utils::write_file(scripts / "5.lua", script("name = 5, node = 'five',", "ran"));
+  test_utils::write_file(scripts / "6.lua", script("node = 'six',", "ran"));
+  test_utils::write_file(scripts / "8.lua", script("name = '', node = 'eight',", "ran"));
+  // No node, no Lua name as node, the node of another script and another node of the same script
+  test_utils::write_file(scripts / "9.lua", script("name = 'No node',", "ran"));
+  test_utils::write_file(scripts / "a.lua", script("name = 'Dotted', node = 'a.b',", "ran"));
+  test_utils::write_file(scripts / "d.lua", script("name = 'Keyword', node = 'end',", "ran"));
+  test_utils::write_file(scripts / "e.lua", script("name = 'Digit', node = '1st',", "ran"));
+  test_utils::write_file(scripts / "f.lua", script("name = 'Dash', node = 'a-b',", "ran"));
+  test_utils::write_file(scripts / "b.lua", script("name = 'Other', node = 'zeta',", "ran"));
+  test_utils::write_file(scripts / "c.lua", script("name = 'Zeta', node = 'other',", "ran"));
 
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
@@ -428,7 +441,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
   test_utils::write_file(
     scripts / "echo.lua",
     R"(
-      return { name = "Echo", functions = {
+      return { name = "Echo", node = "echo",
         ["test.echo"] = function(input)
           local case = input.text
           if case == "broken" then error("broken") end
@@ -443,7 +456,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
           input.flag = not input.flag
           return input
         end,
-      } }
+      }
     )"
   );
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};

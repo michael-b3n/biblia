@@ -30,7 +30,7 @@ concept string_view_type = std::is_convertible_v<T, std::string_view>;
 template<string_view_type... S>
 constexpr auto to_string_view_array(S&&... args) -> std::array<std::string_view, sizeof...(S)>
 {
-  return std::array{std::string_view(std::forward<decltype(args)>(args))...};
+  return std::array{std::string_view{std::forward<decltype(args)>(args)}...};
 }
 
 ///
