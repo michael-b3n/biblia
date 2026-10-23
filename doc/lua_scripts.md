@@ -26,18 +26,18 @@ return example
 
 ## Nodes
 
-Every script sees the entries of the others, read-only, as `scripts` followed by their node, e.g. `scripts.usx.parse` or `scripts.usx["scripture.read"]`. This is how scripts share code. A script can add its own node:
+Every script sees the entries of the others, read-only, as `scripts` followed by their node, e.g. `scripts.usx.parse` or `scripts.usx["scripture.read"]`. This is how scripts share code: the bundled scripts `usx.lua` and `usfm.lua` read the scripture files of their format through `scripts.scripture_archive.read_scripture`, which names a scripture with `scripts.paratext`, `scripts.dbl` or `scripts.ebible`. A script can add its own node, e.g. for another format:
 
 ```lua
-local ebible = {}
+local zefania = {}
 
-function ebible.info(text)                    -- e.g. the name, language and copyright of copr.htm
-  return { name = "...", language = "..." }
+function zefania.parse(text)                  -- e.g. the element tree of a Zefania XML bible
+  return util.parse_xml(text)
 end
 
-ebible.name = "eBible"
-ebible.node = "ebible"                        -- the other scripts call scripts.ebible.info
-return ebible
+zefania.name = "Zefania"
+zefania.node = "zefania"                      -- the other scripts call scripts.zefania.parse
+return zefania
 ```
 
 - Use the nodes of other scripts in your functions, not at the top level of the file: the scripts after yours are not loaded yet.

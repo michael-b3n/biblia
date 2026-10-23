@@ -5,6 +5,7 @@
 
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
+#include <bibstd/workflow/workflow_scripture_store.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -77,8 +78,8 @@ scripture_fixture::scripture_fixture(
 {
   if(stored)
   {
-    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::folder_name);
-    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::folder_name / stored->filename());
+    std::filesystem::create_directories(folder.path() / workflow_scripture_store::folder_name);
+    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_store::folder_name / stored->filename());
   }
   const auto scripts_folder = folder.path() / "scripts";
   std::filesystem::create_directories(scripts_folder);

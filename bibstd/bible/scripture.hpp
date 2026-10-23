@@ -13,9 +13,9 @@ namespace bibstd::bible
 {
 
 ///
-/// A bible scripture that was read out of a bundle, see scripture_reader. It holds the passage of
-/// every verse and the book names in the language of the scripture, whatever format it was read
-/// from. The versification is derived from the verses the scripture actually carries.
+/// A bible scripture that was read out of a file, see workflow::workflow_scripture_store. It holds the
+/// passage of every verse and the book names in the language of the scripture, whatever format it was
+/// read from. The versification is derived from the verses the scripture actually carries.
 /// \note This class is immutable and therefore thread-safe.
 ///
 class scripture final

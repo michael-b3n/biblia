@@ -10,6 +10,104 @@ What the app offers scripts, file by file. How scripts work: [lua_scripts.md](lu
   - A manifest struct with the `id` "scripture.read": a script offers the function "scripture.read", its input and output are tables of the keys of the `lua::field`s.
 - Lua: a `---` comment documents the function below it. In `interface_util.lua`, `util.split` is `util.split` for scripts, in `usx.lua` `usx.parse` is `scripts.usx.parse`, in `init.lua` `interface.load` is `load`. Files named `system_*` are not seen by scripts.
 
+## bibstd/lua/bundled/dbl.lua
+
+- Returns the `name`, `abbreviation`, `language` and `copyright` of the metadata file `metadata.xml` `text` of a
+bundle, the local ones first, each nil if the file has none, or nil and the reason if it is no XML
+
+```lua
+function dbl.info(text)
+```
+
+## bibstd/lua/bundled/ebible.lua
+
+- Returns the `name`, `abbreviation`, `language` and `copyright` of the copyright page `copr.htm` `text` of an
+archive, each nil if the page has none
+
+```lua
+function ebible.info(text)
+```
+
+## bibstd/lua/bundled/paratext.lua
+
+- Returns the `name`, `abbreviation`, `language` and `copyright` of the settings file `Settings.xml` `text` of a
+project, each nil if the file has none, or nil and the reason if it is no XML
+
+```lua
+function paratext.info(text)
+```
+
+## bibstd/lua/bundled/scripture_archive.lua
+
+- Returns the entry of `entries` named `file_name` in any folder, the one closest to the archive root, nil if none
+
+```lua
+function scripture_archive.find(entries, file_name)
+```
+
+- Returns the text of the entry `name` of the archive being read without a byte order mark, or nil and the reason,
+e.g. for a text that is no UTF-8
+
+```lua
+function scripture_archive.read(name)
+```
+
+- Returns the scripture of the archive of `input`, the input of `scripture.read`, in the format `format`: a node
+like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
+format. Each file names its book, the first file of a book is read.
+
+```lua
+function scripture_archive.read_scripture(input, format)
+```
+
+## bibstd/lua/bundled/usfm.lua
+
+- Returns the element tree of the USFM document `text` as scripts.usx.parse gives it for USX, or nil and the reason
+if it identifies no book: a usx root holding book, chapter, para, table, sidebar and periph elements, paragraphs
+holding verse, char, ref, note, ms, figure and optbreak elements. Markers USFM does not define are character styles.
+Chapters and verses have no sid and eid, as in USX 2.
+
+```lua
+function usfm.parse(text)
+```
+
+- Returns the book of the element tree `tree` of scripts.usfm.parse, see scripts.usx.book
+
+```lua
+function usfm.book(tree)
+```
+
+- Returns the identifiers of the books of the app by their USFM code, see scripts.usx.books
+
+```lua
+function usfm.books()
+```
+
+## bibstd/lua/bundled/usx.lua
+
+- Returns the element tree of the USX document `text`, as util.parse_xml gives it, or nil and the reason if it is no
+USX document
+
+```lua
+function usx.parse(text)
+```
+
+- Returns the book of the element tree `tree` of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
+app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
+the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
+`cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
+paragraphs. Every verse the book numbers is one, empty without text of its own, e.g. 3 and 4 of a verse "2-4".
+
+```lua
+function usx.book(tree)
+```
+
+- Returns the identifiers of the books of the app by their USFM code, e.g. `GEN` to `genesis`
+
+```lua
+function usx.books()
+```
+
 ## bibstd/lua/internal/init.lua
 
 setmetatable of scripts. A finalizer fails: Lua runs it without hooks, the shutdown could not stop it.
@@ -478,6 +576,69 @@ so the script may ask `workflow.cache` first.
     using output = lua::script_table<lua::field<"text", std::optional<std::string>>, lua::field<"error", std::optional<std::string>>>;
   };
   // clang-format on
+```
+
+## bibstd/workflow/workflow_scripture_store.cpp
+
+Reads an entry of the archive a reader reads, see the manifest `scripture.read`. It is there only while
+a reader runs.
+
+- `name`: the name of the entry, one of the `entries` of the input
+- Returns its content, or `nil` and `not found`
+
+```cpp
+    const auto registration = workflow_script_->register_function(
+      "scripture_store.read_entry",
+      [&archive](const std::string& name) -> std::expected<std::string, std::string>
+      {
+        const auto entry = archive.entry(name);
+        if(!entry)
+        {
+          return std::unexpected{std::string{"not found"}};
+        }
+        return archive.read_entry_as_string(*entry);
+      }
+    );
+```
+
+## bibstd/workflow/workflow_scripture_store.hpp
+
+A script that offers this reads scripture files, those of the scripture folder and those the user imports.
+The app asks each reader until one tells the file is of its format, by a name or an error. The app reads the
+archive, the script its entries with `workflow.scripture_store.read_entry`. The bundled readers `USX` and
+`USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files.
+
+- `file`: the name of the file, e.g. `bible.zip`
+- `entries`: the names of the files in the archive
+- Returns name the name of the scripture, none if the file is not of a format the script reads
+- Returns abbreviation its abbreviation
+- Returns language its language
+- Returns copyright its copyright, shown below the verses
+- Returns book_names the names of the books by the identifier of the app, e.g. `john`: `abbreviation`,
+`short_name` shown in the app and `long_name`
+
+- Returns verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
+versification from them. Each is a sequence of paragraph sections `<p data-id="...">` with `begin` for a verse
+that opens its paragraph, `continue` for one that continues it and `undefined` outside of paragraphs. Inside,
+`<b>` and `<i>` mark text up, `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4
+of a verse "2-4".
+
+- Returns cross_references the cross references of the verses by book, chapter and verse
+- Returns error why a file of its format can not be read
+
+```cpp
+  struct read_manifest final
+  {
+    static inline const util::path id{"scripture.read"};
+    using input = lua::script_table<lua::field<"file", std::string>, lua::field<"entries", std::vector<std::string>>>;
+    using output = lua::script_table<
+      lua::field<"name", std::optional<std::string>>,
+      lua::field<"abbreviation", std::optional<std::string>>,
+      lua::field<"language", std::optional<std::string>>,
+      lua::field<"copyright", std::optional<std::string>>,
+      lua::field<"book_names", std::optional<std::map<std::string, std::map<std::string, std::string>>>>,
+      lua::field<"verses", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::string>>>>>,
+      lua::field<"cross_references", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::vector<std::string>>>>>>,
 ```
 
 ## bibstd/workflow/workflow_web.cpp
