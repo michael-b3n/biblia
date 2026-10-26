@@ -48,7 +48,7 @@ public: // Typedefs
   /// `USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files.
   /// \param file the name of the file, e.g. `bible.zip`
   /// \param entries the names of the files in the archive
-  /// \return name the name of the scripture, none if the file is not of a format the script reads
+  /// \return name the name of the scripture, `nil` if the file is not of a format the script reads
   /// \return abbreviation its abbreviation
   /// \return language its language
   /// \return copyright its copyright, shown below the verses

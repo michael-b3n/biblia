@@ -22,9 +22,6 @@ for _, argument in ipairs({ table.unpack(arg, check and 3 or 2) }) do
 end
 table.sort(sources)
 
--- Code below a comment, at most this many lines
-local max_code_lines = 12
-
 ---
 --- \return the content of the file at \p path with "\n" line endings
 ---
@@ -37,26 +34,55 @@ local function read(path)
 end
 
 ---
---- \return the comment line \p line in Markdown: \p, \param, \return
---- and \see as words, and with \p lua a \lua signature as code
+--- \return the comment line \p line in Markdown: \p, \param, \return and \see as words. A \return
+--- starting with one of the \p fields of a manifest names that field.
 ---
-local function markdown(line, lua)
-  if lua then
-    line = line:gsub("^\\lua%s+(.+)$", "`%1`")
-  end
+local function markdown(line, fields)
   line = line:gsub("\\lua%s*", "")
-  line = line:gsub("^\\param%s+(%S+)", "- `%1`:"):gsub("^\\return%s+", "- Returns ")
-  return (line:gsub("\\p%s+([%w_%.]+)", "`%1`"):gsub("\\see%s+", "see "))
+  line = line:gsub("^\\param%s+(%S+)", "- `%1`:")
+  local field = line:match("^\\return%s+([%w_]+)")
+  if fields[field] then
+    line = line:gsub("^\\return%s+[%w_]+%s*", "- Returns `" .. field .. "`: ")
+  else
+    line = line:gsub("^\\return%s+", "- Returns ")
+  end
+  -- A full stop after a name ends the sentence
+  line = line:gsub("\\p%s+([%w_][%w_.]*)", function(name)
+    local bare, stops = name:match("^(.-)(%.*)$")
+    return "`" .. bare .. "`" .. stops
+  end)
+  return (line:gsub("\\see%s+", "see "))
 end
 
 ---
---- \return the documented parts of the file \p text with the comment \p prefix, each with its comment
---- and code. A part is a comment tagged \lua, or with \p functions one above a function of a table.
+--- \return the C++ statement or definition starting at line \p i of \p lines, up to where its brackets close,
+--- and the index of the line after it
 ---
-local function parts(text, prefix, functions)
+local function statement(lines, i, source)
+  local code, depth, opened = {}, 0, false
+  while not opened or depth > 0 do
+    local line = assert(lines[i], source .. ": the code below a \\lua comment does not end")
+    code[#code + 1] = line
+    i = i + 1
+    -- Brackets in literals and comments do not count
+    local bare = line:gsub("\\.", ""):gsub('"[^"]*"', ""):gsub("'[^']*'", ""):gsub("//.*", "")
+    for bracket in bare:gmatch("[%(%)%[%]{}]") do
+      depth = depth + (bracket:match("[%(%[{]") and 1 or -1)
+      opened = true
+    end
+  end
+  return code, i
+end
+
+---
+--- \return the documented parts of the file \p source with the comment \p prefix, each with its comment and code.
+--- A part is a comment tagged \lua, or in \p lua one above a function of a table. In \p lua the code of a
+--- tagged comment is the functions its \lua lines name.
+---
+local function parts(source, prefix, lua)
   local result, comment = {}, nil
   local lines = {}
-  for line in (text .. "\n"):gmatch("([^\n]*)\n") do
+  for line in (read(source) .. "\n"):gmatch("([^\n]*)\n") do
     lines[#lines + 1] = line
   end
   local i = 1
@@ -70,22 +96,26 @@ local function parts(text, prefix, functions)
       end
       i = i + 1
     else
-      local next_line = lines[i]
       local tagged = comment and table.concat(comment, "\n"):find("\\lua")
-      local is_function = functions and next_line:match("^function%s+[%w_]+[.:]")
+      local is_function = lua and lines[i]:match("^function%s+[%w_]+[.:]")
       if comment and (tagged or is_function) then
         local code = {}
-        if is_function then
-          code[1] = next_line
-          i = i + 1
-        else
-          -- Up to a blank line, a comment or the end of what the first line belongs to
-          local indent = #lines[i]:match("^%s*")
-          while i <= #lines and #code < max_code_lines and lines[i]:match("%S")
-            and not lines[i]:match("^%s*" .. prefix) and #lines[i]:match("^%s*") >= indent do
-            code[#code + 1] = lines[i]
-            i = i + 1
+        if lua then
+          local described = {}
+          for _, line in ipairs(comment) do
+            local signature = line:match("^\\lua%s+(.+)$")
+            if signature then
+              code[#code + 1] = "function " .. signature
+            else
+              described[#described + 1] = line
+            end
           end
+          comment = described
+          if #code == 0 then
+            code[1] = assert(is_function and lines[i], source .. ": a \\lua comment names no function")
+          end
+        else
+          code, i = statement(lines, i, source)
         end
         while comment[#comment] == "" do
           comment[#comment] = nil
@@ -100,6 +130,17 @@ local function parts(text, prefix, functions)
   return result
 end
 
+---
+--- \return the path scripts see the setting registered in \p code at, from the create_setting in \p text, or nil
+---
+local function setting_path(code, text, source)
+  local name = code:match("register_setting%(%*settings%(%)%.([%w_]+)%)")
+  if name then
+    local path = text:match(name .. "%s*{%s*[%w_]+%->create_setting%(%s*\"([^\"]+)\"")
+    return "workflow.setting." .. assert(path, source .. ": no create_setting of " .. name)
+  end
+end
+
 local doc = {
   "# Lua API",
   "<!-- Generated by tools/gen_lua_doc.lua from the documented code, do not edit -->",
@@ -108,36 +149,56 @@ local doc = {
     "- C++: a comment tagged `\\lua` documents the code below it.",
     "  - `register_function(\"web.fetch\", …)`: scripts call `workflow.web.fetch`, the parameters of the lambda are "
       .. "theirs. `std::optional` is a value or nil, `std::vector` a list, `std::map` a table.",
-    "  - `register_setting(*settings().name)`: scripts see the setting at `workflow.setting` followed by its path, "
-      .. "the first argument of the `create_setting` of `name`, with the setting functions of `lua::state`.",
+    "  - `register_setting(*settings().name)`: scripts see the setting at the path above its comment, with the "
+      .. "setting functions of `lua::state`, e.g. `workflow.setting.web.retry_pause.get()`.",
     "  - A manifest struct with the `id` \"scripture.read\": a script offers the function \"scripture.read\", its "
       .. "input and output are tables of the keys of the `lua::field`s.",
     "- Lua: a `---` comment documents the function below it. In `interface_util.lua`, `util.split` is `util.split` "
       .. "for scripts, in `usx.lua` `usx.parse` is `scripts.usx.parse`, in `init.lua` "
-      .. "`interface.load` is `load`. Files named `system_*` are not seen by scripts.",
+      .. "`interface.load` is `load`. Files named `system_*` are left out, scripts do not see them.",
   }, "\n"),
 }
 
 for _, source in ipairs(sources) do
   local lua = source:match("%.lua$")
-  local found = parts(read(source), lua and "%-%-%-" or "///", lua)
-  if #found > 0 then
-    doc[#doc + 1] = string.format("## %s", source)
+  if not (lua and source:match("[/\\]system_[^/\\]*$")) then
+    local found = parts(source, lua and "%-%-%-" or "///", lua)
+    if #found > 0 then
+      doc[#doc + 1] = string.format("## %s", source)
+    end
     for _, part in ipairs(found) do
-      local text = {}
+      local code = table.concat(part.code, "\n")
+      local fields = {}
+      for field in code:gmatch('lua::field<"([%w_]+)"') do
+        fields[field] = true
+      end
+      local text, in_list = {}, false
+      local path = not lua and setting_path(code, read(source), source)
+      if path then
+        text = { "`" .. path .. "`", "" }
+      end
       for _, line in ipairs(part.comment) do
-        line = markdown(line, lua)
-        -- A list after text is a paragraph of its own
-        if line:match("^%- ") and #text > 0 and not text[#text]:match("^%- ") and text[#text] ~= "" then
-          text[#text + 1] = ""
+        line = markdown(line, fields)
+        if line:match("^%- ") then
+          -- A list after text is a paragraph of its own
+          if not in_list and #text > 0 and text[#text] ~= "" then
+            text[#text + 1] = ""
+          end
+          in_list = true
+        elseif line == "" then
+          in_list = false
+        elseif in_list then
+          -- The continuation of a list item
+          line = "  " .. line
         end
         if line ~= "" or #text > 0 then
           text[#text + 1] = line
         end
       end
-      doc[#doc + 1] = string.format(
-        "%s\n\n```%s\n%s\n```", table.concat(text, "\n"), lua and "lua" or "cpp", table.concat(part.code, "\n")
-      )
+      while text[#text] == "" do
+        text[#text] = nil
+      end
+      doc[#doc + 1] = string.format("%s\n\n```%s\n%s\n```", table.concat(text, "\n"), lua and "lua" or "cpp", code)
     end
   end
 end
