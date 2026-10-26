@@ -16,8 +16,8 @@ namespace
 {
 
 ///
-/// \return the default versification whose chapters end with the same verse
-/// as those of \p passages most often, the first one of a tie.
+/// \return the default versification whose chapters most often end
+/// with the same verse as those of \p passages, the first one on a tie
 ///
 [[nodiscard]] auto closest_default(const scripture::passage_map_type& passages) -> const versification&
 {
@@ -36,9 +36,9 @@ namespace
 }
 
 ///
-/// \return the references of \p passages, and the last verse of each chapter of a book they lack from the closest
-/// default versification, logged as the scripture \p name lacks them. The last verse of a chapter is enough, a
-/// versification takes the verses up to it.
+/// \return the references of \p passages and, for each book they lack, the last verse of each of
+/// its chapters in the closest default versification. A warning names the books the scripture \p
+/// name lacks. The last verse of a chapter is enough, a versification takes the verses up to it.
 ///
 [[nodiscard]] auto references_of(const std::string& name, const scripture::passage_map_type& passages) -> std::vector<reference>
 {

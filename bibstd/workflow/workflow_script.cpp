@@ -273,8 +273,8 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
     LOG_ERROR("lua script rejected: file=\"{}\", it returns no name, no description or no node", file);
     return;
   }
-  // The node is what other scripts see, the app runs the functions of the script there. Files of the same name are one
-  // script of one node, a node is one script's.
+  // Other scripts see the node, the app runs the functions of the script from there. Files
+  // of the same name are one script with one node, and a node belongs to one script.
   sol::table nodes =
     state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_interface, lua::names::node_scripts);
   sol::table scripts = state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system)[lua::names::node_scripts]
@@ -302,7 +302,7 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
       {
         return;
       }
-      // The first one keeps the entry
+      // The first file keeps an entry
       if(kept[*entry].valid())
       {
         LOG_WARN("lua script entry rejected: file=\"{}\", script=\"{}\" offers \"{}\" already", file, *name, *entry);

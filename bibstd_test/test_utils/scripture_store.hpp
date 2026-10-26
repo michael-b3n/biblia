@@ -35,8 +35,8 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 };
 
 ///
-/// \return the entries of a zip archive of USFM files, a file per book with the verse "<code> 1:1", the content of \p books
-/// replacing the file of its code
+/// \return the entries of a zip archive of USFM files: a file per book
+/// with the verse "<code> 1:1", or the content \p books has for its code
 ///
 [[nodiscard]] inline auto usfm_entries(const std::map<std::string, std::string>& books = {})
   -> std::vector<io::test_utils::zip_entry>
@@ -53,8 +53,8 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 }
 
 ///
-/// Scripture store with the bundled readers, \p archives written into its folder as zip archives by file name and \p files
-/// copied there, loaded once the scripts are loaded.
+/// Scripture store with the bundled readers, loaded once the scripts are loaded. Its
+/// folder holds \p archives as zip archives by file name and copies of \p files.
 ///
 struct scripture_store final
 {

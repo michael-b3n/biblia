@@ -1,5 +1,5 @@
--- Bundled script, the format USX: the XML form of USFM, a file per book. It reads the scripture files of USX and
--- offers the format to the other scripts as scripts.usx. USX: https://docs.usfm.bible/usfm/3.1.1/index.html
+-- Bundled script for the format USX: the XML form of USFM, a file per book. It reads the scripture files of USX
+-- and offers the format to the other scripts as scripts.usx. USX: https://docs.usfm.bible/usfm/3.1.1/index.html
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local usx = {}
@@ -32,8 +32,8 @@ for i, code in ipairs(usfm_codes) do
 end
 
 ---
---- \return the element tree of the USX document \p text, as util.parse_xml gives it, or nil and the reason if it is no
---- USX document
+--- \return the element tree of the USX document \p text as util.parse_xml
+--- gives it, or nil and the reason if it is no USX document
 ---
 function usx.parse(text)
   local tree, reason = util.parse_xml(text)
@@ -206,7 +206,7 @@ end
 --- app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
 --- the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
 --- `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
---- paragraphs. Every verse the book numbers is one, empty without text of its own, e.g. 3 and 4 of a verse "2-4".
+--- paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 ---
 function usx.book(tree)
   local book = util.filter(tree.children, function(child) return type(child) == "table" and child.name == "book" end)[1]
@@ -270,7 +270,7 @@ function usx.book(tree)
       local number = marker_numbers(node)
       if number then
         flush()
-        -- Numbers start at 1, the text of another is left out
+        -- Numbers start at 1, the text of a chapter 0 is left out
         chapter, verse = number > 0 and number or nil, nil
       end
     elseif name == "verse" then
@@ -278,8 +278,8 @@ function usx.book(tree)
       if number then
         flush()
         verse = number > 0 and number or nil
-        -- The other verses of a range have no text of their own. No chapter has more verses than Psalm 119, a range
-        -- going beyond is no range of verses.
+        -- The other verses of a range have no text of their own. No chapter has more
+        -- verses than Psalm 119, so a range going beyond is no range of verses.
         if chapter and verse and last <= longest_chapter then
           for covered = verse + 1, last do
             keep(covered, "")

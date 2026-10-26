@@ -5,8 +5,8 @@ import QtQuick.Layouts
 import BibQml
 
 ///
-/// Content of the scripts tab: the loaded scripts with their description and the functions they offer, and the
-/// buttons to import scripts and to load them anew.
+/// Content of the scripts tab: the loaded scripts with their description and
+/// their functions, and the buttons to import scripts and to load them anew.
 ///
 Item
 {

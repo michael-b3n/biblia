@@ -1,5 +1,5 @@
--- Bundled script, offers the other scripts the archive the app reads as scripts.scripture_archive, and reads the
--- scripture of one for a format like scripts.usx.
+-- Bundled script, offers the other scripts the archive the app reads as
+-- scripts.scripture_archive, and reads its scripture for a format like scripts.usx.
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local scripture_archive = {}
@@ -41,8 +41,8 @@ function scripture_archive.find(entries, file_name)
 end
 
 ---
---- \return the text of the entry \p name of the archive being read without a byte order mark, or nil and the reason,
---- e.g. for a text that is no UTF-8
+--- \return the text of the entry \p name of the archive being read, without a
+--- byte order mark, or nil and the reason, e.g. for a text that is no UTF-8
 ---
 function scripture_archive.read(name)
   local content, reason = workflow.scripture_store.read_entry(name)
@@ -57,8 +57,8 @@ function scripture_archive.read(name)
   return (string.gsub(content, "^\239\187\191", ""))
 end
 
--- The files telling about a scripture and the node whose info reads them, the first one an archive holds that reads
--- is taken
+-- The files that tell about a scripture, each with the node whose
+-- info reads it. The first one the archive holds that reads is taken.
 local info_files = {
   { file = "Settings.xml", node = "paratext" },
   { file = "metadata.xml", node = "dbl" },
@@ -66,8 +66,8 @@ local info_files = {
 }
 
 ---
---- \return the name, abbreviation, language and copyright of the archive of \p input: from the first of its info files
---- that reads, else named after its file
+--- \return the name, abbreviation, language and copyright of the archive of \p input:
+--- from the first of its info files that reads, else it is named after its file
 ---
 local function info_of(input)
   local info
@@ -125,7 +125,7 @@ function scripture_archive.read_scripture(input, format)
     end
   end
 
-  -- A chapter left out takes the default versification closest to the others, e.g. the Old Testament of a New Testament
+  -- A book left out takes the closest default versification, e.g. the Old Testament of a New Testament
   if not next(output.verses) then
     return { error = "no book of the app" }
   end

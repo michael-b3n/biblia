@@ -1,6 +1,6 @@
--- Bundled script, the format USFM: text with backslash markers, a file per book. It reads the scripture files of
--- USFM and offers the format to the other scripts as scripts.usfm. It gives the element tree of scripts.usx, so a
--- book of either format is taken out alike. USFM: https://docs.usfm.bible/usfm/3.1.1/index.html
+-- Bundled script for the format USFM: text with backslash markers, a file per book. It reads the scripture
+-- files of USFM and offers the format to the other scripts as scripts.usfm. It gives the element tree of
+-- scripts.usx, so books of both formats are read alike. USFM: https://docs.usfm.bible/usfm/3.1.1/index.html
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local usfm = {}
@@ -19,8 +19,8 @@ end
 -- USX elements holding elements only, their white space is layout
 local usfm_containers = { usx = true, table = true, row = true, sidebar = true, periph = true }
 
--- USFM markers of notes, of the character styles opening the sections of a note, which end at the next one, and of
--- table cells by their alignment
+-- USFM markers of notes, of the character styles opening a section of a
+-- note, which ends at the next one, and of table cells by their alignment
 local usfm_notes = { f = true, fe = true, ef = true, efe = true, x = true, ex = true }
 local usfm_note_sections = {}
 for _, name in ipairs({
@@ -61,10 +61,10 @@ local function usfm_attributes(name, s)
 end
 
 ---
---- \return the element tree of the USFM document \p text as scripts.usx.parse gives it for USX, or nil and the reason
---- if it identifies no book: a usx root holding book, chapter, para, table, sidebar and periph elements, paragraphs
---- holding verse, char, ref, note, ms, figure and optbreak elements. Markers USFM does not define are character styles.
---- Chapters and verses have no sid and eid, as in USX 2.
+--- \return the element tree of the USFM document \p text as scripts.usx.parse gives it for USX, or nil
+--- and the reason if it identifies no book. A usx root holds book, chapter, para, table, sidebar and
+--- periph elements, paragraphs hold verse, char, ref, note, ms, figure and optbreak elements. Markers
+--- USFM does not define are character styles. Chapters and verses have no sid and eid, as in USX 2.
 ---
 function usfm.parse(text)
   assert(type(text) == "string", "text must be a string")
@@ -253,7 +253,7 @@ function usfm.parse(text)
       elseif usfm_notes[name] and plus == "" then
         push(element("note", { caller = word() or "+", style = style }))
       else
-        -- A character style, one opening the section of a note ends the section before it
+        -- A character style. One that opens a section of a note ends the section before it.
         if usfm_note_sections[name] and plus == "" then
           close_until(function(node) return node.name == "note" end, true)
         end
@@ -265,8 +265,8 @@ function usfm.parse(text)
   close_to_root()
 
   ---
-  --- Move the attribute list ending the content of each character style of \p node and below into its attributes,
-  --- then turn the escaped bars back into bars
+  --- Move the attribute list at the end of each character style of \p node
+  --- and below into its attributes, then turn the escaped bars back into bars
   ---
   local function move_attributes(node)
     local last = node.children[#node.children]

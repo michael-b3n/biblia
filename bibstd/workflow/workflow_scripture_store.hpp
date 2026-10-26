@@ -25,8 +25,8 @@ namespace bibstd::workflow
 {
 
 ///
-/// Workflow scripture store, holds the scriptures of the files in the scripture folder. Scripts read the files,
-/// each script offering scripture.read is a reader, e.g. the bundled ones for USX and USFM.
+/// Workflow scripture store, holds the scriptures of the files in the scripture folder. Scripts read
+/// the files: each script offering scripture.read is a reader, e.g. the bundled ones for USX and USFM.
 ///
 class workflow_scripture_store final : public workflow_base<void>
 {
@@ -52,13 +52,13 @@ public: // Typedefs
   /// \return abbreviation its abbreviation
   /// \return language its language
   /// \return copyright its copyright, shown below the verses
-  /// \return book_names the names of the books by the identifier of the app, e.g. `john`: `abbreviation`,
-  /// `short_name` shown in the app and `long_name`
+  /// \return book_names the names of the books by the identifier of the app,
+  /// e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
   /// \return verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-  /// versification from them, a book left out takes the one of the default versification closest to them. Each is a
-  /// sequence of paragraph sections `<p data-id="...">` with `begin` for a verse that opens its paragraph, `continue`
-  /// for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, `&`, `<`
-  /// and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
+  /// versification from them, a book left out takes the one of the closest default versification. Each verse is a
+  /// sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
+  /// for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
+  /// `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
   /// \return cross_references the cross references of the verses by book, chapter and verse
   /// \return error why a file of its format can not be read
   ///
@@ -101,10 +101,10 @@ public: // Modifiers
   auto load() -> void;
 
   ///
-  /// Take the file \p source, or every file directly inside the folder \p source, into the scripture folder, replacing
-  /// a file of the same name. Every file is read before it is copied: one that holds no scripture is logged and left
-  /// where it is, so the folder only holds readable files. Before the scripts are loaded there is no reader yet, the
-  /// files are copied and read once they are.
+  /// Take the file \p source, or every file directly inside the folder \p source, into the scripture
+  /// folder, replacing a file of the same name. Each file is read before it is copied, so the folder only
+  /// holds readable files: one that holds no scripture is logged and left where it is. Before the scripts
+  /// are loaded there is no reader yet, then the files are copied and read once the scripts are loaded.
   /// \return number of files taken over
   ///
   auto import(const std::filesystem::path& source) -> std::size_t;

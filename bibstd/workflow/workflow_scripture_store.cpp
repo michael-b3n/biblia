@@ -71,8 +71,8 @@ namespace
 }
 
 ///
-/// Access the values of \p by_book, a map by book, chapter and verse as the output of a reader has them. Throws if it
-/// names an unknown book or a number below 1.
+/// Access the values of \p by_book, a map by book, chapter and verse as a
+/// reader outputs them. Throws if it names an unknown book or a number below 1.
 /// \return view of the pairs of reference and value
 ///
 [[nodiscard]] auto by_reference(auto& by_book)
@@ -97,8 +97,8 @@ namespace
 }
 
 ///
-/// \return the scripture of the \p output of a reader. Throws if the output names an unknown book or a number below 1,
-/// or holds no verse.
+/// \return the scripture of the reader output \p output. Throws if
+/// it names an unknown book or a number below 1, or holds no verse.
 ///
 [[nodiscard]] auto scripture_of(workflow_scripture_store::read_manifest::output output) -> std::shared_ptr<bible::scripture>
 {
@@ -128,7 +128,7 @@ namespace
   };
   auto book_names = filled(output.get<"book_names">()) | std::views::transform(to_book_name) |
                     std::ranges::to<bible::scripture::book_name_map_type>();
-  // By value, the view hands out pairs of reference and content
+  // By value, the view hands out temporary pairs of reference and content
   static constexpr auto to_passage = [](auto entry)
   {
     auto& [ref, content] = entry;
@@ -142,7 +142,7 @@ namespace
   {
     throw util::exception{"no verse of the app"};
   }
-  // Those of a verse the scripture does not number are left out
+  // The cross references of a verse without passage are left out
   std::ranges::for_each(
     by_reference(filled(output.get<"cross_references">())),
     [&passages](auto verse)
@@ -157,7 +157,7 @@ namespace
 
   auto info = bible::scripture_info{
     .name = *output.get<"name">(),
-    // A language or copyright left out stays empty
+    // An abbreviation left out is unknown, a language or copyright stays empty
     .abbreviation = output.get<"abbreviation">().value_or("Unknown Abbreviation"),
     .language = output.get<"language">().value_or(""),
     .copyright = output.get<"copyright">()
@@ -174,8 +174,8 @@ namespace
 }
 
 ///
-/// \return the scriptures of \p files by name. They are named in the order of their files, a name taken already gets
-/// a counting suffix, e.g. "Name (2)".
+/// \return the scriptures of \p files by name, named in the order of their
+/// files. A name already taken gets a counting suffix, e.g. "Name (2)".
 ///
 [[nodiscard]] auto named(const std::map<std::filesystem::path, std::shared_ptr<bible::scripture>>& files)
   -> workflow_scripture_store::scripture_map_type
@@ -190,8 +190,8 @@ namespace
       auto name = scripture->information().name;
       if(scriptures.contains(name))
       {
-        // Counted up from the names already taken, the name itself and those with a suffix only, not another name
-        // starting alike, e.g. "Name Study (3)". Not const: a filter view cannot be iterated through a const reference.
+        // Count up from the suffixes of this name, not of another name starting alike, e.g. "Name
+        // Study (3)". Not const: a filter view cannot be iterated through a const reference.
         const auto ending_of = [&name](const std::string& n) -> std::uint32_t
         {
           const auto number = util::string::ends_with_formatted_uint(n, uint_ending_format);
@@ -287,7 +287,7 @@ auto workflow_scripture_store::import(const std::filesystem::path& source) -> st
 
   // Held throughout, so a load takes turns with the import
   const auto state = workflow_script_->state();
-  // The scripts load after the start, the load that follows reads what is copied before
+  // Before the scripts are loaded there is no reader, the load after them reads the copied files
   const auto readers_loaded = !workflow_script_->scripts<read_manifest>().empty();
   const auto take_over = [&](const std::filesystem::path& file)
   {
@@ -342,8 +342,8 @@ auto workflow_scripture_store::read(const std::filesystem::path& file) const -> 
     // Held while the readers run, so no other script reaches the archive
     const auto state = workflow_script_->state();
     ///
-    /// \lua Reads an entry of the archive a reader reads, \see the manifest `scripture.read`. It is there only while
-    /// a reader runs.
+    /// \lua Reads an entry of the archive a reader reads, \see the
+    /// manifest `scripture.read`. It exists only while a reader runs.
     /// \param name the name of the entry, one of the `entries` of the input
     /// \return its content, or `nil` and `not found`
     ///

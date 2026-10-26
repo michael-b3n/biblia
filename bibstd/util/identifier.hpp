@@ -28,7 +28,6 @@ public: // Structors
 
 public: // Operators
   auto operator<=>(const identifier& other) const = default;
-  // Declared, as the one below hides the one of operator<=>
   auto operator==(const identifier& other) const -> bool = default;
   auto operator==(std::string_view other) const -> bool;
 

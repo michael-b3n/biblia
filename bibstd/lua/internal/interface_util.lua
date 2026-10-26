@@ -334,7 +334,7 @@ end
 
 ---
 --- \return the text of the element \p element of util.parse_xml and its descendants, with
---- \p without_layout the texts of white space only left out, which lay a document out
+--- \p without_layout without the texts of white space only, the layout of a document
 ---
 function util.xml_text(element, without_layout)
   local parts = {}

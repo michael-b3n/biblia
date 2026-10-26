@@ -1,6 +1,5 @@
--- Bundled script, offers the other scripts the files of Paratext, the editor of Bible translations, as scripts.paratext:
--- the settings file of a project.
--- https://paratext.org/
+-- Bundled script, offers the other scripts the files of Paratext, the editor of Bible
+-- translations, as scripts.paratext: the settings file of a project. https://paratext.org/
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local paratext = {}

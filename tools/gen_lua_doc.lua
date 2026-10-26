@@ -1,7 +1,7 @@
 ---
---- Writes the reference of what the app offers scripts: file by file in the order of their paths, each documented
---- part with its comment and the code below it. Documented are the C++ comments tagged \lua and the Lua comments
---- above a function of a table or tagged \lua.
+--- Writes the reference of what the app offers scripts: file by file in the order of their
+--- paths, each documented part with its comment and the code below it. Documented are the C++
+--- comments tagged \lua, and the Lua comments above a function of a table or tagged \lua.
 --- Usage: lua gen_lua_doc.lua [--check] <output> <source>..., where @<file> stands for the sources listed in a file.
 ---
 
@@ -37,8 +37,8 @@ local function read(path)
 end
 
 ---
---- \return the comment line \p line in Markdown: \p, \param, \return and \see as words, with \p lua a \lua signature
---- as code
+--- \return the comment line \p line in Markdown: \p, \param, \return
+--- and \see as words, and with \p lua a \lua signature as code
 ---
 local function markdown(line, lua)
   if lua then
@@ -50,8 +50,8 @@ local function markdown(line, lua)
 end
 
 ---
---- \return the documented parts of the file \p text with the comment \p prefix, each its comment and code. A part is
---- a comment tagged \lua, or with \p functions one above a function of a table.
+--- \return the documented parts of the file \p text with the comment \p prefix, each with its comment
+--- and code. A part is a comment tagged \lua, or with \p functions one above a function of a table.
 ---
 local function parts(text, prefix, functions)
   local result, comment = {}, nil

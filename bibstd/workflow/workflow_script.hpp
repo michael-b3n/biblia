@@ -64,11 +64,13 @@ struct workflow_script_sigs final
 
 ///
 /// Workflow script, owns the Lua state and loads the scripts (bundled and user scripts) \see load_scripts.
-/// A script returns its name, its description, its node and its entries, which other scripts see at root.interface.scripts and
-/// the node. The app runs the functions named after a script_manifest, e.g. "scripture.read". Files of the same name are one
-/// script of one node, an entry offered twice is the one of the first. Workflows register below root.interface.workflow, last
-/// in their constructor and kept as their last member, so no script reaches them partly constructed or destroyed, \see
-/// lua::registration. Signal IDs to connect to:
+/// A script returns its name, its description, its node and its entries. Other scripts
+/// see the entries at root.interface.scripts and the node. The app runs the functions
+/// named after a script_manifest, e.g. "scripture.read". Files of the same name are
+/// one script with one node, an entry offered twice is the one of the first file.
+/// Workflows register below root.interface.workflow, last in their constructor and kept as their
+/// last member, so no script reaches them partly constructed or destroyed, \see lua::registration.
+/// Signal IDs to connect to:
 /// - scripts_loaded: Emitted under the Lua lock once the scripts are loaded, also if none are.
 ///
 class workflow_script final

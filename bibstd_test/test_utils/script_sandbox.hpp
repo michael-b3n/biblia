@@ -18,8 +18,8 @@ namespace bibstd::test_utils
 {
 
 ///
-/// Script workflow with the bundled scripts and the user scripts \p scripts by file name, loaded. Lua expressions see
-/// the globals of scripts and \p texts.
+/// Script workflow with the bundled scripts and the user scripts \p scripts by
+/// file name, loaded. Lua expressions see the globals of scripts and \p texts.
 ///
 struct script_sandbox final
 {

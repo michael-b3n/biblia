@@ -54,8 +54,8 @@ public: // Variables
 };
 
 ///
-/// Workflow for scripture. Scriptures are either those of the files in the scripture store or provided by dedicated
-/// scripts. Scriptures provided without versification take the fallback versification.
+/// Workflow for scripture. Scriptures come from the files of the scripture store or from scripts.
+/// A scripture of a script without versification takes the fallback versification.
 /// Signal IDs to connect to:
 /// - scriptures_changed: Emitted when the scriptures of the store and the scripts changed.
 ///
@@ -258,8 +258,8 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Take the scripture files named in the params, or those of the folders named there, into the scripture
-  /// folder and load them, \see workflow_scripture_store::import. Blocks until the import is over, a failure is logged.
+  /// Take the scripture files named in the params, or those of the folders named there, into the scripture folder
+  /// and load them, \see workflow_scripture_store::import. Blocks until the import is over, a failure is logged.
   /// \return number of imported files
   ///
   [[nodiscard]] auto import_scriptures(const import_params& params) -> std::size_t;

@@ -13,10 +13,10 @@ namespace bibstd::bible
 {
 
 ///
-/// A bible scripture that was read out of a file, see workflow::workflow_scripture_store. It holds the
-/// passage of every verse and the book names in the language of the scripture, whatever format it was
-/// read from. The versification is derived from the verses the scripture actually carries,
-/// a book it lacks takes the one of the default versification closest to them.
+/// A bible scripture read out of a file, see workflow::workflow_scripture_store.
+/// It holds the passage of every verse and the book names in the language of the
+/// scripture, whatever format it was read from. Its versification is derived from
+/// its verses, a book it lacks takes the one of the closest default versification.
 /// \note This class is immutable and therefore thread-safe.
 ///
 class scripture final
@@ -33,9 +33,9 @@ public: // Typedefs
 
 public: // Structors
   ///
-  /// A book without any verse in \p passage_data takes the chapters and verses of the default
-  /// versification whose chapters end like those of \p passage_data most often, its verses have
-  /// no passage, e.g. the Old Testament of a New Testament. A warning names the books.
+  /// A book without verses in \p passage_data takes the chapters and verses of the default
+  /// versification whose chapters most often end like those of \p passage_data. Its verses
+  /// have no passage, e.g. the Old Testament of a New Testament. A warning names the books.
   ///
   scripture(scripture_info info, book_name_map_type book_name_data, passage_map_type passage_data);
 

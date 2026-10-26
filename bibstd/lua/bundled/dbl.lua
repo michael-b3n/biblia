@@ -1,13 +1,13 @@
--- Bundled script, offers the other scripts the files of the Digital Bible Library as scripts.dbl: the metadata file of its
--- bundles. https://library.bible/
+-- Bundled script, offers the other scripts the files of the Digital Bible Library
+-- as scripts.dbl: the metadata file of its bundles. https://library.bible/
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local dbl = {}
 
 ---
---- \return the text of the first element of the tree \p root matching one of the \p paths, e.g.
---- { "identification/name" }. The sections of a path are found in this order in the path of an element, the element
---- closest to the root wins.
+--- \return the text of the first element of the tree \p root that matches one of the
+--- \p paths, e.g. `{"identification/name"}`. An element matches when the sections of
+--- a path appear in this order in its path, the element closest to the root wins.
 ---
 local function text_at(root, paths)
   for _, sections in ipairs(paths) do

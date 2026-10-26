@@ -1,5 +1,5 @@
--- Bundled script, offers the other scripts the files of eBible.org as scripts.ebible: the copyright page of its
--- archives. https://ebible.org/
+-- Bundled script, offers the other scripts the files of eBible.org as
+-- scripts.ebible: the copyright page of its archives. https://ebible.org/
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
 local ebible = {}
@@ -30,8 +30,8 @@ local function first_line(paragraph)
 end
 
 ---
---- \return the `name`, `abbreviation`, `language` and `copyright` of the copyright page `copr.htm` \p text of an
---- archive, each nil if the page has none
+--- \return the `name`, `abbreviation`, `language` and `copyright` of the
+--- copyright page `copr.htm` \p text of an archive, each nil if the page has none
 ---
 function ebible.info(text)
   local language = text_of(string.match(text, "Language:%s*<a[^>]*>(.-)</a>"))

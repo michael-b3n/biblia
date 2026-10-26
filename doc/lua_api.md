@@ -21,8 +21,8 @@ function dbl.info(text)
 
 ## bibstd/lua/bundled/ebible.lua
 
-- Returns the `name`, `abbreviation`, `language` and `copyright` of the copyright page `copr.htm` `text` of an
-archive, each nil if the page has none
+- Returns the `name`, `abbreviation`, `language` and `copyright` of the
+copyright page `copr.htm` `text` of an archive, each nil if the page has none
 
 ```lua
 function ebible.info(text)
@@ -45,8 +45,8 @@ function paratext.info(text)
 function scripture_archive.find(entries, file_name)
 ```
 
-- Returns the text of the entry `name` of the archive being read without a byte order mark, or nil and the reason,
-e.g. for a text that is no UTF-8
+- Returns the text of the entry `name` of the archive being read, without a
+byte order mark, or nil and the reason, e.g. for a text that is no UTF-8
 
 ```lua
 function scripture_archive.read(name)
@@ -62,10 +62,10 @@ function scripture_archive.read_scripture(input, format)
 
 ## bibstd/lua/bundled/usfm.lua
 
-- Returns the element tree of the USFM document `text` as scripts.usx.parse gives it for USX, or nil and the reason
-if it identifies no book: a usx root holding book, chapter, para, table, sidebar and periph elements, paragraphs
-holding verse, char, ref, note, ms, figure and optbreak elements. Markers USFM does not define are character styles.
-Chapters and verses have no sid and eid, as in USX 2.
+- Returns the element tree of the USFM document `text` as scripts.usx.parse gives it for USX, or nil
+and the reason if it identifies no book. A usx root holds book, chapter, para, table, sidebar and
+periph elements, paragraphs hold verse, char, ref, note, ms, figure and optbreak elements. Markers
+USFM does not define are character styles. Chapters and verses have no sid and eid, as in USX 2.
 
 ```lua
 function usfm.parse(text)
@@ -79,8 +79,8 @@ function usfm.book(tree)
 
 ## bibstd/lua/bundled/usx.lua
 
-- Returns the element tree of the USX document `text`, as util.parse_xml gives it, or nil and the reason if it is no
-USX document
+- Returns the element tree of the USX document `text` as util.parse_xml
+gives it, or nil and the reason if it is no USX document
 
 ```lua
 function usx.parse(text)
@@ -90,7 +90,7 @@ function usx.parse(text)
 app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
 the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
 `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
-paragraphs. Every verse the book numbers is one, empty without text of its own, e.g. 3 and 4 of a verse "2-4".
+paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 
 ```lua
 function usx.book(tree)
@@ -208,7 +208,7 @@ function util.parse_xml(text)
 ```
 
 - Returns the text of the element `element` of util.parse_xml and its descendants, with
-`without_layout` the texts of white space only left out, which lay a document out
+`without_layout` without the texts of white space only, the layout of a document
 
 ```lua
 function util.xml_text(element, without_layout)
@@ -568,8 +568,8 @@ so the script may ask `workflow.cache` first.
 
 ## bibstd/workflow/workflow_scripture_store.cpp
 
-Reads an entry of the archive a reader reads, see the manifest `scripture.read`. It is there only while
-a reader runs.
+Reads an entry of the archive a reader reads, see the
+manifest `scripture.read`. It exists only while a reader runs.
 
 - `name`: the name of the entry, one of the `entries` of the input
 - Returns its content, or `nil` and `not found`
@@ -602,14 +602,14 @@ archive, the script its entries with `workflow.scripture_store.read_entry`. The 
 - Returns abbreviation its abbreviation
 - Returns language its language
 - Returns copyright its copyright, shown below the verses
-- Returns book_names the names of the books by the identifier of the app, e.g. `john`: `abbreviation`,
-`short_name` shown in the app and `long_name`
+- Returns book_names the names of the books by the identifier of the app,
+e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
 
 - Returns verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-versification from them, a book left out takes the one of the default versification closest to them. Each is a
-sequence of paragraph sections `<p data-id="...">` with `begin` for a verse that opens its paragraph, `continue`
-for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, `&`, `<`
-and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
+versification from them, a book left out takes the one of the closest default versification. Each verse is a
+sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
+for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
+`&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
 
 - Returns cross_references the cross references of the verses by book, chapter and verse
 - Returns error why a file of its format can not be read
