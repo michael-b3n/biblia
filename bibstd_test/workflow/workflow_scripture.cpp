@@ -90,7 +90,7 @@ scripture_fixture::scripture_fixture(
       test_utils::write_file(
         scripts_folder / (entry.first + ".lua"),
         std::format(
-          "local script = (function() {1} end)() script.name = 'Script {0}' script.node = 'script_{0}' return script",
+          "local script = (function() {1} end)() script.name = 'Script {0}' script.description = '' script.node = 'script_{0}' return script",
           entry.first,
           entry.second
         )
@@ -313,7 +313,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   // While the app runs: a script added, its scriptures join the others and the selected one stays
   test_utils::write_file(
     scripts / "added.lua",
-    "return {name = 'Second', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} end, "
+    "return {name = 'Second', description = '', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} end, "
     "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
     "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}"
   );
@@ -359,7 +359,7 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   test_utils::write_file(
     fixture.folder.path() / "scripts" / "second.lua",
     std::format(
-      "local script = (function() {} end)() script.name = 'Second' script.node = 'second' return script", scripture_script
+      "local script = (function() {} end)() script.name = 'Second' script.description = '' script.node = 'second' return script", scripture_script
     )
   );
   test_utils::load_scripts(*fixture.script);

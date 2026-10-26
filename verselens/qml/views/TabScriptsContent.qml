@@ -5,8 +5,8 @@ import QtQuick.Layouts
 import BibQml
 
 ///
-/// Content of the scripts tab: the loaded scripts with the functions they offer, and the buttons to import scripts
-/// and to load them anew.
+/// Content of the scripts tab: the loaded scripts with their description and the functions they offer, and the
+/// buttons to import scripts and to load them anew.
 ///
 Item
 {
@@ -38,7 +38,7 @@ Item
 
     // Components
     ///
-    /// The loaded scripts, each with the functions it offers.
+    /// The loaded scripts, each with its description and the functions it offers.
     ///
     GroupBoxSimple
     {
@@ -82,6 +82,15 @@ Item
               text: scriptRow.modelData.name
               font.bold: true
               elide: Text.ElideRight
+            }
+
+            TextSimple
+            {
+              // Properties
+              Layout.fillWidth: true
+              text: scriptRow.modelData.description
+              wrapMode: Text.WordWrap
+              visible: text !== ""
             }
 
             TextSimple

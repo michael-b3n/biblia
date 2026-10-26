@@ -74,5 +74,6 @@ bible_com["lookup.url"] = url
 
 -- Shown to the user
 bible_com.name = "Bible.com"
+bible_com.description = "Opens bible references on bible.com."
 bible_com.node = "bible_com"
 return bible_com

@@ -346,5 +346,6 @@ end
 
 -- Shown to the user
 usx.name = "USX"
+usx.description = "Reads scriptures of USX files, e.g. the bundles of the Digital Bible Library."
 usx.node = "usx"
 return usx

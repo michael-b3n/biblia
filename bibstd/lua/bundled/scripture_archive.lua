@@ -136,5 +136,6 @@ end
 
 -- Shown to the user
 scripture_archive.name = "Scripture archive"
+scripture_archive.description = "Reads the scripture of an archive for the USX and USFM readers."
 scripture_archive.node = "scripture_archive"
 return scripture_archive

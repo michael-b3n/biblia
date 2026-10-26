@@ -1,6 +1,6 @@
 # Lua scripts
 
-A script is a `*.lua` file that returns a table: `name`, which the app shows and stores in the settings, `node`, under which the other scripts see the script, and its entries. An entry that is a function named after a manifest in [lua_api.md](lua_api.md) is one the app runs. Manifests are named with a dot, e.g. `scripture.read`, so the app takes every function whose key has a dot for one: name other functions without a dot. The file name does not matter.
+A script is a `*.lua` file that returns a table: `name`, which the app shows and stores in the settings, `description`, a short text the scripts tab shows below the name and may be empty, `node`, under which the other scripts see the script, and its entries. An entry that is a function named after a manifest in [lua_api.md](lua_api.md) is one the app runs. Manifests are named with a dot, e.g. `scripture.read`, so the app takes every function whose key has a dot for one: name other functions without a dot. The file name does not matter.
 
 ```lua
 local example = {}
@@ -10,6 +10,7 @@ example["scripture.passage"] = function(input)   -- the input of the manifest as
 end
 
 example.name = "Example"
+example.description = "Offers a scripture."       -- shown below the name, may be ""
 example.node = "example"                          -- the other scripts see scripts.example
 return example
 ```
@@ -20,9 +21,9 @@ return example
 
 - The bundled scripts ([bibstd/lua/bundled](../bibstd/lua/bundled), and `bibstd/lua/private` if a build has it) load first. Then the `*.lua` files in `%LOCALAPPDATA%\verselens\scripts` load in the order of their names, unless `Scripts > Enabled` is off.
 - Scripts load after the app starts and when you click `Load scripts` in the scripts tab. The top level of a file runs once while it loads, so put the work into the functions.
-- Files with the same `name` form one script with one `node`. If two files offer the same entry, the file that loaded first wins. So your script can add entries to a bundled one, but not replace them.
-- The app rejects a file without `name` or `node`, with a `node` that is no Lua name, or with the `node` of another script, and writes the file name to the log.
-- The scripts tab lists the functions named after a manifest, the other entries are for scripts.
+- Files with the same `name` form one script with one `node`, the first file gives its `description`. If two files offer the same entry, the file that loaded first wins. So your script can add entries to a bundled one, but not replace them.
+- The app rejects a file without `name`, `description` or `node`, with a `node` that is no Lua name, or with the `node` of another script, and writes the file name to the log.
+- The scripts tab lists the description and the functions named after a manifest, the other entries are for scripts.
 
 ## Nodes
 
@@ -36,6 +37,7 @@ function zefania.parse(text)                  -- e.g. the element tree of a Zefa
 end
 
 zefania.name = "Zefania"
+zefania.description = "Reads Zefania XML bibles."
 zefania.node = "zefania"                      -- the other scripts call scripts.zefania.parse
 return zefania
 ```

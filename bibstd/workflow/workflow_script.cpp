@@ -144,7 +144,7 @@ auto workflow_script::lua_path(const util::path& p) -> util::path
 auto workflow_script::scripts(const std::vector<util::path>& ids) const -> scripts_type
 {
   const auto offers_all = [&ids](const auto& entry)
-  { return std::ranges::all_of(ids, [&](const auto& id) { return entry.second.contains(id); }); };
+  { return std::ranges::all_of(ids, [&](const auto& id) { return entry.second.functions.contains(id); }); };
   const auto lock = std::scoped_lock{mtx_};
   return scripts_ | std::views::filter(offers_all) | std::ranges::to<scripts_type>();
 }
@@ -243,16 +243,17 @@ auto workflow_script::load_script(const std::string_view file, const std::string
 
 ///
 ///
-auto workflow_script::add_script(const lua::state& state, const std::string& file, const sol::object& description) -> void
+auto workflow_script::add_script(const lua::state& state, const std::string& file, const sol::object& returned) -> void
 {
-  if(description.get_type() != sol::type::table)
+  if(returned.get_type() != sol::type::table)
   {
     LOG_INFO("lua script offers nothing: file=\"{}\"", file);
     return;
   }
-  auto table = description.as<sol::table>();
+  auto table = returned.as<sol::table>();
   const auto text = [&](const std::string_view key) { return lua::value_cast<std::string>::from(table.get<sol::object>(key)); };
   const auto name = text(lua::names::script_name);
+  const auto description = text(lua::names::script_description);
   const auto node = text(lua::names::script_node);
   // Other scripts write scripts.<node>, so it is a Lua name
   static constexpr auto is_lua_name = [](const std::string& s)
@@ -266,18 +267,18 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
     return !s.empty() && (s.front() < '0' || s.front() > '9') && (util::identifier{s} == s) &&
            !std::ranges::contains(keywords, s);
   };
-  if(!name || name->empty() || !node || !is_lua_name(*node))
+  // The description may be empty
+  if(!name || name->empty() || !description || !node || !is_lua_name(*node))
   {
-    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name or no node", file);
+    LOG_ERROR("lua script rejected: file=\"{}\", it returns no name, no description or no node", file);
     return;
   }
   // The node is what other scripts see, the app runs the functions of the script there. Files of the same name are one
   // script of one node, a node is one script's.
   sol::table nodes =
     state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_interface, lua::names::node_scripts);
-  sol::table scripts =
-    state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system)[lua::names::node_scripts]
-      .get_or_create<sol::table>();
+  sol::table scripts = state->traverse_get<sol::table>(lua::names::node_root, lua::names::node_system)[lua::names::node_scripts]
+                         .get_or_create<sol::table>();
   const sol::object own = scripts[*name];
   const sol::object taken = nodes[*node];
   if((own.valid() || taken.valid()) && own != taken)
@@ -294,7 +295,10 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
     [&](const sol::object& key, const sol::object& value)
     {
       const auto entry = lua::value_cast<std::string>::from(key);
-      if(!entry || *entry == lua::names::script_name || *entry == lua::names::script_node)
+      if(
+        !entry || *entry == lua::names::script_name || *entry == lua::names::script_description ||
+        *entry == lua::names::script_node
+      )
       {
         return;
       }
@@ -320,7 +324,9 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
     function_names | std::views::transform(&util::path::string)
   );
   const auto lock = std::scoped_lock{mtx_};
-  scripts_[*name].insert_range(function_names);
+  // The first file of a script keeps its description
+  auto& script = scripts_.try_emplace(*name, script_info{.description = *description, .functions = {}}).first->second;
+  script.functions.insert_range(function_names);
 }
 
 } // namespace bibstd::workflow

@@ -60,5 +60,6 @@ end
 
 -- Shown to the user, other scripts see the functions above at scripts.dbl
 dbl.name = "DBL"
+dbl.description = "Reads the metadata of the bundles of the Digital Bible Library."
 dbl.node = "dbl"
 return dbl

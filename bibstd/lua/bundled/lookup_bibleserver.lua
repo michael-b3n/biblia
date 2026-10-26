@@ -77,5 +77,6 @@ bibleserver["lookup.url"] = url
 
 -- Shown to the user
 bibleserver.name = "Bibleserver"
+bibleserver.description = "Opens bible references on bibleserver.com."
 bibleserver.node = "bibleserver"
 return bibleserver

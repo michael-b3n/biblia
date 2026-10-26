@@ -53,5 +53,6 @@ end
 
 -- Shown to the user
 example.name = "Example"
+example.description = "Shows how a script offers a scripture."
 example.node = "example"
 return example

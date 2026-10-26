@@ -28,5 +28,6 @@ end
 
 -- Shown to the user, other scripts see the functions above at scripts.paratext
 paratext.name = "Paratext"
+paratext.description = "Reads the settings of Paratext projects."
 paratext.node = "paratext"
 return paratext

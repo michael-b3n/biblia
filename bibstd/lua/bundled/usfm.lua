@@ -324,5 +324,6 @@ end
 
 -- Shown to the user
 usfm.name = "USFM"
+usfm.description = "Reads scriptures of USFM files, e.g. the archives of eBible.org."
 usfm.node = "usfm"
 return usfm

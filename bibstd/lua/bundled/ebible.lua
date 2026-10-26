@@ -36,5 +36,6 @@ end
 
 -- Shown to the user, other scripts see the functions above at scripts.ebible
 ebible.name = "eBible"
+ebible.description = "Reads the copyright page of the archives of eBible.org."
 ebible.node = "ebible"
 return ebible

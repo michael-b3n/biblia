@@ -88,7 +88,7 @@ struct echo_manifest final
     node, node.begin(), [](const unsigned char c) { return std::isalnum(c) != 0 ? static_cast<char>(std::tolower(c)) : '_'; }
   );
   return std::format(
-    "local value = tostring({}) return {{name = '{}', node = '{}', "
+    "local value = tostring({}) return {{name = '{}', description = '', node = '{}', "
     "['test.report'] = function() return {{value = value}} end}}",
     expression,
     name,
@@ -377,11 +377,11 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   test_utils::write_file(
-    scripts / "both.lua", "return {name = 'Both', node = 'both', ['test.a'] = function() end, ['test.b'] = function() end}"
+    scripts / "both.lua", "return {name = 'Both', description = '', node = 'both', ['test.a'] = function() end, ['test.b'] = function() end}"
   );
   // Only functions named after a manifest count
   test_utils::write_file(
-    scripts / "one.lua", "return {name = 'One', node = 'one', ['test.a'] = function() end, ['test.b'] = 1, function() end}"
+    scripts / "one.lua", "return {name = 'One', description = '', node = 'one', ['test.a'] = function() end, ['test.b'] = 1, function() end}"
   );
   // A script returning no table offers nothing
   test_utils::write_file(scripts / "none.lua", "return 1");
@@ -400,35 +400,41 @@ TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
   const auto folder = test_utils::temp_folder{"workflow_script_knows_a_script_by_its_name"};
   const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
-  const auto script = [](const std::string& description, const std::string& value)
-  { return "return {" + description + " ['test.report'] = function() return {value = '" + value + "'} end}"; };
+  const auto script = [](const std::string& fields, const std::string& value)
+  { return "return {" + fields + " ['test.report'] = function() return {value = '" + value + "'} end}"; };
   // The name of the file plays no role, the name may be any text
-  test_utils::write_file(scripts / "1.lua", script("name = 'Zeta', node = 'zeta',", "first"));
-  test_utils::write_file(scripts / "2.lua", script("name = 'Alpha page.com', node = 'alpha',", "ran"));
+  test_utils::write_file(scripts / "1.lua", script("name = 'Zeta', description = 'The first', node = 'zeta',", "first"));
+  test_utils::write_file(scripts / "2.lua", script("name = 'Alpha page.com', description = '', node = 'alpha',", "ran"));
   // Scripts of the same name are one script: a function it has is kept, another one is added
   test_utils::write_file(
     scripts / "3.lua",
-    "return {name = 'Zeta', node = 'zeta', ['test.report'] = function() return {value = 'second'} end, "
+    "return {name = 'Zeta', description = 'The second', node = 'zeta', ['test.report'] = function() return {value = 'second'} end, "
     "['test.a'] = function() end}"
   );
   // No name
-  test_utils::write_file(scripts / "5.lua", script("name = 5, node = 'five',", "ran"));
-  test_utils::write_file(scripts / "6.lua", script("node = 'six',", "ran"));
-  test_utils::write_file(scripts / "8.lua", script("name = '', node = 'eight',", "ran"));
+  test_utils::write_file(scripts / "5.lua", script("name = 5, description = '', node = 'five',", "ran"));
+  test_utils::write_file(scripts / "6.lua", script("description = '', node = 'six',", "ran"));
+  test_utils::write_file(scripts / "8.lua", script("name = '', description = '', node = 'eight',", "ran"));
+  // No description, an empty one is one
+  test_utils::write_file(scripts / "g.lua", script("name = 'Silent', node = 'silent',", "ran"));
+  test_utils::write_file(scripts / "h.lua", script("name = 'Numbered', description = 5, node = 'numbered',", "ran"));
   // No node, no Lua name as node, the node of another script and another node of the same script
   test_utils::write_file(scripts / "9.lua", script("name = 'No node',", "ran"));
-  test_utils::write_file(scripts / "a.lua", script("name = 'Dotted', node = 'a.b',", "ran"));
-  test_utils::write_file(scripts / "d.lua", script("name = 'Keyword', node = 'end',", "ran"));
-  test_utils::write_file(scripts / "e.lua", script("name = 'Digit', node = '1st',", "ran"));
-  test_utils::write_file(scripts / "f.lua", script("name = 'Dash', node = 'a-b',", "ran"));
-  test_utils::write_file(scripts / "b.lua", script("name = 'Other', node = 'zeta',", "ran"));
-  test_utils::write_file(scripts / "c.lua", script("name = 'Zeta', node = 'other',", "ran"));
+  test_utils::write_file(scripts / "a.lua", script("name = 'Dotted', description = '', node = 'a.b',", "ran"));
+  test_utils::write_file(scripts / "d.lua", script("name = 'Keyword', description = '', node = 'end',", "ran"));
+  test_utils::write_file(scripts / "e.lua", script("name = 'Digit', description = '', node = '1st',", "ran"));
+  test_utils::write_file(scripts / "f.lua", script("name = 'Dash', description = '', node = 'a-b',", "ran"));
+  test_utils::write_file(scripts / "b.lua", script("name = 'Other', description = '', node = 'zeta',", "ran"));
+  test_utils::write_file(scripts / "c.lua", script("name = 'Zeta', description = '', node = 'other',", "ran"));
 
   auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
   test_utils::load_scripts(workflow);
   REQUIRE(user_names(workflow, folder) == std::vector<std::string>{"Alpha page.com", "Zeta"});
   CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha page.com)", "first (Zeta)"});
   CHECK(names(workflow.scripts<a_manifest>()) == std::vector<std::string>{"Zeta"});
+  // The first file of a script describes it
+  CHECK(workflow.scripts().at("Zeta").description == "The first");
+  CHECK(workflow.scripts().at("Alpha page.com").description.empty());
   // Neither by the name of its file
   CHECK_FALSE(workflow.run<report_manifest>("1", {}));
 }
@@ -441,7 +447,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
   test_utils::write_file(
     scripts / "echo.lua",
     R"(
-      return { name = "Echo", node = "echo",
+      return { name = "Echo", description = "", node = "echo",
         ["test.echo"] = function(input)
           local case = input.text
           if case == "broken" then error("broken") end

@@ -27,6 +27,7 @@ namespace
 constexpr auto lookup_script = R"(
   return {
     name = "Mine",
+    description = "",
     node = "mine",
     ["lookup.translations"] = function(input)
       return {names = {"AAA", "BBB"}, defaults = {"BBB", "CCC"}}
@@ -39,6 +40,7 @@ constexpr auto lookup_script = R"(
 constexpr auto plain_script = R"(
   return {
     name = "Plain",
+    description = "",
     node = "plain",
     ["lookup.translations"] = function() return {names = {}} end,
     ["lookup.url"] = function() return {url = "https://example.com"} end,

@@ -16,12 +16,12 @@ TEST_CASE("script_nodes_are_offered_to_the_other_scripts", "[lua]")
     "script_nodes_are_offered_to_the_other_scripts",
     {
       // A function named after a manifest and data
-      {"a.lua", "return {name = 'Mine', node = 'mine', ['test.answer'] = function() end, answer = function() return 42 end}"},
+      {"a.lua", "return {name = 'Mine', description = '', node = 'mine', ['test.answer'] = function() end, answer = function() return 42 end}"},
       // The node of another script, a bundled one too
-      {"b.lua", "return {name = 'Other', node = 'mine', answer = function() return 0 end}"},
-      {"c.lua", "return {name = 'Another', node = 'bibleserver'}"},
+      {"b.lua", "return {name = 'Other', description = '', node = 'mine', answer = function() return 0 end}"},
+      {"c.lua", "return {name = 'Another', description = '', node = 'bibleserver'}"},
       // Uses the node of another script
-      {"d.lua", "return {name = 'User', node = 'user', ['test.use'] = function() return {value = scripts.mine.answer()} end}"},
+      {"d.lua", "return {name = 'User', description = '', node = 'user', ['test.use'] = function() return {value = scripts.mine.answer()} end}"},
       // No node
       {"e.lua", "return {name = 'Empty'}"},
       }
@@ -32,7 +32,9 @@ TEST_CASE("script_nodes_are_offered_to_the_other_scripts", "[lua]")
   CHECK_FALSE(fixture.script->scripts().contains("Another"));
   CHECK_FALSE(fixture.script->scripts().contains("Empty"));
   // Only the functions named after a manifest are the script's functions
-  CHECK(fixture.script->scripts().at("Mine") == std::set<util::path>{util::path{"test.answer"}});
+  CHECK(fixture.script->scripts().at("Mine").functions == std::set<util::path>{util::path{"test.answer"}});
+  // Name, description and node describe the script, they are no entries of its node
+  CHECK(fixture.check("scripts.mine.description == nil"));
   // Read-only for scripts
   CHECK(fixture.check("not pcall(function() scripts.mine.answer = nil end)"));
 
