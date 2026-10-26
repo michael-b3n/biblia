@@ -1,6 +1,6 @@
 #
 # Generate the script reference \p output with tools/gen_lua_doc.lua from the paths given after \p update, relative to
-# the source root: folders searched for C++ sources, and single files. With \p update the build regenerates it,
+# the source root: folders searched for C++ and Lua sources, and single files. With \p update the build regenerates it,
 # the test lua_doc checks that it is up to date.
 #
 function(add_lua_doc output update)
@@ -9,8 +9,10 @@ function(add_lua_doc output update)
   foreach(path ${ARGN})
     if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${path}")
       file(GLOB_RECURSE found CONFIGURE_DEPENDS RELATIVE "${CMAKE_SOURCE_DIR}"
-        "${CMAKE_SOURCE_DIR}/${path}/*.cpp" "${CMAKE_SOURCE_DIR}/${path}/*.hpp"
+        "${CMAKE_SOURCE_DIR}/${path}/*.cpp" "${CMAKE_SOURCE_DIR}/${path}/*.hpp" "${CMAKE_SOURCE_DIR}/${path}/*.lua"
       )
+      # Not in the repository, the doc would differ between machines
+      list(FILTER found EXCLUDE REGEX "/private/")
       list(APPEND sources ${found})
     else()
       list(APPEND sources ${path})

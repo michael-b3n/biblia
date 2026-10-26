@@ -17,7 +17,7 @@ class identifier final
   std::string value_;
 
 public: // Constants
-  static constexpr auto characters = std::string_view{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"};
+  static constexpr auto characters = std::string_view{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"};
 
 public: // Structors
   ///
@@ -28,6 +28,8 @@ public: // Structors
 
 public: // Operators
   auto operator<=>(const identifier& other) const = default;
+  auto operator==(const identifier& other) const -> bool = default;
+  auto operator==(std::string_view other) const -> bool;
 
 public: // Static
   ///

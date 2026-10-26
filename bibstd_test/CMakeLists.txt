@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 4.3)
 project(bibstd_test LANGUAGES CXX)
 
 find_package(Catch2 3 REQUIRED)
+find_package(pugixml REQUIRED)
 include(Catch)
 
 file(GLOB_RECURSE bibstd_test_CPP_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
@@ -56,6 +57,7 @@ target_link_libraries(
   bibstd_test
   PRIVATE
   Catch2::Catch2WithMain
+  pugixml::pugixml
   bibstd)
 
 #

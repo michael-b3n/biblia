@@ -1,12 +1,12 @@
 #include "bibstd/workflow/workflow_scripture.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/versification.hpp"
-#include "bibstd/core/core_scripture_store.hpp"
 #include "bibstd/util/contains.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/visit_helper.hpp"
+#include "bibstd/workflow/workflow_scripture_store.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
 #include "bibstd/workflow/workflow_settings_base.hpp"
 
@@ -54,7 +54,6 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
       )
     )}
-  , folder{workflow_settings_->data_folder() / folder_name}
 {
   // The default value set above must be one of the default versifications, else it would be invalid.
   static_assert(meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
@@ -90,9 +89,11 @@ auto workflow_scripture::versification_wrapper::get() const -> const bible::vers
 workflow_scripture::workflow_scripture(
   std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
 )
-  : workflow_base{std::move(workflow_settings)}
-  , workflow_script_{std::move(workflow_script)}
-  , core_scripture_store_(std::make_unique<core::core_scripture_store>(settings().folder))
+  : workflow_base{workflow_settings}
+  , workflow_script_{workflow_script}
+  , workflow_scripture_store_{
+      std::make_unique<workflow_scripture_store>(std::move(workflow_settings), std::move(workflow_script))
+    }
 {
   update_scripture_name_setting();
 
@@ -410,14 +411,11 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   auto imported = std::size_t{0};
   try
   {
-    {
-      const auto scriptures_lock = std::scoped_lock{mtx_};
-      imported = std::ranges::fold_left(
-        params->sources | std::views::transform([this](const auto& source) { return core_scripture_store_->import(source); }),
-        std::size_t{0},
-        std::plus{}
-      );
-    }
+    imported = std::ranges::fold_left(
+      params->sources | std::views::transform([this](const auto& source) { return workflow_scripture_store_->import(source); }),
+      std::size_t{0},
+      std::plus{}
+    );
     if(imported != 0)
     {
       update_scripture_name_setting();
@@ -434,7 +432,7 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
 ///
 auto workflow_scripture::scripture_names() const -> std::vector<std::string>
 {
-  decltype(auto) scriptures = core_scripture_store_->scriptures();
+  const auto scriptures = workflow_scripture_store_->scriptures();
   auto names = scriptures | std::views::keys | std::ranges::to<std::vector>();
   if(script_scriptures_)
   {
@@ -462,13 +460,12 @@ auto workflow_scripture::find(const std::optional<std::string>& name) const -> s
   {
     return std::nullopt;
   }
-  // Copied, so the lock is not held while a script runs
-  const auto scriptures_lock = std::scoped_lock{mtx_};
-  decltype(auto) scriptures = core_scripture_store_->scriptures();
+  const auto scriptures = workflow_scripture_store_->scriptures();
   if(const auto it = scriptures.find(*selected); it != std::ranges::end(scriptures))
   {
     return source_t{it->second};
   }
+  const auto scriptures_lock = std::scoped_lock{mtx_};
   if(!script_scriptures_)
   {
     return std::nullopt;
@@ -496,6 +493,8 @@ auto workflow_scripture::update_scripts() -> void
   static constexpr auto script_scripture_name = "{} ({})";
   try
   {
+    // The readers of the files are scripts too
+    workflow_scripture_store_->load();
     const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
     {
       const auto output = workflow_script_->run<names_manifest>(script.first, {});
@@ -539,7 +538,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   auto scripts_loaded = false;
   {
     const auto scriptures_lock = std::scoped_lock{mtx_};
-    decltype(auto) scriptures = core_scripture_store_->scriptures();
+    const auto scriptures = workflow_scripture_store_->scriptures();
     names = scripture_names();
     scripts_loaded = script_scriptures_.has_value();
     if(const auto it = std::ranges::find_if(scriptures, has_kjv_versification); it != std::ranges::cend(scriptures))

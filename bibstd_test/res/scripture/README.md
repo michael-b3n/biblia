@@ -1,12 +1,12 @@
 # Scripture test data
 
-Scripture archives dropped here feed the `scripture_usx` and `core_scripture_store` tests.
+Scripture archives dropped here feed the tests of the bundled script `usx.lua`, `bibstd_test/lua/usx.cpp`.
 
 - They are the USX zip bundles of the Digital Bible Library at [library.bible](https://library.bible/), the files the app loads from its scripture folder.
 - Neither the archives nor anything extracted from them are committed, `.gitignore` keeps this folder empty except for this file.
 - Without archives the tests skip.
 
-`scripture_usx` checks book names of these bundles:
+The tests check book names and versifications of these bundles:
 
 | File | Translation |
 |---|---|

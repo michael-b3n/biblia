@@ -5,6 +5,7 @@
 
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
+#include <bibstd/workflow/workflow_scripture_store.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -77,8 +78,8 @@ scripture_fixture::scripture_fixture(
 {
   if(stored)
   {
-    std::filesystem::create_directories(folder.path() / workflow_scripture_settings::folder_name);
-    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_settings::folder_name / stored->filename());
+    std::filesystem::create_directories(folder.path() / workflow_scripture_store::folder_name);
+    std::filesystem::copy_file(*stored, folder.path() / workflow_scripture_store::folder_name / stored->filename());
   }
   const auto scripts_folder = folder.path() / "scripts";
   std::filesystem::create_directories(scripts_folder);
@@ -88,7 +89,11 @@ scripture_fixture::scripture_fixture(
     {
       test_utils::write_file(
         scripts_folder / (entry.first + ".lua"),
-        std::format("return {{name = 'Script {0}', functions = (function() {1} end)()}}", entry.first, entry.second)
+        std::format(
+          "local script = (function() {1} end)() script.name = 'Script {0}' script.description = '' script.node = 'script_{0}' return script",
+          entry.first,
+          entry.second
+        )
       );
     }
   );
@@ -308,9 +313,9 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   // While the app runs: a script added, its scriptures join the others and the selected one stays
   test_utils::write_file(
     scripts / "added.lua",
-    "return {name = 'Second', functions = {['scripture.names'] = function() return {names = {'AAC'}} end, "
+    "return {name = 'Second', description = '', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} end, "
     "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
-    "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}}"
+    "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}"
   );
   test_utils::load_scripts(*fixture.script);
   REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Second").size() == 1; }));
@@ -353,7 +358,9 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   std::filesystem::remove(fixture.folder.path() / "scripts" / "first.lua");
   test_utils::write_file(
     fixture.folder.path() / "scripts" / "second.lua",
-    std::format("return {{name = 'Second', functions = (function() {} end)()}}", scripture_script)
+    std::format(
+      "local script = (function() {} end)() script.name = 'Second' script.description = '' script.node = 'second' return script", scripture_script
+    )
   );
   test_utils::load_scripts(*fixture.script);
   CHECK(test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Second)"; }));

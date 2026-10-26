@@ -25,14 +25,11 @@
 #include <variant>
 #include <vector>
 
-// Forward declarations
-namespace bibstd::core
-{
-class core_scripture_store;
-} // namespace bibstd::core
-
 namespace bibstd::workflow
 {
+
+// Forward declarations
+class workflow_scripture_store;
 
 ///
 /// Signals emitted by workflow scripture.
@@ -51,20 +48,16 @@ public: // Structors
   workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings);
   ~workflow_scripture_settings() noexcept override = default;
 
-public: // Constants
-  static constexpr auto folder_name = "scriptures";
-
 public: // Variables
   const setting_type<std::optional<std::string>> default_scripture_name;
   const setting_type<std::string> fallback_versification;
-  const std::filesystem::path folder;
 };
 
 ///
-/// Workflow for scripture. Scriptures are either loaded via local files or provided by dedicated scripts.
-/// Scriptures provided without versification take the fallback versification.
+/// Workflow for scripture. Scriptures come from the files of the scripture store or from scripts.
+/// A scripture of a script without versification takes the fallback versification.
 /// Signal IDs to connect to:
-/// - scriptures_changed: Emitted when the scriptures of the scripts changed.
+/// - scriptures_changed: Emitted when the scriptures of the store and the scripts changed.
 ///
 class workflow_scripture final
   : public workflow_base<workflow_scripture_settings>
@@ -125,7 +118,7 @@ class workflow_scripture final
 
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
-  const std::unique_ptr<core::core_scripture_store> core_scripture_store_;
+  const std::unique_ptr<workflow_scripture_store> workflow_scripture_store_;
   mutable std::mutex mtx_;
   std::optional<script_scriptures_t> script_scriptures_;
   framework::queued_connections connections_;
@@ -265,8 +258,8 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Take the scripture files named in the params, or those of the folders named there, into the scripture
-  /// folder and load them, \see core_scripture_store::import. Blocks until the import is over, a failure is logged.
+  /// Take the scripture files named in the params, or those of the folders named there, into the scripture folder
+  /// and load them, \see workflow_scripture_store::import. Blocks until the import is over, a failure is logged.
   /// \return number of imported files
   ///
   [[nodiscard]] auto import_scriptures(const import_params& params) -> std::size_t;

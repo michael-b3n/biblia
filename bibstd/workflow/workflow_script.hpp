@@ -64,10 +64,12 @@ struct workflow_script_sigs final
 
 ///
 /// Workflow script, owns the Lua state and loads the scripts (bundled and user scripts) \see load_scripts.
-/// A script returns its name and the functions it offers, each named after a script_manifest. Scripts of the
-/// same name are one script, a function they both offer is the one of the first.
-/// Workflows register below root.interface.workflow, last in their constructor and kept as their last member, so
-/// no script reaches them partly constructed or destroyed, \see lua::registration.
+/// A script returns its name, its description, its node and its entries. Other scripts
+/// see the entries at root.interface.scripts and the node. The app runs the functions
+/// named after a script_manifest, e.g. "scripture.read". Files of the same name are
+/// one script with one node, an entry offered twice is the one of the first file.
+/// Workflows register below root.interface.workflow, last in their constructor and kept as their
+/// last member, so no script reaches them partly constructed or destroyed, \see lua::registration.
 /// Signal IDs to connect to:
 /// - scripts_loaded: Emitted under the Lua lock once the scripts are loaded, also if none are.
 ///
@@ -75,6 +77,13 @@ class workflow_script final
   : public workflow_base<workflow_script_settings>
   , public signal::adapter<workflow_script_sigs>
 {
+  // Typedefs
+  struct script_info final
+  {
+    std::string description;
+    std::set<util::path> functions;
+  };
+
   // Constants
   static constexpr auto lua_node = "workflow";    // below root, the node of all workflow registrations
   static constexpr auto setting_node = "setting"; // below lua_node, the node of all settings
@@ -82,8 +91,8 @@ class workflow_script final
   // Variables
   const lua::state_owner state_owner_;
   mutable std::mutex mtx_;
-  std::map<std::string, std::set<util::path>> scripts_; // the functions of the loaded scripts by name
-  std::jthread loader_;                                 // last, it joins before the members it uses are destroyed
+  std::map<std::string, script_info> scripts_; // the loaded scripts by name
+  std::jthread loader_;                        // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
   using script_name_type = decltype(scripts_)::key_type;
@@ -100,8 +109,7 @@ public: // Accessors
   [[nodiscard]] auto state() const -> lua::state;
 
   ///
-  /// \return the loaded scripts offering a function for each manifest \p M, all of them without \p M: the
-  /// functions of each by the name of its script
+  /// \return the loaded scripts offering a function for each manifest \p M, all of them without \p M, by name
   ///
   template<script_manifest... M>
   [[nodiscard]] auto scripts() const -> scripts_type;
@@ -162,7 +170,7 @@ private: // Implementation
   auto load(const std::stop_token& stop_token) -> void;
   auto load_folder(const std::filesystem::path& folder, const std::stop_token& stop_token) -> void;
   auto load_script(std::string_view file, std::string_view code) -> void;
-  auto add_script(const lua::state& state, const std::string& file, const sol::object& description) -> void;
+  auto add_script(const lua::state& state, const std::string& file, const sol::object& returned) -> void;
 };
 
 ///

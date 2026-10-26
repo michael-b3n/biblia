@@ -101,11 +101,12 @@ void BridgeScript::updateScripts()
 {
   const auto toEntry = [](const auto& script)
   {
-    const auto functions = script.second |
+    const auto functions = script.second.functions |
                            std::views::transform([](const auto& id) { return QString::fromStdString(id.string()); }) |
                            std::ranges::to<QStringList>();
     auto entry = QVariantMap{};
     entry.insert(QStringLiteral("name"), QString::fromStdString(script.first));
+    entry.insert(QStringLiteral("description"), QString::fromStdString(script.second.description));
     entry.insert(QStringLiteral("functions"), functions);
     return QVariant{entry};
   };

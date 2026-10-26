@@ -41,7 +41,6 @@ target_sources(${PROJECT_NAME}
 
 find_package(Boost REQUIRED COMPONENTS filesystem url)
 find_package(spdlog REQUIRED)
-find_package(pugixml REQUIRED)
 find_package(libzip REQUIRED)
 find_package(sol2 3.5 REQUIRED)
 
@@ -61,7 +60,6 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC Boost::filesystem
   PUBLIC Boost::url
   PUBLIC spdlog::spdlog
-  PUBLIC pugixml::pugixml
   PUBLIC libzip::zip
   PUBLIC PkgConfig::TESSERACT
   PUBLIC PkgConfig::LEPTONICA
@@ -112,4 +110,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
 #
 include(lua_doc)
 option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
-add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens bibstd/lua/internal/interface_util.lua)
+add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens)

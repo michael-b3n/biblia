@@ -50,8 +50,8 @@ scripts_loaded,Geladene Skripte,Loaded scripts
 scripture,Bibelausgabe,Scripture
 scriptures_import,Bibelausgaben wählen,Choose scriptures
 scriptures_import_empty,Aus diesen Dateien konnte keine Bibelausgabe übernommen werden.,No scripture could be taken from these files.
-scriptures_import_filter,ZIP-Archive,Zip archives
-scriptures_import_hint,Füge Bibelausgaben als USX-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX files in zip archives.
+scriptures_import_filter,ZIP-Archive mit USX oder USFM,Zip archives of USX or USFM
+scriptures_import_hint,Füge Bibelausgaben als USX- oder USFM-Dateien in ZIP-Archiven hinzu.,Add scriptures as USX or USFM files in zip archives.
 scriptures_none,Keine Bibelausgabe geladen.,No scriptures loaded.
 shift,Umschalt,Shift
 translations,Übersetzungen,Translations

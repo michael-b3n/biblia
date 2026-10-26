@@ -1,6 +1,8 @@
 -- Bundled script, builds the urls opening bible references on bibleserver.com.
 -- Writing scripts: doc/lua_scripts.md of the VerseLens repository.
 
+local bibleserver = {}
+
 -- Book names in the urls of bibleserver.com, the German ones work for every translation
 local books = {
   genesis = "1.Mose", exodus = "2.Mose", leviticus = "3.Mose", numbers = "4.Mose", deuteronomy = "5.Mose",
@@ -64,17 +66,17 @@ local function url(input)
   return { url = "https://www.bibleserver.com/" .. names .. "/" .. encode(book) .. input.chapter .. "%2C" .. verses }
 end
 
-return {
-  -- Shown to the user
-  name = "Bibleserver",
-  functions = {
-    ---
-    --- \return the translations to choose from and the ones of the language \p input.language
-    ---
-    ["lookup.translations"] = function(input)
-      return { names = translations, defaults = defaults[input.language] }
-    end,
+---
+--- \return the translations to choose from and the ones of the language \p input.language
+---
+bibleserver["lookup.translations"] = function(input)
+  return { names = translations, defaults = defaults[input.language] }
+end
 
-    ["lookup.url"] = url,
-  },
-}
+bibleserver["lookup.url"] = url
+
+-- Shown to the user
+bibleserver.name = "Bibleserver"
+bibleserver.description = "Opens bible references on bibleserver.com."
+bibleserver.node = "bibleserver"
+return bibleserver

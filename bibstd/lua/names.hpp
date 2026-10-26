@@ -29,7 +29,8 @@ inline constexpr std::string_view function_remove = "remove";
 
 inline constexpr std::string_view value_shutdown_flag = "shutdown_flag";
 
-inline constexpr auto script_name = std::string_view{"name"};
-inline constexpr auto script_functions = std::string_view{"functions"};
+inline constexpr std::string_view script_name = "name";
+inline constexpr std::string_view script_description = "description";
+inline constexpr std::string_view script_node = "node";
 
 } // namespace bibstd::lua::names
