@@ -86,7 +86,7 @@ end
 ---
 --- \return the scripture of the archive of \p input, the input of `scripture.read`, in the format \p format: a node
 --- like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
---- format. Each file names its book, the first file of a book is read.
+--- format, an error if it holds no book of the app. Each file names its book, the first file of a book is read.
 ---
 function scripture_archive.read_scripture(input, format)
   local files = util.filter(input.entries, function(entry) return has_extension(entry, format.extensions) end)
@@ -123,13 +123,9 @@ function scripture_archive.read_scripture(input, format)
     end
   end
 
-  local books = format.books()
-  local codes = util.keys(books)
-  table.sort(codes)
-  for _, code in ipairs(codes) do
-    if not output.verses[books[code]] then
-      return { error = "book missing: " .. code }
-    end
+  -- A book left out takes the default versification closest to the others, e.g. the Old Testament of a New Testament
+  if not next(output.verses) then
+    return { error = "no book of the app" }
   end
   return output
 end

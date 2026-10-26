@@ -5,10 +5,14 @@
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture.hpp>
+#include <bibstd/bible/versification.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <cstdint>
+#include <format>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -266,6 +270,47 @@ TEST_CASE("usfm_reads_an_archive_of_ebible", "[lua]")
   CHECK(info.name == "Test Bible");
   CHECK(info.abbreviation == "tst");
   CHECK(info.copyright == "Public Domain");
+}
+
+TEST_CASE("usfm_reads_a_new_testament", "[lua]")
+{
+  // From Matthew on, the books left out take the closest default versification and have no passages
+  const auto entries = test_utils::usfm_entries() | std::views::drop(39) | std::ranges::to<std::vector>();
+  const auto scripture = read_scripture("usfm_reads_a_new_testament", entries);
+  REQUIRE(scripture);
+  CHECK(verse_of(*scripture, book_id::matthew, 1, 1) == R"(<p data-id="begin">MAT 1:1</p>)");
+  CHECK_FALSE(verse_of(*scripture, book_id::genesis, 1, 1));
+  CHECK(scripture->versification().chapter_count(book_id::matthew) == 1);
+  CHECK(scripture->versification().chapter_count(book_id::genesis) == 50);
+  CHECK(scripture->versification().verse_count(book_id::genesis, bible::reference::chapter_type{1}) == 31);
+}
+
+TEST_CASE("usfm_fills_a_scripture_with_the_closest_default_versification", "[lua]")
+{
+  // 3 John ends with verse 15 in the ESV and 14 in the KJV, the other books are taken from the one it matches
+  const auto third_john = [](const std::uint32_t verses)
+  {
+    auto text = std::string{"\\id 3JN\n\\c 1\n\\p\n"};
+    for(auto verse = 1U; verse <= verses; ++verse)
+    {
+      text += std::format("\\v {} Text\n", verse);
+    }
+    return std::vector<io::test_utils::zip_entry>{{"3JN.usfm", text}};
+  };
+  const auto esv = read_scripture("usfm_fills_a_scripture_with_the_esv", third_john(15));
+  const auto kjv = read_scripture("usfm_fills_a_scripture_with_the_kjv", third_john(14));
+  REQUIRE(esv);
+  REQUIRE(kjv);
+  CHECK(esv->versification() == bible::versification_esv);
+  CHECK(kjv->versification() == bible::versification_kjv);
+}
+
+TEST_CASE("usfm_rejects_an_archive_without_a_book_of_the_app", "[lua]")
+{
+  const auto entries = std::vector<io::test_utils::zip_entry>{
+    {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
+  };
+  CHECK_FALSE(read_scripture("usfm_rejects_an_archive_without_a_book_of_the_app", entries));
 }
 
 TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")

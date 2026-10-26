@@ -54,7 +54,7 @@ function scripture_archive.read(name)
 
 - Returns the scripture of the archive of `input`, the input of `scripture.read`, in the format `format`: a node
 like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
-format. Each file names its book, the first file of a book is read.
+format, an error if it holds no book of the app. Each file names its book, the first file of a book is read.
 
 ```lua
 function scripture_archive.read_scripture(input, format)
@@ -618,10 +618,10 @@ archive, the script its entries with `workflow.scripture_store.read_entry`. The 
 `short_name` shown in the app and `long_name`
 
 - Returns verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-versification from them. Each is a sequence of paragraph sections `<p data-id="...">` with `begin` for a verse
-that opens its paragraph, `continue` for one that continues it and `undefined` outside of paragraphs. Inside,
-`<b>` and `<i>` mark text up, `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4
-of a verse "2-4".
+versification from them, a book left out takes the one of the default versification closest to them. Each is a
+sequence of paragraph sections `<p data-id="...">` with `begin` for a verse that opens its paragraph, `continue`
+for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, `&`, `<`
+and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
 
 - Returns cross_references the cross references of the verses by book, chapter and verse
 - Returns error why a file of its format can not be read

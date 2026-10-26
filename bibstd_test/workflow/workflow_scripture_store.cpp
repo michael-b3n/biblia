@@ -76,11 +76,11 @@ TEST_CASE("workflow_scripture_store_keeps_three_scriptures_of_equal_name_apart",
 
 TEST_CASE("workflow_scripture_store_leaves_out_a_file_its_reader_rejects", "[workflow]")
 {
-  auto incomplete = test_utils::usfm_entries();
-  incomplete.pop_back();
+  // No book of the app, and no format of a reader
   const auto fixture = test_utils::scripture_store{
     "workflow_scripture_store_leaves_out_a_file_its_reader_rejects",
-    {{"incomplete.zip", incomplete}, {"unknown.zip", {{"readme.txt", "no scripture here"}}}}
+    {{"other_book.zip", {{"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}}},
+     {"unknown.zip", {{"readme.txt", "no scripture here"}}}}
   };
   CHECK(fixture.store->scriptures().empty());
 }
