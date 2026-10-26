@@ -244,6 +244,43 @@ TEST_CASE("usfm_reads_the_paratext_settings", "[lua]")
   CHECK(info.copyright == "Public Domain");
 }
 
+TEST_CASE("usfm_reads_the_next_info_file_if_one_does_not_read", "[lua]")
+{
+  auto entries = test_utils::usfm_entries();
+  entries.emplace_back("Settings.xml", "<ScriptureText><Name>broken");
+  entries.emplace_back(
+    "metadata.xml", "<DBLMetadata><identification><nameLocal>Bundle</nameLocal></identification></DBLMetadata>"
+  );
+  const auto scripture = read_scripture("usfm_reads_the_next_info_file_if_one_does_not_read", entries);
+  REQUIRE(scripture);
+  CHECK(scripture->information().name == "Bundle");
+}
+
+TEST_CASE("usfm_takes_no_book_file_without_verses", "[lua]")
+{
+  // The first file of Genesis holds its headers only, the second one is Genesis
+  auto entries = test_utils::usfm_entries({
+    {"GEN", "\\id GEN\n\\h Genesis\n"}
+  });
+  entries.emplace_back("GEN2.usfm", "\\id GEN\n\\c 1\n\\p\n\\v 1 In the beginning\n");
+  const auto scripture = read_scripture("usfm_takes_no_book_file_without_verses", entries);
+  REQUIRE(scripture);
+  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">In the beginning</p>)");
+}
+
+TEST_CASE("usfm_takes_a_range_beyond_the_longest_chapter_for_its_first_verse", "[lua]")
+{
+  const auto scripture = read_scripture(
+    "usfm_takes_a_range_beyond_the_longest_chapter_for_its_first_verse",
+    test_utils::usfm_entries({
+      {"GEN", "\\id GEN\n\\c 1\n\\p\n\\v 1-99999999 Text\n"}
+  })
+  );
+  REQUIRE(scripture);
+  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">Text</p>)");
+  CHECK_FALSE(verse_of(*scripture, book_id::genesis, 1, 2));
+}
+
 TEST_CASE("usfm_reads_a_bundle_of_the_digital_bible_library", "[lua]")
 {
   // A bundle with USFM files instead of USX, its metadata names the scripture
@@ -311,6 +348,11 @@ TEST_CASE("usfm_rejects_an_archive_without_a_book_of_the_app", "[lua]")
     {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
   };
   CHECK_FALSE(read_scripture("usfm_rejects_an_archive_without_a_book_of_the_app", entries));
+  // A book of the app without verses is none either
+  const auto empty = std::vector<io::test_utils::zip_entry>{
+    {"GEN.usfm", "\\id GEN\n\\h Genesis\n"}
+  };
+  CHECK_FALSE(read_scripture("usfm_rejects_an_archive_of_an_empty_book", empty));
 }
 
 TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")
@@ -326,7 +368,6 @@ TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")
 
   CHECK(fixture.check("select(2, scripts.usfm.parse('\\\\p no book')) == 'no book identification'"));
   CHECK(fixture.check("select(2, scripts.usx.parse('<other/>')) == 'no usx root element'"));
-  CHECK(fixture.check("scripts.usx.books().GEN == 'genesis' and scripts.usfm.books().REV == 'revelation'"));
 
   const auto book = [&](const std::string& code)
   {

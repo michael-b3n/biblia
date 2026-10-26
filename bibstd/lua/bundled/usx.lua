@@ -22,6 +22,9 @@ local book_identifiers = {
   "peter1", "peter2", "john1", "john2", "john3", "jude", "revelation",
 }
 
+-- The verses of the longest chapter, Psalm 119
+local longest_chapter = 176
+
 -- The identifiers of the books of the app by their USFM code
 local books = {}
 for i, code in ipairs(usfm_codes) do
@@ -275,8 +278,9 @@ function usx.book(tree)
       if number then
         flush()
         verse = number > 0 and number or nil
-        -- The other verses of a range have no text of their own
-        if chapter and verse then
+        -- The other verses of a range have no text of their own. No chapter has more verses than Psalm 119, a range
+        -- going beyond is no range of verses.
+        if chapter and verse and last <= longest_chapter then
           for covered = verse + 1, last do
             keep(covered, "")
           end
@@ -325,13 +329,6 @@ function usx.book(tree)
     verses = verses,
     cross_references = cross_references,
   }
-end
-
----
---- \return the identifiers of the books of the app by their USFM code, e.g. `GEN` to `genesis`
----
-function usx.books()
-  return util.copy(books)
 end
 
 -- The extensions of the files of the format

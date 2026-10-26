@@ -41,13 +41,19 @@ TEST_CASE("ebible_reads_the_copyright_page_of_its_archives", "[lua]")
      R"(Language: <a href='http://www.ethnologue.org/language/deu'>Deutsch (German, Standard)</a><br />)"
      R"(Translation by: Franz-Eugen Schlachter<br /></p>)"},
     // Not XML, the text is taken without the tags
-    {"html", R"(<p>Public Domain <b>text<br />)"},
+    {"html", R"(<p>Public Domain <b>text<br /></p>)"},
+    // The first paragraph ends without a line break, the next one is no part of it
+    {"paragraphs", R"(<p class="x">Public Domain</p><p>Language: <a href='x'>English</a><br /></p>)"},
+    // Entities of HTML only
+    {"entities", R"(<p>copyright &copy; 2001&nbsp;Society<br></p>)"},
   };
   CHECK(fixture.check("scripts.ebible.info(page).name == 'Die Schlachter-Bibel 1951'"));
   CHECK(fixture.check("scripts.ebible.info(page).abbreviation == 'deu1951'"));
   CHECK(fixture.check("scripts.ebible.info(page).language == 'Deutsch'"));
   CHECK(fixture.check("scripts.ebible.info(page).copyright == 'copyright \\u{A9} 1951 Genfer Bibelgesellschaft'"));
   CHECK(fixture.check("scripts.ebible.info(html).copyright == 'Public Domain text'"));
+  CHECK(fixture.check("scripts.ebible.info(paragraphs).copyright == 'Public Domain'"));
+  CHECK(fixture.check("scripts.ebible.info(entities).copyright == 'copyright \\u{A9} 2001\\u{A0}Society'"));
 }
 
 } // namespace bibstd::lua

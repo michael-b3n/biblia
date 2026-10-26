@@ -305,13 +305,6 @@ function usfm.book(tree)
   return scripts.usx.book(tree)
 end
 
----
---- \return the identifiers of the books of the app by their USFM code, \see scripts.usx.books
----
-function usfm.books()
-  return scripts.usx.books()
-end
-
 -- The extensions of the files of the format
 usfm.extensions = { ".usfm", ".sfm" }
 

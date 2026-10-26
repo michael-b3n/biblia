@@ -4,6 +4,9 @@
 
 local ebible = {}
 
+-- The entities of HTML pages XML does not know, as character references
+local html_entities = { nbsp = "&#160;", copy = "&#169;", reg = "&#174;", ndash = "&#8211;", mdash = "&#8212;" }
+
 ---
 --- \return the text of the HTML \p fragment without its tags and the white space at its ends, nil if it is empty
 ---
@@ -11,10 +14,19 @@ local function text_of(fragment)
   if not fragment then
     return nil
   end
-  local tree = util.parse_xml("<text>" .. fragment .. "</text>")
-  -- HTML is no XML, e.g. with "&nbsp;", then only its tags are left out
-  local text = util.trim(tree and util.xml_text(tree) or (string.gsub(fragment, "<[^>]*>", "")))
+  local xml = string.gsub(fragment, "&(%a+);", function(name) return html_entities[name] end)
+  -- HTML is no XML, e.g. with an unclosed "<br>", then its tags are left out first
+  local untagged = string.gsub(xml, "<[^>]*>", "")
+  local tree = util.parse_xml("<text>" .. xml .. "</text>") or util.parse_xml("<text>" .. untagged .. "</text>")
+  local text = util.trim(tree and util.xml_text(tree) or untagged)
   return text ~= "" and text or nil
+end
+
+---
+--- \return the HTML \p paragraph up to its first line break, nil if there is none
+---
+local function first_line(paragraph)
+  return paragraph and (string.match(paragraph, "^(.-)<br") or paragraph)
 end
 
 ---
@@ -30,7 +42,7 @@ function ebible.info(text)
     -- Its own name, e.g. "Deutsch" of "Deutsch (German, Standard)"
     language = language and util.trim((string.gsub(language, "%(.*%)$", ""))),
     -- The first line of the first paragraph, e.g. "copyright 1951 Genfer Bibelgesellschaft"
-    copyright = text_of(string.match(text, "<p[^>]*>(.-)<br")),
+    copyright = text_of(first_line(string.match(text, "<p%f[%s>][^>]*>(.-)</p>"))),
   }
 end
 

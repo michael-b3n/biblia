@@ -77,12 +77,6 @@ function usfm.parse(text)
 function usfm.book(tree)
 ```
 
-- Returns the identifiers of the books of the app by their USFM code, see scripts.usx.books
-
-```lua
-function usfm.books()
-```
-
 ## bibstd/lua/bundled/usx.lua
 
 - Returns the element tree of the USX document `text`, as util.parse_xml gives it, or nil and the reason if it is no
@@ -100,12 +94,6 @@ paragraphs. Every verse the book numbers is one, empty without text of its own, 
 
 ```lua
 function usx.book(tree)
-```
-
-- Returns the identifiers of the books of the app by their USFM code, e.g. `GEN` to `genesis`
-
-```lua
-function usx.books()
 ```
 
 ## bibstd/lua/internal/init.lua

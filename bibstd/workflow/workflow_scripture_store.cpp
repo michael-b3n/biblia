@@ -97,7 +97,8 @@ namespace
 }
 
 ///
-/// \return the scripture of the \p output of a reader. Throws if the output names an unknown book or a number below 1.
+/// \return the scripture of the \p output of a reader. Throws if the output names an unknown book or a number below 1,
+/// or holds no verse.
 ///
 [[nodiscard]] auto scripture_of(workflow_scripture_store::read_manifest::output output) -> std::shared_ptr<bible::scripture>
 {
@@ -137,6 +138,10 @@ namespace
   };
   auto passages = by_reference(filled(output.get<"verses">())) | std::views::transform(to_passage) |
                   std::ranges::to<bible::scripture::passage_map_type>();
+  if(passages.empty())
+  {
+    throw util::exception{"no verse of the app"};
+  }
   // Those of a verse the scripture does not number are left out
   std::ranges::for_each(
     by_reference(filled(output.get<"cross_references">())),
@@ -185,12 +190,16 @@ namespace
       auto name = scripture->information().name;
       if(scriptures.contains(name))
       {
-        // Counted up from the names already taken. Not const: a filter view cannot be iterated through a const reference.
-        auto endings =
-          scriptures | std::views::keys |
-          std::views::filter([&name](const auto& n) { return util::string::starts_with(n, name); }) |
-          std::views::transform([](const auto& n)
-                                { return util::string::ends_with_formatted_uint(n, uint_ending_format).value_or(0); });
+        // Counted up from the names already taken, the name itself and those with a suffix only, not another name
+        // starting alike, e.g. "Name Study (3)". Not const: a filter view cannot be iterated through a const reference.
+        const auto ending_of = [&name](const std::string& n) -> std::uint32_t
+        {
+          const auto number = util::string::ends_with_formatted_uint(n, uint_ending_format);
+          return number && n == name + std::format(uint_ending_format, *number) ? *number : 0;
+        };
+        auto endings = scriptures | std::views::keys |
+                       std::views::filter([&name](const auto& n) { return util::string::starts_with(n, name); }) |
+                       std::views::transform(ending_of);
         name += std::format(uint_ending_format, std::ranges::max(endings) + 1);
       }
       scriptures.emplace(std::move(name), scripture);

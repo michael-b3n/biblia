@@ -74,6 +74,20 @@ TEST_CASE("workflow_scripture_store_keeps_three_scriptures_of_equal_name_apart",
   CHECK(scriptures.contains("Same (2)"));
 }
 
+TEST_CASE("workflow_scripture_store_counts_only_the_suffixes_of_its_name", "[workflow]")
+{
+  // Another name starting alike plays no role
+  const auto fixture = test_utils::scripture_store{
+    "workflow_scripture_store_counts_only_the_suffixes_of_its_name",
+    {{"a.zip", named_usfm("Same Study (5)")}, {"b.zip", named_usfm("Same")}, {"c.zip", named_usfm("Same")}}
+  };
+  const auto scriptures = fixture.store->scriptures();
+  REQUIRE(scriptures.size() == 3);
+  CHECK(scriptures.contains("Same Study (5)"));
+  CHECK(scriptures.contains("Same"));
+  CHECK(scriptures.contains("Same (1)"));
+}
+
 TEST_CASE("workflow_scripture_store_leaves_out_a_file_its_reader_rejects", "[workflow]")
 {
   // No book of the app, and no format of a reader

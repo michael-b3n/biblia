@@ -57,7 +57,8 @@ function scripture_archive.read(name)
   return (string.gsub(content, "^\239\187\191", ""))
 end
 
--- The files telling about a scripture and the node whose info reads them, the first one an archive holds is read
+-- The files telling about a scripture and the node whose info reads them, the first one an archive holds that reads
+-- is taken
 local info_files = {
   { file = "Settings.xml", node = "paratext" },
   { file = "metadata.xml", node = "dbl" },
@@ -65,16 +66,16 @@ local info_files = {
 }
 
 ---
---- \return the name, abbreviation, language and copyright of the archive of \p input: from the first of its info files,
---- else named after its file
+--- \return the name, abbreviation, language and copyright of the archive of \p input: from the first of its info files
+--- that reads, else named after its file
 ---
 local function info_of(input)
   local info
   for _, info_file in ipairs(info_files) do
     local entry = scripture_archive.find(input.entries, info_file.file)
-    if entry then
-      local text = scripture_archive.read(entry)
-      info = text and scripts[info_file.node].info(text)
+    local text = entry and scripture_archive.read(entry)
+    info = text and scripts[info_file.node].info(text)
+    if info then
       break
     end
   end
@@ -114,7 +115,8 @@ function scripture_archive.read_scripture(input, format)
       return { error = file .. ": " .. failure }
     end
     local book = format.book(tree)
-    if book.id and not output.verses[book.id] then
+    -- A file of a book without verses is no book, e.g. one holding headers only
+    if book.id and next(book.verses) and not output.verses[book.id] then
       output.book_names[book.id] = book.names
       output.verses[book.id] = book.verses
       if next(book.cross_references) then
@@ -123,7 +125,7 @@ function scripture_archive.read_scripture(input, format)
     end
   end
 
-  -- A book left out takes the default versification closest to the others, e.g. the Old Testament of a New Testament
+  -- A chapter left out takes the default versification closest to the others, e.g. the Old Testament of a New Testament
   if not next(output.verses) then
     return { error = "no book of the app" }
   end
