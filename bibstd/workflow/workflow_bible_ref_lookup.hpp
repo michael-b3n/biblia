@@ -81,7 +81,7 @@ public: // Typedefs
   /// \param chapter the chapter
   /// \param verse_begin the first verse
   /// \param verse_end the last verse
-  /// \return url the web page that shows the verses, or none. The app opens only a valid `http` or `https` url, so
+  /// \return url the web page that shows the verses, or `nil`. The app opens only a valid `http` or `https` url, so
   /// encode characters that are not ASCII.
   ///
   struct url_manifest final

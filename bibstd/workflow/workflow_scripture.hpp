@@ -148,7 +148,7 @@ public: // Typedefs
   // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
   ///
-  /// \lua A script that offers all four `scripture` manifests offers scriptures, and several scripts may do so.
+  /// \lua A script that offers this and the three manifests below offers scriptures, and several scripts may do so.
   /// The app lists them with its other scriptures, named after the script, e.g. `LUT (Bibleserver)`, and uses the
   /// fallback versification for them. Respect the copyright of the translations.
   /// \return names the scriptures the script offers, e.g. `{ "ABC" }`

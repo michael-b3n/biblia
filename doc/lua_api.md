@@ -6,14 +6,14 @@ What the app offers scripts, file by file. How scripts work: [lua_scripts.md](lu
 
 - C++: a comment tagged `\lua` documents the code below it.
   - `register_function("web.fetch", …)`: scripts call `workflow.web.fetch`, the parameters of the lambda are theirs. `std::optional` is a value or nil, `std::vector` a list, `std::map` a table.
-  - `register_setting(*settings().name)`: scripts see the setting at `workflow.setting` followed by its path, the first argument of the `create_setting` of `name`, with the setting functions of `lua::state`.
+  - `register_setting(*settings().name)`: scripts see the setting at the path above its comment, with the setting functions of `lua::state`, e.g. `workflow.setting.web.retry_pause.get()`.
   - A manifest struct with the `id` "scripture.read": a script offers the function "scripture.read", its input and output are tables of the keys of the `lua::field`s.
-- Lua: a `---` comment documents the function below it. In `interface_util.lua`, `util.split` is `util.split` for scripts, in `usx.lua` `usx.parse` is `scripts.usx.parse`, in `init.lua` `interface.load` is `load`. Files named `system_*` are not seen by scripts.
+- Lua: a `---` comment documents the function below it. In `interface_util.lua`, `util.split` is `util.split` for scripts, in `usx.lua` `usx.parse` is `scripts.usx.parse`, in `init.lua` `interface.load` is `load`. Files named `system_*` are left out, scripts do not see them.
 
 ## bibstd/lua/bundled/dbl.lua
 
 - Returns the `name`, `abbreviation`, `language` and `copyright` of the metadata file `metadata.xml` `text` of a
-bundle, the local ones first, each nil if the file has none, or nil and the reason if it is no XML
+  bundle, the local ones first, each nil if the file has none, or nil and the reason if it is no XML
 
 ```lua
 function dbl.info(text)
@@ -22,7 +22,7 @@ function dbl.info(text)
 ## bibstd/lua/bundled/ebible.lua
 
 - Returns the `name`, `abbreviation`, `language` and `copyright` of the
-copyright page `copr.htm` `text` of an archive, each nil if the page has none
+  copyright page `copr.htm` `text` of an archive, each nil if the page has none
 
 ```lua
 function ebible.info(text)
@@ -31,7 +31,7 @@ function ebible.info(text)
 ## bibstd/lua/bundled/paratext.lua
 
 - Returns the `name`, `abbreviation`, `language` and `copyright` of the settings file `Settings.xml` `text` of a
-project, each nil if the file has none, or nil and the reason if it is no XML
+  project, each nil if the file has none, or nil and the reason if it is no XML
 
 ```lua
 function paratext.info(text)
@@ -46,15 +46,15 @@ function scripture_archive.find(entries, file_name)
 ```
 
 - Returns the text of the entry `name` of the archive being read, without a
-byte order mark, or nil and the reason, e.g. for a text that is no UTF-8
+  byte order mark, or nil and the reason, e.g. for a text that is no UTF-8
 
 ```lua
 function scripture_archive.read(name)
 ```
 
 - Returns the scripture of the archive of `input`, the input of `scripture.read`, in the format `format`: a node
-like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
-format, an error if it holds no book of the app. Each file names its book, the first file of a book is read.
+  like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
+  format, an error if it holds no book of the app. Each file names its book, the first file of a book is read.
 
 ```lua
 function scripture_archive.read_scripture(input, format)
@@ -63,9 +63,9 @@ function scripture_archive.read_scripture(input, format)
 ## bibstd/lua/bundled/usfm.lua
 
 - Returns the element tree of the USFM document `text` as scripts.usx.parse gives it for USX, or nil
-and the reason if it identifies no book. A usx root holds book, chapter, para, table, sidebar and
-periph elements, paragraphs hold verse, char, ref, note, ms, figure and optbreak elements. Markers
-USFM does not define are character styles. Chapters and verses have no sid and eid, as in USX 2.
+  and the reason if it identifies no book. A usx root holds book, chapter, para, table, sidebar and
+  periph elements, paragraphs hold verse, char, ref, note, ms, figure and optbreak elements. Markers
+  USFM does not define are character styles. Chapters and verses have no sid and eid, as in USX 2.
 
 ```lua
 function usfm.parse(text)
@@ -80,17 +80,17 @@ function usfm.book(tree)
 ## bibstd/lua/bundled/usx.lua
 
 - Returns the element tree of the USX document `text` as util.parse_xml
-gives it, or nil and the reason if it is no USX document
+  gives it, or nil and the reason if it is no USX document
 
 ```lua
 function usx.parse(text)
 ```
 
 - Returns the book of the element tree `tree` of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
-app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
-the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
-`cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
-paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
+  app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
+  the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
+  `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
+  paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 
 ```lua
 function usx.book(tree)
@@ -116,21 +116,15 @@ function interface.load(chunk, name, _, environment)
 
 ## bibstd/lua/internal/interface_util.lua
 
-`util.log_debug(...)`
-`util.log_info(...)`
-`util.log_warning(...)`
-`util.log_error(...)`
 Writes to the app log at that level. Scripts have no console and no print.
 
 - `...`: the values, written like print writes them
 
 ```lua
-for _, level in ipairs({ "debug", "info", "warning", "error" }) do
-  local log = root.system["log_" .. level]
-  util["log_" .. level] = function(...)
-    log(text(...))
-  end
-end
+function util.log_debug(...)
+function util.log_info(...)
+function util.log_warning(...)
+function util.log_error(...)
 ```
 
 - Returns the parts of `s` between the occurrences of the plain string `separator`, empty parts are kept
@@ -200,30 +194,23 @@ function util.at(path)
 ```
 
 - Returns the element tree of the XML document `text`, or nil and the reason if it is not well-formed. An element
-is a table { name, attributes, children }, its attributes by name, its children elements and texts in their order.
-Comments, processing instructions and the document type are left out, CDATA sections are text.
+  is a table { name, attributes, children }, its attributes by name, its children elements and texts in their order.
+  Comments, processing instructions and the document type are left out, CDATA sections are text.
 
 ```lua
 function util.parse_xml(text)
 ```
 
 - Returns the text of the element `element` of util.parse_xml and its descendants, with
-`without_layout` without the texts of white space only, the layout of a document
+  `without_layout` without the texts of white space only, the layout of a document
 
 ```lua
 function util.xml_text(element, without_layout)
 ```
 
-## bibstd/lua/internal/system_util.lua
-
-Remove what is at `path` of sections separated by "." in what scripts see, e.g. a function taken back, and the
-tables on its way it leaves empty.
-
-```lua
-function util.remove(path)
-```
-
 ## bibstd/lua/state.hpp
+
+`get()`
 
 - Returns the value of the setting
 
@@ -237,7 +224,7 @@ function util.remove(path)
   );
 ```
 
-Changes the setting, like the user does in the settings.
+`set(value)` changes the setting, like the user does in the settings.
 
 - `value`: the new value
 - Returns false if the setting rejected `value` or limited it to its range
@@ -253,11 +240,12 @@ Changes the setting, like the user does in the settings.
   );
 ```
 
+`postfix()`
+
 - Returns the text shown after the value, e.g. its unit, or an empty text
 
 ```cpp
   node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }, registered));
-  return registration{data_, p, std::move(registered)};
 ```
 
 ## bibstd/workflow/workflow_bible_ref_lookup.hpp
@@ -267,10 +255,9 @@ script by its name. Until the user chooses, the app uses the script with the mos
 of use of the web pages a script reads.
 
 - `language`: the language of the user, `english` or `german`
-- Returns names the translations to choose from in `Lookup > Translations`, may be empty. The app shows them as
-they are, so the bundled scripts offer full names, e.g. `Lutherbibel`, and map them to url abbreviations.
-
-- Returns defaults the translations used until the user chooses some
+- Returns `names`: the translations to choose from in `Lookup > Translations`, may be empty. The app shows them as
+  they are, so the bundled scripts offer full names, e.g. `Lutherbibel`, and map them to url abbreviations.
+- Returns `defaults`: the translations used until the user chooses some
 
 ```cpp
   struct translations_manifest final
@@ -290,8 +277,8 @@ For a reference over several chapters the app asks once per chapter and opens ea
 - `chapter`: the chapter
 - `verse_begin`: the first verse
 - `verse_end`: the last verse
-- Returns url the web page that shows the verses, or none. The app opens only a valid `http` or `https` url, so
-encode characters that are not ASCII.
+- Returns `url`: the web page that shows the verses, or `nil`. The app opens only a valid `http` or `https` url, so
+  encode characters that are not ASCII.
 
 ```cpp
   struct url_manifest final
@@ -339,12 +326,16 @@ Writes a text value to a cache, see `workflow.cache.get`.
 
 ## bibstd/workflow/workflow_scripture.cpp
 
+`workflow.setting.scripture.default_name`
+
 The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as
 scripture name use it, so without a default scripture they find no scripture.
 
 ```cpp
     << workflow_script_->register_setting(*settings().default_scripture_name)
 ```
+
+`workflow.setting.scripture.fallback_versification_name`
 
 The versification for scriptures that have none, including those of scripts,
 `Scripture > Fallback versification`.
@@ -484,15 +475,17 @@ A script that asks for a passage of its own scripture calls itself.
            const auto reference = bible::reference::create_unguarded(book_id_of(book_id), chapter, verse);
            const auto params = passage_params_t{.reference = reference, .scripture_name = scripture_name};
            return passage(params).transform([](const auto& result) { return result.passage.content; });
+         }
+       );
 ```
 
 ## bibstd/workflow/workflow_scripture.hpp
 
-A script that offers all four `scripture` manifests offers scriptures, and several scripts may do so.
+A script that offers this and the three manifests below offers scriptures, and several scripts may do so.
 The app lists them with its other scriptures, named after the script, e.g. `LUT (Bibleserver)`, and uses the
 fallback versification for them. Respect the copyright of the translations.
 
-- Returns names the scriptures the script offers, e.g. `{ "ABC" }`
+- Returns `names`: the scriptures the script offers, e.g. `{ "ABC" }`
 
 ```cpp
   struct names_manifest final
@@ -506,9 +499,9 @@ fallback versification for them. Respect the copyright of the translations.
 Information about a scripture.
 
 - `name`: one of the names the script offers
-- Returns abbreviation its abbreviation
-- Returns language its language
-- Returns copyright its copyright, shown below the verses
+- Returns `abbreviation`: its abbreviation
+- Returns `language`: its language
+- Returns `copyright`: its copyright, shown below the verses
 
 ```cpp
   struct information_manifest final
@@ -526,9 +519,9 @@ The names of a book in a scripture.
 
 - `name`: one of the names the script offers
 - `book`: the identifier of the app, e.g. `john`
-- Returns abbreviation its abbreviation
-- Returns short_name its short name, shown in the app. Without one the app shows the identifier.
-- Returns long_name its long name
+- Returns `abbreviation`: its abbreviation
+- Returns `short_name`: its short name, shown in the app. Without one the app shows the identifier.
+- Returns `long_name`: its long name
 
 ```cpp
   struct book_manifest final
@@ -549,8 +542,8 @@ so the script may ask `workflow.cache` first.
 - `book`: the identifier of the app, e.g. `john`
 - `chapter`: the chapter
 - `verse`: the verse
-- Returns text its plain text. The app shows markup of a web page as text.
-- Returns error shown in place of a verse without `text.` Without one the app shows `verse not found`.
+- Returns `text`: its plain text. The app shows markup of a web page as text.
+- Returns `error`: shown in place of a verse without `text`. Without one the app shows `verse not found`.
 
 ```cpp
   struct passage_manifest final
@@ -563,7 +556,6 @@ so the script may ask `workflow.cache` first.
       lua::field<"verse", std::int64_t>>;
     using output = lua::script_table<lua::field<"text", std::optional<std::string>>, lua::field<"error", std::optional<std::string>>>;
   };
-  // clang-format on
 ```
 
 ## bibstd/workflow/workflow_scripture_store.cpp
@@ -598,21 +590,19 @@ archive, the script its entries with `workflow.scripture_store.read_entry`. The 
 
 - `file`: the name of the file, e.g. `bible.zip`
 - `entries`: the names of the files in the archive
-- Returns name the name of the scripture, none if the file is not of a format the script reads
-- Returns abbreviation its abbreviation
-- Returns language its language
-- Returns copyright its copyright, shown below the verses
-- Returns book_names the names of the books by the identifier of the app,
-e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
-
-- Returns verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-versification from them, a book left out takes the one of the closest default versification. Each verse is a
-sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
-for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
-`&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
-
-- Returns cross_references the cross references of the verses by book, chapter and verse
-- Returns error why a file of its format can not be read
+- Returns `name`: the name of the scripture, `nil` if the file is not of a format the script reads
+- Returns `abbreviation`: its abbreviation
+- Returns `language`: its language
+- Returns `copyright`: its copyright, shown below the verses
+- Returns `book_names`: the names of the books by the identifier of the app,
+  e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
+- Returns `verses`: the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
+  versification from them, a book left out takes the one of the closest default versification. Each verse is a
+  sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
+  for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
+  `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
+- Returns `cross_references`: the cross references of the verses by book, chapter and verse
+- Returns `error`: why a file of its format can not be read
 
 ```cpp
   struct read_manifest final
@@ -627,9 +617,13 @@ for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` a
       lua::field<"book_names", std::optional<std::map<std::string, std::map<std::string, std::string>>>>,
       lua::field<"verses", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::string>>>>>,
       lua::field<"cross_references", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::vector<std::string>>>>>>,
+      lua::field<"error", std::optional<std::string>>>;
+  };
 ```
 
 ## bibstd/workflow/workflow_web.cpp
+
+`workflow.setting.web.retry_pause`
 
 How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
 request a failed url again right away.
@@ -643,7 +637,7 @@ Fetches a web page. The script waits for the page, and other scripts wait too. D
 
 - `url`: the address of the page, http or https
 - Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
-`timeout` (after 30 s), `init_failed` or `request_failed`
+  `timeout` (after 30 s), `init_failed` or `request_failed`
 
 ```cpp
     << workflow_script_->register_function("web.fetch", [this](const std::string& url) { return fetch(url); });
