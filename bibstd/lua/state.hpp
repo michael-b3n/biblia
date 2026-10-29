@@ -134,7 +134,7 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
   auto registered = std::make_shared<const std::monostate>();
   auto node = parent->create_named(p.sections().back());
   ///
-  /// \lua `get()`
+  /// \lua <setting>.get()
   /// \return the value of the setting
   ///
   node.set_function(
@@ -145,7 +145,8 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
     )
   );
   ///
-  /// \lua `set(value)` changes the setting, like the user does in the settings.
+  /// \lua <setting>.set(value)
+  /// Changes the setting, like the user does in the settings.
   /// \param value the new value
   /// \return false if the setting rejected \p value or limited it to its range
   ///
@@ -158,7 +159,7 @@ auto state::register_setting(const util::path& p, framework::setting<T>& setting
     )
   );
   ///
-  /// \lua `postfix()`
+  /// \lua <setting>.postfix()
   /// \return the text shown after the value, e.g. its unit, or an empty text
   ///
   node.set_function(names::function_postfix, function_cast([&setting]() { return setting.postfix; }, registered));
