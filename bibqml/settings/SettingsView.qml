@@ -81,17 +81,18 @@ Item
       required property string postfix
 
       readonly property bool collapsed: root.isCollapsed(delegateRoot.category)
+      property real unfolded: delegateRoot.collapsed ? 0 : 1
 
       width: listView.width - scrollBar.width
       // A folded setting is kept with no height left instead of being filtered out of the model:
       // the section header belongs to the first setting of its section and would go with it.
       // The gap below a setting belongs to it, so that it is folded away together with it.
-      height: delegateRoot.collapsed ? 0 : paramLoader.implicitHeight + Metrics.spacingSmall
+      height: delegateRoot.unfolded * (paramLoader.implicitHeight + Metrics.spacingSmall)
       visible: delegateRoot.height > 0
       clip: true
 
       // Animations
-      Behavior on height
+      Behavior on unfolded
       {
         NumberAnimation
         {
