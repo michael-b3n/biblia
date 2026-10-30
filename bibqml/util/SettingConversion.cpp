@@ -153,7 +153,7 @@ constexpr auto durationPostfix() -> QLatin1StringView
   if constexpr(std::is_same_v<T, std::chrono::milliseconds>) { return QLatin1StringView{"ms"}; }
   else if constexpr(std::is_same_v<T, std::chrono::seconds>) { return QLatin1StringView{"s"}; }
   else if constexpr(std::is_same_v<T, std::chrono::minutes>) { return QLatin1StringView{"min"}; }
-  else { static_assert(always_false_v<T>, "Unsupported duration setting type"); }
+  else { static_assert(alwaysFalse<T>, "Unsupported duration setting type"); }
   // clang-format on
 }
 
@@ -163,7 +163,7 @@ constexpr auto durationPostfix() -> QLatin1StringView
 ///
 auto setValueConvertible(const auto setting, const auto& value) -> bool
 {
-  if constexpr(std::is_convertible_v<std::remove_cvref_t<decltype(value)>, setting_raw_value_type<decltype(setting)>>)
+  if constexpr(std::is_convertible_v<std::remove_cvref_t<decltype(value)>, SettingRawValueType<decltype(setting)>>)
   {
     return setting->value(value);
   }
@@ -181,14 +181,14 @@ auto setValueConvertibleVec(const auto setting, const auto& value) -> bool
 {
   using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
-  if constexpr(std::is_same_v<vector_value_type, setting_raw_value_type<decltype(setting)>>)
+  if constexpr(std::is_same_v<vector_value_type, SettingRawValueType<decltype(setting)>>)
   {
     return setting->value(value);
   }
-  else if constexpr(std::is_convertible_v<vector_value_type, setting_raw_value_type<decltype(setting)>>)
+  else if constexpr(std::is_convertible_v<vector_value_type, SettingRawValueType<decltype(setting)>>)
   {
     return setting->value(
-      value | std::views::transform([&](const auto& v) { return static_cast<setting_raw_value_type<decltype(setting)>>(v); }) |
+      value | std::views::transform([&](const auto& v) { return static_cast<SettingRawValueType<decltype(setting)>>(v); }) |
       std::ranges::to<std::vector>()
     );
   }
@@ -204,10 +204,10 @@ auto setValueConvertibleVec(const auto setting, const auto& value) -> bool
 ///
 auto setValueInteger(const auto setting, const auto& value) -> bool
 {
-  static_assert(std::integral<setting_raw_value_type<decltype(setting)>>);
+  static_assert(std::integral<SettingRawValueType<decltype(setting)>>);
   if constexpr(std::integral<std::remove_cvref_t<decltype(value)>>)
   {
-    const auto v = integer_cast<setting_raw_value_type<decltype(setting)>>(value);
+    const auto v = integer_cast<SettingRawValueType<decltype(setting)>>(value);
     return v ? setting->value(*v) : false;
   }
   else
@@ -222,22 +222,22 @@ auto setValueInteger(const auto setting, const auto& value) -> bool
 ///
 auto setValueIntegerVec(const auto setting, const auto& value) -> bool
 {
-  static_assert(std::integral<setting_raw_value_type<decltype(setting)>>);
+  static_assert(std::integral<SettingRawValueType<decltype(setting)>>);
   using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
-  if constexpr(std::is_same_v<vector_value_type, setting_raw_value_type<decltype(setting)>>)
+  if constexpr(std::is_same_v<vector_value_type, SettingRawValueType<decltype(setting)>>)
   {
     return setting->value(value);
   }
   else if constexpr(std::integral<vector_value_type>)
   {
-    auto dest = std::vector<setting_raw_value_type<decltype(setting)>>{};
+    auto dest = std::vector<SettingRawValueType<decltype(setting)>>{};
     dest.reserve(value.size());
     auto result = std::ranges::all_of(
       value,
       [&](const auto v)
       {
-        if(const auto i = integer_cast<setting_raw_value_type<decltype(setting)>>(v))
+        if(const auto i = integer_cast<SettingRawValueType<decltype(setting)>>(v))
         {
           dest.push_back(*i);
           return true;
@@ -264,7 +264,7 @@ auto setValueIntegerVec(const auto setting, const auto& value) -> bool
 ///
 auto setValueDuration(const auto setting, const auto value) -> bool
 {
-  using duration_type = setting_raw_value_type<decltype(setting)>;
+  using duration_type = SettingRawValueType<decltype(setting)>;
   static_assert(bibstd::meta::is_duration_v<duration_type>);
   if constexpr(std::integral<std::remove_cvref_t<decltype(value)>>)
   {
@@ -283,7 +283,7 @@ auto setValueDuration(const auto setting, const auto value) -> bool
 ///
 auto setValueDurationVec(const auto setting, const auto& value) -> bool
 {
-  using duration_type = setting_raw_value_type<decltype(setting)>;
+  using duration_type = SettingRawValueType<decltype(setting)>;
   using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
   static_assert(bibstd::meta::is_duration_v<duration_type>);
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
@@ -421,7 +421,7 @@ auto toQmlPostfix(const SettingVariantType& setting) -> QString
       {
         return QString::fromStdString(s->postfix);
       }
-      using value_type = setting_raw_value_type<std::remove_cvref_t<decltype(s)>>;
+      using value_type = SettingRawValueType<std::remove_cvref_t<decltype(s)>>;
       if constexpr(bibstd::meta::is_duration_v<value_type>)
       {
         return durationPostfix<value_type>();
@@ -445,9 +445,9 @@ auto toQmlValidatorValues(const SettingVariantType& setting) -> QList<QVariant>
       using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(s)>>::value_type;
       return bibstd::util::visit_lambdas(
         s->validator,
-        []([[maybe_unused]] const validator_unbound_sptr&) { return QList<QVariant>{}; },
-        []([[maybe_unused]] const validator_range_sptr<value_type>&) { return QList<QVariant>{}; },
-        [](const validator_list_sptr<value_type>& v)
+        []([[maybe_unused]] const ValidatorUnboundSptrType&) { return QList<QVariant>{}; },
+        []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&) { return QList<QVariant>{}; },
+        [](const ValidatorListSptrType<value_type>& v)
         {
           const auto available = v->available();
           QList<QVariant> result;

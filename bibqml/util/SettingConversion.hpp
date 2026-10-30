@@ -23,17 +23,17 @@ using SettingVariantType = bibstd::workflow::workflow_settings::setting_type_era
 /// Not meta::remove_wrapper, which also takes std::string and durations apart.
 ///
 template<typename T>
-struct setting_value_type final
+struct SettingValueType final
 {
   using type = T;
 };
 template<typename T>
-struct setting_value_type<std::optional<T>> final
+struct SettingValueType<std::optional<T>> final
 {
   using type = T;
 };
 template<typename T>
-struct setting_value_type<std::vector<T>> final
+struct SettingValueType<std::vector<T>> final
 {
   using type = T;
 };
@@ -42,22 +42,22 @@ struct setting_value_type<std::vector<T>> final
 /// Value type of the setting a pointer of type \p T points to, without its optional or vector.
 ///
 template<typename T>
-using setting_raw_value_type = typename setting_value_type<typename std::remove_pointer_t<T>::value_type>::type;
+using SettingRawValueType = typename SettingValueType<typename std::remove_pointer_t<T>::value_type>::type;
 
 ///
 /// False for every \p T, for the static_assert of an if constexpr branch no type should reach.
 ///
 template<typename T>
-inline constexpr bool always_false_v = false;
+inline constexpr bool alwaysFalse = false;
 
 ///
 /// Shared pointers to the validators a type erased setting holds, one per validator kind.
 ///
 template<typename T>
-using validator_range_sptr = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
+using ValidatorRangeSptrType = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
 template<typename T>
-using validator_list_sptr = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
-using validator_unbound_sptr = bibstd::framework::setting_validator_unbound::sptr_type;
+using ValidatorListSptrType = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
+using ValidatorUnboundSptrType = bibstd::framework::setting_validator_unbound::sptr_type;
 
 ///
 /// \return the value of a QJSValue QML wraps \p variant in, \p variant itself if it is none
