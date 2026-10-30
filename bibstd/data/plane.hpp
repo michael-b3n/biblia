@@ -108,9 +108,7 @@ public: // Structors
 };
 
 ///
-/// Represents a view on a plane of objects of type T.
-/// The underlying plane must outlive the plane view.
-/// The plane has a width and a height and a view on data with size of width * height.
+/// View on width * height objects of type T, the plane must outlive the view.
 /// \see plane<T>
 ///
 template<typename T>

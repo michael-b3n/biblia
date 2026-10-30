@@ -2,11 +2,8 @@ import QtQuick
 import BibQml
 
 ///
-/// Parameter base object.
-/// It is the titled box of the application, named by the setting it stands for. Param
-/// implementations shall add the according design using the required properties. A param nested
-/// in another one clears showTitle and is then drawn bare, the param it belongs to carries the
-/// frame for it.
+/// Titled box of a setting, the base of the params. A param nested in another one clears showTitle and is drawn
+/// bare, the outer param carries the frame.
 ///
 GroupBoxSimple
 {
@@ -34,9 +31,7 @@ GroupBoxSimple
 
   // Signals
   ///
-  /// The signal will notify the backend about the change,
-  /// the value will be validated and loop back to UI
-  /// if there was an error or the desired value was not set.
+  /// Notifies the backend of a change, a value the setting corrects loops back to the UI.
   ///
   signal paramValueChanged(value: var)
 

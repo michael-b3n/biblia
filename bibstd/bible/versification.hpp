@@ -65,10 +65,8 @@ public: // Structors
 
 public: // Operators
   ///
-  /// Checks if this versification is equal to another versification.
-  /// Names are not compared, only the references are compared.
-  /// This is an expensive operation that compares all references of the two versifications.
-  /// \return true if the versifications are equal, false otherwise
+  /// Compare all references of two versifications, not their names. Expensive.
+  /// \return true if the versifications are equal
   ///
   constexpr auto operator==(const versification& other) const -> bool;
 

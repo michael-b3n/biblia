@@ -79,10 +79,8 @@ public: // Accessors
 
 public: // Operations
   ///
-  /// Apply callable to value corresponding to key.
-  /// \tparam T key type
-  /// \tparam F callable type with void return type
-  /// \return true if key was found, false otherwise
+  /// Call \p f with the value of \p key.
+  /// \return true if the key was found
   ///
   template<typename T, typename F>
   constexpr auto visit(T&& key, F&& f) const -> bool

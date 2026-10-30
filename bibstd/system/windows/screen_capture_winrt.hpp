@@ -16,12 +16,8 @@ namespace bibstd::system
 {
 
 ///
-/// Screen capture backend built on the Windows.Graphics.Capture API.
-/// One capture is kept running per monitor that was asked for so far and every capture is served
-/// from the newest frame that capture delivered, so a capture costs a copy of the wanted region on
-/// the graphics device instead of a read of the whole desktop. The backend also sees hardware
-/// composited content, which the gdi path hands back as black, and it excludes the cursor by
-/// contract rather than by the cursor happening not to be part of a device context.
+/// Screen capture backend on Windows.Graphics.Capture, one running capture per monitor asked for. A region costs a
+/// copy on the graphics device, and unlike gdi it sees composited content and leaves out the cursor.
 ///
 class screen_capture_winrt final : public screen_capture
 {
@@ -48,9 +44,8 @@ private: // Overrides
 
 private: // Implementation
   ///
-  /// Provide the running capture of a monitor, starting one if the monitor is not captured yet or
-  /// if its resolution changed since the capture was started. Captures of monitors that are gone
-  /// are given up on the way.
+  /// Provide the running capture of a monitor, starting one for a new monitor or resolution and giving up those of
+  /// monitors that are gone.
   /// \return capture of the monitor
   ///
   auto monitor_of(HMONITOR handle, std::int32_t width, std::int32_t height) -> std::shared_ptr<winrt_capture::monitor>;

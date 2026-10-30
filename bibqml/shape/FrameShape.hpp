@@ -11,10 +11,8 @@ namespace bibqml
 {
 
 ///
-/// QML item that renders the frame of a titled box: a rounded rectangle whose top line is left
-/// open between gapStart and gapEnd, which is where the title of the box is set into it.
-/// The gap is drawn and not painted over, so that the frame also reads correctly on a
-/// translucent background of the application.
+/// QML item rendering the frame of a titled box, its top line open between gapStart and gapEnd for the title.
+/// The gap is left out, not painted over, so the frame reads on a translucent background.
 ///
 class FrameShape : public QQuickPaintedItem
 {

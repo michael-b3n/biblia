@@ -42,9 +42,7 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Create a property in a property tree.
-  /// If the property tree already has a value, the value of the created property will be the existing value.
-  /// If a new value is created, the property and the tree value will be initialized with the `default_value`.
+  /// Create a property at \p path with the value of the tree, or with \p default_value if the tree has none.
   /// \return the newly created property
   ///
   template<typename T>

@@ -100,11 +100,8 @@ struct setting_validator_unbound final : public detail::setting_validator_connec
 };
 
 ///
-/// Class for range type setting validators. The class range validator is only meaningful
-/// for numbers and durations, plain or wrapped by optional or vectors.
-/// The provided member functions `validate` and `contains` accept plain or optional types
-/// and perform the range checks or validation on those single values. If the setting type
-/// is a vector type, every single value of the vector is checked (with &&) or validated.
+/// Range validator for numbers and durations, plain or in an optional or vector. `validate` and `contains`
+/// take single values, a vector is validated or checked value by value.
 ///
 template<underlying_setting_type T>
 class setting_validator_range final : public detail::setting_validator_connector
@@ -166,10 +163,7 @@ public: // Structors
 
 public: // Operators
   ///
-  /// Validate value and return corrected value if necessary.
-  /// \return corrected value if well defined validated value is available
-  /// If well defined validated values is not available and the underlying
-  /// setting type is optional, std::nullopt is returned.
+  /// \return \p value corrected to the range, std::nullopt for an optional type without well defined value
   ///
   [[nodiscard]] auto validate(const T& value) const -> T
     requires(detail::setting_validator_range_value_type<plain_underlying_type>);
@@ -261,11 +255,8 @@ public: // Operators
 };
 
 ///
-/// Class for list type setting validators.
-/// The provided getter and setter `available` accept plain types (no optional or vector types).
-/// The contains checker accepts plain types (or optional types if the underlying setting type
-/// is optional. If the underlying setting type is a vector type, every single value of the
-/// vector must be checked.
+/// List validator. `available` takes plain values, `contains` plain or optional ones, a vector is checked value
+/// by value.
 ///
 template<underlying_setting_type T>
 class setting_validator_list final : public detail::setting_validator_connector
@@ -564,11 +555,7 @@ setting_validator_range_type_erased<T>::setting_validator_range_type_erased(cons
                       }
                       else
                       {
-                        // Dummy return. The `plain_validate` function is only called for vector underlying types.
-                        // Plain types return the correct type out of the box and vector types provide overloads
-                        // for `validate` that return plain underlying types. Optional types cannot provide a
-                        // `plain_validate` overload and therefore return optional types. Using `if constexpr`
-                        // here to avoid compilation errors for optional types.
+                        // Never reached, only vector types call plain_validate. Optional types have no overload.
                         return value;
                       }
                     }}

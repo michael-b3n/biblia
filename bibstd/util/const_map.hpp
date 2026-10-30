@@ -268,13 +268,7 @@ namespace detail
 {
 
 ///
-/// Helper function to create a const_map with given key and value type.
-/// Should not be used directly!
-/// \tparam F Key type
-/// \tparam S Value type
-/// \tparam N Map size
-/// \tparam Is Index sequence
-/// \return const_map instance
+/// \return the const_map of \p p, use make_const_map or make_const_bimap
 ///
 template<typename F, typename S, std::size_t N, bool BidirectionalFlag, std::size_t... Is>
 consteval auto make_const_map_impl(std::pair<F, S> (&&p)[N], [[maybe_unused]] std::index_sequence<Is...> /*sequence*/) -> auto
@@ -285,12 +279,7 @@ consteval auto make_const_map_impl(std::pair<F, S> (&&p)[N], [[maybe_unused]] st
 } // namespace detail
 
 ///
-/// Helper function to create a const_map with given key and value type.
-/// Example: static constexpr auto map = make_const_bimap<int, std::string_view>({{0, "e_0"}, {1, "e_1"}});
-/// \tparam F Key type
-/// \tparam S Value type
-/// \tparam N Map size
-/// \return const_map instance
+/// \return the const_map of \p p, e.g. make_const_map<int, std::string_view>({{0, "e_0"}, {1, "e_1"}})
 ///
 template<typename F, typename S, std::size_t N>
 consteval auto make_const_map(std::pair<F, S> (&&p)[N]) -> auto
@@ -300,12 +289,7 @@ consteval auto make_const_map(std::pair<F, S> (&&p)[N]) -> auto
 }
 
 ///
-/// Helper function to create a const_map with given key and value type.
-/// Example: static constexpr auto map = make_const_bimap<int, std::string_view>({{0, "e_0"}, {1, "e_1"}});
-/// \tparam F Key type
-/// \tparam S Value type
-/// \tparam N Map size
-/// \return const_map instance
+/// \return the const_map of \p p, looked up in both directions
 ///
 template<typename F, typename S, std::size_t N>
 consteval auto make_const_bimap(std::pair<F, S> (&&p)[N]) -> auto

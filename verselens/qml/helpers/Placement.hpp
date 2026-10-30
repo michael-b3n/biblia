@@ -51,11 +51,9 @@ public: // Accessors
   Q_INVOKABLE QRectF centeredSquare(const QPointF& center, qreal size, const QRectF& screen) const;
 
   ///
-  /// Moves the target onto the screen and then to the side of the blocked rect that keeps it there
-  /// and is closest to its current position, so a blocked rect on the right of the screen moves the
-  /// target to its left, one at the top moves it below and so on. The clearance is kept free around
-  /// the blocked rect.
-  /// \return moved rect, the target itself if the blocked rect is unknown or no side is free
+  /// Move \p target onto \p screen, then to the side of \p blocked that keeps it there and is closest to it, with
+  /// \p clearance around \p blocked.
+  /// \return moved rect, \p target if \p blocked is unknown or no side is free
   ///
   Q_INVOKABLE QRectF placedBeside(const QRectF& target, const QRectF& blocked, qreal clearance, const QRectF& screen) const;
 

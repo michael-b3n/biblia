@@ -7,13 +7,7 @@ namespace bibstd::util
 {
 
 ///
-/// Guard class calling callable on destruction.
-///
-/// A move-only RAII guard that executes a deferred callable upon destruction.
-/// This is a utility class that manages the execution of a callable object
-/// at the end of a scope or when explicitly reset. It follows the RAII pattern
-/// and is designed to be move-only to prevent accidental copies that could lead to
-/// multiple executions of the cleanup logic.
+/// Move-only guard calling a callable on destruction or reset.
 ///
 class scope_guard final
 {

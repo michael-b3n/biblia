@@ -86,9 +86,7 @@ struct CaptureResult final
 }
 
 ///
-/// Create the click action setting, or access it if it exists already. The setting is declared
-/// by the frontend since the available actions are a frontend concept: the backend neither
-/// knows nor cares which of them is bound to a click.
+/// Create the click action setting, or access the existing one. Declared here, the actions are a frontend concept.
 /// \return non owning pointer to the click action setting
 ///
 [[nodiscard]] auto createClickActionSetting(bibstd::workflow::workflow_settings& workflowSettings)
@@ -107,9 +105,7 @@ struct CaptureResult final
 }
 
 ///
-/// Create the auto search setting, or access it if it exists already. The setting is declared by
-/// the frontend because it is the frontend that states the intent: the backend searches when it is
-/// told to and knows nothing about what the user asked for last time.
+/// Create the auto search setting, or access the existing one. Declared here, the backend only searches when told.
 /// \return non owning pointer to the auto search setting
 ///
 [[nodiscard]] auto createAutoSearchSetting(bibstd::workflow::workflow_settings& workflowSettings)

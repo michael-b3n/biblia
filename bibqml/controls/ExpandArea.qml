@@ -2,10 +2,8 @@ import QtQuick
 import BibQml
 
 ///
-/// Mouse area that lets the call site resize what it covers by dragging one of its four corners.
-/// It only reports the edges a drag starts at, resizing the target is up to the call site.
-/// Everything but the corners is left to the content, which is why this area never moves its
-/// target. That is the job of a MoveArea.
+/// Mouse area reporting drags at its four corners, resizing the target is up to the call site.
+/// Moving it is the job of a MoveArea.
 ///
 Item
 {

@@ -17,17 +17,9 @@ namespace bibqml
 {
 
 ///
-/// QML Translations singleton.
-/// This class provides the display name of any identifier the QML layer displays, e.g. the
-/// segments and the values of a setting, or the text of a button. Keys are plain strings, the
-/// meaning of a key is defined by the caller only. The backend does not know about display
-/// names, it only deals with identifiers, therefore all displayed identifiers are translated
-/// here.
-/// This class knows nothing about where the document or the language come from. The instance
-/// is created and owned by the application, which also provides the language.
-/// The QML engine only accesses it as a singleton, it must outlive the QML engine.
-/// \note Bindings must read `language` to be reevaluated on a language change. All invokable
-/// methods accept the language as last argument for this purpose.
+/// QML Translations singleton, the display names of the identifiers the QML layer shows, e.g. setting segments.
+/// Owned by the application, which sets the language, it outlives the QML engine.
+/// \note Bindings read `language` to be reevaluated on a change, the invokables take it as last argument.
 ///
 class Translations final : public QObject
 {
@@ -94,8 +86,6 @@ public: // Methods
 
   ///
   /// Get the display names of several keys as one text, e.g. the segments a setting is named by.
-  /// Every key is named on its own, so that a name has to be provided once and reads the same
-  /// wherever the key is used.
   /// \return display names in the order of the keys, separated by a space
   ///
   Q_INVOKABLE QString names(const QStringList& keys, const QString& language = {}) const;

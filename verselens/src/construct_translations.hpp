@@ -23,10 +23,8 @@ namespace verselens
 [[nodiscard]] auto read_language_setting() -> std::optional<std::string>;
 
 ///
-/// Instance holding the translations of the application.
-/// This owns the QML translations singleton and keeps the language its display
-/// names are written in synchronized with the language setting. The translations themselves know nothing
-/// about settings, and the backend knows nothing about translations.
+/// Translations of the application: owns the QML translations singleton and keeps its language in sync with the
+/// language setting.
 ///
 class translations_instance final
 {
@@ -65,9 +63,7 @@ public: // Modifiers
 };
 
 ///
-/// Initialize the translations of the application.
-/// The display names are compiled into the application, the language they are displayed in is
-/// stored in a setting that is created in the settings workflow of the backend.
+/// Initialize the translations compiled into the application, in the language of the language setting.
 /// \return translations instance, holding no display names if they could not be loaded
 ///
 auto construct_translations(backend_instance& backend) -> translations_instance;

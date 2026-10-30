@@ -33,10 +33,8 @@ namespace bibqml
 {
 
 ///
-/// QML bridge for the two reference searches. The manual one is the search the user asks for and
-/// is run by this bridge itself, the automatic one is only steered from here. Both report their
-/// references through the same signals: a reference the automatic search detected is the same thing
-/// as one the user asked for, only the question differs, so the QML layer connects to one place.
+/// QML bridge for the two reference searches: runs the manual one and steers the automatic one.
+/// Both report their references through the same signals.
 ///
 class BridgeBibleRefOcr final : public QObject
 {
@@ -70,11 +68,8 @@ class BridgeBibleRefOcr final : public QObject
 
 public: // Typedefs
   ///
-  /// Actions that can be executed for a bible reference the user clicks on.
-  /// Which action a click executes is up to the user, the value names are the
-  /// values the corresponding setting is stored with.
-  /// \note The value names must start with an upper case letter. QML does not expose
-  /// enum values that start with a lower case letter, they evaluate to undefined there.
+  /// Actions for a bible reference the user clicks on, the names are the stored values of the setting.
+  /// \note Names start upper case, QML evaluates enum values starting lower case to undefined.
   ///
   enum ClickAction
   {

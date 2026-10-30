@@ -31,10 +31,8 @@ public: // Operators
 
 public: // Static operations
   ///
-  /// Claim the single instance of an application. The claim ends when the returned guard is
-  /// destroyed, so it has to be kept alive for as long as the application runs.
-  /// \p name identifies the application across its processes and also names its local data folder.
-  /// \return guard holding the claim
+  /// Claim the single instance of the application \p name, which also names its local data folder.
+  /// \return guard holding the claim while it lives
   ///
   [[nodiscard]] static auto claim(const std::string& name) -> single_instance;
 

@@ -17,8 +17,7 @@ namespace bibqml
 
 ///
 /// QML setting binding, binds `value` to the setting at a path in both directions. A missing setting is created
-/// from the default value, unbound and of its type (boolean, integral, floating point, string or color, kept as
-/// "#AARRGGBB"), so QML declares settings of its own. Created by BridgeSettings only, path and default never change:
+/// from the default value, so QML declares settings of its own. Created by BridgeSettings only:
 /// \code
 ///   readonly property SettingBinding accentColor: BridgeSettings.binding("ui.color.accent", "#1e301e")
 ///   color: accentColor.value

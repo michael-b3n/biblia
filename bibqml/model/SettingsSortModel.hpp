@@ -14,12 +14,8 @@ namespace bibqml
 {
 
 ///
-/// QML proxy model putting the settings of a SettingsListModel into the order they are read in:
-/// by the display name of their category first, by their own display name second. The order
-/// therefore follows the language they are displayed in and not the order the backend creates
-/// them in.
-/// The source model only tells which segments a setting is named by. That the first of them is
-/// its category is decided here, so that the view is left with nothing but displaying it.
+/// QML proxy model ordering the settings of a SettingsListModel by the display name of their category, their first
+/// segment, then by their own, so the order follows the display language.
 ///
 class SettingsSortModel : public QSortFilterProxyModel
 {

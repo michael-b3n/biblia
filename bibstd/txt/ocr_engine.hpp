@@ -104,10 +104,8 @@ protected: // Typedefs
 
 public: // Operations
   ///
-  /// Run analyze layout on image and list all bounding boxes
-  /// corresponding to the provided resolution. If no character recognition
-  /// is required, this method is much more efficient.
-  /// \return list of bounding boxes corresponding to resolution tag
+  /// Analyze the layout of the image, much faster than character recognition.
+  /// \return the layouts of the lines
   ///
   virtual auto layout_analysis() const -> std::vector<line_layout> = 0;
 };
