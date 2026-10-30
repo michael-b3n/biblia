@@ -22,30 +22,9 @@ namespace bibqml
 namespace
 {
 
-// Typedefs
-// clang-format off
-template<typename T>
-struct setting_value_type { using type = T; };
-template<typename T>
-struct setting_value_type<std::optional<T>> { using type = T; };
-template<typename T>
-struct setting_value_type<std::vector<T>> { using type = T; };
-// clang-format on
-template<typename T>
-using setting_raw_value_type = typename setting_value_type<typename std::remove_pointer_t<T>::value_type>::type;
-template<typename T>
-inline constexpr bool always_false_v = false;
-template<typename T>
-using validator_range_sptr = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
-template<typename T>
-using validator_list_sptr = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
-using validator_unbound_sptr = bibstd::framework::setting_validator_unbound::sptr_type;
-
 ///
-/// Check if the setting of the specified path is an internal one. Internal settings hold state
-/// the application manages on its own, e.g. the position of a window. They are persisted like
-/// any other setting, but they are not meant to be edited by the user.
-/// \return true if the setting is internal, false otherwise
+/// Check if the setting of \p path is internal: state the application manages itself, e.g. a window position.
+/// \return true if the setting is internal
 ///
 auto isInternalSetting(const std::string_view path) -> bool
 {

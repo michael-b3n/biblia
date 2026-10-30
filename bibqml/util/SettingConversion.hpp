@@ -1,11 +1,14 @@
 #pragma once
 
+#include <bibstd/framework/setting_validator.hpp>
 #include <bibstd/workflow/workflow_settings.hpp>
 
 #include <QString>
 #include <QVariant>
 
 #include <optional>
+#include <type_traits>
+#include <vector>
 
 namespace bibqml
 {
@@ -16,11 +19,54 @@ namespace bibqml
 using SettingVariantType = bibstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type;
 
 ///
-/// Deduce the default value of a new setting from a QML provided value. The alternative of the
-/// returned variant defines the value type a setting declared in QML is created with. Reading
-/// and writing an existing setting is defined by the value type of that setting.
-/// Supported are boolean, integral, floating point, string and color values.
-/// Colors are converted to "#AARRGGBB" strings.
+/// Type trait that removes the optional or vector from a setting value type.
+/// Not meta::remove_wrapper, which also takes std::string and durations apart.
+///
+template<typename T>
+struct setting_value_type final
+{
+  using type = T;
+};
+template<typename T>
+struct setting_value_type<std::optional<T>> final
+{
+  using type = T;
+};
+template<typename T>
+struct setting_value_type<std::vector<T>> final
+{
+  using type = T;
+};
+
+///
+/// Value type of the setting a pointer of type \p T points to, without its optional or vector.
+///
+template<typename T>
+using setting_raw_value_type = typename setting_value_type<typename std::remove_pointer_t<T>::value_type>::type;
+
+///
+/// False for every \p T, for the static_assert of an if constexpr branch no type should reach.
+///
+template<typename T>
+inline constexpr bool always_false_v = false;
+
+///
+/// Shared pointers to the validators a type erased setting holds, one per validator kind.
+///
+template<typename T>
+using validator_range_sptr = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
+template<typename T>
+using validator_list_sptr = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
+using validator_unbound_sptr = bibstd::framework::setting_validator_unbound::sptr_type;
+
+///
+/// \return the value of a QJSValue QML wraps \p variant in, \p variant itself if it is none
+///
+[[nodiscard]] auto tryNormalizeQVariant(const QVariant& variant) -> QVariant;
+
+///
+/// Deduce the default value of a setting declared in QML from \p value, its alternative is the type of the setting:
+/// boolean, integral, floating point, string, or a color as "#AARRGGBB" string.
 /// \return default setting value, std::nullopt if the value type is not supported
 ///
 [[nodiscard]] auto toDefaultSettingValue(const QVariant& value)
@@ -34,19 +80,15 @@ using SettingVariantType = bibstd::workflow::workflow_settings::setting_type_era
 [[nodiscard]] auto toQmlValue(const SettingVariantType& setting) -> QVariant;
 
 ///
-/// Convert a QML value to the value type of a type erased setting and write it to the setting.
-/// The value is validated by the setting, therefore the value of the setting may differ from
-/// the value written.
+/// Write a QML value to a type erased setting, which validates it, so its value may differ from the one written.
 /// \throws util::exception if the QML value does not match the value type of the setting
 /// \return true if the value was set, false otherwise
 ///
 [[nodiscard]] auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bool;
 
 ///
-/// Postfix a type erased setting is displayed behind its value with, e.g. the unit it is
-/// measured in. A setting naming its own is displayed with that one. A duration names none:
-/// it is handed over counting the period it is stored in, \see toQmlValue, so the unit of
-/// that period names it.
+/// Postfix displayed behind the value of a type erased setting, e.g. its unit. A duration without one of its own
+/// takes the unit of its period, \see toQmlValue.
 /// \return postfix to display behind the value, empty if the setting has none
 ///
 [[nodiscard]] auto toQmlPostfix(const SettingVariantType& setting) -> QString;

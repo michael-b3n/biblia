@@ -5,11 +5,8 @@ import QtQuick.Controls
 import BibQml
 
 ///
-/// Editor of the settings of a SettingsListModel. A list view lists them through the Param
-/// controls, grouped by the first of the segments they are named by. Only this one level is
-/// grouped, all further segments name the setting itself.
-/// Every group can be folded away, the view opens with all of them unfolded.
-/// Groups and the settings inside them are listed in alphabetical order.
+/// Editor of the settings of a SettingsListModel, grouped by their first segment, both in alphabetical order.
+/// Groups can be folded, all start unfolded.
 ///
 Item
 {
@@ -111,148 +108,67 @@ Item
         // Properties
         x: Metrics.spacingSmall
         width: delegateRoot.width - 2 * Metrics.spacingSmall
-        sourceComponent:
+
+        // Connections
+        // Bindings, so the param follows the model
+        Component.onCompleted:
         {
-          switch(delegateRoot.valueType)
-          {
-          case SettingsListModel.BoolValueType:
-          {
-            switch(delegateRoot.wrapperType)
-            {
-            case SettingsListModel.NoneWrapperType: // [[fallthrough]]
-            case SettingsListModel.OptionalWrapperType: return paramSwitch
-            case SettingsListModel.ListWrapperType: return paramError // unsupported
-            default: return paramError
-            }
-          }
-          case SettingsListModel.IntValueType: // [[fallthrough]]
-          case SettingsListModel.DoubleValueType: // [[fallthrough]]
-          case SettingsListModel.TimeValueType: // [[fallthrough]]
-          case SettingsListModel.StringValueType: // [[fallthrough]]
-          case SettingsListModel.PathValueType:
-            switch(delegateRoot.wrapperType)
-            {
-            case SettingsListModel.NoneWrapperType: // [[fallthrough]]
-            case SettingsListModel.OptionalWrapperType:
-              switch(delegateRoot.validatorType)
-              {
-              case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
-              case SettingsListModel.RangeValidatorType: return paramTextField
-              case SettingsListModel.ListValidatorType: return paramComboBox
-              default: return paramError
-              }
-            case SettingsListModel.ListWrapperType: return paramListView
-            default: return paramError
-            }
-          default: return paramError
-          }
-        }
-
-        // Components
-        Component
-        {
-          id: paramSwitch
-
-          // Components
-          ParamSwitch
-          {
-            // Properties
-            categories: delegateRoot.categories
-            valueType: delegateRoot.valueType
-            wrapperType: delegateRoot.wrapperType
-            validatorType: delegateRoot.validatorType
-            value: delegateRoot.value
-            listValidatorData: delegateRoot.listValidatorData
-            postfix: delegateRoot.postfix
-
-            // Connections
-            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-          }
-        }
-
-        Component
-        {
-          id: paramTextField
-
-          // Components
-          ParamTextField
-          {
-            // Properties
-            categories: delegateRoot.categories
-            valueType: delegateRoot.valueType
-            wrapperType: delegateRoot.wrapperType
-            validatorType: delegateRoot.validatorType
-            value: delegateRoot.value
-            listValidatorData: delegateRoot.listValidatorData
-            postfix: delegateRoot.postfix
-
-            // Connections
-            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-          }
-        }
-
-        Component
-        {
-          id: paramComboBox
-
-          // Components
-          ParamComboBox
-          {
-            // Properties
-            categories: delegateRoot.categories
-            valueType: delegateRoot.valueType
-            wrapperType: delegateRoot.wrapperType
-            validatorType: delegateRoot.validatorType
-            value: delegateRoot.value
-            listValidatorData: delegateRoot.listValidatorData
-            postfix: delegateRoot.postfix
-
-            // Connections
-            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-          }
-        }
-
-        Component
-        {
-          id: paramListView
-
-          // Components
-          ParamListView
-          {
-            // Properties
-            categories: delegateRoot.categories
-            valueType: delegateRoot.valueType
-            wrapperType: delegateRoot.wrapperType
-            validatorType: delegateRoot.validatorType
-            value: delegateRoot.value
-            listValidatorData: delegateRoot.listValidatorData
-            postfix: delegateRoot.postfix
-
-            // Connections
-            onParamValueChanged: (value) => { delegateRoot.writeBack(value) }
-          }
-        }
-
-        Component
-        {
-          id: paramError
-
-          // Components
-          ParamError
-          {
-            // Properties
-            categories: delegateRoot.categories
-            valueType: delegateRoot.valueType
-            wrapperType: delegateRoot.wrapperType
-            validatorType: delegateRoot.validatorType
-            value: delegateRoot.value
-            listValidatorData: delegateRoot.listValidatorData
-            postfix: delegateRoot.postfix
-          }
+          paramLoader.setSource(delegateRoot.paramFile(), {
+            categories: Qt.binding(() => delegateRoot.categories),
+            valueType: Qt.binding(() => delegateRoot.valueType),
+            wrapperType: Qt.binding(() => delegateRoot.wrapperType),
+            validatorType: Qt.binding(() => delegateRoot.validatorType),
+            value: Qt.binding(() => delegateRoot.value),
+            listValidatorData: Qt.binding(() => delegateRoot.listValidatorData),
+            postfix: Qt.binding(() => delegateRoot.postfix)
+          })
         }
       }
 
+      Connections
+      {
+        target: paramLoader.item
+        function onParamValueChanged(value: var) { delegateRoot.writeBack(value) }
+      }
+
       // Functions
+      ///
+      /// \return the file of the param editing the setting
+      ///
+      function paramFile(): string
+      {
+        switch(delegateRoot.valueType)
+        {
+        case SettingsListModel.BoolValueType:
+          switch(delegateRoot.wrapperType)
+          {
+          case SettingsListModel.NoneWrapperType: // [[fallthrough]]
+          case SettingsListModel.OptionalWrapperType: return "ParamSwitch.qml"
+          default: return "ParamError.qml"
+          }
+        case SettingsListModel.IntValueType: // [[fallthrough]]
+        case SettingsListModel.DoubleValueType: // [[fallthrough]]
+        case SettingsListModel.TimeValueType: // [[fallthrough]]
+        case SettingsListModel.StringValueType: // [[fallthrough]]
+        case SettingsListModel.PathValueType:
+          switch(delegateRoot.wrapperType)
+          {
+          case SettingsListModel.NoneWrapperType: // [[fallthrough]]
+          case SettingsListModel.OptionalWrapperType:
+            switch(delegateRoot.validatorType)
+            {
+            case SettingsListModel.UnboundValidatorType: // [[fallthrough]]
+            case SettingsListModel.RangeValidatorType: return "ParamTextField.qml"
+            case SettingsListModel.ListValidatorType: return "ParamComboBox.qml"
+            default: return "ParamError.qml"
+            }
+          case SettingsListModel.ListWrapperType: return "ParamListView.qml"
+          default: return "ParamError.qml"
+          }
+        default: return "ParamError.qml"
+        }
+      }
+
       ///
       /// Reports an edited value back to the backend, which validates it and answers with the
       /// value it accepted, so that the control shows what was stored and not what was typed.

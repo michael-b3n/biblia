@@ -32,23 +32,6 @@ namespace
 // Typedefs
 template<typename T>
 using setting_ptr = bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<T>>;
-// clang-format off
-template<typename T>
-struct setting_value_type { using type = T; };
-template<typename T>
-struct setting_value_type<std::optional<T>> { using type = T; };
-template<typename T>
-struct setting_value_type<std::vector<T>> { using type = T; };
-// clang-format on
-template<typename T>
-using setting_raw_value_type = typename setting_value_type<typename std::remove_pointer_t<T>::value_type>::type;
-template<typename T>
-inline constexpr bool always_false_v = false;
-template<typename T>
-using validator_range_sptr = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
-template<typename T>
-using validator_list_sptr = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
-using validator_unbound_sptr = bibstd::framework::setting_validator_unbound::sptr_type;
 
 ///
 /// Protected numeric cast between integers.
@@ -172,23 +155,6 @@ constexpr auto durationPostfix() -> QLatin1StringView
   else if constexpr(std::is_same_v<T, std::chrono::minutes>) { return QLatin1StringView{"min"}; }
   else { static_assert(always_false_v<T>, "Unsupported duration setting type"); }
   // clang-format on
-}
-
-///
-/// Try to convert a QJSValue type inside a QVariant to a proper QVariant type.
-/// This is needed since QML might provide special Java script types that do
-/// not belong to a non user meta type.
-/// \returns QVariant type that is converted to QVariant if it was a user type.
-///
-auto tryNormalizeQVariant(const QVariant& variant) -> QVariant
-{
-  const auto typeId = variant.metaType().id();
-  if(typeId >= QMetaType::User && variant.canConvert<QJSValue>())
-  {
-    // came through as a JS array wrapped in QJSValue — unwrap it properly
-    return variant.value<QJSValue>().toVariant();
-  }
-  return variant;
 }
 
 ///
@@ -350,6 +316,19 @@ auto setValueDurationVec(const auto setting, const auto& value) -> bool
 }
 
 } // anonymous namespace
+
+///
+///
+auto tryNormalizeQVariant(const QVariant& variant) -> QVariant
+{
+  const auto typeId = variant.metaType().id();
+  if(typeId >= QMetaType::User && variant.canConvert<QJSValue>())
+  {
+    // came through as a JS array wrapped in QJSValue — unwrap it properly
+    return variant.value<QJSValue>().toVariant();
+  }
+  return variant;
+}
 
 ///
 ///

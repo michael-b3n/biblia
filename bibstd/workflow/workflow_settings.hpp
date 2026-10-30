@@ -15,6 +15,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace bibstd::workflow
 {
@@ -135,12 +136,10 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Create a new setting with a value type that is only known at runtime, or access the
-  /// already existing setting of the specified path. The created setting is unbound, it will
-  /// be owned by this workflow.
-  /// \note This is intended for settings that are declared outside of the backend, e.g. by the frontend.
-  /// \throws util::exception if a setting of the specified path exists with a different value type
-  /// \return the newly created or the already existing setting
+  /// Create an unbound setting owned by this workflow, of a type known at runtime only, e.g. declared by the
+  /// frontend, or access the existing one of \p path.
+  /// \throws util::exception if a setting of \p path exists with a different value type
+  /// \return the created or existing setting
   ///
   template<framework::underlying_setting_type_erased_type T>
   [[nodiscard]] auto type_erased_setting(
@@ -178,6 +177,16 @@ public: // Modifiers
   template<framework::underlying_setting_type T>
   [[nodiscard]] auto create_setting(const std::string& path, T default_value, framework::setting_validator<T> validator)
     -> setting_non_owning_ptr_type<T>;
+
+private: // Implementation
+  ///
+  /// Create the setting of \p path with the value of the property tree, \p default_value if the tree has none.
+  /// \return the entry owning the setting, and the setting
+  ///
+  template<framework::underlying_setting_type T>
+  [[nodiscard]] auto make_setting(
+    const std::string& path, T default_value, std::string postfix, framework::setting_validator<T> validator
+  ) -> std::pair<setting_uptr_data, setting_non_owning_ptr_type<T>>;
 };
 
 ///
@@ -192,19 +201,7 @@ auto workflow_settings::type_erased_setting(
   const auto setting_exists = it != std::ranges::cend(settings_);
   if(!setting_exists)
   {
-    const auto setting = std::make_shared<framework::setting<T>>(
-      path,
-      std::move(tree_->create_property(
-        framework::property_tree::path_type{std::string(settings_root_name)} / framework::property_tree::path_type{path},
-        std::move(default_value)
-      )),
-      std::move(postfix),
-      std::move(validator)
-    );
-    using underlying_setting_type_erased_type = framework::setting_type_erased<framework::setting_type_erased_type_from<T>>;
-    settings_.emplace_back(
-      setting_uptr_data{.path = path, .setting = std::make_unique<underlying_setting_type_erased_type>(setting)}
-    );
+    settings_.emplace_back(make_setting(path, std::move(default_value), std::move(postfix), std::move(validator)).first);
     it = std::prev(settings_.end());
   }
   const auto setting_ptr =
@@ -250,17 +247,7 @@ auto workflow_settings::create_setting(
   const std::string& path, T default_value, std::string postfix, framework::setting_validator<T> validator
 ) -> setting_non_owning_ptr_type<T>
 {
-  const auto setting = std::make_shared<framework::setting<T>>(
-    path,
-    std::move(tree_->create_property(
-      framework::property_tree::path_type{std::string(settings_root_name)} / framework::property_tree::path_type{path},
-      std::move(default_value)
-    )),
-    std::move(postfix),
-    std::move(validator)
-  );
-  const auto setting_ptr = setting.get();
-  using underlying_setting_type_erased_type = framework::setting_type_erased<framework::setting_type_erased_type_from<T>>;
+  auto [entry, setting] = make_setting(path, std::move(default_value), std::move(postfix), std::move(validator));
   {
     const auto lock = std::scoped_lock{mtx_};
     const auto contains_path = util::contains(settings_, [&path](const auto& data) { return data.path == path; });
@@ -268,12 +255,10 @@ auto workflow_settings::create_setting(
     {
       throw util::exception(std::format("setting already created: path=\"{}\"", path));
     }
-    settings_.emplace_back(
-      setting_uptr_data{.path = path, .setting = std::make_unique<underlying_setting_type_erased_type>(setting)}
-    );
+    settings_.emplace_back(std::move(entry));
   }
   notify(&workflow_settings_signals::setting_created, path);
-  return setting_ptr;
+  return setting;
 }
 
 ///
@@ -283,6 +268,29 @@ auto workflow_settings::create_setting(const std::string& path, T default_value,
   -> setting_non_owning_ptr_type<T>
 {
   return create_setting<T>(path, std::move(default_value), {}, std::move(validator));
+}
+
+///
+///
+template<framework::underlying_setting_type T>
+auto workflow_settings::make_setting(
+  const std::string& path, T default_value, std::string postfix, framework::setting_validator<T> validator
+) -> std::pair<setting_uptr_data, setting_non_owning_ptr_type<T>>
+{
+  using type_erased_type = framework::setting_type_erased<framework::setting_type_erased_type_from<T>>;
+  const auto setting = std::make_shared<framework::setting<T>>(
+    path,
+    tree_->create_property(
+      framework::property_tree::path_type{std::string(settings_root_name)} / framework::property_tree::path_type{path},
+      std::move(default_value)
+    ),
+    std::move(postfix),
+    std::move(validator)
+  );
+  return {
+    setting_uptr_data{.path = path, .setting = std::make_unique<type_erased_type>(setting)},
+    setting.get()
+  };
 }
 
 } // namespace bibstd::workflow
