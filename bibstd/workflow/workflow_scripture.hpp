@@ -65,9 +65,7 @@ class workflow_scripture final
 {
   // Typedefs
   ///
-  /// Wrapper for bible scripture versification.
-  /// This wrapper is needed to provide access to the versification
-  /// of a scripture without exposing the whole scripture.
+  /// The versification of a scripture without exposing the scripture.
   ///
   class versification_wrapper final
   {
@@ -241,16 +239,12 @@ public: // Accessors
     -> std::optional<bible::book_name>;
 
   ///
-  /// Get the versification of the specifieds scripture, or the fallback versification
-  /// if the scripture is not available. No matter if there are no scriptures loaded or
-  /// the scripture name does not exist, the fallback versification is always returned.
-  /// \return versification
+  /// \return the versification of the scripture of \p params, the fallback versification if there is none
   ///
   [[nodiscard]] auto versification_or_fallback(const scripture_params& params) const -> versification_wrapper_type;
 
   ///
-  /// Get passage from scripture. If no scripture name is provided in the params,
-  /// the scripture defined in the settings will be used.
+  /// Get a passage, of the scripture of the settings if \p params names none.
   /// \return passage, or why there is none: "scripture not found", the error of the script,
   /// else "verse not found" or "script failed"
   ///

@@ -89,6 +89,8 @@ Item
               // Properties
               Layout.fillWidth: true
               text: scriptRow.modelData.description
+              font.pointSize: Metrics.fontSizeSmall
+              color: Colors.borderDarker
               wrapMode: Text.WordWrap
               visible: text !== ""
             }
@@ -101,6 +103,7 @@ Item
               font.pointSize: Metrics.fontSizeSmall
               color: Colors.borderDarker
               wrapMode: Text.WordWrap
+              visible: text !== ""
             }
           }
         }

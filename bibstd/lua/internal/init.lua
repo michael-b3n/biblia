@@ -36,7 +36,7 @@ local sandbox = readonly(interface)
 system.sandbox = sandbox
 
 ---
---- setmetatable of scripts. A finalizer fails: Lua runs it without hooks, the shutdown could not stop it.
+--- Lua's setmetatable, a finalizer fails: Lua runs it without hooks, the shutdown could not stop it.
 --- \return \p table
 ---
 function interface.setmetatable(table, metatable)
@@ -47,7 +47,7 @@ function interface.setmetatable(table, metatable)
 end
 
 ---
---- load of scripts. Text only, damaged bytecode crashes the app. By default the chunk gets globals of its own.
+--- Lua's load for text only, damaged bytecode crashes the app. By default the chunk gets globals of its own.
 --- \return the loaded chunk, or nil and the error
 ---
 function interface.load(chunk, name, _, environment)

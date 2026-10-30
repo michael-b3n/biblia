@@ -28,9 +28,7 @@ class DisplayNameTable final
 
 public: // Structors
   ///
-  /// Construct the table from a CSV document, an empty one holds no names.
-  /// A malformed row is dropped, a malformed document rejected: one bad row shall not cost
-  /// every other name.
+  /// Construct the table from a CSV document, an empty one holds no names. A malformed row is dropped.
   /// \throws util::exception if the document does not describe a table of display names
   ///
   explicit DisplayNameTable(std::span<const std::byte> csv);

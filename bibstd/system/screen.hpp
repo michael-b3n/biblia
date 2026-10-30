@@ -52,11 +52,9 @@ public: // Static accessors
   [[nodiscard]] static auto monitor_at(screen_coordinates_type coordinates) -> std::optional<screen_rect_type>;
 
   ///
-  /// Capture screen in region defined by a rectangle. The rectangle shall be in the
-  /// screen coordinate system, where the origin is on the top left corner.
-  /// A rectangle of screen area that shall be captured and the pixels object to save the
-  /// captured pixels must be provided. The pixels are saved row by row, the topmost row of
-  /// the region first (which is the order e.g. tesseract reads them in).
+  /// Capture the screen region \p rect, origin top left, into \p pix row by row, the topmost row first as tesseract
+  /// reads them.
+  /// \return true if the region was captured
   ///
   [[nodiscard]] static auto capture(screen_rect_type rect, pixel_plane_type& pix) -> bool;
 };

@@ -25,12 +25,8 @@ struct reference_ocr final
   using position_type = data::screen_coordinates_type;
 
   ///
-  /// This struct contains OCR data for recognized reference position:
-  /// Text of the relevant part of the recognized area, an index belonging to the
-  /// character data closest to the reference position and the bounding box of every
-  /// character of the text. The bounding boxes are given in the coordinate system of
-  /// the recognized image. For characters no bounding box could be determined for,
-  /// std::nullopt is set.
+  /// OCR data of a reference position: the text of the relevant area, the index of the character closest to the
+  /// position and the bounding box of every character in image coordinates, std::nullopt where there is none.
   ///
   struct reference_position_data final
   {

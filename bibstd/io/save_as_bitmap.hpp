@@ -10,9 +10,7 @@ namespace bibstd::io
 {
 
 ///
-/// Saves the provided pixel object as a bitmap *.bmp file with the name provided by the parameter.
-/// Saves only a subarea of the image if the optional subarea is specified.
-/// File extension is not forced but should be `*.bmp`.
+/// Save \p data, or its \p subarea, as bitmap file \p path, which should end with `.bmp`.
 /// \return true if successful, false otherwise
 ///
 auto save_as_bitmap(

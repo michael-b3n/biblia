@@ -1,8 +1,7 @@
 #include "bibqml/model/SimpleListModel.hpp"
+#include "bibqml/util/SettingConversion.hpp"
 
 #include <bibstd/util/log.hpp>
-
-#include <QJSValue>
 
 #include <algorithm>
 
@@ -176,21 +175,6 @@ bool SimpleListModel::move(const QModelIndex& from, const QModelIndex& to)
 ///
 bool SimpleListModel::replace(const QVariant& entries)
 {
-  /// Try to convert a QJSValue type inside a QVariant to a proper QVariant type.
-  /// This is needed since QML might provide special Java script types that do
-  /// not belong to a non user meta type.
-  /// \returns QVariant type that is converted to QVariant if it was a user type.
-  static constexpr auto tryNormalizeQVariant = [](const QVariant& variant) -> QVariant
-  {
-    const auto typeId = variant.metaType().id();
-    if(typeId >= QMetaType::User && variant.canConvert<QJSValue>())
-    {
-      // came through as a JS array wrapped in QJSValue — unwrap it properly
-      return variant.value<QJSValue>().toVariant();
-    }
-    return variant;
-  };
-
   const auto normalized = tryNormalizeQVariant(entries);
   if(!normalized.canConvert<QVariantList>())
   {

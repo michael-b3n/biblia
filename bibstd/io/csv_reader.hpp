@@ -19,9 +19,7 @@ namespace bibstd::io
 {
 
 ///
-/// Reader for CSV documents. Provides read-only access to the cells of a CSV document.
-/// This class wraps rapidcsv for simple CSV read operations. All cells are provided as
-/// strings, conversion to other types is up to the caller.
+/// Read-only access to the cells of a CSV document as strings, wraps rapidcsv.
 /// \note The complete document is held in memory.
 ///
 class csv_reader final

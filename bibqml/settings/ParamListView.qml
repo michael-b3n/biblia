@@ -5,10 +5,7 @@ import QtQuick.VectorImage
 import BibQml
 
 ///
-/// Editable list parameter object.
-/// For editable param lists a list wrapper type
-/// is required for values that are convertible to string.
-/// The validator type must be none.
+/// Editable list param for values convertible to string, requires a list wrapper type and no validator.
 ///
 ParamBase
 {

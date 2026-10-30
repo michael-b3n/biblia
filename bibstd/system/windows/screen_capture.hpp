@@ -8,11 +8,8 @@ namespace bibstd::system
 {
 
 ///
-/// Virtual base class for the screen capture backend.
-/// This class provides an interface for capturing a region of the screen through whichever
-/// capture facility the platform offers. A backend may turn a region down that it cannot serve,
-/// the caller is then expected to capture that region by other means.
-/// \note The implementation of this interface shall be thread-safe.
+/// Interface of a screen capture backend. A backend may turn a region down, the caller then captures it otherwise.
+/// \note Implementations shall be thread-safe.
 ///
 class screen_capture
 {
@@ -39,9 +36,7 @@ public: // Constructor
 
 public: // Modifiers
   ///
-  /// Capture the screen region described by the given rectangle. The rectangle shall be in the
-  /// screen coordinate system, where the origin is on the top left corner. The pixels are saved
-  /// row by row, the topmost row of the region first.
+  /// Capture the screen region \p rect, origin top left, into \p pix row by row, the topmost row first.
   /// \return true if the region was captured, false if the caller shall capture it by other means
   ///
   [[nodiscard]] auto capture(screen_rect_type rect, pixel_plane_type& pix) -> bool;

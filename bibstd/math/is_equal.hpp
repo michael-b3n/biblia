@@ -21,10 +21,7 @@ constexpr auto is_equal(const T v1, const T v2, const T epsilon = std::numeric_l
 }
 
 ///
-/// Check if a integral value is equal to another integral value.
-/// \tparam T1 Arithmetic integral type
-/// \tparam T2 Arithmetic integral type
-/// \return true, if first value is equal to second value
+/// \return true if the integral values \p v1 and \p v2 are equal, also of different signedness
 ///
 template<std::integral T1, std::integral T2>
   requires(std::equality_comparable_with<T1, T2>)

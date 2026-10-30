@@ -2,13 +2,8 @@ import QtQuick
 import BibQml
 
 ///
-/// Area the main window covers, together with the math that puts it there.
-///
-/// Nothing but the functions below writes the area, so the window never moves on its own. It
-/// moves exactly when its owner asks for it, which is what keeps it out of the user's way.
-///
-/// A pinned window stays where the user put it, an unpinned one follows the cursor of the search,
-/// keeping the offset it was dragged to.
+/// Area the main window covers and the math placing it. Only the functions below move it, never on its own.
+/// A pinned window stays where the user put it, an unpinned one follows the search cursor at its dragged offset.
 ///
 QtObject
 {

@@ -20,10 +20,8 @@ namespace
 {
 
 ///
-/// Capture a screen region through gdi. This is the fallback of the platform capture backend: it
-/// works everywhere, but it reads back the region over the cpu and it sees hardware composited
-/// content as black.
-/// \return true if the region was captured, false otherwise
+/// Capture a screen region through gdi, the fallback: it reads over the cpu and sees composited content as black.
+/// \return true if the region was captured
 ///
 auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix) -> bool
 {
@@ -101,10 +99,9 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
 }
 
 ///
-/// Access the capture backend of this platform. The first call brings it up,
-/// every later call hands out the same one. It is brought up by the thread that asks for the
-/// first capture, so that no thread is left in a com apartment it did not ask to be in.
-/// \return The backend, or nullptr if the platform offers none
+/// Access the capture backend, brought up by the first call on the thread of the first capture, so no other thread
+/// lands in a com apartment it did not ask for.
+/// \return the backend, nullptr if the platform offers none
 ///
 auto capture_backend() -> util::non_owning_ptr<screen_capture>
 {

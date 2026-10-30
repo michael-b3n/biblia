@@ -8,10 +8,8 @@ namespace bibqml
 {
 
 ///
-/// QML DashedBorder.
-/// This class provides the dash pattern that lets a single segment travel along the border of a
-/// rounded rectangle. Qt measures dashes in multiples of the stroke width, so the pattern and the
-/// offset of a full turn are given in that unit as well.
+/// QML DashedBorder, the dash pattern letting one segment travel along the border of a rounded rectangle.
+/// Qt measures dashes in stroke widths, so the pattern and the offset of a full turn are in that unit.
 ///
 class DashedBorder : public QObject
 {

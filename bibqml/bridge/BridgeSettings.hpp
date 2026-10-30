@@ -23,11 +23,8 @@ namespace bibqml
 {
 
 ///
-/// QML settings registry.
-/// This provides the settings workflow all setting bindings operate on and creates the
-/// bindings the QML layer uses. The instance is created and owned by the application, the
-/// QML engine only accesses it as a singleton. It must be created before the QML engine
-/// loads a component that requests a setting binding, and it must outlive the QML engine.
+/// QML settings registry, creates the setting bindings of the QML layer. Owned by the application, it is created
+/// before the QML engine loads and outlives it.
 /// \see SettingBinding
 ///
 class BridgeSettings final : public QObject
@@ -75,11 +72,9 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Access the setting binding of the specified path, creating it on first access. The
-  /// setting itself is created from the default value if it does not exist yet. All callers
-  /// of a path share one binding, therefore the default value of the first call wins. The
-  /// returned binding is owned by this registry and stays valid as long as it exists.
-  /// \return setting binding, nullptr if no binding could be created
+  /// Access the binding of \p path, creating it and the setting on first access. All callers share one binding,
+  /// the default value of the first call wins.
+  /// \return setting binding owned by this registry, nullptr if none could be created
   ///
   Q_INVOKABLE SettingBinding* binding(const QString& path, const QVariant& defaultValue);
 };

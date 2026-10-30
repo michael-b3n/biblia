@@ -13,9 +13,8 @@ struct ocr final
 {
   // Static
   ///
-  /// Create a system OCR engine instance. The creator will return std::monostate
-  /// if the system backend fails to create or does not support an OCR engine.
-  /// \return unique pointer to the created OCR engine, or nullptr if not available
+  /// Create the system OCR engine for \p language.
+  /// \return the engine, std::monostate if the system has none or it fails
   ///
   [[nodiscard]] static auto create(util::language language) -> txt::ocr_engine_uptr_variant_type;
 };

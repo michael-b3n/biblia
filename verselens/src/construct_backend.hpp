@@ -22,8 +22,6 @@ struct backend_instance final
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr_auto;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_lookup;
-
-  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_template;
 };
 
 ///

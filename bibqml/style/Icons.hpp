@@ -20,10 +20,7 @@ auto toIconUrl(std::string_view name) -> QString;
 } // namespace detail
 
 ///
-/// QML Icons singleton.
-/// This class provides the icon sources of the module.
-/// Keeping the resource prefix in one place avoids repeating
-/// the module path in every call site.
+/// QML Icons singleton, the icon sources of the module with the resource prefix in one place.
 ///
 class Icons final : public QObject
 {

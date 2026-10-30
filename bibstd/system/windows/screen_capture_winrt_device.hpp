@@ -57,10 +57,8 @@ struct region final
 };
 
 ///
-/// Initialize the calling thread for use of the capture API.
-/// \note Which apartment the thread lands in does not matter, the frame pool is created free
-/// threaded. The initialization is never taken back, there is no point at which a calling thread
-/// is known to be done with the capture API.
+/// Initialize the calling thread for the capture API, never taken back. Any apartment does, the frame pool is free
+/// threaded.
 ///
 inline auto init_thread() -> void
 {
@@ -83,12 +81,8 @@ inline auto to_string(const HRESULT hr) -> std::string
 }
 
 ///
-/// Graphics device the capture runs on. It hands the capture API the device to deliver frames on
-/// and it does the two copies a capture needs: the newest frame into a texture of our own, and the
-/// wanted region of that texture into memory the cpu can read.
-/// \note The immediate device context is not thread-safe, so every use of it is serialized here.
-/// The frame callbacks of the capture API run on threads of their own, which makes that the point
-/// of this class.
+/// Graphics device of the capture: copies the newest frame into a texture of our own and a region of it into cpu
+/// memory. Serializes the immediate context, which is not thread-safe, for the frame callbacks on other threads.
 ///
 class device final
 {
@@ -134,10 +128,9 @@ public: // Accessors
 
 public: // Modifiers
   ///
-  /// Copy a frame into a texture of our own. A captured frame goes back to its pool as soon as the
-  /// callback delivering it returns, its content has to be kept elsewhere to outlive that. The
-  /// target texture is created on the first copy into it and whenever the frame size changes.
-  /// \return true if the frame was copied, false otherwise
+  /// Copy \p frame, which goes back to its pool when its callback returns, into \p target. The target is created on
+  /// the first copy and on a size change.
+  /// \return true if the frame was copied
   ///
   auto keep_frame(const texture_type& frame, texture_type& target) -> bool;
 

@@ -473,9 +473,7 @@ struct line_words final
 }
 
 ///
-/// Shift all character bounding boxes of the position data by the specified offset.
-/// This is needed to convert bounding boxes that are relative to a recognition
-/// subarea into the coordinate system of the whole image.
+/// Shift the character bounding boxes of \p position_data by \p offset, from a recognition subarea to the image.
 /// \return position data with shifted character bounding boxes
 ///
 [[nodiscard]] auto shift_character_bounding_boxes(

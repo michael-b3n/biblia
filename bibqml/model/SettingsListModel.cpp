@@ -22,30 +22,9 @@ namespace bibqml
 namespace
 {
 
-// Typedefs
-// clang-format off
-template<typename T>
-struct setting_value_type { using type = T; };
-template<typename T>
-struct setting_value_type<std::optional<T>> { using type = T; };
-template<typename T>
-struct setting_value_type<std::vector<T>> { using type = T; };
-// clang-format on
-template<typename T>
-using setting_raw_value_type = typename setting_value_type<typename std::remove_pointer_t<T>::value_type>::type;
-template<typename T>
-inline constexpr bool always_false_v = false;
-template<typename T>
-using validator_range_sptr = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
-template<typename T>
-using validator_list_sptr = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
-using validator_unbound_sptr = bibstd::framework::setting_validator_unbound::sptr_type;
-
 ///
-/// Check if the setting of the specified path is an internal one. Internal settings hold state
-/// the application manages on its own, e.g. the position of a window. They are persisted like
-/// any other setting, but they are not meant to be edited by the user.
-/// \return true if the setting is internal, false otherwise
+/// Check if the setting of \p path is internal: state the application manages itself, e.g. a window position.
+/// \return true if the setting is internal
 ///
 auto isInternalSetting(const std::string_view path) -> bool
 {
@@ -70,7 +49,7 @@ auto toCategories(const std::string& path) -> QStringList
 ///
 constexpr auto getValueType(const auto& setting) -> SettingsListModel::ValueType
 {
-  using value_type = setting_raw_value_type<std::remove_cvref_t<decltype(setting)>>;
+  using value_type = SettingRawValueType<std::remove_cvref_t<decltype(setting)>>;
   // clang-format off
   if constexpr(std::is_same_v<value_type, bool>) { return SettingsListModel::ValueType::BoolValueType; }
   else if constexpr(std::is_same_v<value_type, std::int32_t>) { return SettingsListModel::ValueType::IntValueType; }
@@ -83,7 +62,7 @@ constexpr auto getValueType(const auto& setting) -> SettingsListModel::ValueType
   else if constexpr(std::is_same_v<value_type, std::chrono::seconds>) { return SettingsListModel::ValueType::TimeValueType; }
   else if constexpr(std::is_same_v<value_type, std::chrono::minutes>) { return SettingsListModel::ValueType::TimeValueType; }
   else if constexpr(std::is_same_v<value_type, std::filesystem::path>) { return SettingsListModel::ValueType::PathValueType; }
-  else { static_assert(always_false_v<value_type>, "Unsupported setting value type"); }
+  else { static_assert(alwaysFalse<value_type>, "Unsupported setting value type"); }
   // clang-format on
 }
 
@@ -94,7 +73,7 @@ constexpr auto getValueType(const auto& setting) -> SettingsListModel::ValueType
 constexpr auto getWrapperType(const auto& setting) -> SettingsListModel::WrapperType
 {
   using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(setting)>>::value_type;
-  using raw_value_type = setting_raw_value_type<std::remove_cvref_t<decltype(setting)>>;
+  using raw_value_type = SettingRawValueType<std::remove_cvref_t<decltype(setting)>>;
   static_assert(std::is_same_v<std::remove_cvref_t<value_type>, value_type>);
   static_assert(std::is_same_v<std::remove_cvref_t<raw_value_type>, raw_value_type>);
 
@@ -102,7 +81,7 @@ constexpr auto getWrapperType(const auto& setting) -> SettingsListModel::Wrapper
   if constexpr(std::is_same_v<value_type, raw_value_type>) { return SettingsListModel::WrapperType::NoneWrapperType; }
   else if constexpr(std::is_same_v<value_type, std::optional<raw_value_type>>) { return SettingsListModel::WrapperType::OptionalWrapperType; }
   else if constexpr(std::is_same_v<value_type, std::vector<raw_value_type>>) { return SettingsListModel::WrapperType::ListWrapperType; }
-  else { static_assert(always_false_v<value_type>, "Unsupported setting wrapper type"); }
+  else { static_assert(alwaysFalse<value_type>, "Unsupported setting wrapper type"); }
   // clang-format on
 }
 
@@ -115,10 +94,11 @@ auto getValidatorType(const auto& setting) -> SettingsListModel::ValidatorType
   using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(setting)>>::value_type;
   return bibstd::util::visit_lambdas(
     setting->validator,
-    []([[maybe_unused]] const validator_unbound_sptr&) { return SettingsListModel::ValidatorType::UnboundValidatorType; },
-    []([[maybe_unused]] const validator_range_sptr<value_type>&)
+    []([[maybe_unused]] const ValidatorUnboundSptrType&) { return SettingsListModel::ValidatorType::UnboundValidatorType; },
+    []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&)
     { return SettingsListModel::ValidatorType::RangeValidatorType; },
-    []([[maybe_unused]] const validator_list_sptr<value_type>&) { return SettingsListModel::ValidatorType::ListValidatorType; }
+    []([[maybe_unused]] const ValidatorListSptrType<value_type>&)
+    { return SettingsListModel::ValidatorType::ListValidatorType; }
   );
 }
 
@@ -303,9 +283,9 @@ void SettingsListModel::addSetting(const std::string& path, const auto& setting)
       using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(setting)>>::value_type;
       bibstd::util::visit_lambdas(
         setting->validator,
-        []([[maybe_unused]] const validator_unbound_sptr&) { /*noop*/ },
-        []([[maybe_unused]] const validator_range_sptr<value_type>&) { /*noop*/ },
-        [this, path, rowIndex]([[maybe_unused]] const validator_list_sptr<value_type>&)
+        []([[maybe_unused]] const ValidatorUnboundSptrType&) { /*noop*/ },
+        []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&) { /*noop*/ },
+        [this, path, rowIndex]([[maybe_unused]] const ValidatorListSptrType<value_type>&)
         {
           LOG_DEBUG("notify setting validator changed: path=\"{}\", row={}", path, rowIndex)
           QMetaObject::invokeMethod(

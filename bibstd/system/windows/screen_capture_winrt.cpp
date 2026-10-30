@@ -18,11 +18,8 @@ namespace winrt_capture
 {
 
 ///
-/// Standing capture of a single monitor. The session runs from construction until destruction and
-/// keeps the newest frame it delivered around, so reading a region costs a copy of that region
-/// instead of a capture of the whole monitor.
-/// \note A monitor that cannot be captured is a monitor whose regions are all turned down, the
-/// caller does not have to tell the two apart.
+/// Standing capture of a monitor, from construction to destruction. It keeps the newest frame, so a region costs a
+/// copy of that region. A monitor that can not be captured turns down all its regions.
 ///
 class monitor final
 {

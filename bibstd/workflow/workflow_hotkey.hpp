@@ -62,10 +62,9 @@ public: // Structors
 
 public: // Modifiers
   ///
-  /// Register a callback to a specific path and bind it to a hotkey. \p default_modifier and \p default_key
-  /// name the hotkey the callback is bound to as long as the user did not choose another one. For the
-  /// modifier and the key settings are created and exposed to the user. The settings are not exposed by `this`.
-  /// \return The shared signal associated with the path
+  /// Register a callback at \p path, bound to \p default_modifier and \p default_key until the user chooses another
+  /// hotkey in the settings created for it.
+  /// \return the shared signal of the path
   ///
   [[nodiscard]] auto register_callback(const path_type& path, key_modifier default_modifier, key default_key)
     -> shared_sig_type;
