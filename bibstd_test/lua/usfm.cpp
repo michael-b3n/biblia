@@ -147,7 +147,7 @@ TEST_CASE("usfm_marks_character_styles_up", "[lua]")
   // A style without markup is text, attributes and milestones are no text
   CHECK(
     verse_of(*scripture, book_id::genesis, 1, 1) ==
-    R"(<p data-id="begin">the word of the <i>Lord</i> is gracious, said he come. </p>)"
+    R"(<p data-id="begin">the word of the <i>Lord</i> is gracious, <i>said</i> he come. </p>)"
   );
   CHECK(verse_of(*scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a &amp; b &lt; c</p>)");
 }
@@ -332,7 +332,9 @@ TEST_CASE("usfm_fills_a_scripture_with_the_closest_default_versification", "[lua
     {
       text += std::format("\\v {} Text\n", verse);
     }
-    return std::vector<io::test_utils::zip_entry>{{"3JN.usfm", text}};
+    return std::vector<io::test_utils::zip_entry>{
+      {"3JN.usfm", text}
+    };
   };
   const auto esv = read_scripture("usfm_fills_a_scripture_with_the_esv", third_john(15));
   const auto kjv = read_scripture("usfm_fills_a_scripture_with_the_kjv", third_john(14));
@@ -374,13 +376,13 @@ TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")
     return fixture.check("(function() local book = scripts.usx.book(scripts.usx.parse(usx_text)) return " + code + " end)()");
   };
   CHECK(book("book.id == 'genesis' and book.code == 'GEN' and book.names.short_name == 'Genesis'"));
-  CHECK(book(R"(book.verses[1][1] == '<p data-id="begin">In the Lord and word Mk 9.50. </p>')"));
+  CHECK(book(R"(book.verses[1][1] == '<p data-id="begin">In the <i>Lord</i> and word Mk 9.50. </p>')"));
   CHECK(book("#book.verses == 1 and #book.verses[1] == 2"));
 }
 
 // Known defects of util.usx_book, taken over from the former C++ reader
 
-TEST_CASE("usfm_keeps_the_markup_of_a_character_style_in_a_paragraph", "[lua][!shouldfail]")
+TEST_CASE("usfm_keeps_the_markup_of_a_character_style_in_a_paragraph", "[lua]")
 {
   const auto scripture = read_genesis(
     "usfm_keeps_the_markup_of_a_character_style_in_a_paragraph",
@@ -394,7 +396,7 @@ TEST_CASE("usfm_keeps_the_markup_of_a_character_style_in_a_paragraph", "[lua][!s
   CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">the <i>Lord</i></p>)");
 }
 
-TEST_CASE("usfm_keeps_figures_out_of_the_text", "[lua][!shouldfail]")
+TEST_CASE("usfm_keeps_figures_out_of_the_text", "[lua]")
 {
   const auto scripture = read_genesis(
     "usfm_keeps_figures_out_of_the_text",
@@ -408,7 +410,7 @@ TEST_CASE("usfm_keeps_figures_out_of_the_text", "[lua][!shouldfail]")
   CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">text </p>)");
 }
 
-TEST_CASE("usfm_keeps_sidebars_out_of_the_text", "[lua][!shouldfail]")
+TEST_CASE("usfm_keeps_sidebars_out_of_the_text", "[lua]")
 {
   const auto scripture = read_genesis(
     "usfm_keeps_sidebars_out_of_the_text",

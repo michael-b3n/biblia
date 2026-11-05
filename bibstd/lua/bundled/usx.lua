@@ -105,6 +105,9 @@ local text_free = { "h", "toc", "mt", "s", "ms", "sd", "sp", "r", "sr", "mr", "d
 -- Character styles kept as markup
 local inline = { bd = "b", it = "i", em = "i", nd = "i", add = "i" }
 
+-- Elements around the scripture text, not part of it
+local no_scripture_text = { note = true, figure = true, sidebar = true }
+
 -- Paragraph styles carrying the name of a book, most preferred first for each form
 local name_styles = { "h", "toc1", "toc2", "toc3", "mt", "mt1", "mt2", "mt3" }
 local name_forms = {
@@ -136,22 +139,19 @@ local function is_text_free(style)
 end
 
 ---
---- \return the markup of the content of \p node, notes left out and character styles without markup as text
+--- \return the markup of \p node, a text or an element. What is no scripture text
+--- is left out, character styles without markup stay text.
 ---
 local function serialize(node)
-  local parts = {}
-  for _, child in ipairs(node.children) do
-    if type(child) == "string" then
-      parts[#parts + 1] = escaped(child)
-    elseif child.name == "char" then
-      local inner = serialize(child)
-      local tag = inline[child.attributes.style]
-      parts[#parts + 1] = tag and ("<" .. tag .. ">" .. inner .. "</" .. tag .. ">") or inner
-    elseif child.name ~= "note" then
-      parts[#parts + 1] = serialize(child)
-    end
+  if type(node) == "string" then
+    return escaped(node)
   end
-  return table.concat(parts)
+  if no_scripture_text[node.name] then
+    return ""
+  end
+  local inner = table.concat(util.map(node.children, serialize))
+  local tag = node.name == "char" and inline[node.attributes.style]
+  return tag and ("<" .. tag .. ">" .. inner .. "</" .. tag .. ">") or inner
 end
 
 ---
