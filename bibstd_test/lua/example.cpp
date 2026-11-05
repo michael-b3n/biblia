@@ -81,7 +81,7 @@ TEST_CASE("example_script_provides_a_scripture", "[lua]")
     {.reference = bible::reference::create_unguarded(bible::book_id::john, 3, 16), .scripture_name = "DEMO (Example)"}
   });
   REQUIRE(passage);
-  CHECK(passage->passage.content == R"(<p data-id="undefined">Example text of john 3,16</p>)");
+  CHECK(passage->passage.xml() == R"(<p data-id="undefined">Example text of john 3,16</p>)");
   // Kept in the cache of the data folder
   CHECK(std::filesystem::exists(fixture.folder.path() / "cache" / "example.sqlite"));
 }

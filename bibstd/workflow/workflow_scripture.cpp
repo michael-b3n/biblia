@@ -237,7 +237,7 @@ workflow_scripture::workflow_scripture(
          {
            const auto reference = bible::reference::create_unguarded(book_id_of(book_id), chapter, verse);
            const auto params = passage_params_t{.reference = reference, .scripture_name = scripture_name};
-           return passage(params).transform([](const auto& result) { return result.passage.content; });
+           return passage(params).transform([](const auto& result) { return result.passage.xml(); });
          }
        );
 }
@@ -389,9 +389,9 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
           const auto error = output ? output->get<"error">() : std::string{script_failed};
           return std::unexpected{error.value_or(std::string{verse_not_found})};
         }
-        using markup = bible::passage_markup;
+        // A script gives plain text, \see passage_manifest
         return passage_result_t{
-          .passage = {.ref = ref, .content = markup::section(markup::paragraph_undefined, markup::escaped_xml(*content))}
+          .passage = bible::passage{ref, *content, bible::passage_format::plain}
         };
       }
     );

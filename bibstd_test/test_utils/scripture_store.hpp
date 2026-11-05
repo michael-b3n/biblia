@@ -125,7 +125,7 @@ inline auto scripture_store::scripture_folder() const -> std::filesystem::path
 ) -> std::optional<std::string>
 {
   const auto passage = scripture.passage(bible::reference::create_unguarded(book, chapter, verse));
-  return passage ? std::optional{passage->content} : std::nullopt;
+  return passage ? std::optional{passage->xml()} : std::nullopt;
 }
 
 } // namespace bibstd::test_utils

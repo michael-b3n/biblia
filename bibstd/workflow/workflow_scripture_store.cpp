@@ -133,7 +133,7 @@ namespace
   {
     auto& [ref, content] = entry;
     return std::pair{
-      ref, bible::passage{.ref = ref, .content = std::move(content)}
+      ref, bible::passage{ref, std::move(content), bible::passage_format::xml}
     };
   };
   auto passages = by_reference(filled(output.get<"verses">())) | std::views::transform(to_passage) |
@@ -150,7 +150,7 @@ namespace
       auto& [ref, cross_references] = verse;
       if(const auto it = passages.find(ref); it != passages.end())
       {
-        it->second.cross_references = std::move(cross_references);
+        it->second.cross_references(std::move(cross_references));
       }
     }
   );

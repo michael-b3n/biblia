@@ -127,9 +127,9 @@ TEST_CASE("usfm_keeps_the_notes_out_of_the_text", "[lua]")
   REQUIRE(scripture);
   const auto passage = scripture->passage(bible::reference::create_unguarded(book_id::genesis, 1u, 1u));
   REQUIRE(passage);
-  CHECK(passage->content == R"(<p data-id="begin">Salt and light.</p>)");
+  CHECK(passage->xml() == R"(<p data-id="begin">Salt and light.</p>)");
   // The target references of a cross reference are kept
-  CHECK(passage->cross_references == std::vector<std::string>{"Mk 9.50; Lk 14.34"});
+  CHECK(passage->cross_references() == std::vector<std::string>{"Mk 9.50; Lk 14.34"});
 }
 
 TEST_CASE("usfm_marks_character_styles_up", "[lua]")

@@ -278,7 +278,7 @@ TEST_CASE("usx_passages_are_well_formed_markup", "[lua]")
       REQUIRE(found.has_value());
       auto document = pugi::xml_document{};
       // The passage is a sequence of paragraph sections, a single root is needed to parse it
-      CHECK(document.load_string(std::format("<root>{}</root>", found->content).c_str()));
+      CHECK(document.load_string(std::format("<root>{}</root>", found->xml()).c_str()));
       ++checked;
     }
     CHECK(checked > 0);

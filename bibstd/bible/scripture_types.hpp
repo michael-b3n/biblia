@@ -46,19 +46,73 @@ struct passage_markup final
   /// \return paragraph section of \p content, which is markup already, at \p position in its paragraph
   ///
   [[nodiscard]] static auto section(std::string_view position, std::string_view content) -> std::string;
+
+  ///
+  /// \return the plain text \p plain as XML, a section outside of any paragraph
+  ///
+  [[nodiscard]] static auto to_xml(std::string_view plain) -> std::string;
+
+  ///
+  /// \return the XML \p xml as plain text, its sections separated by a space and whitespace
+  /// collapsed, \p xml itself if it is no XML of a passage. In this case a warning is logged.
+  ///
+  [[nodiscard]] static auto to_plain(std::string_view xml) -> std::string;
 };
 
 ///
-/// A single bible verse together with its cross references, its content marked up as passage_markup.
+/// Format the content of a passage is provided in.
 ///
-struct passage final
+enum class passage_format
+{
+  xml,
+  plain,
+};
+
+///
+/// A single bible verse with its cross references. Its content stays as provided, \see passage_markup.
+///
+class passage final
 {
   // Variables
-  reference ref;
-  std::string content;
-  std::vector<std::string> cross_references;
+  reference ref_;
+  std::string content_;
+  passage_format format_;
+  std::vector<std::string> cross_references_;
 
-  // Operators
+public: // Structors
+  ///
+  /// \p content is provided in \p format.
+  ///
+  passage(reference ref, std::string content, passage_format format);
+
+public: // Accessors
+  ///
+  /// \return the reference of the verse
+  ///
+  [[nodiscard]] auto ref() const -> const reference&;
+
+  ///
+  /// \return the cross references of the verse
+  ///
+  [[nodiscard]] auto cross_references() const -> const std::vector<std::string>&;
+
+  ///
+  /// \return the content as XML
+  ///
+  [[nodiscard]] auto xml() const -> std::string;
+
+  ///
+  /// \return the content as plain text
+  ///
+  [[nodiscard]] auto plain() const -> std::string;
+
+public: // Setters
+  ///
+  /// Set the cross references of the verse.
+  ///
+  auto cross_references(std::vector<std::string> cross_references) -> void;
+
+public: // Operators
   auto operator==(const passage&) const -> bool = default;
 };
 

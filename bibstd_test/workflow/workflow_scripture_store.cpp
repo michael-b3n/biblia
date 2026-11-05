@@ -57,7 +57,7 @@ TEST_CASE("workflow_scripture_store_reads_the_files_of_its_folder", "[workflow]"
   CHECK_FALSE(scriptures.at("a")->information().copyright);
   const auto passage = scriptures.at("a")->passage(bible::reference::create_unguarded(bible::book_id::john, 1u, 1u));
   REQUIRE(passage);
-  CHECK(passage->content == R"(<p data-id="begin">JHN 1:1</p>)");
+  CHECK(passage->xml() == R"(<p data-id="begin">JHN 1:1</p>)");
 }
 
 TEST_CASE("workflow_scripture_store_keeps_three_scriptures_of_equal_name_apart", "[workflow]")

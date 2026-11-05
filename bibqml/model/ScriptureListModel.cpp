@@ -97,7 +97,7 @@ using Step = std::optional<bibstd::bible::reference> (bibstd::bible::versificati
   const auto params =
     bibstd::workflow::workflow_scripture::passage_params::value_type{.reference = ref, .scripture_name = std::nullopt};
   const auto result = workflowScripture.passage(params);
-  return result ? QString::fromStdString(result->passage.content) : QString::fromStdString(result.error()).toHtmlEscaped();
+  return result ? QString::fromStdString(result->passage.xml()) : QString::fromStdString(result.error()).toHtmlEscaped();
 }
 
 } // namespace
