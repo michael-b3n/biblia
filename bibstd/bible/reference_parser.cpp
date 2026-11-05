@@ -211,7 +211,7 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
           case txt::script_common::category::line: /*noop*/ break;
           case txt::script_common::category::fullstop: /*noop*/ break;
           case txt::script_common::category::digit: append(character); break;
-          default: append("*"); break;
+          case txt::script_common::category::other: append("*"); break;
           }
         }
       );
@@ -492,7 +492,9 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
             case txt::script_common::category::letter: [[fallthrough]];
             case txt::script_common::category::whitespace: append(std::string_view{&gap, 1}, data->char_size); break;
             case txt::script_common::category::line: append("-", data->char_size); break;
-            default: append(subview.substr(0, data->char_size), data->char_size); break;
+            case txt::script_common::category::fullstop: [[fallthrough]];
+            case txt::script_common::category::digit: [[fallthrough]];
+            case txt::script_common::category::other: append(subview.substr(0, data->char_size), data->char_size); break;
             }
             counter += data->char_size;
           }

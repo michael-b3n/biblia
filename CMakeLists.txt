@@ -69,6 +69,9 @@ set_property(GLOBAL APPEND
 #
 enable_testing()
 add_subdirectory(libs_external)
+
+add_compile_options(-Wswitch-enum)
+
 add_subdirectory(bibstd)
 add_subdirectory(bibqml)
 add_subdirectory(bibstd_test)
