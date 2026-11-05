@@ -86,6 +86,33 @@ bool BridgeSettings::contains(const QString& path) const
 ///
 SettingBinding* BridgeSettings::binding(const QString& path, const QVariant& defaultValue)
 {
+  return bindingOf(path, defaultValue, [&]() { return std::make_unique<SettingBinding>(path, defaultValue); });
+}
+
+///
+///
+SettingBinding* BridgeSettings::binding(const QString& path, const QVariant& defaultValue, const QVariantList& available)
+{
+  return bindingOf(path, defaultValue, [&]() { return std::make_unique<SettingBinding>(path, defaultValue, available); });
+}
+
+///
+///
+SettingBinding* BridgeSettings::binding(
+  const QString& path, const QVariant& defaultValue, const QVariant& minimum, const QVariant& maximum
+)
+{
+  return bindingOf(
+    path, defaultValue, [&]() { return std::make_unique<SettingBinding>(path, defaultValue, minimum, maximum); }
+  );
+}
+
+///
+///
+SettingBinding* BridgeSettings::bindingOf(
+  const QString& path, const QVariant& defaultValue, const std::function<std::unique_ptr<SettingBinding>()>& create
+)
+{
   if(path.isEmpty())
   {
     LOG_ERROR("access setting binding failed: no path provided");
@@ -99,7 +126,7 @@ SettingBinding* BridgeSettings::binding(const QString& path, const QVariant& def
     }
     return it->second.get();
   }
-  auto binding = std::make_unique<SettingBinding>(path, defaultValue);
+  auto binding = create();
   // The binding is owned by this registry, the QML engine must not delete it.
   QJSEngine::setObjectOwnership(binding.get(), QJSEngine::CppOwnership);
   return bindings_.emplace(path, std::move(binding)).first->second.get();

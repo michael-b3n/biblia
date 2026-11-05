@@ -9,8 +9,10 @@
 #include <QString>
 #include <QtQmlIntegration/qqmlintegration.h>
 #include <QVariant>
+#include <QVariantList>
 
 #include <optional>
+#include <variant>
 
 namespace bibqml
 {
@@ -35,9 +37,18 @@ class SettingBinding final : public QObject
   Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged FINAL)
   Q_PROPERTY(bool bound READ bound CONSTANT FINAL)
 
+  // Typedefs
+  struct ValueRange final
+  {
+    QVariant minimum;
+    QVariant maximum;
+  };
+  using Validator = std::variant<std::monostate, QVariantList, ValueRange>;
+
   // Variables
   const QString path_;
   const QVariant defaultValue_;
+  const Validator validator_;
   std::optional<SettingVariantType> setting_;
   bibstd::framework::queued_connections connections_;
 
@@ -48,6 +59,16 @@ public: // Structors
   /// default value as value and rejects any write.
   ///
   explicit SettingBinding(QString path, QVariant defaultValue, bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit SettingBinding(
+    QString path, QVariant defaultValue, QVariantList available, bibstd::util::non_owning_ptr<QObject> parent = nullptr
+  );
+  explicit SettingBinding(
+    QString path,
+    QVariant defaultValue,
+    QVariant minimum,
+    QVariant maximum,
+    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+  );
   ~SettingBinding() noexcept override;
 
 public: // Accessors
@@ -81,12 +102,22 @@ public: // Setters
 signals:
   void valueChanged();
 
+private: // Structors
+  SettingBinding(QString path, QVariant defaultValue, Validator validator, bibstd::util::non_owning_ptr<QObject> parent);
+
 private: // Implementation
   ///
   /// Bind to the setting of the path, creating it if it does not exist yet.
   /// This is called once, while this binding is constructed.
   ///
   void bind();
+
+  ///
+  /// \throws util::exception if a value of this validator does not fit a setting of type \p T
+  /// \return the validator of a new setting of type \p T
+  ///
+  template<typename T>
+  [[nodiscard]] auto settingValidator() const -> bibstd::framework::setting_validator<T>;
 };
 
 } // namespace bibqml
