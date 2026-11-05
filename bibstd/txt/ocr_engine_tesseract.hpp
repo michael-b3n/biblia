@@ -10,11 +10,11 @@
 #include <string_view>
 #include <vector>
 
-// Forward declarations
 namespace tesseract
 {
 class TessBaseAPI;
 } // namespace tesseract
+
 namespace bibstd::data
 {
 class pix;

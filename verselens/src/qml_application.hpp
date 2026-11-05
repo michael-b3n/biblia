@@ -7,7 +7,6 @@
 namespace verselens
 {
 
-// Forward declarations
 struct bridge_instance;
 class translations_instance;
 

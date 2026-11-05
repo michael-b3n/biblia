@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-// Forward declarations
 namespace bibstd::bible
 {
 class scripture;

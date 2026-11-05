@@ -13,7 +13,6 @@
 #include <optional>
 #include <string>
 
-// Forward declarations
 namespace bibstd::core
 {
 class core_cache;

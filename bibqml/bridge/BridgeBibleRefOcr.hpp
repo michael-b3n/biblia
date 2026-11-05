@@ -23,7 +23,6 @@
 
 namespace bibstd::workflow
 {
-// Forward declarations
 class workflow_bible_ref_ocr;
 class workflow_bible_ref_ocr_auto;
 class workflow_settings;

@@ -5,7 +5,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-// Forward declarations
 namespace bibqml
 {
 class BridgeApplication;

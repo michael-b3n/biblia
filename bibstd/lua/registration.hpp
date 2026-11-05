@@ -7,7 +7,7 @@
 
 namespace bibstd::lua
 {
-// Forward declarations
+
 class state;
 
 namespace detail

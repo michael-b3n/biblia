@@ -6,11 +6,11 @@
 
 #include <optional>
 
-// Forward declarations
 namespace bibstd::bible
 {
 class versification;
 } // namespace bibstd::bible
+
 namespace bibstd::workflow
 {
 class workflow_scripture;

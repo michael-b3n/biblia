@@ -7,11 +7,11 @@
 #include <mutex>
 #include <unordered_map>
 
-// Forward declarations
 namespace bibstd::system::winrt_capture
 {
 class monitor;
 } // namespace bibstd::system::winrt_capture
+
 namespace bibstd::system
 {
 

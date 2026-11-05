@@ -13,7 +13,6 @@
 #include <map>
 #include <memory>
 
-// Forward declarations
 namespace bibstd::workflow
 {
 class workflow_settings;

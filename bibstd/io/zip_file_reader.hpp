@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-// Forward declarations for libzip types
 struct zip;
 struct zip_stat;
 

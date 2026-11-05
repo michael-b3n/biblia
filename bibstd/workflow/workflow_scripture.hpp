@@ -28,7 +28,6 @@
 namespace bibstd::workflow
 {
 
-// Forward declarations
 class workflow_scripture_store;
 
 ///

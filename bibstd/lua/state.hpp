@@ -20,7 +20,6 @@
 namespace bibstd::lua
 {
 
-// Forward declarations
 class state_owner;
 
 namespace detail

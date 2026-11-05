@@ -15,7 +15,6 @@
 
 namespace bibstd::workflow
 {
-// Forward declarations
 class workflow_bible_ref_lookup;
 class workflow_scripture;
 } // namespace bibstd::workflow

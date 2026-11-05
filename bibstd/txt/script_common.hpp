@@ -99,8 +99,9 @@ public: // Static
   /// Checks if char in string at given index is of provided chars category.
   /// \return optional string view of the char or std::nullopt if category does not match
   ///
-  static constexpr auto is_char(const auto& letters, std::string_view string_view, std::size_t index, category char_category)
-    -> std::optional<std::string_view>;
+  [[nodiscard]] static constexpr auto is_char(
+    const auto& letters, std::string_view string_view, std::size_t index, category char_category
+  ) -> std::optional<std::string_view>;
 
   ///
   /// Check if char sequence is contained in a list of string_views.

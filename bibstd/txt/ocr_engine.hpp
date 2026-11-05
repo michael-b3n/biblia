@@ -8,18 +8,15 @@
 #include <variant>
 #include <vector>
 
-// Forward declarations
 namespace bibstd::system
 {
 class ocr_engine_system;
 } // namespace bibstd::system
-namespace bibstd::txt
-{
-class ocr_engine_tesseract;
-} // namespace bibstd::txt
 
 namespace bibstd::txt
 {
+
+class ocr_engine_tesseract;
 
 ///
 /// Helper text resolution tag struct of an OCR engine.

@@ -9,7 +9,6 @@
 #include <string_view>
 #include <vector>
 
-// Forward declarations
 namespace rapidcsv
 {
 class Document;
