@@ -60,13 +60,13 @@ public: // Modifiers
   ///
   void disconnect();
 
-private: // Implementation
-  void updateAvailable();
-
 signals:
   void availableChanged();
   void importRunningChanged();
   void importEnded(int count);
+
+private: // Implementation
+  void updateAvailable();
 };
 
 } // namespace bibqml

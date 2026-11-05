@@ -141,8 +141,9 @@ private: // Helpers
   [[nodiscard]] static constexpr auto visit_book_start_indices(const data_type& data) -> const book_start_indices_type&;
 
 private: // Implementation
-  constexpr auto containing_index(const reference& ref) const -> std::optional<std::size_t>;
-  constexpr auto containing_index(book_id book, reference::chapter_type chapter) const -> std::optional<std::size_t>;
+  [[nodiscard]] constexpr auto containing_index(book_id book, reference::chapter_type chapter) const
+    -> std::optional<std::size_t>;
+  [[nodiscard]] constexpr auto containing_index(const reference& ref) const -> std::optional<std::size_t>;
 };
 
 ///
