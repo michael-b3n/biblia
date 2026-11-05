@@ -97,10 +97,12 @@ public: // Overrides
   auto recognize() const -> recognition_data override
   {
     const auto offset = reported_offset();
-    const auto to_word = [&](const test_utils::capture_text& t) { return word{t.text, shifted(to_rect(t.box), offset)}; };
-    const auto to_line = [&](const test_utils::capture_text& t) { return line{t.text, shifted(to_rect(t.box), offset)}; };
+    const auto to_word = [&](const test_utils::capture_text& t)
+    { return word{.text = t.text, .bounding_box = shifted(to_rect(t.box), offset)}; };
+    const auto to_line = [&](const test_utils::capture_text& t)
+    { return line{.text = t.text, .bounding_box = shifted(to_rect(t.box), offset)}; };
     const auto to_paragraph = [&](const test_utils::capture_text& t)
-    { return paragraph{t.text, shifted(to_rect(t.box), offset)}; };
+    { return paragraph{.text = t.text, .bounding_box = shifted(to_rect(t.box), offset)}; };
 
     auto result = recognition_data{};
     for(const auto& element : data_.words)
@@ -601,19 +603,19 @@ struct placed_word final
   -> std::vector<placed_word>
 {
   return {
-    {  "saja",       13,           45, 20},
-    {   "43,",       68,           33, 20},
-    {     "1",      112,           10, 16},
-    {     "/",      133,            9, 20},
-    {"Jesaja",      149,           70, 20},
-    {   "44,",      228,           34, 20},
-    {    "22",      272,           27, 16},
-    {     "/",      306,           13, 20},
-    { "Psalm",      326,           66, 17},
-    {  number, number_x, number_width, 20},
-    {     "2",      460,           13, 16},
-    {     "/",      480,           13, 20},
-    {"Klage-",      500,           71, 21}
+    {  .text = "saja",       .x = 13,           .width = 45, .height = 20},
+    {   .text = "43,",       .x = 68,           .width = 33, .height = 20},
+    {     .text = "1",      .x = 112,           .width = 10, .height = 16},
+    {     .text = "/",      .x = 133,            .width = 9, .height = 20},
+    {.text = "Jesaja",      .x = 149,           .width = 70, .height = 20},
+    {   .text = "44,",      .x = 228,           .width = 34, .height = 20},
+    {    .text = "22",      .x = 272,           .width = 27, .height = 16},
+    {     .text = "/",      .x = 306,           .width = 13, .height = 20},
+    { .text = "Psalm",      .x = 326,           .width = 66, .height = 17},
+    {  .text = number, .x = number_x, .width = number_width, .height = 20},
+    {     .text = "2",      .x = 460,           .width = 13, .height = 16},
+    {     .text = "/",      .x = 480,           .width = 13, .height = 20},
+    {.text = "Klage-",      .x = 500,           .width = 71, .height = 21}
   };
 }
 
@@ -1070,7 +1072,10 @@ TEST_CASE("reference_ocr ends the consecutive characters at a gap of dropped tex
   {
     // The line the paragraph recognition cropped, "Gal 6," was dropped.
     const auto data = position_data_of({
-      {{"zes?", 6, 48, 20}, {"(Joh", 63, 28, 16}, {"7,19;", 98, 33, 15}, {"13)", 182, 20, 16}}
+      {{.text = "zes?", .x = 6, .width = 48, .height = 20},
+       {.text = "(Joh", .x = 63, .width = 28, .height = 16},
+       {.text = "7,19;", .x = 98, .width = 33, .height = 15},
+       {.text = "13)", .x = 182, .width = 20, .height = 16}}
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; 13", "Joh") == up_to(data, "7,19;"));
     CHECK(consecutive_characters_at(data, "Joh 7,19; 13", "13)") == from(data, "13)"));
@@ -1079,7 +1084,9 @@ TEST_CASE("reference_ocr ends the consecutive characters at a gap of dropped tex
   {
     // The boxes of a browser capture, "Gal" was dropped and only two gaps remain.
     const auto data = position_data_of({
-      {{"(Joh", 9, 36, 20}, {"7,19;", 52, 45, 18}, {"6,13)", 138, 45, 20}}
+      {{.text = "(Joh", .x = 9, .width = 36, .height = 20},
+       {.text = "7,19;", .x = 52, .width = 45, .height = 18},
+       {.text = "6,13)", .x = 138, .width = 45, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; 6,13", "6,13)") == from(data, "6,13)"));
 
@@ -1091,8 +1098,14 @@ TEST_CASE("reference_ocr ends the consecutive characters at a gap of dropped tex
   SECTION("a gap on the line a reference continues on")
   {
     const auto data = position_data_of({
-      {{"Gott", 20, 40, 20}, {"selbst", 70, 60, 20},  {"(Joh", 140, 40, 20}, {"7,19;", 190, 50, 20}},
-      { {"Gal", 20, 30, 20},  {"13).", 110, 40, 20}, {"Darum", 160, 60, 20},   {"ist", 230, 30, 20}}
+      {{.text = "Gott", .x = 20, .width = 40, .height = 20},
+       {.text = "selbst", .x = 70, .width = 60, .height = 20},
+       {.text = "(Joh", .x = 140, .width = 40, .height = 20},
+       {.text = "7,19;", .x = 190, .width = 50, .height = 20}},
+      { {.text = "Gal", .x = 20, .width = 30, .height = 20},
+       {.text = "13).", .x = 110, .width = 40, .height = 20},
+       {.text = "Darum", .x = 160, .width = 60, .height = 20},
+       {.text = "ist", .x = 230, .width = 30, .height = 20}  }
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; Gal 13", "Joh") == up_to(data, "Gal"));
     CHECK(consecutive_characters_at(data, "Joh 7,19;", "Joh") == whole_text(data));
@@ -1101,15 +1114,26 @@ TEST_CASE("reference_ocr ends the consecutive characters at a gap of dropped tex
   {
     // The spacing of the following line must not hide the gap.
     const auto data = position_data_of({
-      {{"Siehe", 10, 50, 20}, {"(Joh", 68, 40, 20}, {"7,19;", 116, 50, 20}, {"13)", 200, 30, 20}},
-      {{"Im", 10, 20, 20}, {"Alten", 70, 50, 20}, {"Testament", 160, 90, 20}, {"wird", 290, 40, 20}, {"das", 370, 30, 20}}
+      {{.text = "Siehe", .x = 10, .width = 50, .height = 20},
+       {.text = "(Joh", .x = 68, .width = 40, .height = 20},
+       {.text = "7,19;", .x = 116, .width = 50, .height = 20},
+       {.text = "13)", .x = 200, .width = 30, .height = 20}},
+      {{.text = "Im", .x = 10, .width = 20, .height = 20},
+       {.text = "Alten", .x = 70, .width = 50, .height = 20},
+       {.text = "Testament", .x = 160, .width = 90, .height = 20},
+       {.text = "wird", .x = 290, .width = 40, .height = 20},
+       {.text = "das", .x = 370, .width = 30, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; 13", "Joh") == up_to(data, "7,19;"));
   }
   SECTION("a gap on each side")
   {
     const auto data = position_data_of({
-      {{"Siehe", 10, 50, 20}, {"(Joh", 68, 40, 20}, {"7,19;", 116, 50, 20}, {"8,1;", 200, 40, 20}, {"13)", 280, 30, 20}}
+      {{.text = "Siehe", .x = 10, .width = 50, .height = 20},
+       {.text = "(Joh", .x = 68, .width = 40, .height = 20},
+       {.text = "7,19;", .x = 116, .width = 50, .height = 20},
+       {.text = "8,1;", .x = 200, .width = 40, .height = 20},
+       {.text = "13)", .x = 280, .width = 30, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; 8,1; 13", "8,1;") == range_of(data, "8,1;"));
   }
@@ -1125,7 +1149,10 @@ TEST_CASE("reference_ocr reports the characters of regularly spaced text as cons
   SECTION("justified text spacing every word wide")
   {
     const auto data = position_data_of({
-      {{"Im", 10, 30, 20}, {"Alten", 70, 60, 20}, {"Testament", 160, 110, 20}, {"wird", 300, 50, 20}}
+      {{.text = "Im", .x = 10, .width = 30, .height = 20},
+       {.text = "Alten", .x = 70, .width = 60, .height = 20},
+       {.text = "Testament", .x = 160, .width = 110, .height = 20},
+       {.text = "wird", .x = 300, .width = 50, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Alten Testament", "Alten") == whole_text(data));
   }
@@ -1137,7 +1164,9 @@ TEST_CASE("reference_ocr reports the characters of regularly spaced text as cons
   SECTION("a line of three words")
   {
     const auto data = position_data_of({
-      {{"(Joh", 9, 36, 20}, {"7,19;", 52, 45, 18}, {"Gal", 108, 27, 20}}
+      {{.text = "(Joh", .x = 9, .width = 36, .height = 20},
+       {.text = "7,19;", .x = 52, .width = 45, .height = 18},
+       {.text = "Gal", .x = 108, .width = 27, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 7,19; Gal", "Joh") == whole_text(data));
   }
@@ -1145,15 +1174,19 @@ TEST_CASE("reference_ocr reports the characters of regularly spaced text as cons
   {
     // Only the height tells the lines apart, the distance between them is no gap.
     const auto data = position_data_of({
-      {    {"Er", 10, 20, 20}, {"sagt", 40, 40, 20},  {"(Joh", 90, 40, 20}},
-      {{"3,16)", 300, 50, 20}, {"und", 360, 30, 20}, {"geht", 400, 40, 20}}
+      {    {.text = "Er", .x = 10, .width = 20, .height = 20},
+       {.text = "sagt", .x = 40, .width = 40, .height = 20},
+       {.text = "(Joh", .x = 90, .width = 40, .height = 20} },
+      {{.text = "3,16)", .x = 300, .width = 50, .height = 20},
+       {.text = "und", .x = 360, .width = 30, .height = 20},
+       {.text = "geht", .x = 400, .width = 40, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 3,16", "Joh") == whole_text(data));
   }
   SECTION("a line of too few words to know its spacing")
   {
     const auto data = position_data_of({
-      {{"Joh", 10, 30, 20}, {"3,16", 120, 40, 20}}
+      {{.text = "Joh", .x = 10, .width = 30, .height = 20}, {.text = "3,16", .x = 120, .width = 40, .height = 20}}
     });
     CHECK(consecutive_characters_at(data, "Joh 3,16", "3,16") == whole_text(data));
   }
@@ -1191,19 +1224,21 @@ TEST_CASE("reference_ocr reads the lines around the position again from an enlar
 {
   // The whole image read "rühmst 48, 1;" and dropped "(Jes" in front of "48,". A line of the other column is above.
   auto position_data = position_data_of({
-    {{"Siehe", 400, 60, 20}},
-    {{"rühmst", 100, 60, 20}, {"48,", 200, 30, 20}, {"1;", 240, 20, 20}},
-    {{"und", 100, 40, 20}, {"den", 150, 40, 20}}
+    {{.text = "Siehe", .x = 400, .width = 60, .height = 20}},
+    {{.text = "rühmst", .x = 100, .width = 60, .height = 20},
+     {.text = "48,", .x = 200, .width = 30, .height = 20},
+     {.text = "1;", .x = 240, .width = 20, .height = 20}},
+    {{.text = "und", .x = 100, .width = 40, .height = 20}, {.text = "den", .x = 150, .width = 40, .height = 20}}
   });
   position_data.cursor_character_index = range_of(position_data, "48,").begin;
   // The line of the cursor and the line below span x=100..260 and y=90..150, half their height pads them to the area
   // x=70..290 and y=60..180. The line of the other column stays out.
   const auto to_enlarged = [](const std::int32_t x, const std::int32_t y, const std::uint32_t width)
   { return data::screen_rect_type{math::coordinates((x - 70) * 2, (y - 60) * 2), width * 2, 40u}; };
-  const auto line = txt::ocr_engine<>::line{"(Jes 48,", to_enlarged(160, 90, 70)};
+  const auto line = txt::ocr_engine<>::line{.text = "(Jes 48,", .bounding_box = to_enlarged(160, 90, 70)};
   auto engine = std::make_unique<fixed_words_engine>(txt::ocr_engine<>::recognition_data{
-    {.word_data = {"(Jes", to_enlarged(160, 90, 32)}, .line_data = line},
-    { .word_data = {"48,", to_enlarged(200, 90, 30)}, .line_data = line}
+    {.word_data = {.text = "(Jes", .bounding_box = to_enlarged(160, 90, 32)}, .line_data = line},
+    { .word_data = {.text = "48,", .bounding_box = to_enlarged(200, 90, 30)}, .line_data = line}
   });
   const auto& engine_ref = *engine;
   auto engines = reference_ocr::ocr_engine_list_type{};
