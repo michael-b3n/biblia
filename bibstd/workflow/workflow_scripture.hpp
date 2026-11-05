@@ -179,7 +179,7 @@ public: // Typedefs
   /// \param name one of the names the script offers
   /// \param book the identifier of the app, e.g. `john`
   /// \return abbreviation its abbreviation
-  /// \return short_name its short name, shown in the app. Without one the app shows the identifier.
+  /// \return short_name its short name, shown in the app and copied. The app has no names of its own, so a script names every book it can not fetch a name for.
   /// \return long_name its long name
   ///
   struct book_manifest final

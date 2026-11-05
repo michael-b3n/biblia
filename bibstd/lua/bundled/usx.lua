@@ -170,9 +170,10 @@ local function marker_numbers(node)
 end
 
 ---
---- \return the names of the book of the element tree \p tree, from the header paragraphs before its first chapter
+--- \return the names of the book of the element tree \p tree, from the header paragraphs
+--- before its first chapter, \p code for the ones it has no header for
 ---
-local function names_of(tree)
+local function names_of(tree, code)
   local headers = {}
   for _, child in ipairs(tree.children) do
     if type(child) == "table" then
@@ -190,7 +191,7 @@ local function names_of(tree)
   end
   local names = {}
   for form, styles in pairs(name_forms) do
-    names[form] = ""
+    names[form] = code or ""
     for _, style in ipairs(styles) do
       if headers[style] then
         names[form] = headers[style]
@@ -204,7 +205,7 @@ end
 ---
 --- \return the book of the element tree \p tree of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
 --- app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
---- the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
+--- the headers before its first chapter, else its code, and its `verses` in the markup of `scripture.read` and their
 --- `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
 --- paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 ---
@@ -325,7 +326,7 @@ function usx.book(tree)
   return {
     id = book and books[book.attributes.code],
     code = book and book.attributes.code,
-    names = names_of(tree),
+    names = names_of(tree, book and book.attributes.code),
     verses = verses,
     cross_references = cross_references,
   }

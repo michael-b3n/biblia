@@ -380,7 +380,20 @@ TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")
   CHECK(book("#book.verses == 1 and #book.verses[1] == 2"));
 }
 
-// Known defects of util.usx_book, taken over from the former C++ reader
+TEST_CASE("usfm_names_a_book_without_headers_by_its_code", "[lua]")
+{
+  const auto scripture = read_genesis(
+    "usfm_names_a_book_without_headers_by_its_code",
+    R"(\id GEN
+\c 1
+\p
+\v 1 text
+)"
+  );
+  REQUIRE(scripture);
+  const auto names = bible::book_name{.abbreviation = "GEN", .short_name = "GEN", .long_name = "GEN"};
+  CHECK(scripture->book_information(book_id::genesis) == names);
+}
 
 TEST_CASE("usfm_keeps_the_markup_of_a_character_style_in_a_paragraph", "[lua]")
 {

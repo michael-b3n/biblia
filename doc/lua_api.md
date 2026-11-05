@@ -79,7 +79,7 @@ Input:
 Output:
 
 - `abbreviation` (`string or nil`): its abbreviation
-- `short_name` (`string or nil`): its short name, shown in the app. Without one the app shows the identifier.
+- `short_name` (`string or nil`): its short name, shown in the app and copied. The app has no names of its own, so a script names every book it can not fetch a name for.
 - `long_name` (`string or nil`): its long name
 
 ### `scripture.passage`
@@ -381,7 +381,7 @@ The nodes of the bundled scripts at `scripts`.
 
 - Returns the book of the element tree `tree` of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
   app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
-  the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
+  the headers before its first chapter, else its code, and its `verses` in the markup of `scripture.read` and their
   `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
   paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 

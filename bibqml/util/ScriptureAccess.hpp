@@ -20,8 +20,8 @@ namespace bibqml
 {
 
 ///
-/// Get the name of a book as provided by the default scripture, in the language of that scripture.
-/// Falls back to the raw book identifier if the scripture does not provide a name. Blocks while a script answers.
+/// Get the name of a book in the default scripture, another of its names or the identifier if it has no short one.
+/// Blocks while a script answers.
 /// \return book name
 ///
 [[nodiscard]] auto bookName(bibstd::workflow::workflow_scripture& workflowScripture, bibstd::bible::book_id book) -> QString;
