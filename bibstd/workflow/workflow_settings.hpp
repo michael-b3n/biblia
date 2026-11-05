@@ -28,7 +28,7 @@ namespace detail
 /// \return default validator types
 ///
 template<framework::underlying_setting_type T>
-auto conditional_default_validator() -> framework::setting_validator<T>
+[[nodiscard]] auto conditional_default_validator() -> framework::setting_validator<T>
 {
   // Unpacks a type from its wrapper. std::vector<T> and std::optional<T>
   // will return T, which is checked for enum type.

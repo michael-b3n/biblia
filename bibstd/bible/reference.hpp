@@ -37,13 +37,13 @@ public: // Static constructor
   /// Create bible reference.
   /// \return bible reference or std::nullopt if not valid
   ///
-  static auto create(book_id book, chapter_type chapter, verse_type verse, const versification& validator)
+  [[nodiscard]] static auto create(book_id book, chapter_type chapter, verse_type verse, const versification& validator)
     -> std::optional<reference>;
 
   ///
   /// \see reference::create
   ///
-  static auto create(book_id book, std::integral auto chapter, std::integral auto verse, const versification& validator)
+  [[nodiscard]] static auto create(book_id book, std::integral auto chapter, std::integral auto verse, const versification& validator)
     -> std::optional<reference>;
 
   ///
@@ -51,12 +51,12 @@ public: // Static constructor
   /// This should only be used when the chapter and verse numbers are already known to be valid.
   /// \return bible reference
   ///
-  static constexpr auto create_unguarded(book_id book, chapter_type chapter, verse_type verse) -> reference;
+  [[nodiscard]] static constexpr auto create_unguarded(book_id book, chapter_type chapter, verse_type verse) -> reference;
 
   ///
   /// \see reference::create_unguarded
   ///
-  static constexpr auto create_unguarded(book_id book, std::integral auto chapter, std::integral auto verse) -> reference;
+  [[nodiscard]] static constexpr auto create_unguarded(book_id book, std::integral auto chapter, std::integral auto verse) -> reference;
 
 private: // Constructor
   constexpr reference(book_id book, chapter_type chapter, verse_type verse);
@@ -65,9 +65,9 @@ public: // Operators
   constexpr auto operator<=>(const reference&) const = default;
 
 public: // Accessors
-  constexpr auto book() const -> book_id { return book_; }
-  constexpr auto chapter() const -> chapter_type { return chapter_; }
-  constexpr auto verse() const -> verse_type { return verse_; }
+  [[nodiscard]] constexpr auto book() const -> book_id { return book_; }
+  [[nodiscard]] constexpr auto chapter() const -> chapter_type { return chapter_; }
+  [[nodiscard]] constexpr auto verse() const -> verse_type { return verse_; }
 };
 
 ///

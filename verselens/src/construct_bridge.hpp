@@ -47,7 +47,7 @@ auto disconnect_bridge(bridge_instance& instance) -> void;
 /// Initialize the bridge instances.
 /// \return bridge instance
 ///
-auto construct_bridge(QGuiApplication& app, backend_instance& backend) -> bridge_instance;
+[[nodiscard]] auto construct_bridge(QGuiApplication& app, backend_instance& backend) -> bridge_instance;
 
 ///
 /// Connect internal signals between bridge components.

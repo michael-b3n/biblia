@@ -75,69 +75,70 @@ public: // Accessors
   /// Returns the name of the versification.
   /// \return name of the versification
   ///
-  constexpr auto name() const -> std::string;
+  [[nodiscard]] constexpr auto name() const -> std::string;
 
   ///
   /// Get the count of chapters in a book.
   /// \return the chapter count, can be zero on invalid arguments
   ///
-  constexpr auto chapter_count(book_id book) const -> std::uint32_t;
+  [[nodiscard]] constexpr auto chapter_count(book_id book) const -> std::uint32_t;
 
   ///
   /// Get the count of verses in a chapter.
   /// \return the verse count, can be zero on invalid arguments
   ///
-  constexpr auto verse_count(book_id book, reference::chapter_type chapter) const -> std::uint32_t;
+  [[nodiscard]] constexpr auto verse_count(book_id book, reference::chapter_type chapter) const -> std::uint32_t;
 
   ///
   /// Returns the number of references according to the validator.
   /// \return number of references
   ///
-  constexpr auto count() const -> std::uint32_t;
+  [[nodiscard]] constexpr auto count() const -> std::uint32_t;
 
   ///
   /// Returns the size of the given reference range.
   /// \return size of the reference range if it exists, std::nullopt otherwise
   ///
-  constexpr auto size(const reference_range& ref) const -> std::optional<std::uint32_t>;
+  [[nodiscard]] constexpr auto size(const reference_range& ref) const -> std::optional<std::uint32_t>;
 
   ///
   /// Checks if the given reference is valid.
   /// \return true if the reference is valid, false otherwise
   ///
-  constexpr auto contains(const reference& ref) const -> bool;
+  [[nodiscard]] constexpr auto contains(const reference& ref) const -> bool;
 
   ///
   /// Validates the given reference by returning the reference
   /// with the chapter and verse numbers clamped to the valid range.
   /// \return validated reference
   ///
-  constexpr auto validate(const reference& ref) const -> reference;
+  [[nodiscard]] constexpr auto validate(const reference& ref) const -> reference;
 
 public: // Operations
   ///
   /// Returns the next reference after the given reference.
   /// \return next reference if it exists, std::nullopt otherwise
   ///
-  constexpr auto next(const reference& ref) const -> std::optional<reference>;
+  [[nodiscard]] constexpr auto next(const reference& ref) const -> std::optional<reference>;
 
   ///
   /// Returns the previous reference before the given reference.
   /// \return previous reference if it exists, std::nullopt otherwise
   ///
-  constexpr auto prev(const reference& ref) const -> std::optional<reference>;
+  [[nodiscard]] constexpr auto prev(const reference& ref) const -> std::optional<reference>;
 
   ///
   /// Splits the given reference range by chapter. A chapter the range runs through
   /// is taken from its first to its last verse.
   /// \return reference range of each chapter, in order
   ///
-  constexpr auto split_by_chapter(const reference_range& ref) const -> std::vector<reference_range>;
+  [[nodiscard]] constexpr auto split_by_chapter(const reference_range& ref) const -> std::vector<reference_range>;
 
 private: // Helpers
-  static constexpr auto visit_size(const data_type& data) -> std::size_t;
-  static constexpr auto visit_last_reference(const data_type& data, std::size_t index) -> std::optional<reference>;
-  static constexpr auto visit_book_start_indices(const data_type& data) -> const book_start_indices_type&;
+  [[nodiscard]] static constexpr auto visit_size(const data_type& data) -> std::size_t;
+  [[nodiscard]] static constexpr auto visit_last_reference(const data_type& data, std::size_t index)
+    -> std::optional<reference>;
+  [[nodiscard]] static constexpr auto visit_book_start_indices(const data_type& data) -> const book_start_indices_type&;
 
 private: // Implementation
   constexpr auto containing_index(const reference& ref) const -> std::optional<std::size_t>;

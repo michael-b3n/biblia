@@ -12,7 +12,7 @@ namespace bibstd::util::ranges
 /// \return iota view from 0 to size of range
 ///
 template<std::ranges::sized_range R>
-constexpr auto index_view(const R& range) -> auto
+[[nodiscard]] constexpr auto index_view(const R& range) -> auto
 {
   return std::views::iota(std::ranges::range_size_t<R>{0}, std::ranges::size(range));
 }
@@ -23,7 +23,7 @@ constexpr auto index_view(const R& range) -> auto
 /// \return iota view from given start index to size of range
 ///
 template<std::ranges::sized_range R>
-constexpr auto index_view_from(const R& range, const std::ranges::range_size_t<R> begin) -> auto
+[[nodiscard]] constexpr auto index_view_from(const R& range, const std::ranges::range_size_t<R> begin) -> auto
 {
   const auto size = std::ranges::size(range);
   return std::views::iota(std::min(begin, size), size);
@@ -35,7 +35,7 @@ constexpr auto index_view_from(const R& range, const std::ranges::range_size_t<R
 /// \return iota view from zero to the given end index or size of range if end is larger
 ///
 template<std::ranges::sized_range R>
-constexpr auto index_view_to(const R& range, const std::ranges::range_size_t<R> end) -> auto
+[[nodiscard]] constexpr auto index_view_to(const R& range, const std::ranges::range_size_t<R> end) -> auto
 {
   const auto size = std::ranges::size(range);
   return std::views::iota(std::ranges::range_size_t<R>{0}, std::min(end, size));
@@ -45,7 +45,7 @@ constexpr auto index_view_to(const R& range, const std::ranges::range_size_t<R> 
 /// Return an iota view from zero to the specified end index.
 /// \return iota view from zero to the given end index
 ///
-constexpr auto index_view_to(const std::integral auto end) -> auto
+[[nodiscard]] constexpr auto index_view_to(const std::integral auto end) -> auto
 {
   return std::views::iota(decltype(end){0}, std::max(decltype(end){0}, end));
 }
@@ -54,7 +54,7 @@ constexpr auto index_view_to(const std::integral auto end) -> auto
 /// Return an iota view from first to the specified end index.
 /// \return iota view from first to the given end index
 ///
-constexpr auto index_view_between(const std::integral auto first, const std::integral auto second) -> auto
+[[nodiscard]] constexpr auto index_view_between(const std::integral auto first, const std::integral auto second) -> auto
 {
   using common_type = std::common_type_t<std::decay_t<decltype(first)>, std::decay_t<decltype(second)>>;
   return std::views::iota(

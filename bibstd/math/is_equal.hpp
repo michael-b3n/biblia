@@ -15,7 +15,7 @@ namespace bibstd::math
 /// \return true, if first value is almost equal to second value
 ///
 template<std::floating_point T>
-constexpr auto is_equal(const T v1, const T v2, const T epsilon = std::numeric_limits<T>::epsilon()) -> bool
+[[nodiscard]] constexpr auto is_equal(const T v1, const T v2, const T epsilon = std::numeric_limits<T>::epsilon()) -> bool
 {
   return std::abs(v1 - v2) < epsilon;
 }
@@ -25,7 +25,7 @@ constexpr auto is_equal(const T v1, const T v2, const T epsilon = std::numeric_l
 ///
 template<std::integral T1, std::integral T2>
   requires(std::equality_comparable_with<T1, T2>)
-constexpr auto is_equal(
+[[nodiscard]] constexpr auto is_equal(
   const T1 v1,
   const T2 v2,
   [[maybe_unused]] const std::common_type_t<T1, T2> epsilon = static_cast<std::common_type_t<T1, T2>>(0)
@@ -56,7 +56,7 @@ constexpr auto is_equal(
 ///
 template<std::integral T, typename T1>
   requires(std::equality_comparable_with<T1, T> && !std::integral<T1>)
-constexpr auto is_equal(const T v1, const T1 v2, [[maybe_unused]] const T epsilon = static_cast<T>(0)) -> bool
+[[nodiscard]] constexpr auto is_equal(const T v1, const T1 v2, [[maybe_unused]] const T epsilon = static_cast<T>(0)) -> bool
 {
   return v1 == v2;
 }
@@ -69,7 +69,7 @@ constexpr auto is_equal(const T v1, const T1 v2, [[maybe_unused]] const T epsilo
 ///
 template<std::integral T, typename T1>
   requires(std::equality_comparable_with<T1, T> && !std::integral<T1>)
-constexpr auto is_equal(const T1 v1, const T v2, [[maybe_unused]] const T epsilon = static_cast<T>(0)) -> bool
+[[nodiscard]] constexpr auto is_equal(const T1 v1, const T v2, [[maybe_unused]] const T epsilon = static_cast<T>(0)) -> bool
 {
   return v1 == v2;
 }

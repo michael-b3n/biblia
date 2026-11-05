@@ -31,13 +31,13 @@ public: // Accessors
   /// Access setting value.
   /// \return reference to setting value
   ///
-  auto value() const -> value_type;
+  [[nodiscard]] auto value() const -> value_type;
 
 public: // Setters
   ///
   /// Set setting value.
   ///
-  auto value(const value_type& v) -> bool;
+  [[nodiscard]] auto value(const value_type& v) -> bool;
 
 public: // Variables
   const signal::adapter<setting_signals>& signal_adapter;
@@ -60,7 +60,7 @@ namespace detail
 /// \return type erased setting validator
 ///
 template<underlying_setting_type U>
-auto validator_type_erased(const setting_validator<U>& validator)
+[[nodiscard]] auto validator_type_erased(const setting_validator<U>& validator)
   -> setting_validator_type_erased<setting_type_erased_type_from<U>>
 {
   using erased_type = setting_type_erased_type_from<U>;

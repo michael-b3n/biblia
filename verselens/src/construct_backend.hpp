@@ -28,7 +28,7 @@ struct backend_instance final
 /// Initialize backend components.
 /// \return backend instance
 ///
-auto construct_backend() -> backend_instance;
+[[nodiscard]] auto construct_backend() -> backend_instance;
 
 ///
 /// Stop the scripts of \p backend for good. Called first once the app ends,

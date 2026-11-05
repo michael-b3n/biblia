@@ -34,7 +34,7 @@ public: // Operations
   ///
   /// \return Content of the webpage, or an error code
   ///
-  static auto fetch(std::string_view url) -> std::expected<std::string, error_code>;
+  [[nodiscard]] static auto fetch(std::string_view url) -> std::expected<std::string, error_code>;
 };
 
 } // namespace bibstd::core

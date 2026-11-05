@@ -107,7 +107,7 @@ public: // Modifiers
   /// are loaded there is no reader yet, then the files are copied and read once the scripts are loaded.
   /// \return number of files taken over
   ///
-  auto import(const std::filesystem::path& source) -> std::size_t;
+  [[nodiscard]] auto import(const std::filesystem::path& source) -> std::size_t;
 
 private: // Implementation
   [[nodiscard]] auto read(const std::filesystem::path& file) const -> std::shared_ptr<bible::scripture>;

@@ -71,55 +71,55 @@ public: // Accessors
   /// Test if a flag is set.
   /// \return true if the flag is set, false otherwise
   ///
-  constexpr auto test(E flag) const -> bool;
+  [[nodiscard]] constexpr auto test(E flag) const -> bool;
 
   ///
   /// Check if a flag is set (alias for test).
   /// \return true if the flag is set, false otherwise
   ///
-  constexpr auto has(E flag) const -> bool;
+  [[nodiscard]] constexpr auto has(E flag) const -> bool;
 
   ///
   /// Check if any of the flags in other are set in this.
   /// \return true if any flags match, false otherwise
   ///
-  constexpr auto has_any(bitflags other) const -> bool;
+  [[nodiscard]] constexpr auto has_any(bitflags other) const -> bool;
 
   ///
   /// Check if all of the flags in other are set in this.
   /// \return true if all flags match, false otherwise
   ///
-  constexpr auto has_all(bitflags other) const -> bool;
+  [[nodiscard]] constexpr auto has_all(bitflags other) const -> bool;
 
   ///
   /// Check if all bits are set to true.
   /// \return true if all bits are set, false otherwise
   ///
-  constexpr auto all() const -> bool;
+  [[nodiscard]] constexpr auto all() const -> bool;
 
   ///
   /// Check if any bit is set to true.
   /// \return true if any bit is set, false otherwise
   ///
-  constexpr auto any() const -> bool;
+  [[nodiscard]] constexpr auto any() const -> bool;
 
   ///
   /// Check if no bits are set to true.
   /// \return true if no bits are set, false otherwise
   ///
-  constexpr auto none() const -> bool;
+  [[nodiscard]] constexpr auto none() const -> bool;
 
   ///
   /// Count the number of bits set to true.
   /// \return Number of bits set to true
   ///
-  constexpr auto count() const -> std::size_t;
+  [[nodiscard]] constexpr auto count() const -> std::size_t;
 
   ///
   /// Get the number of bits that the bitflags holds.
   /// \return Total number of bits
   ///
-  constexpr auto size() const -> std::size_t;
+  [[nodiscard]] constexpr auto size() const -> std::size_t;
 
 public: // Operators
   constexpr auto operator==(const bitflags&) const -> bool = default;

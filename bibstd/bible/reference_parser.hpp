@@ -201,7 +201,7 @@ private: // Implementation
   /// every candidate is matched and the interpretation covering the fewest verses is taken.
   /// \return Reference ranges matching the passage template
   ///
-  static auto match_passage_template(
+  [[nodiscard]] static auto match_passage_template(
     book_id book, const passage_template_type& passage_template, const versification& versification
   ) -> std::vector<reference_range>;
 

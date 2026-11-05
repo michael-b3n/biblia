@@ -51,56 +51,56 @@ struct arithmetic final
   /// \return result of `first + second`
   ///
   template<arithmetic_type T>
-  static constexpr auto add(T first, T second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto add(T first, T second) -> expected_type<T>;
 
   ///
   /// Add two values of type `expected_type<T>`.
   /// \return result of `first + second`
   ///
   template<arithmetic_type T>
-  static constexpr auto add(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto add(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
 
   ///
   /// Subtract two values of an integer type `T`.
   /// \return result of `first - second`
   ///
   template<arithmetic_type T>
-  static constexpr auto subtract(T first, T second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto subtract(T first, T second) -> expected_type<T>;
 
   ///
   /// Subtract two values of type `expected_type<T>`.
   /// \return result of `first - second`
   ///
   template<arithmetic_type T>
-  static constexpr auto subtract(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto subtract(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
 
   ///
   /// Multiply two values of an integer type `T`.
   /// \return result of `first * second`
   ///
   template<arithmetic_type T>
-  static constexpr auto multiply(T first, T second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto multiply(T first, T second) -> expected_type<T>;
 
   ///
   /// Multiply two values of type `expected_type<T>`.
   /// \return result of `first * second`
   ///
   template<arithmetic_type T>
-  static constexpr auto multiply(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto multiply(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
 
   ///
   /// Divide two values of an integer type `T`.
   /// \return result of `first / second`
   ///
   template<arithmetic_type T>
-  static constexpr auto divide(T first, T second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto divide(T first, T second) -> expected_type<T>;
 
   ///
   /// Divide two values of type `expected_type<T>`.
   /// \return result of `first / second`
   ///
   template<arithmetic_type T>
-  static constexpr auto divide(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
+  [[nodiscard]] static constexpr auto divide(expected_type<T> first, expected_type<T> second) -> expected_type<T>;
 
   ///
   /// Clamp to lowest or max value depending on under- or overflow.
@@ -108,7 +108,7 @@ struct arithmetic final
   /// \return clamped value
   ///
   template<arithmetic_type T>
-  static constexpr auto clamp(expected_type<T> value) -> std::optional<T>;
+  [[nodiscard]] static constexpr auto clamp(expected_type<T> value) -> std::optional<T>;
 };
 
 namespace detail
@@ -125,10 +125,10 @@ struct arithmetic_operation<T>
   static constexpr auto max = std::numeric_limits<T>::max();
 
   // Static functions
-  static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
 };
 
 template<std::signed_integral T>
@@ -139,10 +139,10 @@ struct arithmetic_operation<T>
   static constexpr auto max = std::numeric_limits<T>::max();
 
   // Static functions
-  static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
 };
 
 template<std::floating_point T>
@@ -153,10 +153,10 @@ struct arithmetic_operation<T>
   static constexpr auto max = std::numeric_limits<T>::max();
 
   // Static functions
-  static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
-  static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto add(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto subtract(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto multiply(T first, T second) -> arithmetic::expected_type<T>;
+  [[nodiscard]] static constexpr auto divide(T first, T second) -> arithmetic::expected_type<T>;
 };
 
 } // namespace detail
@@ -262,7 +262,7 @@ namespace detail
 /// \return expected type dependent on `value` classification
 ///
 template<std::floating_point T>
-constexpr auto floating_point_to_expected_type(T value) -> arithmetic::expected_type<T>
+[[nodiscard]] constexpr auto floating_point_to_expected_type(T value) -> arithmetic::expected_type<T>
 {
   switch(std::fpclassify(value))
   {

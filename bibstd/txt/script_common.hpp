@@ -109,14 +109,14 @@ public: // Static
   ///
   template<typename T>
     requires(std::equality_comparable_with<typename T::value_type, std::string_view>)
-  static constexpr auto contains(const T& chars, std::string_view string_view, std::size_t index)
+  [[nodiscard]] static constexpr auto contains(const T& chars, std::string_view string_view, std::size_t index)
     -> std::optional<std::string_view>;
 
   ///
   /// Determines the category of the char in string at given index.
   /// \return category of the char
   ///
-  static constexpr auto char_info(const auto& letters, std::string_view string_view, std::size_t index)
+  [[nodiscard]] static constexpr auto char_info(const auto& letters, std::string_view string_view, std::size_t index)
     -> std::optional<char_data>;
 
   ///
@@ -134,9 +134,10 @@ public: // Static
   static constexpr auto for_each_char_while(const L& letters, std::string_view string_view, Function&& function) -> void;
 
 private: // Implementation
-  static constexpr auto is_equal_impl(std::string_view string_view, std::size_t index, std::string_view character)
+  [[nodiscard]] static constexpr auto is_equal_impl(std::string_view string_view, std::size_t index, std::string_view character)
     -> std::optional<std::string_view>;
-  static constexpr auto is_digit_impl(std::string_view string_view, std::size_t index) -> std::optional<std::string_view>;
+  [[nodiscard]] static constexpr auto is_digit_impl(std::string_view string_view, std::size_t index)
+    -> std::optional<std::string_view>;
 };
 
 ///

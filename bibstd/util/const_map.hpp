@@ -123,21 +123,21 @@ public: // Accessor
   [[nodiscard]] constexpr auto size() const -> size_type;
 
 public: // Iterator Overloads
-  constexpr auto begin() const -> const_iterator { return map_.begin(); }
-  constexpr auto cbegin() const -> const_iterator { return map_.cbegin(); }
-  constexpr auto end() const -> const_iterator { return map_.end(); }
-  constexpr auto cend() const -> const_iterator { return map_.cend(); }
-  constexpr auto rbegin() const -> const_reverse_iterator { return map_.rbegin(); }
-  constexpr auto crbegin() const -> const_reverse_iterator { return map_.crbegin(); }
-  constexpr auto rend() const -> const_reverse_iterator { return map_.rend(); }
-  constexpr auto crend() const -> const_reverse_iterator { return map_.crend(); }
+  [[nodiscard]] constexpr auto begin() const -> const_iterator { return map_.begin(); }
+  [[nodiscard]] constexpr auto cbegin() const -> const_iterator { return map_.cbegin(); }
+  [[nodiscard]] constexpr auto end() const -> const_iterator { return map_.end(); }
+  [[nodiscard]] constexpr auto cend() const -> const_iterator { return map_.cend(); }
+  [[nodiscard]] constexpr auto rbegin() const -> const_reverse_iterator { return map_.rbegin(); }
+  [[nodiscard]] constexpr auto crbegin() const -> const_reverse_iterator { return map_.crbegin(); }
+  [[nodiscard]] constexpr auto rend() const -> const_reverse_iterator { return map_.rend(); }
+  [[nodiscard]] constexpr auto crend() const -> const_reverse_iterator { return map_.crend(); }
 
 private: // Implementation
   ///
   /// Checks if values are equal using `comparable_type` for comparison.
   /// \return true if equal, false otherwise
   ///
-  constexpr auto is_equal(const auto& lhs, const auto& rhs) const -> bool;
+  [[nodiscard]] constexpr auto is_equal(const auto& lhs, const auto& rhs) const -> bool;
 };
 
 ///

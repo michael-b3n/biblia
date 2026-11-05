@@ -560,7 +560,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   const auto name_contained = name.has_value() && util::contains(names, *name);
   if(!(name_contained || names.empty()))
   {
-    settings().default_scripture_name->value(preferred ? *preferred : names.front());
+    std::ignore = settings().default_scripture_name->value(preferred ? *preferred : names.front());
   }
 }
 

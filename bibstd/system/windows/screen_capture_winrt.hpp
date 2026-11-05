@@ -40,7 +40,7 @@ private: // Overrides
   /// A region reaching over a monitor edge is turned down, a capture covers exactly one monitor.
   /// \see screen_capture::capture
   ///
-  auto do_capture(screen_rect_type rect, pixel_plane_type& pix) -> bool override;
+  [[nodiscard]] auto do_capture(screen_rect_type rect, pixel_plane_type& pix) -> bool override;
 
 private: // Implementation
   ///
@@ -48,7 +48,7 @@ private: // Implementation
   /// monitors that are gone.
   /// \return capture of the monitor
   ///
-  auto monitor_of(HMONITOR handle, std::int32_t width, std::int32_t height) -> std::shared_ptr<winrt_capture::monitor>;
+  [[nodiscard]] auto monitor_of(HMONITOR handle, std::int32_t width, std::int32_t height) -> std::shared_ptr<winrt_capture::monitor>;
 };
 
 } // namespace bibstd::system

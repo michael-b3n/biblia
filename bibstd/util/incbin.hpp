@@ -28,7 +28,7 @@ namespace bibstd::util::incbin
 /// \return `std::span<T>` on data
 ///
 template<typename T>
-inline auto to_span(const std::byte* const data, const unsigned int size) -> std::span<const T>
+[[nodiscard]] inline auto to_span(const std::byte* const data, const unsigned int size) -> std::span<const T>
 {
   return std::span(reinterpret_cast<const T* const>(data), size / sizeof(T));
 }

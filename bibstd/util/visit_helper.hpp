@@ -26,7 +26,7 @@ overloaded(Ts...) -> overloaded<Ts...>;
 /// Overload function for `std::visit` handling multiple lambdas.
 /// \return as `std::visit` would return
 ///
-constexpr auto visit_lambdas(auto&& var, auto&&... lambdas) -> decltype(auto)
+[[nodiscard]] constexpr auto visit_lambdas(auto&& var, auto&&... lambdas) -> decltype(auto)
 {
   return std::visit(detail::overloaded{std::forward<decltype(lambdas)>(lambdas)...}, std::forward<decltype(var)>(var));
 }

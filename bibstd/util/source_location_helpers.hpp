@@ -11,7 +11,7 @@ namespace bibstd::util
 /// The pretty function name is the function name without the namespace and without the parameters.
 /// \return Pretty function name as std::string_view
 ///
-constexpr auto filter_function_name(const std::source_location& loc) -> std::string_view
+[[nodiscard]] constexpr auto filter_function_name(const std::source_location& loc) -> std::string_view
 {
   const std::string_view func_name = loc.function_name();
   const auto last_braces_pos = func_name.find_first_of('(');
@@ -28,7 +28,7 @@ constexpr auto filter_function_name(const std::source_location& loc) -> std::str
 /// The pretty file name is the file name without the path and without the file extension.
 /// \return Pretty file name as std::string_view
 ///
-constexpr auto filter_file_name(const std::source_location& loc) -> std::string_view
+[[nodiscard]] constexpr auto filter_file_name(const std::source_location& loc) -> std::string_view
 {
   const std::string_view file_name = loc.file_name();
   const auto last_slash_pos = file_name.find_last_of("/\\");
@@ -45,7 +45,7 @@ constexpr auto filter_file_name(const std::source_location& loc) -> std::string_
 /// The pretty folder name is the name of the parent folder of the file without the complete path.
 /// \return Pretty folder name as std::string_view
 ///
-constexpr auto filter_folder_name(const std::source_location& loc) -> std::string_view
+[[nodiscard]] constexpr auto filter_folder_name(const std::source_location& loc) -> std::string_view
 {
   const std::string_view file_name = loc.file_name();
   const auto last_slash_pos = file_name.find_last_of("/\\");

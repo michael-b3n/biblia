@@ -49,13 +49,13 @@ public: // Accessors
   /// Access setting value.
   /// \return reference to setting value
   ///
-  auto value() const -> value_type;
+  [[nodiscard]] auto value() const -> value_type;
 
 public: // Setters
   ///
   /// Set setting value.
   ///
-  auto value(const value_type& v) -> bool;
+  [[nodiscard]] auto value(const value_type& v) -> bool;
 
 private: // Helpers
   auto validate() -> void;

@@ -56,7 +56,7 @@ public: // Accessors
   ///
   /// \return const reference to settings container
   ///
-  auto settings() const -> const S&;
+  [[nodiscard]] auto settings() const -> const S&;
 
 private: // Variables
   const settings_type settings_;

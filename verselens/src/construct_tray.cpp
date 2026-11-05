@@ -17,6 +17,7 @@
 #include <functional>
 #include <iterator>
 #include <string>
+#include <tuple>
 #include <vector>
 
 INC_RESOURCE(icon, "res/icon.ico");
@@ -55,7 +56,7 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
   -> bibstd::util::shared_scope_guard
 {
   const auto do_on_exit = [&app, &bridge, &translations]() { quit_application(app, bridge, translations); };
-  const auto open_github = []() { bibstd::system::open_browser::open(std::string{version::repository_url}); };
+  const auto open_github = []() { std::ignore = bibstd::system::open_browser::open(std::string{version::repository_url}); };
   const auto show_window = [&bridge]() { bridge.bridge_application->requestShowWindow(); };
 
   // The position in this list is the index the tray knows an entry by.

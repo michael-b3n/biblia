@@ -78,7 +78,7 @@ class workflow_scripture final
     /// Get the underlying versification.
     /// \return the underlying versification
     ///
-    auto get() const -> const bible::versification&;
+    [[nodiscard]] auto get() const -> const bible::versification&;
 
   private: // Variables
     std::variant<bible::versification, std::shared_ptr<bible::scripture>> data_;

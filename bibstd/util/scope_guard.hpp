@@ -69,7 +69,7 @@ public: // Typedefs
     /// \return A scope_guard instance bound to the same underlying
     /// instance as other guards created by this function
     ///
-    auto create(scope_guard::on_destruction_type&& on_destruction) -> shared_scope_guard;
+    [[nodiscard]] auto create(scope_guard::on_destruction_type&& on_destruction) -> shared_scope_guard;
   };
 
 public: // Constructors

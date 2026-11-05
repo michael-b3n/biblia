@@ -23,7 +23,7 @@ static_assert(language_wtag_map.size() == util::enum_count<util::language>());
 /// Get the language of a BCP-47 tag, e.g. "de-CH". Only the primary subtag is compared.
 /// \return language, std::nullopt if the primary subtag names no known language
 ///
-constexpr auto from_language_tag(const std::wstring_view tag) -> std::optional<util::language>
+[[nodiscard]] constexpr auto from_language_tag(const std::wstring_view tag) -> std::optional<util::language>
 {
   const auto primary_subtag = tag.substr(0, tag.find_first_of(L"-_"));
   if(language_wtag_map.contains(primary_subtag))

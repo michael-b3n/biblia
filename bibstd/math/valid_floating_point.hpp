@@ -14,7 +14,7 @@ namespace detail
 /// \return true if valid, false otherwise
 ///
 template<std::floating_point T>
-constexpr auto is_valid(const T value) -> bool
+[[nodiscard]] constexpr auto is_valid(const T value) -> bool
 {
   const auto type_id = std::fpclassify(value);
   return type_id != FP_INFINITE && type_id != FP_NAN;
@@ -28,7 +28,7 @@ constexpr auto is_valid(const T value) -> bool
 /// \return true if all are valid, false otherwise
 ///
 template<std::floating_point... T>
-constexpr auto is_valid(const T... value) -> bool
+[[nodiscard]] constexpr auto is_valid(const T... value) -> bool
 {
   return (detail::is_valid(value) && ...);
 }

@@ -19,6 +19,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <variant>
 
@@ -301,12 +302,12 @@ auto workflow_bible_ref_ocr::limit_settings_to_loaded_engines() -> void
   // Without a chosen engine the first loaded one is taken, the system engine first, with the algorithm it reads best with.
   if(!settings().character_recognition_ocr_engine->value() && !ocr_engines_.empty())
   {
-    settings().character_recognition_ocr_engine->value(name_of(ocr_engines_.front()));
-    settings().recognition_algorithm->value(preferred_algorithm(ocr_engines_.front()));
+    std::ignore = settings().character_recognition_ocr_engine->value(name_of(ocr_engines_.front()));
+    std::ignore = settings().recognition_algorithm->value(preferred_algorithm(ocr_engines_.front()));
   }
   if(!settings().layout_recognition_ocr_engine->value() && !layout_recognition_engines.empty())
   {
-    settings().layout_recognition_ocr_engine->value(layout_recognition_engines.front());
+    std::ignore = settings().layout_recognition_ocr_engine->value(layout_recognition_engines.front());
   }
 }
 

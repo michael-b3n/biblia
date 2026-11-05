@@ -189,7 +189,7 @@ BridgeBibleRefOcr::ClickAction BridgeBibleRefOcr::clickAction() const
 void BridgeBibleRefOcr::setAutoSearch(const bool enabled)
 {
   // The setting is what the search follows, writing it is what starts and stops it
-  autoSearchSetting_->value(enabled);
+  std::ignore = autoSearchSetting_->value(enabled);
 }
 
 ///
