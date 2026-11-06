@@ -21,13 +21,11 @@
 #include <utility>
 #include <vector>
 
-// Forward declarations
 namespace bibstd::workflow
 {
+
 class workflow_bible_ref_ocr;
-} // namespace bibstd::workflow
-namespace bibstd::workflow
-{
+
 namespace detail
 {
 

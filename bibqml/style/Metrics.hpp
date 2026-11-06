@@ -51,6 +51,12 @@ class Metrics final : public QObject
   Q_PROPERTY(int durationLong MEMBER durationLong_ CONSTANT)
   Q_PROPERTY(int durationDebounce MEMBER durationDebounce_ CONSTANT)
 
+  // Opacities
+  Q_PROPERTY(double opacityMinimal MEMBER opacityMinimal_ CONSTANT)
+  Q_PROPERTY(double opacityLow MEMBER opacityLow_ CONSTANT)
+  Q_PROPERTY(double opacityMedium MEMBER opacityMedium_ CONSTANT)
+  Q_PROPERTY(double opacityHigh MEMBER opacityHigh_ CONSTANT)
+
   // Variables
   // Font sizes
   int fontSizeSmall_{8};
@@ -84,6 +90,12 @@ class Metrics final : public QObject
   int durationMedium_{300};
   int durationLong_{3000};
   int durationDebounce_{500};
+
+  // Opacities, the minimal one still takes mouse events in a translucent window
+  double opacityMinimal_{0.02};
+  double opacityLow_{0.3};
+  double opacityMedium_{0.5};
+  double opacityHigh_{0.8};
 
 public: // Structors
   explicit Metrics(bibstd::util::non_owning_ptr<QObject> parent = nullptr);

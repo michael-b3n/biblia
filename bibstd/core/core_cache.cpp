@@ -4,6 +4,7 @@
 
 #include <sqlite3.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <ranges>
@@ -27,6 +28,10 @@ constexpr auto get_sql = "SELECT value FROM entries WHERE key = ?1;";
 constexpr auto set_sql = "INSERT INTO entries (key, value) VALUES (?1, ?2) "
                          "ON CONFLICT (key) DO UPDATE SET value = excluded.value;";
 constexpr auto remove_sql = "DELETE FROM entries WHERE key = ?1;";
+constexpr auto clear_sql = "DELETE FROM entries;";
+constexpr auto begin_sql = "BEGIN;";
+constexpr auto commit_sql = "COMMIT;";
+constexpr auto rollback_sql = "ROLLBACK;";
 
 ///
 /// Bind \p text as parameter \p index of \p statement, it must live until the statement is reset.
@@ -105,19 +110,35 @@ auto core_cache::get(const std::string& key) const -> std::optional<std::string>
 auto core_cache::set(const std::string& key, std::optional<std::string> value) -> void
 {
   const auto lock = std::scoped_lock{mtx_};
-  const auto& statement = value ? set_ : remove_;
-  if(!statement)
+  if(const auto& statement = value ? set_ : remove_)
+  {
+    std::ignore = write(statement, key, value);
+  }
+}
+
+///
+///
+auto core_cache::set_all(const std::map<std::string, std::string>& values) -> void
+{
+  const auto lock = std::scoped_lock{mtx_};
+  if(!set_ || !execute(begin_sql, "begin"))
   {
     return;
   }
-  if(
-    succeeded(bind_text(statement.get(), 1, key), "bind") &&
-    (!value || succeeded(bind_text(statement.get(), 2, *value), "bind"))
-  )
+  const auto written =
+    std::ranges::all_of(values, [this](const auto& entry) { return write(set_, entry.first, entry.second); });
+  std::ignore = execute(written ? commit_sql : rollback_sql, "commit");
+}
+
+///
+///
+auto core_cache::clear() -> void
+{
+  const auto lock = std::scoped_lock{mtx_};
+  if(database_)
   {
-    std::ignore = succeeded(sqlite3_step(statement.get()), "write");
+    std::ignore = execute(clear_sql, "clear");
   }
-  reset(statement.get());
 }
 
 ///
@@ -164,6 +185,25 @@ auto core_cache::prepare(const std::string_view sql) const -> statement_ptr
   const auto status = sqlite3_prepare_v2(database_.get(), sql.data(), numeric_cast<int>(sql.size()), &prepared, nullptr);
   auto statement = statement_ptr{prepared};
   return succeeded(status, "prepare") ? std::move(statement) : nullptr;
+}
+
+///
+///
+auto core_cache::execute(const std::string_view sql, const std::string_view action) const -> bool
+{
+  return succeeded(sqlite3_exec(database_.get(), std::string{sql}.c_str(), nullptr, nullptr, nullptr), action);
+}
+
+///
+///
+auto core_cache::write(const statement_ptr& statement, const std::string& key, const std::optional<std::string>& value) const
+  -> bool
+{
+  const auto written = succeeded(bind_text(statement.get(), 1, key), "bind") &&
+                       (!value || succeeded(bind_text(statement.get(), 2, *value), "bind")) &&
+                       succeeded(sqlite3_step(statement.get()), "write");
+  reset(statement.get());
+  return written;
 }
 
 ///

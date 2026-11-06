@@ -15,13 +15,6 @@ namespace bibstd::lua
 
 ///
 ///
-registration::registration(std::weak_ptr<detail::state_data> data, util::path path, std::shared_ptr<const void> registered)
-{
-  entries_.push_back({.data = std::move(data), .path = std::move(path), .registered = std::move(registered)});
-}
-
-///
-///
 registration::registration(registration&& other) noexcept
   : entries_{std::exchange(other.entries_, {})}
 {
@@ -59,6 +52,13 @@ auto registration::operator<<(registration other) -> registration&
 registration::operator bool() const noexcept
 {
   return !entries_.empty();
+}
+
+///
+///
+registration::registration(std::weak_ptr<detail::state_data> data, util::path path, std::shared_ptr<const void> registered)
+{
+  entries_.push_back({.data = std::move(data), .path = std::move(path), .registered = std::move(registered)});
 }
 
 ///

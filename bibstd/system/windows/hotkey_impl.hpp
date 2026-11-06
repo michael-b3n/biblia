@@ -28,7 +28,7 @@ public: // Static modifiers
   ///
   /// \see hotkey::init
   ///
-  static auto init() -> util::shared_scope_guard;
+  [[nodiscard]] static auto init() -> util::shared_scope_guard;
 
   ///
   /// \see hotkey::register_callback

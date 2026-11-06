@@ -14,7 +14,7 @@ struct open_browser final
   /// Open URL in the default web browser.
   /// \return true if successful, false otherwise
   ///
-  static auto open(const std::string& url) -> bool;
+  [[nodiscard]] static auto open(const std::string& url) -> bool;
 };
 
 } // namespace bibstd::system

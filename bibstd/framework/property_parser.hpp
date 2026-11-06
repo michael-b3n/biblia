@@ -71,44 +71,44 @@ struct property_parser final
 
   // Implementation
   template<basic_property_value_type T>
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
   template<basic_property_value_type T>
   static auto write(const property_path_type& path, property_tree_type& tree, const T& value) -> void;
 
   template<util::enum_type T>
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
   template<util::enum_type T>
   static auto write(const property_path_type& path, property_tree_type& tree, const T& value) -> void;
 
   template<property_parser_pair_type T>
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
   template<property_parser_pair_type T>
   static auto write(const property_path_type& path, property_tree_type& tree, const T& value) -> void;
 
   template<typename T>
     requires(meta::is_duration_v<T>)
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
   template<typename T>
     requires(meta::is_duration_v<T>)
   static auto write(const property_path_type& path, property_tree_type& tree, const T& value) -> void;
 
   template<typename T>
     requires(std::is_same_v<T, std::filesystem::path>)
-  static inline auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
+  [[nodiscard]] static inline auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<T>;
   template<typename T>
     requires(std::is_same_v<T, std::filesystem::path>)
   static inline auto write(const property_path_type& path, property_tree_type& tree, const T& value) -> void;
 
   template<typename Optional>
     requires(std::is_same_v<Optional, std::optional<typename Optional::value_type>>)
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<Optional>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<Optional>;
   template<typename Optional>
     requires(std::is_same_v<Optional, std::optional<typename Optional::value_type>>)
   static auto write(const property_path_type& path, property_tree_type& tree, const Optional& value) -> void;
 
   template<typename Vector>
     requires(std::is_same_v<Vector, std::vector<typename Vector::value_type>>)
-  static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<Vector>;
+  [[nodiscard]] static auto read(const property_path_type& path, const property_tree_type& tree) -> std::optional<Vector>;
   template<typename Vector>
     requires(std::is_same_v<Vector, std::vector<typename Vector::value_type>>)
   static auto write(const property_path_type& path, property_tree_type& tree, const Vector& value) -> void;

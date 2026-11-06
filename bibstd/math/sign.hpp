@@ -32,7 +32,7 @@ struct sign_value final
 /// \return `-1` if `value < 0`, `0` if `value == 0`, `1` if `value > 0`
 ///
 template<typename T>
-constexpr auto sign(T value) -> int
+[[nodiscard]] constexpr auto sign(T value) -> int
   requires(std::is_unsigned_v<T>)
 {
   return static_cast<int>(T{0} < value);
@@ -43,7 +43,7 @@ constexpr auto sign(T value) -> int
 /// \return `-1` if `value < 0`, `0` if `value == 0`, `1` if `value > 0`
 ///
 template<typename T>
-constexpr auto sign(T value) -> int
+[[nodiscard]] constexpr auto sign(T value) -> int
   requires(std::is_signed_v<T>)
 {
   return static_cast<int>(T{0} < value) - static_cast<int>(value < T{0});

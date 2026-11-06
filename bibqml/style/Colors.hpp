@@ -14,7 +14,7 @@ namespace detail
 /// The input string should be in the format "#RRGGBBAA" or "#RRGGBB".
 /// \return The corresponding QColor object
 ///
-auto toQColor(std::string color) -> QColor;
+[[nodiscard]] auto toQColor(std::string color) -> QColor;
 
 } // namespace detail
 

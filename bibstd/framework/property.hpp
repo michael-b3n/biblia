@@ -40,7 +40,7 @@ public: // Accessor
   /// Get property value.
   /// \return value of property
   ///
-  auto value() const -> value_type;
+  [[nodiscard]] auto value() const -> value_type;
 
 public: // Modifiers
   ///
@@ -52,7 +52,7 @@ public: // Modifiers
   /// Exchange property value. Updates property in tree if registered.
   /// \return old property value
   ///
-  auto exchange(const value_type& new_value) -> value_type;
+  [[nodiscard]] auto exchange(const value_type& new_value) -> value_type;
 };
 
 ///

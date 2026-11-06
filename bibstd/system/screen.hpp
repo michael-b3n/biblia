@@ -22,7 +22,7 @@ public: // Static accessors
   /// Set screen related settings. This function must be called once before any other screen function is used.
   /// \return true if initialization was successful, false otherwise
   ///
-  static auto init() -> bool;
+  [[nodiscard]] static auto init() -> bool;
 
   ///
   /// Get the virtual screen metrics.

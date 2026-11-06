@@ -19,11 +19,9 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
 
 namespace bibstd::workflow
 {
-// Forward declarations
 class workflow_bible_ref_ocr;
 class workflow_bible_ref_ocr_auto;
 class workflow_settings;
@@ -41,19 +39,17 @@ class BridgeBibleRefOcr final : public QObject
   Q_OBJECT
   QML_ELEMENT
 
-  Q_PROPERTY(bool manualSearchRunning MEMBER manualSearchRunning_ NOTIFY manualSearchRunningChanged)
-  Q_PROPERTY(bool autoSearchRunning MEMBER autoSearchRunning_ NOTIFY autoSearchRunningChanged)
-  Q_PROPERTY(QPoint cursorPosition MEMBER cursorPosition_ NOTIFY cursorPositionChanged)
+  Q_PROPERTY(bool manualSearchRunning MEMBER manualSearchRunning_ NOTIFY manualSearchRunningChanged FINAL)
+  Q_PROPERTY(bool autoSearchRunning MEMBER autoSearchRunning_ NOTIFY autoSearchRunningChanged FINAL)
+  Q_PROPERTY(QPoint cursorPosition MEMBER cursorPosition_ NOTIFY cursorPositionChanged FINAL)
 
   // Typedefs
-  using ClickActionSettingType = bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<std::string>>;
   using AutoSearchSettingType = bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<bool>>;
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr_;
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto_;
   const bibstd::workflow::workflow_hotkey::shared_sig_type manualSearchSig_;
-  const ClickActionSettingType clickActionSetting_;
   const AutoSearchSettingType autoSearchSetting_;
 
   std::optional<bibstd::framework::process_id_type> manualSearchProcessId_;
@@ -66,18 +62,6 @@ class BridgeBibleRefOcr final : public QObject
   mutable std::mutex autoSearchMtx_;
   bibstd::framework::queued_connections connections_;
 
-public: // Typedefs
-  ///
-  /// Actions for a bible reference the user clicks on, the names are the stored values of the setting.
-  /// \note Names start upper case, QML evaluates enum values starting lower case to undefined.
-  ///
-  enum ClickAction
-  {
-    LookupBrowser,
-    None
-  };
-  Q_ENUM(ClickAction)
-
 public: // Structors
   explicit BridgeBibleRefOcr(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr,
@@ -87,19 +71,18 @@ public: // Structors
     bibstd::util::non_owning_ptr<QObject> parent = nullptr
   );
 
-public: // Accessors
-  ///
-  /// Access the action configured for a click on a found bible reference.
-  /// \return configured click action
-  ///
-  Q_INVOKABLE ClickAction clickAction() const;
-
 public: // Modifiers
   ///
   /// Ask the automatic reference search to start or to stop. This only states the intent and
   /// returns immediately, the search itself reports its state by the autoSearchRunning property.
   ///
   Q_INVOKABLE void setAutoSearch(bool enabled);
+
+  ///
+  /// Disconnect all signal connections.
+  /// This will stop the frontend backend communication.
+  ///
+  void disconnect();
 
 signals:
   // clang-format off
@@ -109,13 +92,6 @@ signals:
   void referenceFound(const QString& bookId, int chapter, int verse);
   void referenceRangeFound(const QString& bookId, int chapterBegin, int verseBegin, int chapterEnd, int verseEnd, const QRect& boundingBox);
   // clang-format on
-
-public: // Modifiers
-  ///
-  /// Disconnect all signal connections.
-  /// This will stop the frontend backend communication.
-  ///
-  void disconnect();
 
 private: // Implementation
   void runManualSearch();

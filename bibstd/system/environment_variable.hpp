@@ -14,7 +14,7 @@ struct environment_variable final
   /// Set an environment variable.
   /// \return true if the operation was successful, false otherwise
   ///
-  static auto set(const std::string& name, const std::string& value) -> bool;
+  [[nodiscard]] static auto set(const std::string& name, const std::string& value) -> bool;
 };
 
 } // namespace bibstd::system

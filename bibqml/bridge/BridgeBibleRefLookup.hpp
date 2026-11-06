@@ -15,7 +15,6 @@
 
 namespace bibstd::workflow
 {
-// Forward declarations
 class workflow_bible_ref_lookup;
 class workflow_scripture;
 } // namespace bibstd::workflow
@@ -32,7 +31,7 @@ class BridgeBibleRefLookup final : public QObject
   Q_OBJECT
   QML_ELEMENT
 
-  Q_PROPERTY(bool running MEMBER running_ NOTIFY runningChanged)
+  Q_PROPERTY(bool running MEMBER running_ NOTIFY runningChanged FINAL)
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup_;
@@ -49,9 +48,6 @@ public: // Structors
   );
   ~BridgeBibleRefLookup() noexcept override;
 
-signals:
-  void runningChanged(bool running);
-
 public: // Modifiers
   ///
   /// Open a bible reference range in the browser.
@@ -67,6 +63,9 @@ public: // Modifiers
   /// This will stop the frontend backend communication.
   ///
   void disconnect();
+
+signals:
+  void runningChanged(bool running);
 
 private: // Implementation
   ///

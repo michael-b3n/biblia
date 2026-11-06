@@ -22,13 +22,14 @@ struct backend_instance final
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr_auto;
   std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_lookup;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_copy;
 };
 
 ///
 /// Initialize backend components.
 /// \return backend instance
 ///
-auto construct_backend() -> backend_instance;
+[[nodiscard]] auto construct_backend() -> backend_instance;
 
 ///
 /// Stop the scripts of \p backend for good. Called first once the app ends,

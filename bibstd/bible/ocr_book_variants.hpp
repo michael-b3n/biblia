@@ -70,17 +70,17 @@ public: // Constants
   ///
   /// \return the span of all name variants based on language.
   ///
-  static constexpr auto name_variants_span(util::language language) -> std::span<const std::pair<book_id, std::string_view>>;
+  [[nodiscard]] static constexpr auto name_variants_span(util::language language) -> std::span<const std::pair<book_id, std::string_view>>;
 
   ///
   /// \return a list of name variants that are aliases of the given name variant.
   ///
-  static auto name_variant_aliases(std::string_view name_variant, util::language language) -> std::vector<std::string>;
+  [[nodiscard]] static auto name_variant_aliases(std::string_view name_variant, util::language language) -> std::vector<std::string>;
 
   ///
   /// \return a complete list of all name variants with their aliases based on language.
   ///
-  static auto name_variants_with_aliases(util::language language) -> std::span<const std::pair<book_id, std::string>>;
+  [[nodiscard]] static auto name_variants_with_aliases(util::language language) -> std::span<const std::pair<book_id, std::string>>;
 };
 
 ///

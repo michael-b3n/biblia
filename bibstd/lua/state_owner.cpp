@@ -20,15 +20,11 @@ namespace
 {
 
 ///
-/// \return true once root.system.shutdown_flag is set
+/// \return the shutdown flag the hook reads, in the extra space of \p lua. Each coroutine starts with a copy of it.
 ///
-[[nodiscard]] auto stop_requested(const util::non_owning_ptr<lua_State> lua) -> bool
+[[nodiscard]] auto shutdown_flag(const util::non_owning_ptr<lua_State> lua) -> const std::atomic<bool>*&
 {
-  // On the stack only, the hook runs on every call
-  const auto flag = sol::stack_table{lua, LUA_REGISTRYINDEX}.traverse_get<sol::optional<sol::light<const std::atomic<bool>>>>(
-    LUA_RIDX_GLOBALS, names::node_root, names::node_system, names::value_shutdown_flag
-  );
-  return flag && flag->value()->load();
+  return *static_cast<const std::atomic<bool>**>(lua_getextraspace(lua));
 }
 
 ///
@@ -37,7 +33,7 @@ namespace
 auto check_stop(const util::non_owning_ptr<lua_State> lua, [[maybe_unused]] const util::non_owning_ptr<lua_Debug> debug) -> void
 {
   // luaL_error leaves without unwinding, so no C++ object may live here
-  if(stop_requested(lua))
+  if(shutdown_flag(lua)->load())
   {
     luaL_error(lua, "script stopped");
   }
@@ -72,7 +68,6 @@ state_owner::state_owner()
   system.set_function(names::function_log_info, [](const std::string& text) { LOG_INFO("lua: {}", text); });
   system.set_function(names::function_log_warning, [](const std::string& text) { LOG_WARN("lua: {}", text); });
   system.set_function(names::function_log_error, [](const std::string& text) { LOG_ERROR("lua: {}", text); });
-  system[names::value_shutdown_flag] = sol::make_light(data_->shutdown_flag);
   (*s)[names::node_root] = s->create_table_with(names::node_interface, s->create_table(), names::node_system, system);
 
   const auto init = internal::find(names::embedded_script_init);
@@ -102,6 +97,8 @@ state_owner::state_owner()
   }
   data_->sandbox = *sandbox;
   data_->interface = s->traverse_get<sol::table>(names::node_root, names::node_interface);
+  // On every call too, a script may loop over few instructions and long calls or catch the stop
+  shutdown_flag(s->lua_state()) = &data_->shutdown_flag;
   lua_sethook(s->lua_state(), &check_stop, LUA_MASKCOUNT | LUA_MASKCALL, stop_check_interval);
 }
 

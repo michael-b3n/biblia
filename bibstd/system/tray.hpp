@@ -50,7 +50,7 @@ public: // Typedefs
   using entry_type = std::variant<button, label, separator, toggle>;
 
 public: // Static modifiers
-  static auto init(icon_buffer icon, std::vector<entry_type>&& entries) -> util::shared_scope_guard;
+  [[nodiscard]] static auto init(icon_buffer icon, std::vector<entry_type>&& entries) -> util::shared_scope_guard;
 
   ///
   /// Change the text of an entry, e.g. after a language change. Ignored if no tray exists.

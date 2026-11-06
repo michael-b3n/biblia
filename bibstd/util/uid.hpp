@@ -27,7 +27,7 @@ public: // Static helpers
   /// Get new typesafe unique ID.
   /// \return new typesafe unique ID
   ///
-  static auto new_uid() -> uid<tag_type>;
+  [[nodiscard]] static auto new_uid() -> uid<tag_type>;
 
 public: // Constructor
   uid();

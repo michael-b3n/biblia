@@ -5,10 +5,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-// Forward declarations
 namespace bibqml
 {
 class BridgeApplication;
+class BridgeBibleRefCopy;
 class BridgeBibleRefLookup;
 class BridgeBibleRefOcr;
 class BridgeScript;
@@ -32,6 +32,7 @@ struct bridge_instance final
   std::unique_ptr<bibqml::SettingsListModel> settings_list_model;
   std::unique_ptr<bibqml::BridgeBibleRefOcr> bridge_bible_ref_ocr;
   std::unique_ptr<bibqml::BridgeBibleRefLookup> bridge_bible_ref_lookup;
+  std::unique_ptr<bibqml::BridgeBibleRefCopy> bridge_bible_ref_copy;
   std::unique_ptr<bibqml::ScriptureListModel> scripture_list_model;
   std::unique_ptr<bibqml::BridgeScripture> bridge_scripture;
   std::unique_ptr<bibqml::BridgeScript> bridge_script;
@@ -47,7 +48,7 @@ auto disconnect_bridge(bridge_instance& instance) -> void;
 /// Initialize the bridge instances.
 /// \return bridge instance
 ///
-auto construct_bridge(QGuiApplication& app, backend_instance& backend) -> bridge_instance;
+[[nodiscard]] auto construct_bridge(QGuiApplication& app, backend_instance& backend) -> bridge_instance;
 
 ///
 /// Connect internal signals between bridge components.

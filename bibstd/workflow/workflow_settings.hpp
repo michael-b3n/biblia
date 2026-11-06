@@ -28,7 +28,7 @@ namespace detail
 /// \return default validator types
 ///
 template<framework::underlying_setting_type T>
-auto conditional_default_validator() -> framework::setting_validator<T>
+[[nodiscard]] auto conditional_default_validator() -> framework::setting_validator<T>
 {
   // Unpacks a type from its wrapper. std::vector<T> and std::optional<T>
   // will return T, which is checked for enum type.
@@ -108,6 +108,12 @@ public: // Static interface
   [[nodiscard]] static auto settings_file_path(std::optional<std::string_view> folder_name = std::nullopt)
     -> std::filesystem::path;
 
+public: // Structors
+  ///
+  /// Construct the settings, stored in the local data folder \p folder_name.
+  ///
+  explicit workflow_settings(std::optional<std::string_view> folder_name = std::nullopt);
+
 public: // Accessors
   ///
   /// Get the local data folder the settings are stored in, see system::filesystem::local_data_folder.
@@ -127,12 +133,6 @@ public: // Accessors
   ///
   [[nodiscard]] auto type_erased_setting(const std::string& path) const
     -> std::optional<setting_type_erased_non_owning_ptr_variant_type>;
-
-public: // Structors
-  ///
-  /// Construct the settings, stored in the local data folder \p folder_name.
-  ///
-  explicit workflow_settings(std::optional<std::string_view> folder_name = std::nullopt);
 
 public: // Modifiers
   ///

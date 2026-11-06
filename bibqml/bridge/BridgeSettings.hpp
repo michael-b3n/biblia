@@ -9,11 +9,12 @@
 #include <QtQml/qqmlengine.h>
 #include <QtQmlIntegration/qqmlintegration.h>
 #include <QVariant>
+#include <QVariantList>
 
+#include <functional>
 #include <map>
 #include <memory>
 
-// Forward declarations
 namespace bibstd::workflow
 {
 class workflow_settings;
@@ -77,6 +78,29 @@ public: // Modifiers
   /// \return setting binding owned by this registry, nullptr if none could be created
   ///
   Q_INVOKABLE SettingBinding* binding(const QString& path, const QVariant& defaultValue);
+
+  ///
+  /// Access a binding like above, a new setting takes only the values of \p available.
+  /// \return setting binding owned by this registry, nullptr if none could be created
+  ///
+  Q_INVOKABLE SettingBinding* binding(const QString& path, const QVariant& defaultValue, const QVariantList& available);
+
+  ///
+  /// Access a binding like above, a new number setting takes values from \p minimum
+  /// to \p maximum, whole numbers stay below \p maximum.
+  /// \return setting binding owned by this registry, nullptr if none could be created
+  ///
+  Q_INVOKABLE SettingBinding* binding(
+    const QString& path, const QVariant& defaultValue, const QVariant& minimum, const QVariant& maximum
+  );
+
+private: // Implementation
+  ///
+  /// \return the binding of \p path, otherwise the one \p create returns, nullptr if there is no path
+  ///
+  [[nodiscard]] SettingBinding* bindingOf(
+    const QString& path, const QVariant& defaultValue, const std::function<std::unique_ptr<SettingBinding>()>& create
+  );
 };
 
 } // namespace bibqml

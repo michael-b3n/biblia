@@ -6,7 +6,16 @@ find_package(Catch2 3 REQUIRED)
 find_package(pugixml REQUIRED)
 include(Catch)
 
-file(GLOB_RECURSE bibstd_test_CPP_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
+#
+# Define target sources, the tests of the private scripts included
+#
+file(GLOB BIBSTD_TEST_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/*/private/*.cpp")
+
+# Include OS specific sources
+if(WIN32)
+  file(GLOB BIBSTD_TEST_WINDOWS_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/windows/*.cpp")
+  list(APPEND BIBSTD_TEST_SRC_FILES ${BIBSTD_TEST_WINDOWS_SRC_FILES})
+endif()
 
 #
 # Set executable.
@@ -17,7 +26,7 @@ add_executable(bibstd_test)
 # Set target sources.
 #
 target_sources(bibstd_test
-  PRIVATE ${bibstd_test_CPP_FILES}
+  PRIVATE ${BIBSTD_TEST_SRC_FILES}
 )
 
 #

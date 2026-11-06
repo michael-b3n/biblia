@@ -79,37 +79,47 @@ Input:
 Output:
 
 - `abbreviation` (`string or nil`): its abbreviation
-- `short_name` (`string or nil`): its short name, shown in the app. Without one the app shows the identifier.
+- `short_name` (`string or nil`): its short name, shown in the app and copied. The app has no names of its own, so a script names every book it can not fetch a name for.
 - `long_name` (`string or nil`): its long name
 
 ### `scripture.passage`
 
-A verse. The app asks for every verse it shows and keeps nothing,
-so the script may ask `workflow.cache` first.
+A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `workflow.cache`
+first. A reader of scripture files offers it too, see `scripture.read`.
 
 Input:
 
-- `name` (`string`): one of the names the script offers
+- `name` (`string`): one of the names the script offers, for a reader the name of the file
 - `book` (`string`): the identifier of the app, e.g. `john`
 - `chapter` (`integer`): the chapter
 - `verse` (`integer`): the verse
 
 Output:
 
-- `text` (`string or nil`): its plain text. The app shows markup of a web page as text.
-- `error` (`string or nil`): shown in place of a verse without `text`. Without one the app shows `verse not found`.
+- `markup` (`string or nil`): the verse as a sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens
+  its paragraph, `continue` for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and
+  `<i>` mark text up, and `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a
+  verse "2-4".
+- `text` (`string or nil`): its plain text in place of `markup`. The app shows markup of a web page as text.
+- `cross_references` (`{ string } or nil`): the cross references of the verse
+- `error` (`string or nil`): shown in place of a verse without `markup` or `text`. Without one the app shows `verse not found`.
 
 ### `scripture.read`
 
 A script that offers this reads scripture files, those of the scripture folder and those the user imports.
 The app asks each reader until one tells the file is of its format, by a name or an error. The app reads the
 archive, the script its entries with `workflow.scripture_store.read_entry`. The bundled readers `USX` and
-`USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files.
+`USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files. A reader keeps the
+verses, e.g. in `workflow.cache`, and gives them by `scripture.passage` with the file name as `name`. The app
+asks on every start, a reader that kept the file at this size and time answers from what it kept.
 
 Input:
 
 - `file` (`string`): the name of the file, e.g. `bible.zip`
 - `entries` (`{ string }`): the names of the files in the archive
+- `size` (`integer`): the size of the file in bytes
+- `modified` (`integer`): the time the file was last changed, a number that grows with it
+- `reload` (`boolean`): true to read the file anew, e.g. on an import or a reload by the user
 
 Output:
 
@@ -119,12 +129,8 @@ Output:
 - `copyright` (`string or nil`): its copyright, shown below the verses
 - `book_names` (`{ [string] = { [string] = string } } or nil`): the names of the books by the identifier of the app,
   e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
-- `verses` (`{ [string] = { [integer] = { [integer] = string } } } or nil`): the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-  versification from them, a book left out takes the one of the closest default versification. Each verse is a
-  sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
-  for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
-  `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
-- `cross_references` (`{ [string] = { [integer] = { [integer] = { string } } } } or nil`): the cross references of the verses by book, chapter and verse
+- `verse_counts` (`{ [string] = { [integer] = integer } } or nil`): the last verse of each chapter by book and chapter, the versification of the scripture.
+  A book left out takes the one of the closest default versification.
 - `error` (`string or nil`): why a file of its format can not be read
 
 ## Functions
@@ -148,6 +154,19 @@ Writes a text value to a cache, see `workflow.cache.get`.
 - `name` (`string`): the cache
 - `key` (`string`): the key of the value
 - `value` (`string or nil`): the value, `nil` removes the key
+
+### `workflow.cache.set_all(name, values)`
+
+Writes many text values to a cache at once, all of them or none, see `workflow.cache.get`.
+
+- `name` (`string`): the cache
+- `values` (`{ [string] = string }`): the values by key
+
+### `workflow.cache.clear(name)`
+
+Removes all values of a cache, see `workflow.cache.get`.
+
+- `name` (`string`): the cache
 
 ### `workflow.scripture.scripture_count()`
 
@@ -359,7 +378,14 @@ The nodes of the bundled scripts at `scripts`.
 
 - Returns the scripture of the archive of `input`, the input of `scripture.read`, in the format `format`: a node
   like scripts.usx with the `extensions` of its files, `parse` and `book`. None if the archive holds no file of the
-  format, an error if it holds no book of the app. Each file names its book, the first file of a book is read.
+  format, an error if it holds no book of the app. Each file names its book, the first file of a book is read. The
+  verses go to a cache of the file, scripture_archive.passage gives them. A file kept at the size and time of
+  `input` is not read again unless `reload` asks for it.
+
+### `scripts.scripture_archive.passage(input)`
+
+- Returns the verse of `input`, the input of `scripture.passage` with the name of a file read by read_scripture:
+  its `markup` and `cross_references`. None if the cache of the file does not keep it.
 
 ### `scripts.usfm.parse(text)`
 
@@ -381,7 +407,7 @@ The nodes of the bundled scripts at `scripts`.
 
 - Returns the book of the element tree `tree` of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
   app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
-  the headers before its first chapter, and its `verses` in the markup of `scripture.read` and their
+  the headers before its first chapter, else its code, and its `verses` in the markup of `scripture.passage` and their
   `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
   paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 

@@ -75,7 +75,7 @@ inline auto init_thread() -> void
 /// Format a windows error code the way the windows documentation writes them.
 /// \return error code as hexadecimal string
 ///
-inline auto to_string(const HRESULT hr) -> std::string
+[[nodiscard]] inline auto to_string(const HRESULT hr) -> std::string
 {
   return std::format("{:#010x}", static_cast<std::uint32_t>(hr));
 }
@@ -104,7 +104,7 @@ public: // Creators
   /// Create the graphics device.
   /// \return The created device, or nullptr if no device can be created
   ///
-  static auto create() -> std::shared_ptr<device>;
+  [[nodiscard]] static auto create() -> std::shared_ptr<device>;
 
 public: // Constructor
   device(
@@ -132,14 +132,14 @@ public: // Modifiers
   /// the first copy and on a size change.
   /// \return true if the frame was copied
   ///
-  auto keep_frame(const texture_type& frame, texture_type& target) -> bool;
+  [[nodiscard]] auto keep_frame(const texture_type& frame, texture_type& target) -> bool;
 
   ///
   /// Read a region of a texture into pixels. The pixels are saved row by row, the topmost row of
   /// the region first. A region reaching past the texture is turned down.
   /// \return true if the region was read, false otherwise
   ///
-  auto read_region(const texture_type& source, region reg, pixel_plane_type& pix) -> bool;
+  [[nodiscard]] auto read_region(const texture_type& source, region reg, pixel_plane_type& pix) -> bool;
 
 private: // Implementation
   ///
@@ -147,7 +147,7 @@ private: // Implementation
   /// cached one was made for a differently sized region.
   /// \return true if the texture is ready to be read into, false otherwise
   ///
-  auto prepare_staging(std::int32_t width, std::int32_t height) -> bool;
+  [[nodiscard]] auto prepare_staging(std::int32_t width, std::int32_t height) -> bool;
 };
 
 } // namespace bibstd::system::winrt_capture

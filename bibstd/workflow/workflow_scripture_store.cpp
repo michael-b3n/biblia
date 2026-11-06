@@ -1,12 +1,13 @@
 #include "bibstd/workflow/workflow_scripture_store.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/reference.hpp"
-#include "bibstd/bible/scripture.hpp"
+#include "bibstd/bible/scripture_outline.hpp"
 #include "bibstd/bible/scripture_types.hpp"
 #include "bibstd/io/zip_file_reader.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
+#include "bibstd/util/numeric_cast.hpp"
 #include "bibstd/util/string.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
 
@@ -14,8 +15,10 @@
 #include <cstdint>
 #include <expected>
 #include <format>
+#include <functional>
 #include <limits>
 #include <ranges>
+#include <set>
 #include <system_error>
 #include <tuple>
 #include <utility>
@@ -71,36 +74,29 @@ namespace
 }
 
 ///
-/// Access the values of \p by_book, a map by book, chapter and verse as a
+/// \return the last verse of each chapter of \p verse_counts, the last verses by book and chapter as a
 /// reader outputs them. Throws if it names an unknown book or a number below 1.
-/// \return view of the pairs of reference and value
 ///
-[[nodiscard]] auto by_reference(auto& by_book)
+[[nodiscard]] auto chapter_ends_of(const std::map<std::string, std::map<std::int64_t, std::int64_t>>& verse_counts)
+  -> std::vector<bible::reference>
 {
-  const auto of_book = [](auto& book_entry)
+  const auto of_book = [](const auto& book_entry)
   {
-    auto& [book, chapters] = book_entry;
-    const auto of_chapter = [book = book_of(book)](auto& chapter_entry)
+    const auto& [book, chapters] = book_entry;
+    const auto chapter_end = [book = book_of(book)](const auto& chapter_entry)
     {
-      auto& [chapter, verses] = chapter_entry;
-      const auto of_verse = [book, chapter = number_of(chapter)](auto& verse_entry)
-      {
-        return std::pair<bible::reference, decltype((verse_entry.second))>{
-          bible::reference::create_unguarded(book, chapter, number_of(verse_entry.first)), verse_entry.second
-        };
-      };
-      return verses | std::views::transform(of_verse);
+      return bible::reference::create_unguarded(book, number_of(chapter_entry.first), number_of(chapter_entry.second));
     };
-    return chapters | std::views::transform(of_chapter) | std::views::join;
+    return chapters | std::views::transform(chapter_end);
   };
-  return by_book | std::views::transform(of_book) | std::views::join;
+  return verse_counts | std::views::transform(of_book) | std::views::join | std::ranges::to<std::vector>();
 }
 
 ///
-/// \return the scripture of the reader output \p output. Throws if
+/// \return the outline of the scripture of the reader output \p output. Throws if
 /// it names an unknown book or a number below 1, or holds no verse.
 ///
-[[nodiscard]] auto scripture_of(workflow_scripture_store::read_manifest::output output) -> std::shared_ptr<bible::scripture>
+[[nodiscard]] auto outline_of(workflow_scripture_store::read_manifest::output output) -> std::shared_ptr<bible::scripture_outline>
 {
   // A field left out holds nothing
   static constexpr auto filled = [](auto& field) -> auto&
@@ -127,33 +123,12 @@ namespace
     return std::pair{book_of(book), std::move(book_name)};
   };
   auto book_names = filled(output.get<"book_names">()) | std::views::transform(to_book_name) |
-                    std::ranges::to<bible::scripture::book_name_map_type>();
-  // By value, the view hands out temporary pairs of reference and content
-  static constexpr auto to_passage = [](auto entry)
-  {
-    auto& [ref, content] = entry;
-    return std::pair{
-      ref, bible::passage{.ref = ref, .content = std::move(content)}
-    };
-  };
-  auto passages = by_reference(filled(output.get<"verses">())) | std::views::transform(to_passage) |
-                  std::ranges::to<bible::scripture::passage_map_type>();
-  if(passages.empty())
+                    std::ranges::to<bible::scripture_outline::book_name_map_type>();
+  auto chapter_ends = chapter_ends_of(filled(output.get<"verse_counts">()));
+  if(chapter_ends.empty())
   {
     throw util::exception{"no verse of the app"};
   }
-  // The cross references of a verse without passage are left out
-  std::ranges::for_each(
-    by_reference(filled(output.get<"cross_references">())),
-    [&passages](auto verse)
-    {
-      auto& [ref, cross_references] = verse;
-      if(const auto it = passages.find(ref); it != passages.end())
-      {
-        it->second.cross_references = std::move(cross_references);
-      }
-    }
-  );
 
   auto info = bible::scripture_info{
     .name = *output.get<"name">(),
@@ -162,22 +137,25 @@ namespace
     .language = output.get<"language">().value_or(""),
     .copyright = output.get<"copyright">()
   };
+  const auto verses = std::ranges::fold_left(
+    chapter_ends | std::views::transform([](const bible::reference& end) { return end.verse().value; }), 0u, std::plus{}
+  );
   LOG_INFO(
     "read scripture: name=\"{}\", abbreviation=\"{}\", language=\"{}\", verses={}, named_books={}",
     info.name,
     info.abbreviation,
     info.language,
-    passages.size(),
+    verses,
     book_names.size()
   );
-  return std::make_shared<bible::scripture>(std::move(info), std::move(book_names), std::move(passages));
+  return std::make_shared<bible::scripture_outline>(std::move(info), std::move(book_names), std::move(chapter_ends));
 }
 
 ///
 /// \return the scriptures of \p files by name, named in the order of their
 /// files. A name already taken gets a counting suffix, e.g. "Name (2)".
 ///
-[[nodiscard]] auto named(const std::map<std::filesystem::path, std::shared_ptr<bible::scripture>>& files)
+[[nodiscard]] auto named(const std::map<std::filesystem::path, workflow_scripture_store::file_scripture>& files)
   -> workflow_scripture_store::scripture_map_type
 {
   static constexpr auto uint_ending_format = " ({})";
@@ -187,7 +165,7 @@ namespace
     files | std::views::values,
     [&scriptures](const auto& scripture)
     {
-      auto name = scripture->information().name;
+      auto name = scripture.outline->information().name;
       if(scriptures.contains(name))
       {
         // Count up from the suffixes of this name, not of another name starting alike, e.g. "Name
@@ -236,6 +214,20 @@ auto workflow_scripture_store::scriptures() const -> scripture_map_type
 ///
 auto workflow_scripture_store::load() -> void
 {
+  load(false);
+}
+
+///
+///
+auto workflow_scripture_store::reload() -> void
+{
+  load(true);
+}
+
+///
+///
+auto workflow_scripture_store::load(const bool reload) -> void
+{
   auto error = std::error_code{};
   // Created here so a later import has somewhere to copy to
   std::ignore = std::filesystem::create_directories(folder_, error);
@@ -250,21 +242,25 @@ auto workflow_scripture_store::load() -> void
     }
     return container;
   };
-  const auto read_file = [this](const std::filesystem::path& file)
+  // Each is there once it is read, a file no reader reads is left out
+  auto read_files = std::set<std::filesystem::path>{};
+  const auto read_file = [this, reload, &read_files](const std::filesystem::path& file)
   {
     LOG_INFO("loading scripture data: file_name=\"{}\"", file.filename().string());
-    return std::pair{file, read(file)};
+    if(auto scripture = read(file, reload))
+    {
+      const auto lock = std::scoped_lock{mtx_};
+      files_.insert_or_assign(file, std::move(*scripture));
+      read_files.insert(file);
+    }
   };
-  auto files = regular_files(folder_, error) | std::views::filter(supported) | std::views::transform(read_file) |
-               std::ranges::to<decltype(files_)>();
-  // A file no reader reads is left out
-  std::erase_if(files, [](const auto& file) { return !file.second; });
+  std::ranges::for_each(regular_files(folder_, error) | std::views::filter(supported), read_file);
   if(error)
   {
     LOG_WARN("failed to read the scripture folder: folder=\"{}\", error={}", folder_.generic_string(), error.message());
   }
   const auto lock = std::scoped_lock{mtx_};
-  files_ = std::move(files);
+  std::erase_if(files_, [&read_files](const auto& file) { return !read_files.contains(file.first); });
 }
 
 ///
@@ -292,7 +288,7 @@ auto workflow_scripture_store::import(const std::filesystem::path& source) -> st
   const auto take_over = [&](const std::filesystem::path& file)
   {
     // Read before the copy, so a file this store cannot load never reaches the folder
-    auto scripture = readers_loaded ? read(file) : nullptr;
+    auto scripture = readers_loaded ? read(file, true) : std::nullopt;
     if(readers_loaded && !scripture)
     {
       LOG_WARN("scripture file not taken over: file_name=\"{}\"", file.filename().string());
@@ -311,7 +307,7 @@ auto workflow_scripture_store::import(const std::filesystem::path& source) -> st
     }
     const auto lock = std::scoped_lock{mtx_};
     LOG_INFO("scripture file {}: file_name=\"{}\"", files_.contains(target) ? "replaced" : "copied", file.filename().string());
-    files_.insert_or_assign(target, std::move(scripture));
+    files_.insert_or_assign(target, std::move(*scripture));
     return true;
   };
   return static_cast<std::size_t>(std::ranges::count_if(
@@ -323,7 +319,7 @@ auto workflow_scripture_store::import(const std::filesystem::path& source) -> st
 
 ///
 ///
-auto workflow_scripture_store::read(const std::filesystem::path& file) const -> std::shared_ptr<bible::scripture>
+auto workflow_scripture_store::read(const std::filesystem::path& file, const bool reload) const -> std::optional<file_scripture>
 {
   const auto file_name = file.filename().string();
   try
@@ -332,12 +328,18 @@ auto workflow_scripture_store::read(const std::filesystem::path& file) const -> 
     if(!archive.is_open())
     {
       LOG_ERROR("failed to open scripture archive: file_name=\"{}\"", file_name);
-      return nullptr;
+      return std::nullopt;
     }
     auto entries = archive.entries() |
                    std::views::filter([](const auto& entry) { return entry.name && !entry.name->ends_with('/'); }) |
                    std::views::transform([](const auto& entry) { return *entry.name; }) | std::ranges::to<std::vector>();
-    const auto input = read_manifest::input{file_name, std::move(entries)};
+    const auto input = read_manifest::input{
+      file_name,
+      std::move(entries),
+      numeric_cast<std::int64_t>(std::filesystem::file_size(file)),
+      static_cast<std::int64_t>(std::filesystem::last_write_time(file).time_since_epoch().count()),
+      reload,
+    };
 
     // Held while the readers run, so no other script reaches the archive
     const auto state = workflow_script_->state();
@@ -368,11 +370,11 @@ auto workflow_scripture_store::read(const std::filesystem::path& file) const -> 
         LOG_ERROR(
           "failed to read scripture: file_name=\"{}\", reader=\"{}\", error=\"{}\"", file_name, reader, *output->get<"error">()
         );
-        return nullptr;
+        return std::nullopt;
       }
       if(output && output->get<"name">())
       {
-        return scripture_of(std::move(*output));
+        return file_scripture{.outline = outline_of(std::move(*output)), .reader = reader, .file_name = file_name};
       }
     }
     LOG_WARN("no reader for the scripture file: file_name=\"{}\"", file_name);
@@ -381,7 +383,7 @@ auto workflow_scripture_store::read(const std::filesystem::path& file) const -> 
   {
     LOG_ERROR("failed to read scripture data: file_name=\"{}\", {}", file_name, util::exception_report());
   }
-  return nullptr;
+  return std::nullopt;
 }
 
 } // namespace bibstd::workflow

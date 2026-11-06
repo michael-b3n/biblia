@@ -17,7 +17,6 @@
 
 namespace bibstd::workflow
 {
-// Forward declarations
 class workflow_script;
 } // namespace bibstd::workflow
 
@@ -67,13 +66,13 @@ public: // Modifiers
   ///
   void disconnect();
 
-private: // Implementation
-  void load(std::vector<std::filesystem::path> files);
-  void updateScripts();
-
 signals:
   void loadingChanged();
   void scriptsChanged();
+
+private: // Implementation
+  void load(std::vector<std::filesystem::path> files);
+  void updateScripts();
 };
 
 } // namespace bibqml

@@ -315,6 +315,13 @@ usfm["scripture.read"] = function(input)
   return scripts.scripture_archive.read_scripture(input, usfm)
 end
 
+---
+--- \return the verse of \p input of a file read as USFM, \see scripts.scripture_archive.passage
+---
+usfm["scripture.passage"] = function(input)
+  return scripts.scripture_archive.passage(input)
+end
+
 -- Shown to the user
 usfm.name = "USFM"
 usfm.description = "Reads scriptures of USFM files, e.g. the archives of eBible.org."

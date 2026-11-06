@@ -15,7 +15,7 @@
 #include <QCursor>
 #include <QMetaObject>
 
-#include <ranges>
+#include <tuple>
 #include <utility>
 
 namespace bibqml
@@ -86,25 +86,6 @@ struct CaptureResult final
 }
 
 ///
-/// Create the click action setting, or access the existing one. Declared here, the actions are a frontend concept.
-/// \return non owning pointer to the click action setting
-///
-[[nodiscard]] auto createClickActionSetting(bibstd::workflow::workflow_settings& workflowSettings)
-  -> bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<std::string>>
-{
-  using ClickAction = BridgeBibleRefOcr::ClickAction;
-  const auto available = bibstd::util::enum_names<ClickAction>() |
-                         std::views::transform([](const auto name) { return std::string{name}; }) |
-                         std::ranges::to<std::vector>();
-  const auto setting = workflowSettings.type_erased_setting(
-    std::string{"ocr.click_action"},
-    std::string{bibstd::util::enum_name(ClickAction::LookupBrowser)},
-    std::make_shared<bibstd::framework::setting_validator_list<std::string>>(available)
-  );
-  return std::get<bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<std::string>>>(setting);
-}
-
-///
 /// Create the auto search setting, or access the existing one. Declared here, the backend only searches when told.
 /// \return non owning pointer to the auto search setting
 ///
@@ -135,7 +116,6 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
   , manualSearchSig_{workflowHotkey->register_callback(
       manualSearchPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f
     )}
-  , clickActionSetting_{createClickActionSetting(*workflowSettings)}
   , autoSearchSetting_{createAutoSearchSetting(*workflowSettings)}
 {
   connections_.connect(*manualSearchSig_, [this]() { runManualSearch(); });
@@ -171,25 +151,10 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
 
 ///
 ///
-BridgeBibleRefOcr::ClickAction BridgeBibleRefOcr::clickAction() const
-{
-  const auto action = bibstd::util::to_enum<ClickAction>(clickActionSetting_->value());
-  if(!action)
-  {
-    // A value that cannot be read, e.g. one persisted by an older version, falls back to the
-    // default action. Reporting no action instead would leave a click without any effect.
-    LOG_WARN("unknown click action configured: value=\"{}\"", clickActionSetting_->value());
-    return ClickAction::LookupBrowser;
-  }
-  return *action;
-}
-
-///
-///
 void BridgeBibleRefOcr::setAutoSearch(const bool enabled)
 {
   // The setting is what the search follows, writing it is what starts and stops it
-  autoSearchSetting_->value(enabled);
+  std::ignore = autoSearchSetting_->value(enabled);
 }
 
 ///

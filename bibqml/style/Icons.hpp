@@ -15,7 +15,7 @@ namespace detail
 /// Helper function to build the source url of an icon resource, \p name is its file name inside the module resource folder.
 /// \return The corresponding resource url
 ///
-auto toIconUrl(std::string_view name) -> QString;
+[[nodiscard]] auto toIconUrl(std::string_view name) -> QString;
 
 } // namespace detail
 
@@ -34,6 +34,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString checkMark MEMBER checkMark_ CONSTANT)
   Q_PROPERTY(QString close MEMBER close_ CONSTANT)
   Q_PROPERTY(QString code MEMBER code_ CONSTANT)
+  Q_PROPERTY(QString copy MEMBER copy_ CONSTANT)
   Q_PROPERTY(QString copyright MEMBER copyright_ CONSTANT)
   Q_PROPERTY(QString dragHandle MEMBER dragHandle_ CONSTANT)
   Q_PROPERTY(QString fileImport MEMBER fileImport_ CONSTANT)
@@ -43,6 +44,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString pin MEMBER pin_ CONSTANT)
   Q_PROPERTY(QString pinFilled MEMBER pinFilled_ CONSTANT)
   Q_PROPERTY(QString play MEMBER play_ CONSTANT)
+  Q_PROPERTY(QString reload MEMBER reload_ CONSTANT)
   Q_PROPERTY(QString remove MEMBER remove_ CONSTANT)
   Q_PROPERTY(QString settings MEMBER settings_ CONSTANT)
   Q_PROPERTY(QString stop MEMBER stop_ CONSTANT)
@@ -54,6 +56,7 @@ class Icons final : public QObject
   QString checkMark_{detail::toIconUrl("check_mark.svg")};
   QString close_{detail::toIconUrl("close.svg")};
   QString code_{detail::toIconUrl("code.svg")};
+  QString copy_{detail::toIconUrl("copy.svg")};
   QString copyright_{detail::toIconUrl("copyright.svg")};
   QString dragHandle_{detail::toIconUrl("drag_handle.svg")};
   QString fileImport_{detail::toIconUrl("file_import.svg")};
@@ -63,6 +66,7 @@ class Icons final : public QObject
   QString pin_{detail::toIconUrl("pin.svg")};
   QString pinFilled_{detail::toIconUrl("pin_filled.svg")};
   QString play_{detail::toIconUrl("play.svg")};
+  QString reload_{detail::toIconUrl("reload.svg")};
   QString remove_{detail::toIconUrl("remove.svg")};
   QString settings_{detail::toIconUrl("settings.svg")};
   QString stop_{detail::toIconUrl("stop.svg")};

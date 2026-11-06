@@ -53,26 +53,26 @@ public: // Accessors
   /// Get the span from left to right of the rectangle.
   /// \return the horizontal span of the rect
   ///
-  constexpr auto horizontal_range() const -> value_range<value_type>;
+  [[nodiscard]] constexpr auto horizontal_range() const -> value_range<value_type>;
 
   ///
   /// Get the span from lower to upper of the rectangle.
   /// \return the vertical span of the rect
   ///
-  constexpr auto vertical_range() const -> value_range<value_type>;
+  [[nodiscard]] constexpr auto vertical_range() const -> value_range<value_type>;
 
   ///
   /// Get the lower left coordinates of the rectangle.
   /// \return coordinates at lower left position
   ///
-  constexpr auto origin() const -> coordinates_type;
+  [[nodiscard]] constexpr auto origin() const -> coordinates_type;
 
   ///
   /// Get the center coordinates of the rectangle.
   /// If there is no exact center, the closest lower left coordinates are returned.
   /// \return center coordinates
   ///
-  constexpr auto center() const -> coordinates_type;
+  [[nodiscard]] constexpr auto center() const -> coordinates_type;
 };
 
 ///
@@ -161,7 +161,7 @@ constexpr auto rect<ValueType>::center() const -> coordinates_type
 /// \return true if empty, false otherwise
 ///
 template<arithmetic_type T>
-constexpr auto empty(const rect<T>& rectangle) -> bool
+[[nodiscard]] constexpr auto empty(const rect<T>& rectangle) -> bool
 {
   return empty(rectangle.horizontal_range()) || empty(rectangle.vertical_range());
 }
@@ -171,7 +171,7 @@ constexpr auto empty(const rect<T>& rectangle) -> bool
 /// \return the overlap of two rectangles as a rectangle
 ///
 template<arithmetic_type T1, arithmetic_type T2>
-constexpr auto overlap(const rect<T1>& first, const rect<T2>& second)
+[[nodiscard]] constexpr auto overlap(const rect<T1>& first, const rect<T2>& second)
   -> std::optional<rect<meta::lossless_common_type_t<T1, T2>>>
   requires(similar_arithmetic_types<T1, T2> && meta::has_lossless_common_type<T1, T2>)
 {
@@ -191,7 +191,7 @@ constexpr auto overlap(const rect<T1>& first, const rect<T2>& second)
 /// \return true if subrectangle is contained in rectangle, false otherwise
 ///
 template<arithmetic_type T1, arithmetic_type T2>
-constexpr auto contains(const rect<T1>& rectangle, const rect<T2>& subrectangle) -> bool
+[[nodiscard]] constexpr auto contains(const rect<T1>& rectangle, const rect<T2>& subrectangle) -> bool
   requires(similar_arithmetic_types<T1, T2> && meta::has_lossless_common_type<T1, T2>)
 {
   const auto x_contains = contains(rectangle.horizontal_range(), subrectangle.horizontal_range());
@@ -204,7 +204,7 @@ constexpr auto contains(const rect<T1>& rectangle, const rect<T2>& subrectangle)
 /// \return true if coordinates are contained in rectangle, false otherwise
 ///
 template<arithmetic_type T1, arithmetic_type T2>
-constexpr auto contains(const rect<T1>& rectangle, const coordinates_2d<T2>& coordinates) -> bool
+[[nodiscard]] constexpr auto contains(const rect<T1>& rectangle, const coordinates_2d<T2>& coordinates) -> bool
   requires(similar_arithmetic_types<T1, T2> && meta::has_lossless_common_type<T1, T2>)
 {
   const auto x_contains = contains(rectangle.horizontal_range(), coordinates.x());
@@ -219,7 +219,7 @@ constexpr auto contains(const rect<T1>& rectangle, const coordinates_2d<T2>& coo
 /// \return rectangle that surrounds all given rectangles
 ///
 template<arithmetic_type... T>
-constexpr auto surrounding_rect(const rect<T>&... rects) -> rect<meta::lossless_common_type_t<T...>>
+[[nodiscard]] constexpr auto surrounding_rect(const rect<T>&... rects) -> rect<meta::lossless_common_type_t<T...>>
   requires(similar_arithmetic_types<T...> && meta::has_lossless_common_type<T...>)
 {
   static_assert(sizeof...(rects) > 0);

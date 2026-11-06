@@ -8,18 +8,15 @@
 #include <variant>
 #include <vector>
 
-// Forward declarations
 namespace bibstd::system
 {
 class ocr_engine_system;
 } // namespace bibstd::system
-namespace bibstd::txt
-{
-class ocr_engine_tesseract;
-} // namespace bibstd::txt
 
 namespace bibstd::txt
 {
+
+class ocr_engine_tesseract;
 
 ///
 /// Helper text resolution tag struct of an OCR engine.
@@ -107,7 +104,7 @@ public: // Operations
   /// Analyze the layout of the image, much faster than character recognition.
   /// \return the layouts of the lines
   ///
-  virtual auto layout_analysis() const -> std::vector<line_layout> = 0;
+  [[nodiscard]] virtual auto layout_analysis() const -> std::vector<line_layout> = 0;
 };
 
 ///
@@ -138,7 +135,7 @@ public: // Accessors
   /// Access to OCR engine name. This accessor is usefull for user engine selection.
   /// \return engine name
   ///
-  virtual auto name() const -> name_type = 0;
+  [[nodiscard]] virtual auto name() const -> name_type = 0;
 
 public: // Modifiers
   ///
@@ -151,7 +148,7 @@ public: // Modifiers
   /// Depending on engine support; word, lines or paragraph information is returned.
   /// \return recognition result list (words, lines or paragraphs)
   ///
-  virtual auto recognize() const -> recognition_data = 0;
+  [[nodiscard]] virtual auto recognize() const -> recognition_data = 0;
 };
 
 ///

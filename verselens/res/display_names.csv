@@ -14,6 +14,8 @@ character_recognition_ocr_engine,Zeichenerkennung,Character recognition
 click_action,Aktion bei Klick,Click action
 control,Strg,Ctrl
 control_shift,Strg + Umschalt,Ctrl + Shift
+copy,Kopieren,Copy
+CopyClipboard,In die Zwischenablage kopieren,Copy to clipboard
 custom_tessdata_path,Eigenes Tesseract-Datenverzeichnis,Custom Tesseract data folder
 default_name,Standardname,Default name
 dwell_duration,Verweildauer,Dwell duration
@@ -30,6 +32,7 @@ line_recognition,Zeilenerkennung,Line recognition
 lookup,Nachschlagen,Lookup
 LookupBrowser,Im Browser öffnen,Open in browser
 manual_reference_search,Manuelle Referenzsuche,Manual reference search
+mask,Format,Format
 modifier,Zusatztaste,Modifier
 movement_tolerance,Bewegungstoleranz,Movement tolerance
 name,Name,Name

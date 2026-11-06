@@ -22,7 +22,7 @@ concept enum_type = std::is_enum_v<E>;
 /// \return integral value corresponding to enum value
 ///
 template<enum_type E>
-constexpr auto to_integral(const E e) -> std::underlying_type_t<E>
+[[nodiscard]] constexpr auto to_integral(const E e) -> std::underlying_type_t<E>
 {
   return static_cast<std::underlying_type_t<E>>(e);
 }
@@ -33,7 +33,7 @@ constexpr auto to_integral(const E e) -> std::underlying_type_t<E>
 /// \return string_view name corresponding to enum value
 ///
 template<enum_type E>
-constexpr auto enum_name(const E e) -> std::string_view
+[[nodiscard]] constexpr auto enum_name(const E e) -> std::string_view
 {
   return magic_enum::enum_name(e);
 }
@@ -77,7 +77,7 @@ consteval auto enum_values() -> std::array<E, enum_count<E>()>
 /// \return enum type value
 ///
 template<enum_type E>
-constexpr auto to_enum(const std::underlying_type_t<E> integral) -> E
+[[nodiscard]] constexpr auto to_enum(const std::underlying_type_t<E> integral) -> E
 {
   return static_cast<E>(integral);
 }
@@ -88,7 +88,7 @@ constexpr auto to_enum(const std::underlying_type_t<E> integral) -> E
 /// \return optional enum type value, std::nullopt of name does not correspond to any enum value in specified enum type
 ///
 template<enum_type E>
-constexpr auto to_enum(const std::string_view name) -> std::optional<E>
+[[nodiscard]] constexpr auto to_enum(const std::string_view name) -> std::optional<E>
 {
   const auto value = magic_enum::enum_cast<E>(name);
   return value ? *value : std::optional<E>{std::nullopt};
@@ -100,7 +100,7 @@ constexpr auto to_enum(const std::string_view name) -> std::optional<E>
 /// \return next enum value of param e
 ///
 template<enum_type E>
-constexpr auto next(const E e) -> E
+[[nodiscard]] constexpr auto next(const E e) -> E
 {
   const auto value = math::arithmetic::add(to_integral(e), std::underlying_type_t<E>(1));
   if(!value.has_value())
@@ -116,7 +116,7 @@ constexpr auto next(const E e) -> E
 /// \return flag indicating if next enum value exists
 ///
 template<enum_type E>
-constexpr auto has_next(const E e) -> bool
+[[nodiscard]] constexpr auto has_next(const E e) -> bool
 {
   const auto value = math::arithmetic::add(to_integral(e), std::underlying_type_t<E>(1));
   return value.has_value() && magic_enum::enum_cast<E>(*value).has_value();
@@ -128,7 +128,7 @@ constexpr auto has_next(const E e) -> bool
 /// \return previous enum value of param e
 ///
 template<enum_type E>
-constexpr auto prev(const E e) -> E
+[[nodiscard]] constexpr auto prev(const E e) -> E
 {
   const auto value = math::arithmetic::subtract(to_integral(e), std::underlying_type_t<E>(1));
   if(!value.has_value())
@@ -144,7 +144,7 @@ constexpr auto prev(const E e) -> E
 /// \return flag indicating if previous enum value exists
 ///
 template<enum_type E>
-constexpr auto has_prev(const E e) -> bool
+[[nodiscard]] constexpr auto has_prev(const E e) -> bool
 {
   const auto value = math::arithmetic::subtract(to_integral(e), std::underlying_type_t<E>(1));
   return value.has_value() && magic_enum::enum_cast<E>(*value).has_value();
@@ -156,7 +156,7 @@ constexpr auto has_prev(const E e) -> bool
 /// \return true if valid, false otherwise
 ///
 template<enum_type E>
-constexpr auto valid(E e) -> bool
+[[nodiscard]] constexpr auto valid(E e) -> bool
 {
   return magic_enum::enum_cast<E>(to_integral(e)).has_value();
 }

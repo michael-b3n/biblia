@@ -23,7 +23,7 @@ public: // Static modifiers
   /// shared scope guard. The returned guard will uninitialize the hotkey registration on destruction.
   /// \return guard to uninitialize hotkey registration on destruction
   ///
-  static auto init() -> util::shared_scope_guard;
+  [[nodiscard]] static auto init() -> util::shared_scope_guard;
 
   ///
   /// Register global callback to specified key and key modifier. It is called on the thread

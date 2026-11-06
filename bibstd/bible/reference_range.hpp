@@ -30,13 +30,13 @@ public: // Accessors
   /// Get the first reference in the range.
   /// \return the first reference.
   ///
-  constexpr auto begin() const -> reference;
+  [[nodiscard]] constexpr auto begin() const -> reference;
 
   ///
   /// Get the last reference in the range.
   /// \return the last reference.
   ///
-  constexpr auto end() const -> reference;
+  [[nodiscard]] constexpr auto end() const -> reference;
 };
 
 ///

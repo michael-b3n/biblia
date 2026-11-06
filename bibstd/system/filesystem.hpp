@@ -17,19 +17,19 @@ struct filesystem final
   /// Get path to executable.
   /// \return path to executable location
   ///
-  static inline auto executable_location() -> std::filesystem::path;
+  [[nodiscard]] static inline auto executable_location() -> std::filesystem::path;
 
   ///
   /// Get path to executable folder.
   /// \return path to executable folder
   ///
-  static inline auto executable_folder() -> std::filesystem::path;
+  [[nodiscard]] static inline auto executable_folder() -> std::filesystem::path;
 
   ///
   /// Get path to the local data folder \p folder_name, named after the executable if not set.
   /// \return path to local data
   ///
-  static auto local_data_folder(std::optional<std::string_view> folder_name = std::nullopt) -> std::filesystem::path;
+  [[nodiscard]] static auto local_data_folder(std::optional<std::string_view> folder_name = std::nullopt) -> std::filesystem::path;
 };
 
 ///

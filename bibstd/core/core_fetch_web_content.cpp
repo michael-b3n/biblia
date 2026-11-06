@@ -65,12 +65,15 @@ auto core_fetch_web_content::fetch(std::string_view url) -> std::expected<std::s
 
     curl_easy_cleanup(curl);
 
-    switch(res)
+    if(res == CURLE_URL_MALFORMAT)
     {
-    case CURLE_URL_MALFORMAT: return std::unexpected(error_code::invalid_url);
-    case CURLE_OPERATION_TIMEDOUT: return std::unexpected(error_code::timeout);
-    default: return std::unexpected(error_code::request_failed);
+      return std::unexpected(error_code::invalid_url);
     }
+    if(res == CURLE_OPERATION_TIMEDOUT)
+    {
+      return std::unexpected(error_code::timeout);
+    }
+    return std::unexpected(error_code::request_failed);
   }
 
   long http_code = 0;

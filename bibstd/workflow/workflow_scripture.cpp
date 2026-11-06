@@ -61,8 +61,8 @@ workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflo
 
 ///
 ///
-workflow_scripture::versification_wrapper::versification_wrapper(std::shared_ptr<bible::scripture> scripture)
-  : data_{std::move(scripture)}
+workflow_scripture::versification_wrapper::versification_wrapper(std::shared_ptr<bible::scripture_outline> outline)
+  : data_{std::move(outline)}
 {
 }
 
@@ -80,7 +80,7 @@ auto workflow_scripture::versification_wrapper::get() const -> const bible::vers
   return util::visit_lambdas(
     data_,
     [](const bible::versification& versification) -> const bible::versification& { return versification; },
-    [](const std::shared_ptr<bible::scripture>& scripture) -> const bible::versification& { return scripture->versification(); }
+    [](const std::shared_ptr<bible::scripture_outline>& outline) -> const bible::versification& { return outline->versification(); }
   );
 }
 
@@ -237,7 +237,7 @@ workflow_scripture::workflow_scripture(
          {
            const auto reference = bible::reference::create_unguarded(book_id_of(book_id), chapter, verse);
            const auto params = passage_params_t{.reference = reference, .scripture_name = scripture_name};
-           return passage(params).transform([](const auto& result) { return result.passage.content; });
+           return passage(params).transform([](const auto& result) { return result.passage.xml(); });
          }
        );
 }
@@ -253,8 +253,15 @@ workflow_scripture::~workflow_scripture() noexcept
 ///
 auto workflow_scripture::scripture_count() const -> std::size_t
 {
-  const auto scriptures_lock = std::scoped_lock{mtx_};
   return scripture_names().size();
+}
+
+///
+///
+auto workflow_scripture::loaded() const -> bool
+{
+  const auto lock = std::scoped_lock{mtx_};
+  return script_scriptures_.has_value();
 }
 
 ///
@@ -271,7 +278,7 @@ auto workflow_scripture::information(const scripture_params& params) const -> st
     }
     return util::visit_lambdas(
       *source,
-      [](const std::shared_ptr<bible::scripture>& scripture) -> result_type { return scripture->information(); },
+      [](const workflow_scripture_store::file_scripture& file) -> result_type { return file.outline->information(); },
       [this](const script_scriptures_t::value_type& entry) -> result_type
       {
         const auto output = run_script<information_manifest>(entry.second, {entry.first});
@@ -310,7 +317,8 @@ auto workflow_scripture::book_information(const scripture_params& params, const 
     }
     return util::visit_lambdas(
       *source,
-      [book](const std::shared_ptr<bible::scripture>& scripture) -> result_type { return scripture->book_information(book); },
+      [book](const workflow_scripture_store::file_scripture& file) -> result_type
+      { return file.outline->book_information(book); },
       [this, book](const script_scriptures_t::value_type& entry) -> result_type
       {
         const auto output = run_script<book_manifest>(entry.second, {entry.first, std::string{util::enum_name(book)}});
@@ -338,9 +346,9 @@ auto workflow_scripture::book_information(const scripture_params& params, const 
 auto workflow_scripture::versification_or_fallback(const scripture_params& params) const -> versification_wrapper_type
 {
   const auto source = find(params->scripture_name);
-  if(const auto* scripture = source ? std::get_if<std::shared_ptr<bible::scripture>>(&*source) : nullptr)
+  if(const auto* file = source ? std::get_if<workflow_scripture_store::file_scripture>(&*source) : nullptr)
   {
-    return versification_wrapper_type{*scripture};
+    return versification_wrapper_type{file->outline};
   }
   return versification_wrapper_type{default_versifications.at(settings().fallback_versification->value())};
 }
@@ -360,41 +368,34 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
     {
       return std::unexpected{std::string{scripture_not_found}};
     }
-    return util::visit_lambdas(
+    // The reader of a file knows its scripture by the file name
+    const auto scripture = util::visit_lambdas(
       *source,
-      [&ref](const std::shared_ptr<bible::scripture>& scripture) -> passage_result
+      [](const workflow_scripture_store::file_scripture& file)
+      { return script_scripture_t{.script = file.reader, .name = file.file_name}; },
+      [](const script_scriptures_t::value_type& entry) { return entry.second; }
+    );
+    const auto output = run_script<passage_manifest>(
+      scripture,
       {
-        if(auto passage = scripture->passage(ref))
-        {
-          return passage_result_t{.passage = std::move(*passage)};
-        }
-        LOG_DEBUG("passage not found: reference=\"{}\"", ref);
-        return std::unexpected{std::string{verse_not_found}};
-      },
-      [this, &ref](const script_scriptures_t::value_type& entry) -> passage_result
-      {
-        const auto output = run_script<passage_manifest>(
-          entry.second,
-          {
-            entry.first,
-            std::string{util::enum_name(ref.book())},
-            static_cast<std::int64_t>(ref.chapter().value),
-            static_cast<std::int64_t>(ref.verse().value),
-          }
-        );
-        const auto content = output ? output->get<"text">() : std::nullopt;
-        if(!content)
-        {
-          // What the script reports, e.g. a web page it could not fetch
-          const auto error = output ? output->get<"error">() : std::string{script_failed};
-          return std::unexpected{error.value_or(std::string{verse_not_found})};
-        }
-        using markup = bible::passage_markup;
-        return passage_result_t{
-          .passage = {.ref = ref, .content = markup::section(markup::paragraph_undefined, markup::escaped_xml(*content))}
-        };
+        scripture.name,
+        std::string{util::enum_name(ref.book())},
+        static_cast<std::int64_t>(ref.chapter().value),
+        static_cast<std::int64_t>(ref.verse().value),
       }
     );
+    if(!output || !(output->get<"markup">() || output->get<"text">()))
+    {
+      // What the script reports, e.g. a web page it could not fetch
+      const auto error = output ? output->get<"error">() : std::string{script_failed};
+      return std::unexpected{error.value_or(std::string{verse_not_found})};
+    }
+    // The markup of a reader, the plain text of a web page, \see passage_manifest
+    const auto& markup = output->get<"markup">();
+    auto passage = markup ? bible::passage{ref, *markup, bible::passage_format::xml}
+                          : bible::passage{ref, *output->get<"text">(), bible::passage_format::plain};
+    passage.cross_references(output->get<"cross_references">().value_or(std::vector<std::string>{}));
+    return passage_result_t{.passage = std::move(passage)};
   }
   catch(...)
   {
@@ -430,10 +431,27 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
 
 ///
 ///
+auto workflow_scripture::reload_scriptures() -> void
+{
+  try
+  {
+    workflow_scripture_store_->reload();
+    update_scripture_name_setting();
+  }
+  catch(...)
+  {
+    LOG_ERROR("exception occurred: {}", util::exception_report());
+  }
+  notify(&signals_type::scriptures_changed);
+}
+
+///
+///
 auto workflow_scripture::scripture_names() const -> std::vector<std::string>
 {
   const auto scriptures = workflow_scripture_store_->scriptures();
   auto names = scriptures | std::views::keys | std::ranges::to<std::vector>();
+  const auto lock = std::scoped_lock{mtx_};
   if(script_scriptures_)
   {
     // A file shadows a script scripture of the same name, as in find
@@ -465,7 +483,7 @@ auto workflow_scripture::find(const std::optional<std::string>& name) const -> s
   {
     return source_t{it->second};
   }
-  const auto scriptures_lock = std::scoped_lock{mtx_};
+  const auto lock = std::scoped_lock{mtx_};
   if(!script_scriptures_)
   {
     return std::nullopt;
@@ -513,7 +531,7 @@ auto workflow_scripture::update_scripts() -> void
     const auto scripts = workflow_script_->scripts<names_manifest, information_manifest, book_manifest, passage_manifest>();
     auto scriptures = scripts | std::views::transform(of_script) | std::views::join | std::ranges::to<script_scriptures_t>();
     {
-      const auto scriptures_lock = std::scoped_lock{mtx_};
+      const auto lock = std::scoped_lock{mtx_};
       script_scriptures_ = std::move(scriptures);
     }
     update_scripture_name_setting();
@@ -530,22 +548,14 @@ auto workflow_scripture::update_scripts() -> void
 auto workflow_scripture::update_scripture_name_setting() -> void
 {
   static constexpr auto has_kjv_versification = [](const auto& s)
-  { return s.second->versification() == bible::versification_kjv; };
+  { return s.second.outline->versification() == bible::versification_kjv; };
 
-  // Read under the lock, the setting is changed without it: its listeners may call back into the workflow
-  auto names = std::vector<std::string>{};
-  auto preferred = std::optional<std::string>{};
-  auto scripts_loaded = false;
-  {
-    const auto scriptures_lock = std::scoped_lock{mtx_};
-    const auto scriptures = workflow_scripture_store_->scriptures();
-    names = scripture_names();
-    scripts_loaded = script_scriptures_.has_value();
-    if(const auto it = std::ranges::find_if(scriptures, has_kjv_versification); it != std::ranges::cend(scriptures))
-    {
-      preferred = it->first;
-    }
-  }
+  // Without the lock, the listeners of the setting may call back into the workflow
+  const auto scriptures = workflow_scripture_store_->scriptures();
+  const auto it = std::ranges::find_if(scriptures, has_kjv_versification);
+  const auto preferred = it != std::ranges::cend(scriptures) ? std::make_optional(it->first) : std::nullopt;
+  auto names = scripture_names();
+  const auto scripts_loaded = loaded();
   const auto name = settings().default_scripture_name->value();
   if(!scripts_loaded && name)
   {
@@ -560,7 +570,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
   const auto name_contained = name.has_value() && util::contains(names, *name);
   if(!(name_contained || names.empty()))
   {
-    settings().default_scripture_name->value(preferred ? *preferred : names.front());
+    std::ignore = settings().default_scripture_name->value(preferred ? *preferred : names.front());
   }
 }
 

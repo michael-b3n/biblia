@@ -11,7 +11,7 @@ namespace bibstd::util
 /// Format current time in {:%F_%H-%M-%S} format.
 /// \return CET time as string
 ///
-inline auto format_current_time_cet() -> std::string
+[[nodiscard]] inline auto format_current_time_cet() -> std::string
 {
   const auto time_point = std::chrono::system_clock::now();
   static const auto* const cet = std::chrono::locate_zone("Etc/GMT-1");

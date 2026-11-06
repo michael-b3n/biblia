@@ -66,4 +66,24 @@ auto toReference(const bibstd::bible::versification& versification, const QStrin
   return ref;
 }
 
+///
+///
+auto toReferenceRange(
+  const bibstd::bible::versification& versification,
+  const QString& bookId,
+  const int chapterBegin,
+  const int verseBegin,
+  const int chapterEnd,
+  const int verseEnd
+) -> std::optional<bibstd::bible::reference_range>
+{
+  const auto begin = toReference(versification, bookId, chapterBegin, verseBegin);
+  if(!begin)
+  {
+    return std::nullopt;
+  }
+  const auto end = toReference(versification, bookId, chapterEnd, verseEnd);
+  return bibstd::bible::reference_range{*begin, end.value_or(*begin)};
+}
+
 } // namespace bibqml

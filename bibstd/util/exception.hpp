@@ -22,8 +22,8 @@ public: // Constructor and destructor
   );
 
 public: // Accessors
-  inline auto where() const -> const std::source_location& { return location_; }
-  inline auto stack() const -> const std::stacktrace& { return stacktrace_; }
+  [[nodiscard]] inline auto where() const -> const std::source_location& { return location_; }
+  [[nodiscard]] inline auto stack() const -> const std::stacktrace& { return stacktrace_; }
 
 protected: // Variables
   const std::source_location location_;
@@ -35,7 +35,7 @@ protected: // Variables
 /// including type, message, location, and stacktrace if available.
 /// \return A formatted string with exception details
 ///
-auto exception_report() -> std::string;
+[[nodiscard]] auto exception_report() -> std::string;
 
 } // namespace bibstd::util
 

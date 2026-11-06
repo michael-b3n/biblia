@@ -10,11 +10,11 @@
 #include <string_view>
 #include <vector>
 
-// Forward declarations
 namespace tesseract
 {
 class TessBaseAPI;
 } // namespace tesseract
+
 namespace bibstd::data
 {
 class pix;
@@ -54,7 +54,7 @@ public: // Overrides
   ///
   /// \see ocr_engine::name
   ///
-  auto name() const -> name_type override;
+  [[nodiscard]] auto name() const -> name_type override;
 
   ///
   /// \see ocr_engine::initialize
@@ -64,12 +64,12 @@ public: // Overrides
   ///
   /// \see ocr_engine::recognize
   ///
-  auto recognize() const -> recognition_data override;
+  [[nodiscard]] auto recognize() const -> recognition_data override;
 
   ///
   /// \see ocr_engine::layout_analysis
   ///
-  auto layout_analysis() const -> std::vector<line_layout> override;
+  [[nodiscard]] auto layout_analysis() const -> std::vector<line_layout> override;
 };
 
 } // namespace bibstd::txt

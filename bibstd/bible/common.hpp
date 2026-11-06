@@ -6,7 +6,7 @@
 
 namespace bibstd::bible
 {
-// Forward declarations
+
 class reference_range;
 class versification;
 

@@ -50,7 +50,7 @@ using setting_basic_list_variant = meta::for_each_t<setting_basic_variant, std::
 ///
 template<typename E>
   requires(std::is_enum_v<E>)
-auto to_type_erased_setting(const E& v) -> std::string
+[[nodiscard]] auto to_type_erased_setting(const E& v) -> std::string
 {
   return std::string{util::enum_name(v)};
 }
@@ -60,7 +60,7 @@ auto to_type_erased_setting(const E& v) -> std::string
 ///
 template<typename E>
   requires(std::is_enum_v<E>)
-auto to_type_erased_setting(const std::optional<E>& v) -> std::optional<std::string>
+[[nodiscard]] auto to_type_erased_setting(const std::optional<E>& v) -> std::optional<std::string>
 {
   return v ? to_type_erased_setting(*v) : std::nullopt;
 }
@@ -70,7 +70,7 @@ auto to_type_erased_setting(const std::optional<E>& v) -> std::optional<std::str
 ///
 template<typename E>
   requires(std::is_enum_v<E>)
-auto to_type_erased_setting(const std::vector<E>& v) -> auto
+[[nodiscard]] auto to_type_erased_setting(const std::vector<E>& v) -> auto
 {
   return v | std::views::transform([](const auto& item) { return to_type_erased_setting(item); }) |
          std::ranges::to<std::vector<std::string>>();
@@ -81,7 +81,7 @@ auto to_type_erased_setting(const std::vector<E>& v) -> auto
 ///
 template<typename E>
   requires(std::is_enum_v<E>)
-auto from_type_erased_setting(const std::string& v) -> E
+[[nodiscard]] auto from_type_erased_setting(const std::string& v) -> E
 {
   const auto value = util::to_enum<E>(v);
   if(!value)
@@ -96,7 +96,7 @@ auto from_type_erased_setting(const std::string& v) -> E
 ///
 template<typename T>
   requires(std::is_same_v<T, std::optional<typename T::value_type>> && std::is_enum_v<typename T::value_type>)
-auto from_type_erased_setting(const std::optional<std::string>& v) -> T
+[[nodiscard]] auto from_type_erased_setting(const std::optional<std::string>& v) -> T
 {
   return v ? from_type_erased_setting<typename T::value_type>(*v) : std::nullopt;
 }
@@ -106,7 +106,7 @@ auto from_type_erased_setting(const std::optional<std::string>& v) -> T
 ///
 template<typename T>
   requires(std::is_same_v<T, std::vector<typename T::value_type>> && std::is_enum_v<typename T::value_type>)
-auto from_type_erased_setting(const std::vector<std::string>& v) -> T
+[[nodiscard]] auto from_type_erased_setting(const std::vector<std::string>& v) -> T
 {
   return v | std::views::transform([](const auto& item) { return from_type_erased_setting<typename T::value_type>(item); }) |
          std::ranges::to<T>();
@@ -153,7 +153,7 @@ concept underlying_setting_type = underlying_setting_type_erased_type<T> || deta
 namespace detail
 {
 template<underlying_setting_type_erased_type E>
-auto to_type_erased_setting(const E& v) -> E
+[[nodiscard]] auto to_type_erased_setting(const E& v) -> E
 {
   return v;
 }
@@ -172,7 +172,7 @@ using setting_type_erased_type_from =
 ///
 template<underlying_setting_type F, underlying_setting_type T>
   requires(std::is_same_v<setting_type_erased_type_from<F>, T> || std::is_same_v<F, setting_type_erased_type_from<T>>)
-constexpr auto create_setting_value_converter() -> auto
+[[nodiscard]] constexpr auto create_setting_value_converter() -> auto
 {
   if constexpr(std::is_same_v<F, T>)
   {

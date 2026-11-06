@@ -37,6 +37,8 @@ Point the cursor at a reference like "Matthew 23, 10-11" in any window and press
 
 - `Lookup > Scripts` opens references on [bible.com](https://www.bible.com) instead, `Lookup > Translations` chooses the translations shown.
 - A reference over several chapters opens a browser tab per chapter.
+- `Display > Click action` chooses what a click on the found reference does: open it, copy it to the clipboard or nothing. The icon on its right runs the other one.
+- `Copy > Format` writes the copied reference, e.g. `"[content]" ([book] [#chapter_begin], [#verse_begin])`. Keys in `[ ]` are replaced, text in `{ }` drops out if all its keys are empty. Keys: `content`, `content_numbered`, `book`, `book_long`, `book_abbr`, `book_end`, `#chapter_begin`, `#verse_begin`, `#chapter_end`, `#verse_end`, `scripture`, `scripture_abbr`, `copyright`, and the characters `nbsp`, `newline` and `tab`.
 
 ### Install
 
@@ -49,7 +51,7 @@ VerseLens installs for the current user and starts at sign-in, which can be turn
 
 ### Scriptures
 
-VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/), or zip archives of USFM files, e.g. from [eBible.org](https://ebible.org/), and import them in the scripture tab. They are kept in `%LOCALAPPDATA%\verselens\scriptures` and loaded once the scripts are loaded.
+VerseLens ships without scriptures. To read passages in the app, download USX bundles from the Digital Bible Library at [library.bible](https://library.bible/), or zip archives of USFM files, e.g. from [eBible.org](https://ebible.org/), and import them in the scripture tab. They are kept in `%LOCALAPPDATA%\verselens\scriptures`, read on their import and, after that, loaded from what was read when VerseLens starts. The reload button below the verses reads them anew.
 
 ### Scripts
 

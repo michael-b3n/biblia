@@ -66,13 +66,13 @@ public: // Modifiers
 /// Initialize the translations compiled into the application, in the language of the language setting.
 /// \return translations instance, holding no display names if they could not be loaded
 ///
-auto construct_translations(backend_instance& backend) -> translations_instance;
+[[nodiscard]] auto construct_translations(backend_instance& backend) -> translations_instance;
 
 ///
 /// Initialize the translations of an application that owns no settings.
 /// The display names are written in \p language, in the default language if not set.
 /// \return translations instance, holding no display names if they could not be loaded
 ///
-auto construct_translations(const std::optional<std::string>& language) -> translations_instance;
+[[nodiscard]] auto construct_translations(const std::optional<std::string>& language) -> translations_instance;
 
 } // namespace verselens

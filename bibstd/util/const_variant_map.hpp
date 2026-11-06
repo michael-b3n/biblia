@@ -65,7 +65,7 @@ public: // Accessors
   /// \return true if key was found, false otherwise
   ///
   template<typename T>
-  constexpr auto contains(T&& key) const -> bool
+  [[nodiscard]] constexpr auto contains(T&& key) const -> bool
     requires(meta::contains_v<key_variant_type, std::decay_t<T>>);
 
   ///
@@ -74,7 +74,7 @@ public: // Accessors
   /// \return copied value corresponding to key packed in a variant
   ///
   template<typename T>
-  constexpr auto at(T&& key) const -> value_variant_type
+  [[nodiscard]] constexpr auto at(T&& key) const -> value_variant_type
     requires(meta::contains_v<key_variant_type, std::decay_t<T>>);
 
 public: // Operations

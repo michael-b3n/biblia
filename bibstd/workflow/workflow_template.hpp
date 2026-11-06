@@ -64,7 +64,7 @@ public: // Modifiers
   /// Start the workflow template.
   /// \return result, or an unexpected result in case of failure
   ///
-  auto start(const params& params) -> result;
+  [[nodiscard]] auto start(const params& params) -> result;
 };
 
 } // namespace bibstd::workflow

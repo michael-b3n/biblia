@@ -23,7 +23,7 @@ public: // Creators
   /// \return The created backend, or nullptr if the platform offers none. A nullptr is final,
   /// nothing will start working later on.
   ///
-  static auto create() -> std::unique_ptr<screen_capture>;
+  [[nodiscard]] static auto create() -> std::unique_ptr<screen_capture>;
 
 public: // Constructor
   screen_capture() = default;
@@ -42,7 +42,7 @@ public: // Modifiers
   [[nodiscard]] auto capture(screen_rect_type rect, pixel_plane_type& pix) -> bool;
 
 private: // Implementation
-  virtual auto do_capture(screen_rect_type rect, pixel_plane_type& pix) -> bool = 0;
+  [[nodiscard]] virtual auto do_capture(screen_rect_type rect, pixel_plane_type& pix) -> bool = 0;
 };
 
 } // namespace bibstd::system

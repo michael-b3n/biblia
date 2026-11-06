@@ -57,7 +57,7 @@ public: // Modifiers
   /// Connect a slot to the signal specified by the projection, allowing extended functionality.
   /// \return connection corresponding to connected slot
   ///
-  auto connect_extended(auto sig_projection, auto&& slot) const -> connection_type;
+  [[nodiscard]] auto connect_extended(auto sig_projection, auto&& slot) const -> connection_type;
 
   ///
   /// Connect a slot to the signal specified by the projection, the slot is queued by \p connections

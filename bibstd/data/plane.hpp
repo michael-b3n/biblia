@@ -45,22 +45,22 @@ public: // Structors
   virtual ~plane_base() noexcept = default;
 
 public: // Accessors
-  constexpr auto width() const -> size_type { return width_; };
-  constexpr auto height() const -> size_type { return height_; };
-  constexpr auto at(std::size_t index) const -> const value_type& { return data_.at(index); };
-  constexpr auto at(std::size_t index) -> value_type& { return data_.at(index); };
-  constexpr auto size() const -> std::size_t { return static_cast<std::size_t>(width_) * static_cast<std::size_t>(height_); };
-  constexpr auto empty() const -> bool { return size() == 0; };
+  [[nodiscard]] constexpr auto width() const -> size_type { return width_; };
+  [[nodiscard]] constexpr auto height() const -> size_type { return height_; };
+  [[nodiscard]] constexpr auto at(std::size_t index) const -> const value_type& { return data_.at(index); };
+  [[nodiscard]] constexpr auto at(std::size_t index) -> value_type& { return data_.at(index); };
+  [[nodiscard]] constexpr auto size() const -> std::size_t { return static_cast<std::size_t>(width_) * static_cast<std::size_t>(height_); };
+  [[nodiscard]] constexpr auto empty() const -> bool { return size() == 0; };
 
 public: // Iterators
-  constexpr auto begin() const -> const_iterator { return data_.begin(); }
-  constexpr auto cbegin() const -> const_iterator { return data_.cbegin(); }
-  constexpr auto end() const -> const_iterator { return data_.end(); }
-  constexpr auto cend() const -> const_iterator { return data_.cend(); }
-  constexpr auto rbegin() const -> const_reverse_iterator { return data_.rbegin(); }
-  constexpr auto crbegin() const -> const_reverse_iterator { return data_.crbegin(); }
-  constexpr auto rend() const -> const_reverse_iterator { return data_.rend(); }
-  constexpr auto crend() const -> const_reverse_iterator { return data_.crend(); }
+  [[nodiscard]] constexpr auto begin() const -> const_iterator { return data_.begin(); }
+  [[nodiscard]] constexpr auto cbegin() const -> const_iterator { return data_.cbegin(); }
+  [[nodiscard]] constexpr auto end() const -> const_iterator { return data_.end(); }
+  [[nodiscard]] constexpr auto cend() const -> const_iterator { return data_.cend(); }
+  [[nodiscard]] constexpr auto rbegin() const -> const_reverse_iterator { return data_.rbegin(); }
+  [[nodiscard]] constexpr auto crbegin() const -> const_reverse_iterator { return data_.crbegin(); }
+  [[nodiscard]] constexpr auto rend() const -> const_reverse_iterator { return data_.rend(); }
+  [[nodiscard]] constexpr auto crend() const -> const_reverse_iterator { return data_.crend(); }
 };
 
 ///
@@ -133,14 +133,14 @@ public: // Accessors
   /// \return ranges view iterating over the elements within the area
   ///
   template<meta::lossless_convertible<std::int64_t> I>
-  constexpr auto data_view(math::rect<I> area) const -> auto;
+  [[nodiscard]] constexpr auto data_view(math::rect<I> area) const -> auto;
 
   ///
   /// Access the size of the view corresponding to the provided subarea.
   /// \return ranges view size
   ///
   template<meta::lossless_convertible<std::int64_t> I>
-  constexpr auto data_view_size(math::rect<I> area) const -> std::uint64_t;
+  [[nodiscard]] constexpr auto data_view_size(math::rect<I> area) const -> std::uint64_t;
 };
 
 ///

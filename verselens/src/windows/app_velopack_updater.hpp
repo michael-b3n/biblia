@@ -7,11 +7,11 @@
 #include <memory>
 #include <optional>
 
-// Forward declarations
 namespace Velopack
 {
 class UpdateManager;
 } // namespace Velopack
+
 namespace bibqml
 {
 class BridgeApplication;

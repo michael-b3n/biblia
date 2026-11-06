@@ -28,7 +28,7 @@ struct find_uint_t final
   /// Find unsigned integer within string view.
   /// \return result with value and meta information
   ///
-  constexpr auto operator()(std::string_view text) const -> std::optional<result>;
+  [[nodiscard]] constexpr auto operator()(std::string_view text) const -> std::optional<result>;
 };
 
 ///

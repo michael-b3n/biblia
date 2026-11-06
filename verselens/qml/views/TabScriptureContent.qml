@@ -22,6 +22,8 @@ Item
   required property BridgeScripture bridgeScripture
 
   readonly property bool scripturesAvailable: root.bridgeScripture.available
+  // Files are read on the start, an import and a reload
+  readonly property bool scripturesReading: root.bridgeScripture.reading || !root.bridgeScripture.loaded
 
   // The tab fades in when it is switched to, the layout takes the previous one off at once
   opacity: root.visible ? 1 : 0
@@ -128,7 +130,7 @@ Item
     anchors.top: stickyHeader.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.bottom: parent.bottom
+    anchors.bottom: bottomBar.top
     clip: true
     visible: root.scripturesAvailable
     model: root.listModelScripture
@@ -388,77 +390,133 @@ Item
   }
 
   ///
-  /// The copyright of the scripture shown and the import of scripture files. They float over the verses
-  /// instead of taking room from them.
+  /// Bottom bar, the copyright of the scripture shown on the left, the import and the reload of the
+  /// scripture files on the right.
   ///
-  RowLayout
+  Item
   {
-    id: cornerControls
+    id: bottomBar
 
     // Properties
-    anchors.bottom: parent.bottom
+    anchors.left: parent.left
     anchors.right: parent.right
-    anchors.margins: Metrics.spacingTiny
-    spacing: Metrics.spacingTiny
-    z: 1
+    anchors.bottom: parent.bottom
+    height: Metrics.iconSize + Metrics.spacingSmall
+    visible: root.scripturesAvailable
 
     // Components
-    ///
-    /// Copyright of the scripture the verses are taken from, told on hover. A scripture that states no
-    /// copyright shows nothing.
-    ///
-    VectorImage
+    RowLayout
     {
-      id: copyrightIcon
-
       // Properties
-      readonly property string statement: root.listModelScripture.scriptureCopyright
+      anchors.fill: parent
+      anchors.leftMargin: Metrics.spacingSmall
+      anchors.rightMargin: Metrics.spacingSmall
+      spacing: Metrics.spacingSmall
 
-      Layout.preferredWidth: Metrics.controlHeight - Metrics.spacingSmall
-      Layout.preferredHeight: Metrics.controlHeight - Metrics.spacingSmall
-      visible: copyrightIcon.statement !== ""
-      opacity: copyrightArea.containsMouse ? 1 : 0.3
-      source: Icons.copyright
-      preferredRendererType: VectorImage.CurveRenderer
-
-      // Animations
-      Behavior on opacity
+      // Components
+      ///
+      /// Copyright of the scripture the verses are taken from, told on hover. A scripture that states no
+      /// copyright shows nothing.
+      ///
+      VectorImage
       {
-        NumberAnimation
+        id: copyrightIcon
+
+        // Properties
+        readonly property string statement: root.listModelScripture.scriptureCopyright
+
+        Layout.preferredWidth: Metrics.iconSize
+        Layout.preferredHeight: Metrics.iconSize
+        visible: copyrightIcon.statement !== ""
+        opacity: copyrightArea.containsMouse ? 1 : Metrics.opacityLow
+        source: Icons.copyright
+        preferredRendererType: VectorImage.CurveRenderer
+        // Faded as a whole, so the overlapping strokes do not darken
+        layer.enabled: copyrightIcon.opacity < 1
+
+        // Animations
+        Behavior on opacity
         {
-          duration: Metrics.durationShort
-          easing.type: Easing.InOutQuad
+          NumberAnimation
+          {
+            duration: Metrics.durationShort
+            easing.type: Easing.InOutQuad
+          }
+        }
+
+        // Components
+        MouseArea
+        {
+          id: copyrightArea
+
+          // Properties
+          anchors.fill: parent
+          hoverEnabled: true
+          acceptedButtons: Qt.NoButton
         }
       }
 
-      // Components
-      MouseArea
+      Item
       {
-        id: copyrightArea
+        // Properties
+        Layout.fillWidth: true
+      }
+
+      ButtonIconSimple
+      {
+        id: barImportButton
 
         // Properties
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.NoButton
+        Layout.preferredWidth: Metrics.iconSize
+        Layout.preferredHeight: Metrics.iconSize
+        enabled: !root.scripturesReading
+        opacity: barImportButton.hovered || root.scripturesReading ? 1 : Metrics.opacityLow
+        svgSource: Icons.fileImport
+        busy: root.scripturesReading
+
+        // Connections
+        onClicked: { importDialog.open() }
+
+        // Animations
+        Behavior on opacity
+        {
+          NumberAnimation
+          {
+            duration: Metrics.durationShort
+            easing.type: Easing.InOutQuad
+          }
+        }
       }
-    }
 
-    ButtonIconSimple
-    {
-      // Properties
-      Layout.preferredWidth: Metrics.controlHeight - Metrics.spacingSmall
-      Layout.preferredHeight: Metrics.controlHeight - Metrics.spacingSmall
-      visible: root.scripturesAvailable
-      enabled: !root.bridgeScripture.importRunning
-      svgSource: Icons.fileImport
+      ButtonIconSimple
+      {
+        id: barReloadButton
 
-      // Connections
-      onClicked: { importDialog.open() }
+        // Properties
+        Layout.preferredWidth: Metrics.iconSize
+        Layout.preferredHeight: Metrics.iconSize
+        enabled: !root.scripturesReading
+        opacity: barReloadButton.hovered ? 1 : Metrics.opacityLow
+        svgSource: Icons.reload
+
+        // Connections
+        onClicked: { root.bridgeScripture.reload() }
+
+        // Animations
+        Behavior on opacity
+        {
+          NumberAnimation
+          {
+            duration: Metrics.durationShort
+            easing.type: Easing.InOutQuad
+          }
+        }
+      }
     }
   }
 
   ///
-  /// The copyright statement, shown above the corner while its icon is hovered.
+  /// The copyright statement, shown above the bar while its icon is hovered.
   ///
   Rectangle
   {
@@ -467,8 +525,9 @@ Item
     // Properties
     readonly property int maximumWidth: root.width - 2 * Metrics.spacingSmall
 
-    anchors.right: cornerControls.right
-    anchors.bottom: cornerControls.top
+    anchors.left: bottomBar.left
+    anchors.leftMargin: Metrics.spacingSmall
+    anchors.bottom: bottomBar.top
     anchors.bottomMargin: Metrics.spacingTiny
     width: copyrightStatementText.contentWidth + 2 * Metrics.spacingSmall
     height: copyrightStatementText.contentHeight + 2 * Metrics.spacingSmall
@@ -542,13 +601,10 @@ Item
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 2 * Metrics.controlHeight
         Layout.preferredHeight: 2 * Metrics.controlHeight
-        enabled: !root.bridgeScripture.importRunning
-        opacity: importButton.enabled ? 1 : 0.5
+        enabled: !root.scripturesReading
         svgSource: Icons.fileImport
         iconSize: Math.round(1.5 * Metrics.controlHeight)
-
-        // Animations
-        Behavior on opacity { NumberAnimation { duration: Metrics.durationShort } }
+        busy: root.scripturesReading
 
         // Connections
         onClicked: { importDialog.open() }

@@ -6,8 +6,12 @@
 
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/bible/scripture.hpp>
+#include <bibstd/bible/scripture_outline.hpp>
+#include <bibstd/bible/scripture_types.hpp>
+#include <bibstd/util/enum.hpp>
+#include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
+#include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
 
 #include <array>
@@ -60,6 +64,7 @@ struct scripture_store final
 {
   temp_folder folder;
   std::shared_ptr<workflow::workflow_script> script;
+  std::shared_ptr<workflow::workflow_cache> cache; // keeps the verses for the readers
   std::shared_ptr<workflow::workflow_scripture_store> store;
 
   explicit scripture_store(
@@ -72,6 +77,31 @@ struct scripture_store final
   /// \return the scripture folder of the store
   ///
   [[nodiscard]] auto scripture_folder() const -> std::filesystem::path;
+
+  ///
+  /// \return the passage of \p ref of \p file as its reader gives it, none if it has none
+  ///
+  [[nodiscard]] auto passage(const workflow::workflow_scripture_store::file_scripture& file, const bible::reference& ref) const
+    -> std::optional<bible::passage>;
+};
+
+///
+/// A scripture the bundled readers read, with the store whose readers keep its verses.
+///
+struct scripture_reading final
+{
+  std::shared_ptr<const scripture_store> fixture;
+  std::optional<workflow::workflow_scripture_store::file_scripture> file; // none if no reader read it
+
+  ///
+  /// \return true if a reader read the scripture
+  ///
+  explicit operator bool() const;
+
+  ///
+  /// \return the outline of the scripture read
+  ///
+  auto operator->() const -> const bible::scripture_outline*;
 };
 
 ///
@@ -94,6 +124,7 @@ inline scripture_store::scripture_store(
   }
   const auto settings = make_script_settings(folder.path());
   script = std::make_shared<workflow::workflow_script>(settings);
+  cache = std::make_shared<workflow::workflow_cache>(settings, script);
   store = std::make_shared<workflow::workflow_scripture_store>(settings, script);
   load_scripts(*script);
   store->load();
@@ -107,25 +138,81 @@ inline auto scripture_store::scripture_folder() const -> std::filesystem::path
 }
 
 ///
-/// \return the scripture the bundled readers read from a zip archive of \p entries, nullptr if none
 ///
-[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<io::test_utils::zip_entry>& entries)
-  -> std::shared_ptr<const bible::scripture>
+inline auto scripture_store::passage(
+  const workflow::workflow_scripture_store::file_scripture& file, const bible::reference& ref
+) const -> std::optional<bible::passage>
 {
-  const auto fixture = scripture_store{name, {{"scripture.zip", entries}}};
-  const auto scriptures = fixture.store->scriptures();
-  return scriptures.empty() ? nullptr : scriptures.begin()->second;
+  const auto output = script->run<workflow::workflow_scripture::passage_manifest>(
+    file.reader,
+    {
+      file.file_name,
+      std::string{util::enum_name(ref.book())},
+      static_cast<std::int64_t>(ref.chapter().value),
+      static_cast<std::int64_t>(ref.verse().value),
+    }
+  );
+  const auto markup = output ? output->get<"markup">() : std::nullopt;
+  if(!markup)
+  {
+    return std::nullopt;
+  }
+  auto passage = bible::passage{ref, *markup, bible::passage_format::xml};
+  passage.cross_references(output->get<"cross_references">().value_or(std::vector<std::string>{}));
+  return passage;
 }
 
 ///
-/// \return the markup of the verse \p verse of \p chapter of \p book in \p scripture, none if it has none
+///
+inline scripture_reading::operator bool() const
+{
+  return file.has_value();
+}
+
+///
+///
+inline auto scripture_reading::operator->() const -> const bible::scripture_outline*
+{
+  return file->outline.get();
+}
+
+///
+/// \return the scripture the bundled readers read from the scripture folder of \p fixture, empty if none
+///
+[[nodiscard]] inline auto reading_of(std::shared_ptr<const scripture_store> fixture) -> scripture_reading
+{
+  const auto scriptures = fixture->store->scriptures();
+  auto file = scriptures.empty() ? std::nullopt : std::make_optional(scriptures.begin()->second);
+  return scripture_reading{.fixture = std::move(fixture), .file = std::move(file)};
+}
+
+///
+/// \return the scripture the bundled readers read from a zip archive of \p entries, empty if none
+///
+[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<io::test_utils::zip_entry>& entries)
+  -> scripture_reading
+{
+  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<io::test_utils::zip_entry>>{{"scripture.zip", entries}}));
+}
+
+///
+/// \return the passage of \p ref in the scripture of \p reading, none if it has none
+///
+[[nodiscard]] inline auto passage_of(const scripture_reading& reading, const bible::reference& ref)
+  -> std::optional<bible::passage>
+{
+  return reading.fixture->passage(*reading.file, ref);
+}
+
+///
+/// \return the markup of the verse \p verse of \p chapter of \p book in the scripture of \p reading, none if it has none
 ///
 [[nodiscard]] inline auto verse_of(
-  const bible::scripture& scripture, const bible::book_id book, const std::uint32_t chapter, const std::uint32_t verse
+  const scripture_reading& reading, const bible::book_id book, const std::uint32_t chapter, const std::uint32_t verse
 ) -> std::optional<std::string>
 {
-  const auto passage = scripture.passage(bible::reference::create_unguarded(book, chapter, verse));
-  return passage ? std::optional{passage->content} : std::nullopt;
+  const auto passage = passage_of(reading, bible::reference::create_unguarded(book, chapter, verse));
+  return passage ? std::optional{passage->xml()} : std::nullopt;
 }
 
 } // namespace bibstd::test_utils

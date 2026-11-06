@@ -3,6 +3,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
+#include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
@@ -56,6 +57,7 @@ struct scripture_fixture final
 {
   test_utils::temp_folder folder;
   std::shared_ptr<workflow_script> script;
+  std::shared_ptr<workflow_cache> cache;
   std::shared_ptr<workflow_scripture> scripture;
 
   explicit scripture_fixture(
@@ -90,7 +92,8 @@ scripture_fixture::scripture_fixture(
       test_utils::write_file(
         scripts_folder / (entry.first + ".lua"),
         std::format(
-          "local script = (function() {1} end)() script.name = 'Script {0}' script.description = '' script.node = 'script_{0}' return script",
+          "local script = (function() {1} end)() script.name = 'Script {0}' script.description = '' script.node = 'script_{0}' "
+          "return script",
           entry.first,
           entry.second
         )
@@ -104,6 +107,7 @@ scripture_fixture::scripture_fixture(
   }
   const auto settings = test_utils::make_script_settings(folder.path(), true);
   script = std::make_shared<workflow_script>(settings);
+  cache = std::make_shared<workflow_cache>(settings, script);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does
   test_utils::load_scripts(*script);
@@ -158,7 +162,9 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
   });
   REQUIRE(passage);
   // Markup of a web page shows as text
-  CHECK(passage->passage.content == R"(<p data-id="undefined">&lt;b&gt;AAA john 3,16</p>)");
+  CHECK(passage->passage.xml() == R"(<p data-id="undefined">&lt;b&gt;AAA john 3,16</p>)");
+  // A script provides plain text
+  CHECK(passage->passage.plain() == "<b>AAA john 3,16");
   // No text tells why: what the script reports, else that the verse is not there
   CHECK(
     scripture.passage({
@@ -313,7 +319,8 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   // While the app runs: a script added, its scriptures join the others and the selected one stays
   test_utils::write_file(
     scripts / "added.lua",
-    "return {name = 'Second', description = '', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} end, "
+    "return {name = 'Second', description = '', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} "
+    "end, "
     "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
     "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}"
   );
@@ -334,7 +341,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
     {.reference = john(16), .scripture_name = std::nullopt}
   });
   REQUIRE(passage);
-  CHECK(passage->passage.content.contains("new"));
+  CHECK(passage->passage.xml().contains("new"));
   // The user interface is told each time
   CHECK(test_utils::wait_until([&]() { return *changed.first >= 2; }));
 }
@@ -359,7 +366,9 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   test_utils::write_file(
     fixture.folder.path() / "scripts" / "second.lua",
     std::format(
-      "local script = (function() {} end)() script.name = 'Second' script.description = '' script.node = 'second' return script", scripture_script
+      "local script = (function() {} end)() script.name = 'Second' script.description = '' script.node = 'second' return "
+      "script",
+      scripture_script
     )
   );
   test_utils::load_scripts(*fixture.script);

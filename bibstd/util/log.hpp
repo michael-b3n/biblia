@@ -26,7 +26,7 @@ enum class logger_level
 /// Get the global log level, debug messages are only logged in debug builds.
 /// \return global log level
 ///
-constexpr auto global_log_level() -> logger_level
+[[nodiscard]] constexpr auto global_log_level() -> logger_level
 {
 #ifdef NDEBUG
   return logger_level::info;

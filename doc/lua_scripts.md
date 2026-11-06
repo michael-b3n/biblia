@@ -34,7 +34,7 @@ return example
 
 ## Nodes
 
-Every script sees the entries of the others, read-only, as `scripts.<node>`, e.g. `scripts.usx.parse` or `scripts.usx["scripture.read"]`. This is how scripts share code: the bundled `usx.lua` and `usfm.lua` read the files of their format through `scripts.scripture_archive.read_scripture`, which takes the name of a scripture from `scripts.paratext`, `scripts.dbl` or `scripts.ebible`. A script can add its own node, e.g. for another format:
+Every script sees the entries of the others, read-only, as `scripts.<node>`, e.g. `scripts.usx.parse` or `scripts.usx["scripture.read"]`. This is how scripts share code: the bundled `usx.lua` and `usfm.lua` read the files of their format through `scripts.scripture_archive.read_scripture`, which takes the name of a scripture from `scripts.paratext`, `scripts.dbl` or `scripts.ebible`. It keeps the verses of a file in a cache of its own, so a file is only read on its import, on a reload or once it changed, and `scripts.scripture_archive.passage` gives them for `scripture.passage`. A script can add its own node, e.g. for another format:
 
 ```lua
 local zefania = {}

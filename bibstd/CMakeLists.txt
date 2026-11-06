@@ -43,6 +43,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem url)
 find_package(spdlog REQUIRED)
 find_package(libzip REQUIRED)
 find_package(sol2 3.5 REQUIRED)
+find_package(pugixml REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(TESSERACT REQUIRED IMPORTED_TARGET tesseract)
@@ -66,6 +67,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC PkgConfig::LIBCURL
   PUBLIC PkgConfig::LUA
   PRIVATE PkgConfig::SQLITE
+  PRIVATE pugixml::pugixml
   PUBLIC sol2::sol2
   PUBLIC libs_external::all
   PUBLIC stdc++exp

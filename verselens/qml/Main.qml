@@ -54,6 +54,7 @@ QtObject
   required property ScriptureListModel listModelScripture
   required property BridgeBibleRefOcr bridgeBibleRefOcr
   required property BridgeBibleRefLookup bridgeBibleRefLookup
+  required property BridgeBibleRefCopy bridgeBibleRefCopy
   required property BridgeApplication bridgeApplication
   required property BridgeScripture bridgeScripture
   required property BridgeScript bridgeScript
@@ -72,6 +73,11 @@ QtObject
 
   // Settings
   readonly property SettingBinding settingHideWindow: BridgeSettings.binding("ui.hide_window", false)
+  readonly property SettingBinding settingClickAction: BridgeSettings.binding(
+    "ui.click_action",
+    referenceOverlay.actionLookupBrowser,
+    [referenceOverlay.actionLookupBrowser, referenceOverlay.actionCopyClipboard, referenceOverlay.actionNone]
+  )
 
   // Phase the application is in
   property int phase: Main.Phase.Hidden
@@ -97,7 +103,16 @@ QtObject
 
     readonly property bool areaKnown: reference.area.width > 0 && reference.area.height > 0
     // Area the overlay covers, the margin around the reference text makes it easier to hit
-    readonly property rect overlayArea: Placement.grown(reference.area, Metrics.spacingMedium)
+    readonly property rect overlayArea:
+    {
+      const grown = Placement.grown(reference.area, Metrics.spacingMedium)
+      const iconSpace = reference.areaKnown ? referenceOverlay.iconSpace : 0
+      // At the screen edge it gives way to the left, so the icon stays visible
+      const overflow = iconSpace > 0
+        ? Math.max(0, grown.right + iconSpace - Placement.screenGeometryAt(Qt.point(grown.x, grown.y)).right)
+        : 0
+      return Qt.rect(grown.x - overflow, grown.y, grown.width + iconSpace, grown.height)
+    }
 
     // Functions
     ///
@@ -198,6 +213,13 @@ QtObject
     function onShowWindowRequested() { root.handle(Main.Event.ShowRequested) }
   }
 
+  property Connections copyConnections: Connections
+  {
+    target: root.bridgeBibleRefCopy
+
+    function onCopied() { referenceOverlay.confirm() }
+  }
+
   // Timer keeping the overlay of a search that found nothing on the screen for a moment
   property Timer searchWithoutResultTimer: Timer
   {
@@ -228,14 +250,18 @@ QtObject
 
   property Window referenceOverlay: ReferenceOverlayWindow
   {
+    id: referenceOverlay
+
     // Properties
     overlayRect: root.overlayRect
     loading: root.overlayLoading
     shown: root.overlayShown
     timeout: root.referenceOverlayTimeout
+    clickAction: root.settingClickAction.value
+    iconBusy: root.bridgeBibleRefCopy.running
 
     // Connections
-    onClicked: { root.triggerReferenceClickAction() }
+    onActionTriggered: (action) => { root.triggerReferenceAction(action) }
     onTimedOut: { root.handle(Main.Event.OverlayTimedOut) }
   }
 
@@ -423,20 +449,27 @@ QtObject
   }
 
   ///
-  /// Executes the action the user configured for a click on a found reference.
+  /// Executes an action on the found reference.
   ///
-  function triggerReferenceClickAction()
+  function triggerReferenceAction(action: string)
   {
-    switch(root.bridgeBibleRefOcr.clickAction())
+    switch(action)
     {
-      case BridgeBibleRefOcr.LookupBrowser:
+      case referenceOverlay.actionLookupBrowser:
       {
         root.bridgeBibleRefLookup.lookup(
           reference.bookId, reference.chapterBegin, reference.verseBegin, reference.chapterEnd, reference.verseEnd
         )
         break
       }
-      case BridgeBibleRefOcr.None: break
+      case referenceOverlay.actionCopyClipboard:
+      {
+        root.bridgeBibleRefCopy.copy(
+          reference.bookId, reference.chapterBegin, reference.verseBegin, reference.chapterEnd, reference.verseEnd
+        )
+        break
+      }
+      case referenceOverlay.actionNone: break
     }
   }
 }

@@ -12,7 +12,7 @@ namespace bibstd::workflow
 {
 namespace
 {
-// Forward declarations
+
 struct actions_stub;
 
 // Typedefs

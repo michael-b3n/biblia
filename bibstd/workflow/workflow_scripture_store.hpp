@@ -15,10 +15,9 @@
 #include <string>
 #include <vector>
 
-// Forward declarations
 namespace bibstd::bible
 {
-class scripture;
+class scripture_outline;
 } // namespace bibstd::bible
 
 namespace bibstd::workflow
@@ -27,17 +26,27 @@ namespace bibstd::workflow
 ///
 /// Workflow scripture store, holds the scriptures of the files in the scripture folder. Scripts read
 /// the files: each script offering scripture.read is a reader, e.g. the bundled ones for USX and USFM.
+/// A reader keeps the verses of a file, the store only what it tells about the file.
 ///
 class workflow_scripture_store final : public workflow_base<void>
 {
+  // Typedefs
+  struct file_scripture_t final
+  {
+    std::shared_ptr<bible::scripture_outline> outline;
+    workflow_script::script_name_type reader; // gives the verses, \see workflow_scripture::passage_manifest
+    std::string file_name;                    // the name the reader knows the scripture by
+  };
+
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
   const std::filesystem::path folder_;
   mutable std::mutex mtx_;
-  std::map<std::filesystem::path, std::shared_ptr<bible::scripture>> files_; // the scriptures by file
+  std::map<std::filesystem::path, file_scripture_t> files_; // the scriptures by file
 
 public: // Typedefs
-  using scripture_map_type = std::map<std::string, std::shared_ptr<bible::scripture>>;
+  using file_scripture = file_scripture_t;
+  using scripture_map_type = std::map<std::string, file_scripture>;
 
   // Manifest of a script reading scripture files, \see doc/lua_api.md
   // clang-format off
@@ -45,35 +54,40 @@ public: // Typedefs
   /// \lua A script that offers this reads scripture files, those of the scripture folder and those the user imports.
   /// The app asks each reader until one tells the file is of its format, by a name or an error. The app reads the
   /// archive, the script its entries with `workflow.scripture_store.read_entry`. The bundled readers `USX` and
-  /// `USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files.
+  /// `USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files. A reader keeps the
+  /// verses, e.g. in `workflow.cache`, and gives them by `scripture.passage` with the file name as `name`. The app
+  /// asks on every start, a reader that kept the file at this size and time answers from what it kept.
   /// \param file the name of the file, e.g. `bible.zip`
   /// \param entries the names of the files in the archive
+  /// \param size the size of the file in bytes
+  /// \param modified the time the file was last changed, a number that grows with it
+  /// \param reload true to read the file anew, e.g. on an import or a reload by the user
   /// \return name the name of the scripture, `nil` if the file is not of a format the script reads
   /// \return abbreviation its abbreviation
   /// \return language its language
   /// \return copyright its copyright, shown below the verses
   /// \return book_names the names of the books by the identifier of the app,
   /// e.g. `john`: `abbreviation`, `short_name` shown in the app, and `long_name`
-  /// \return verses the text of every verse the scripture numbers, by book, chapter and verse. The app derives the
-  /// versification from them, a book left out takes the one of the closest default versification. Each verse is a
-  /// sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens its paragraph, `continue`
-  /// for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and `<i>` mark text up, and
-  /// `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a verse "2-4".
-  /// \return cross_references the cross references of the verses by book, chapter and verse
+  /// \return verse_counts the last verse of each chapter by book and chapter, the versification of the scripture.
+  /// A book left out takes the one of the closest default versification.
   /// \return error why a file of its format can not be read
   ///
   struct read_manifest final
   {
     static inline const util::path id{"scripture.read"};
-    using input = lua::script_table<lua::field<"file", std::string>, lua::field<"entries", std::vector<std::string>>>;
+    using input = lua::script_table<
+      lua::field<"file", std::string>,
+      lua::field<"entries", std::vector<std::string>>,
+      lua::field<"size", std::int64_t>,
+      lua::field<"modified", std::int64_t>,
+      lua::field<"reload", bool>>;
     using output = lua::script_table<
       lua::field<"name", std::optional<std::string>>,
       lua::field<"abbreviation", std::optional<std::string>>,
       lua::field<"language", std::optional<std::string>>,
       lua::field<"copyright", std::optional<std::string>>,
       lua::field<"book_names", std::optional<std::map<std::string, std::map<std::string, std::string>>>>,
-      lua::field<"verses", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::string>>>>>,
-      lua::field<"cross_references", std::optional<std::map<std::string, std::map<std::int64_t, std::map<std::int64_t, std::vector<std::string>>>>>>,
+      lua::field<"verse_counts", std::optional<std::map<std::string, std::map<std::int64_t, std::int64_t>>>>,
       lua::field<"error", std::optional<std::string>>>;
   };
   // clang-format on
@@ -96,9 +110,15 @@ public: // Accessors
 public: // Modifiers
   ///
   /// Read the files directly inside the scripture folder with the readers of the loaded scripts, replacing the
-  /// scriptures read before. A file no reader reads is logged and left out. Blocks until all are read.
+  /// scriptures read before. Each is there once it is read, a file no reader reads is logged and left out.
+  /// A reader answers from what it kept of a file it read before. Blocks until all are read.
   ///
   auto load() -> void;
+
+  ///
+  /// Like load, the readers read every file anew.
+  ///
+  auto reload() -> void;
 
   ///
   /// Take the file \p source, or every file directly inside the folder \p source, into the scripture
@@ -107,10 +127,11 @@ public: // Modifiers
   /// are loaded there is no reader yet, then the files are copied and read once the scripts are loaded.
   /// \return number of files taken over
   ///
-  auto import(const std::filesystem::path& source) -> std::size_t;
+  [[nodiscard]] auto import(const std::filesystem::path& source) -> std::size_t;
 
 private: // Implementation
-  [[nodiscard]] auto read(const std::filesystem::path& file) const -> std::shared_ptr<bible::scripture>;
+  auto load(bool reload) -> void;
+  [[nodiscard]] auto read(const std::filesystem::path& file, bool reload) const -> std::optional<file_scripture>;
 };
 
 } // namespace bibstd::workflow
