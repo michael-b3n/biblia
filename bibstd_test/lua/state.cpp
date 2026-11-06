@@ -397,8 +397,6 @@ TEST_CASE("lua_state_stops_scripts", "[lua]")
     function value() return 1 end
   )");
   REQUIRE(keep(s.register_function("endless", [&]() { return s.call((*s)["endless"]).has_value(); })));
-  // Where the hook reads it, out of reach of scripts like all of root.system
-  CHECK(s->script("return type(root.system.shutdown_flag) == 'userdata'").get<bool>());
   CHECK(s.run_script("flag.lua", "assert(root == nil and _G == nil)"));
   // Each with a state of its own, a stop is for good
   const auto function = GENERATE(as<std::string>{}, "endless", "calls", "catching", "coroutines", "nested", "closing");

@@ -27,8 +27,6 @@ inline constexpr std::string_view function_set = "set";
 inline constexpr std::string_view function_postfix = "postfix";
 inline constexpr std::string_view function_remove = "remove";
 
-inline constexpr std::string_view value_shutdown_flag = "shutdown_flag";
-
 inline constexpr std::string_view script_name = "name";
 inline constexpr std::string_view script_description = "description";
 inline constexpr std::string_view script_node = "node";
