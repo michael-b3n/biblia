@@ -53,6 +53,16 @@ public: // Modifiers
   ///
   auto set(const util::identifier& name, const std::string& key, std::optional<std::string> value) -> void;
 
+  ///
+  /// Cache each of \p values for its key in the cache \p name, all of them or none.
+  ///
+  auto set_all(const util::identifier& name, const std::map<std::string, std::string>& values) -> void;
+
+  ///
+  /// Remove all values of the cache \p name.
+  ///
+  auto clear(const util::identifier& name) -> void;
+
 private: // Implementation
   [[nodiscard]] auto cache(const util::identifier& name) -> core::core_cache&;
 };

@@ -3,6 +3,7 @@
 #include "bibstd/util/non_owning_ptr.hpp"
 
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -67,9 +68,22 @@ public: // Modifiers
   ///
   auto set(const std::string& key, std::optional<std::string> value) -> void;
 
+  ///
+  /// Cache each of \p values for its key in one transaction, all of them or none.
+  ///
+  auto set_all(const std::map<std::string, std::string>& values) -> void;
+
+  ///
+  /// Remove all values.
+  ///
+  auto clear() -> void;
+
 private: // Implementation
   [[nodiscard]] auto open() const -> database_ptr;
   [[nodiscard]] auto prepare(std::string_view sql) const -> statement_ptr;
+  [[nodiscard]] auto execute(std::string_view sql, std::string_view action) const -> bool;
+  [[nodiscard]] auto write(const statement_ptr& statement, const std::string& key, const std::optional<std::string>& value) const
+    -> bool;
   [[nodiscard]] auto succeeded(int status, std::string_view action) const -> bool;
 };
 

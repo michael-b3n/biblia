@@ -32,6 +32,10 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
     CHECK(run(*script, "root.interface.workflow.cache.set('../a', 'key', 'x')").valid());
     CHECK(run(*script, "return root.interface.workflow.cache.get('___a', 'key')").get<std::string>() == "x");
     CHECK_FALSE(run(*script, "root.interface.workflow.cache.get('', 'key')").valid());
+    run(*script, "root.interface.workflow.cache.set_all('c', { one = '1', two = '2' })");
+    CHECK(run(*script, "return root.interface.workflow.cache.get('c', 'two')").get<std::string>() == "2");
+    run(*script, "root.interface.workflow.cache.clear('c')");
+    CHECK(run(*script, "return root.interface.workflow.cache.get('c', 'one') == nil").get<bool>());
   }
   // Kept beyond the run, apart for each name
   const auto settings = test_utils::make_script_settings(folder.path());

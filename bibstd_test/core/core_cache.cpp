@@ -67,6 +67,26 @@ TEST_CASE("core_cache_shares_its_file", "[core]")
   CHECK_FALSE(second.get("b"));
 }
 
+TEST_CASE("core_cache_sets_many_values_and_clears_them", "[core]")
+{
+  const auto folder = test_utils::temp_folder{"core_cache_sets_many_values_and_clears_them"};
+  auto cache = core_cache{folder.path() / "test.sqlite"};
+  cache.set("a", "old");
+  cache.set_all({{"a", "1"}, {"b", "2"}, {"", "empty key"}});
+  CHECK(cache.get("a") == "1");
+  CHECK(cache.get("b") == "2");
+  CHECK(cache.get("") == "empty key");
+  cache.set_all({});
+  CHECK(cache.get("b") == "2");
+
+  cache.clear();
+  CHECK_FALSE(cache.get("a"));
+  CHECK_FALSE(cache.get("b"));
+  // Still in use
+  cache.set("c", "3");
+  CHECK(cache.get("c") == "3");
+}
+
 TEST_CASE("core_cache_of_a_broken_file_holds_nothing", "[core]")
 {
   const auto folder = test_utils::temp_folder{"core_cache_of_a_broken_file_holds_nothing"};
@@ -77,7 +97,10 @@ TEST_CASE("core_cache_of_a_broken_file_holds_nothing", "[core]")
     auto cache = core_cache{file};
     CHECK_FALSE(cache.get("a"));
     cache.set("a", "1");
+    cache.set_all({{"b", "2"}});
+    cache.clear();
     CHECK_FALSE(cache.get("a"));
+    CHECK_FALSE(cache.get("b"));
   }
   // Left as it is
   CHECK(test_utils::read_file(file) == content);

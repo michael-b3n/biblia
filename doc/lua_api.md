@@ -149,6 +149,19 @@ Writes a text value to a cache, see `workflow.cache.get`.
 - `key` (`string`): the key of the value
 - `value` (`string or nil`): the value, `nil` removes the key
 
+### `workflow.cache.set_all(name, values)`
+
+Writes many text values to a cache at once, all of them or none, see `workflow.cache.get`.
+
+- `name` (`string`): the cache
+- `values` (`{ [string] = string }`): the values by key
+
+### `workflow.cache.clear(name)`
+
+Removes all values of a cache, see `workflow.cache.get`.
+
+- `name` (`string`): the cache
+
 ### `workflow.scripture.scripture_count()`
 
 - Returns the number of scriptures, including those of scripts

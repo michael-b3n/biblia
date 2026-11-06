@@ -39,7 +39,22 @@ workflow_cache::workflow_cache(
          "cache.set",
          [this](const std::string& name, const std::string& key, std::optional<std::string> value)
          { set(util::identifier{name}, key, std::move(value)); }
-       );
+       )
+    ///
+    /// \lua Writes many text values to a cache at once, all of them or none, \see `workflow.cache.get`.
+    /// \param name the cache
+    /// \param values the values by key
+    ///
+    << workflow_script_->register_function(
+         "cache.set_all",
+         [this](const std::string& name, std::map<std::string, std::string> values)
+         { set_all(util::identifier{name}, values); }
+       )
+    ///
+    /// \lua Removes all values of a cache, \see `workflow.cache.get`.
+    /// \param name the cache
+    ///
+    << workflow_script_->register_function("cache.clear", [this](const std::string& name) { clear(util::identifier{name}); });
 }
 
 ///
@@ -58,6 +73,20 @@ auto workflow_cache::get(const util::identifier& name, const std::string& key) -
 auto workflow_cache::set(const util::identifier& name, const std::string& key, std::optional<std::string> value) -> void
 {
   cache(name).set(key, std::move(value));
+}
+
+///
+///
+auto workflow_cache::set_all(const util::identifier& name, const std::map<std::string, std::string>& values) -> void
+{
+  cache(name).set_all(values);
+}
+
+///
+///
+auto workflow_cache::clear(const util::identifier& name) -> void
+{
+  cache(name).clear();
 }
 
 ///
