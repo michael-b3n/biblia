@@ -20,7 +20,7 @@ Button
   rightPadding: Metrics.spacingMedium
   topPadding: 0
   bottomPadding: 0
-  opacity: root.enabled ? 1 : 0.5
+  opacity: root.enabled ? 1 : Metrics.opacityMedium
 
   // Animations
   Behavior on opacity { NumberAnimation { duration: Metrics.durationShort } }

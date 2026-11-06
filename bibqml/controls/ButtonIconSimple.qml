@@ -13,6 +13,9 @@ ButtonBase
   required property string svgSource
   property int iconSize: Math.min(root.width, root.height)
 
+  // Faded as a whole, so the overlapping strokes of an icon do not darken
+  layer.enabled: root.opacity < 1
+
   // Components
   VectorImage
   {
