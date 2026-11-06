@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bibstd/bible/reference.hpp>
+#include <bibstd/bible/reference_range.hpp>
 
 #include <QString>
 
@@ -38,5 +39,18 @@ namespace bibqml
 ///
 [[nodiscard]] auto toReference(const bibstd::bible::versification& versification, const QString& bookId, int chapter, int verse)
   -> std::optional<bibstd::bible::reference>;
+
+///
+/// Create a bible reference range from QML provided values, an invalid end falls back to the begin.
+/// \return reference range, or std::nullopt if the begin is no valid reference
+///
+[[nodiscard]] auto toReferenceRange(
+  const bibstd::bible::versification& versification,
+  const QString& bookId,
+  int chapterBegin,
+  int verseBegin,
+  int chapterEnd,
+  int verseEnd
+) -> std::optional<bibstd::bible::reference_range>;
 
 } // namespace bibqml

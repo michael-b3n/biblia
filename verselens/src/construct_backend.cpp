@@ -1,6 +1,7 @@
 #include "src/construct_backend.hpp"
 #include "res/version.hpp"
 
+#include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
@@ -31,6 +32,7 @@ auto construct_backend() -> backend_instance
   auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(workflow_settings, workflow_scripture);
   auto workflow_bible_ref_ocr_auto = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr_auto>(workflow_settings, workflow_bible_ref_ocr);
   auto workflow_bible_ref_lookup = std::make_shared<bibstd::workflow::workflow_bible_ref_lookup>(workflow_settings, workflow_script);
+  auto workflow_bible_ref_copy = std::make_shared<bibstd::workflow::workflow_bible_ref_copy>(workflow_settings, workflow_scripture);
   // clang-format on
   workflow_script->load_scripts();
 
@@ -44,7 +46,8 @@ auto construct_backend() -> backend_instance
     .workflow_scripture{std::move(workflow_scripture)},
     .workflow_bible_ref_ocr{std::move(workflow_bible_ref_ocr)},
     .workflow_bible_ref_ocr_auto{std::move(workflow_bible_ref_ocr_auto)},
-    .workflow_bible_ref_lookup{std::move(workflow_bible_ref_lookup)}
+    .workflow_bible_ref_lookup{std::move(workflow_bible_ref_lookup)},
+    .workflow_bible_ref_copy{std::move(workflow_bible_ref_copy)}
   };
 }
 

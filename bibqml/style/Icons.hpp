@@ -34,6 +34,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString checkMark MEMBER checkMark_ CONSTANT)
   Q_PROPERTY(QString close MEMBER close_ CONSTANT)
   Q_PROPERTY(QString code MEMBER code_ CONSTANT)
+  Q_PROPERTY(QString copy MEMBER copy_ CONSTANT)
   Q_PROPERTY(QString copyright MEMBER copyright_ CONSTANT)
   Q_PROPERTY(QString dragHandle MEMBER dragHandle_ CONSTANT)
   Q_PROPERTY(QString fileImport MEMBER fileImport_ CONSTANT)
@@ -55,6 +56,7 @@ class Icons final : public QObject
   QString checkMark_{detail::toIconUrl("check_mark.svg")};
   QString close_{detail::toIconUrl("close.svg")};
   QString code_{detail::toIconUrl("code.svg")};
+  QString copy_{detail::toIconUrl("copy.svg")};
   QString copyright_{detail::toIconUrl("copyright.svg")};
   QString dragHandle_{detail::toIconUrl("drag_handle.svg")};
   QString fileImport_{detail::toIconUrl("file_import.svg")};

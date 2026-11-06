@@ -38,15 +38,10 @@ void BridgeBibleRefLookup::lookup(
   using params = bibstd::workflow::workflow_scripture::scripture_params::value_type;
   const auto versification = workflowScripture_->versification_or_fallback(params{});
 
-  const auto begin = toReference(versification.get(), bookId, chapterBegin, verseBegin);
-  if(!begin)
+  if(const auto range = toReferenceRange(versification.get(), bookId, chapterBegin, verseBegin, chapterEnd, verseEnd))
   {
-    return;
+    start({*range});
   }
-  const auto end = toReference(versification.get(), bookId, chapterEnd, verseEnd);
-  start({
-    bibstd::bible::reference_range{*begin, end.value_or(*begin)}
-  });
 }
 
 ///
