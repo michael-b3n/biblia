@@ -4,7 +4,9 @@
 #include "test_utils/zip_archive.hpp"
 
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/bible/scripture.hpp>
+#include <bibstd/bible/scripture_outline.hpp>
+#include <bibstd/core/core_cache.hpp>
+#include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
 
@@ -15,6 +17,7 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -53,9 +56,9 @@ TEST_CASE("workflow_scripture_store_reads_the_files_of_its_folder", "[workflow]"
   REQUIRE(scriptures.size() == 2);
   // Without settings the name is the one of the file, language and copyright stay empty
   REQUIRE(scriptures.contains("a"));
-  CHECK(scriptures.at("a")->information().language.empty());
-  CHECK_FALSE(scriptures.at("a")->information().copyright);
-  const auto passage = scriptures.at("a")->passage(bible::reference::create_unguarded(bible::book_id::john, 1u, 1u));
+  CHECK(scriptures.at("a").outline->information().language.empty());
+  CHECK_FALSE(scriptures.at("a").outline->information().copyright);
+  const auto passage = fixture.passage(scriptures.at("a"), bible::reference::create_unguarded(bible::book_id::john, 1u, 1u));
   REQUIRE(passage);
   CHECK(passage->xml() == R"(<p data-id="begin">JHN 1:1</p>)");
 }
@@ -106,6 +109,27 @@ TEST_CASE("workflow_scripture_store_reads_entries_only_while_reading", "[workflo
     "return root.interface.workflow.scripture_store.read_entry('GEN.usfm')", sol::script_pass_on_error
   );
   CHECK_FALSE(result.valid());
+}
+
+TEST_CASE("workflow_scripture_store_keeps_the_verses_of_a_file_an_import_fails_to_replace", "[workflow]")
+{
+  const auto source = test_utils::temp_folder{"workflow_scripture_store_failed_replace_source"};
+  // Of the format, but without a book of the app
+  io::test_utils::write_zip_archive(
+    source.path() / "a.zip",
+    {
+      {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
+  }
+  );
+  auto fixture = test_utils::scripture_store{
+    "workflow_scripture_store_failed_replace_target", {{"a.zip", test_utils::usfm_entries()}}
+  };
+  CHECK(fixture.store->import(source.path() / "a.zip") == 0);
+  const auto scriptures = fixture.store->scriptures();
+  REQUIRE(scriptures.contains("a"));
+  const auto passage = fixture.passage(scriptures.at("a"), bible::reference::create_unguarded(bible::book_id::john, 1u, 1u));
+  REQUIRE(passage);
+  CHECK(passage->xml() == R"(<p data-id="begin">JHN 1:1</p>)");
 }
 
 TEST_CASE("workflow_scripture_store_leaves_files_it_cannot_read_where_they_are", "[workflow]")
@@ -172,6 +196,7 @@ TEST_CASE("workflow_scripture_store_reads_an_import_before_the_scripts_once_they
   const auto folder = test_utils::temp_folder{"workflow_scripture_store_import_early"};
   const auto settings = test_utils::make_script_settings(folder.path());
   const auto script = std::make_shared<workflow_script>(settings);
+  const auto cache = std::make_shared<workflow_cache>(settings, script);
   const auto store = std::make_shared<workflow_scripture_store>(settings, script);
 
   // No reader yet, the file is taken over unread
@@ -198,6 +223,38 @@ TEST_CASE("workflow_scripture_store_reads_a_changed_file_anew", "[workflow]")
   std::filesystem::last_write_time(file, std::filesystem::last_write_time(file) + std::chrono::seconds{10});
   fixture.store->load();
   CHECK(fixture.store->scriptures().contains("Changed"));
+}
+
+TEST_CASE("workflow_scripture_store_takes_a_file_read_before_from_its_reader", "[workflow]")
+{
+  auto fixture = test_utils::scripture_store{
+    "workflow_scripture_store_takes_a_file_read_before_from_its_reader", {{"a.zip", test_utils::usfm_entries()}}
+  };
+  REQUIRE(fixture.store->scriptures().contains("a"));
+  // The reader keeps the file in a cache of its own, a changed name there shows it is not read again
+  const auto caches = std::filesystem::directory_iterator{fixture.folder.path() / "cache"} |
+                      std::views::transform([](const auto& entry) { return entry.path(); }) |
+                      std::views::filter([](const auto& path) { return path.filename().string().starts_with("scripture_a_zip_") && path.extension() == ".sqlite"; }) |
+                      std::ranges::to<std::vector>();
+  REQUIRE(caches.size() == 1);
+  {
+    auto cache = core::core_cache{caches.front()};
+    const auto summary = cache.get("summary");
+    REQUIRE(summary);
+    const auto name = std::string{R"(["name"] = "a")"};
+    REQUIRE(summary->contains(name));
+    cache.set("summary", std::string{*summary}.replace(summary->find(name), name.size(), R"(["name"] = "Kept")"));
+  }
+  fixture.store->load();
+  const auto scriptures = fixture.store->scriptures();
+  REQUIRE(scriptures.contains("Kept"));
+  const auto passage = fixture.passage(scriptures.at("Kept"), bible::reference::create_unguarded(bible::book_id::john, 1u, 1u));
+  REQUIRE(passage);
+  CHECK(passage->xml() == R"(<p data-id="begin">JHN 1:1</p>)");
+
+  // A reload reads it anew
+  fixture.store->reload();
+  CHECK(fixture.store->scriptures().contains("a"));
 }
 
 } // namespace bibstd::workflow

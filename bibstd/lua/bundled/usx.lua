@@ -205,7 +205,7 @@ end
 ---
 --- \return the book of the element tree \p tree of scripts.usx.parse or scripts.usfm.parse: its identifier `id` in the
 --- app, nil for a book the app does not know, its `code`, its `names` (`abbreviation`, `short_name`, `long_name`) from
---- the headers before its first chapter, else its code, and its `verses` in the markup of `scripture.read` and their
+--- the headers before its first chapter, else its code, and its `verses` in the markup of `scripture.passage` and their
 --- `cross_references` by chapter and verse. A verse reaches from its marker up to the next one and may span several
 --- paragraphs. Each verse the book numbers is in it, empty if it has no text of its own, e.g. 3 and 4 of a verse "2-4".
 ---
@@ -340,6 +340,13 @@ usx.extensions = { ".usx" }
 ---
 usx["scripture.read"] = function(input)
   return scripts.scripture_archive.read_scripture(input, usx)
+end
+
+---
+--- \return the verse of \p input of a file read as USX, \see scripts.scripture_archive.passage
+---
+usx["scripture.passage"] = function(input)
+  return scripts.scripture_archive.passage(input)
 end
 
 -- Shown to the user

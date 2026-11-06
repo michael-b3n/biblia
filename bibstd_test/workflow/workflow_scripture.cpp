@@ -3,6 +3,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
+#include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
@@ -56,6 +57,7 @@ struct scripture_fixture final
 {
   test_utils::temp_folder folder;
   std::shared_ptr<workflow_script> script;
+  std::shared_ptr<workflow_cache> cache;
   std::shared_ptr<workflow_scripture> scripture;
 
   explicit scripture_fixture(
@@ -105,6 +107,7 @@ scripture_fixture::scripture_fixture(
   }
   const auto settings = test_utils::make_script_settings(folder.path(), true);
   script = std::make_shared<workflow_script>(settings);
+  cache = std::make_shared<workflow_cache>(settings, script);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does
   test_utils::load_scripts(*script);

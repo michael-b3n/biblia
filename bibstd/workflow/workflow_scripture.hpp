@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibstd/bible/scripture.hpp"
+#include "bibstd/bible/scripture_outline.hpp"
 #include "bibstd/framework/process_params.hpp"
 #include "bibstd/framework/queued_connections.hpp"
 #include "bibstd/lua/script_table.hpp"
@@ -10,6 +10,7 @@
 #include "bibstd/util/path.hpp"
 #include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_script.hpp"
+#include "bibstd/workflow/workflow_scripture_store.hpp"
 #include "bibstd/workflow/workflow_settings.hpp"
 #include "bibstd/workflow/workflow_settings_base.hpp"
 
@@ -27,8 +28,6 @@
 
 namespace bibstd::workflow
 {
-
-class workflow_scripture_store;
 
 ///
 /// Signals emitted by workflow scripture.
@@ -69,7 +68,7 @@ class workflow_scripture final
   class versification_wrapper final
   {
   public: // Constructor
-    explicit versification_wrapper(std::shared_ptr<bible::scripture> scripture);
+    explicit versification_wrapper(std::shared_ptr<bible::scripture_outline> outline);
     explicit versification_wrapper(bible::versification versification);
 
   public: // Accessors
@@ -80,7 +79,7 @@ class workflow_scripture final
     [[nodiscard]] auto get() const -> const bible::versification&;
 
   private: // Variables
-    std::variant<bible::versification, std::shared_ptr<bible::scripture>> data_;
+    std::variant<bible::versification, std::shared_ptr<bible::scripture_outline>> data_;
   };
 
   struct scripture_params_t final
@@ -111,7 +110,7 @@ class workflow_scripture final
   };
 
   using script_scriptures_t = std::map<std::string, script_scripture_t>;
-  using source_t = std::variant<std::shared_ptr<bible::scripture>, script_scriptures_t::value_type>;
+  using source_t = std::variant<workflow_scripture_store::file_scripture, script_scriptures_t::value_type>;
 
   // Variables
   const std::shared_ptr<workflow_script> workflow_script_;
@@ -193,14 +192,19 @@ public: // Typedefs
   };
 
   ///
-  /// \lua A verse. The app asks for every verse it shows and keeps nothing,
-  /// so the script may ask `workflow.cache` first.
-  /// \param name one of the names the script offers
+  /// \lua A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `workflow.cache`
+  /// first. A reader of scripture files offers it too, \see `scripture.read`.
+  /// \param name one of the names the script offers, for a reader the name of the file
   /// \param book the identifier of the app, e.g. `john`
   /// \param chapter the chapter
   /// \param verse the verse
-  /// \return text its plain text. The app shows markup of a web page as text.
-  /// \return error shown in place of a verse without \p text. Without one the app shows `verse not found`.
+  /// \return markup the verse as a sequence of paragraph sections `<p data-id="...">`: `begin` for a verse that opens
+  /// its paragraph, `continue` for one that continues it and `undefined` outside of paragraphs. Inside, `<b>` and
+  /// `<i>` mark text up, and `&`, `<` and `>` are escaped. A verse without text of its own is empty, e.g. 3 and 4 of a
+  /// verse "2-4".
+  /// \return text its plain text in place of \p markup. The app shows markup of a web page as text.
+  /// \return cross_references the cross references of the verse
+  /// \return error shown in place of a verse without \p markup or \p text. Without one the app shows `verse not found`.
   ///
   struct passage_manifest final
   {
@@ -210,7 +214,11 @@ public: // Typedefs
       lua::field<"book", std::string>,
       lua::field<"chapter", std::int64_t>,
       lua::field<"verse", std::int64_t>>;
-    using output = lua::script_table<lua::field<"text", std::optional<std::string>>, lua::field<"error", std::optional<std::string>>>;
+    using output = lua::script_table<
+      lua::field<"markup", std::optional<std::string>>,
+      lua::field<"text", std::optional<std::string>>,
+      lua::field<"cross_references", std::optional<std::vector<std::string>>>,
+      lua::field<"error", std::optional<std::string>>>;
   };
   // clang-format on
 
@@ -223,6 +231,11 @@ public: // Accessors
   /// \return the number of scriptures, those of the scripts included
   ///
   [[nodiscard]] auto scripture_count() const -> std::size_t;
+
+  ///
+  /// \return true once the scriptures of the files and the scripts are loaded after the scripts
+  ///
+  [[nodiscard]] auto loaded() const -> bool;
 
   ///
   /// Information about the scripture of the params, or else of the settings. Like book_information and passage

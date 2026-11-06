@@ -3,7 +3,7 @@
 
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/bible/scripture.hpp>
+#include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
 #include <bibstd/util/enum.hpp>
 
@@ -70,7 +70,7 @@ using test_utils::verse_of;
 struct shipped_scripture final
 {
   std::string bundle;
-  std::shared_ptr<const bible::scripture> loaded;
+  test_utils::scripture_reading loaded;
 };
 
 ///
@@ -86,12 +86,14 @@ struct shipped_scripture final
     const auto is_zip = [](const auto& file) { return file.path().extension() == ".zip"; };
     for(const auto& file : std::filesystem::directory_iterator{BIBSTD_TEST_SCRIPTURE_DIR, error} | std::views::filter(is_zip))
     {
-      // Each test case runs in its own process, which reads them into its own folder
-      const auto fixture =
-        test_utils::scripture_store{Catch::getResultCapture().getCurrentTestName(), {}, {file.path()}};
-      const auto loaded = fixture.store->scriptures();
-      REQUIRE(loaded.size() == 1);
-      result.emplace_back(file.path().filename().string(), loaded.begin()->second);
+      // Each test case runs in its own process, which reads them into its own folder, the verses stay in it
+      auto loaded = test_utils::reading_of(std::make_shared<const test_utils::scripture_store>(
+        std::format("{}_{}", Catch::getResultCapture().getCurrentTestName(), file.path().stem().string()),
+        std::map<std::string, std::vector<io::test_utils::zip_entry>>{},
+        std::vector{file.path()}
+      ));
+      REQUIRE(loaded);
+      result.emplace_back(file.path().filename().string(), std::move(loaded));
     }
     return result;
   }();
@@ -104,13 +106,13 @@ struct shipped_scripture final
 }
 
 ///
-/// \return the local test scripture of \p bundle, nullptr if there is none
+/// \return the local test scripture of \p bundle, empty if there is none
 ///
-[[nodiscard]] auto find_bundle(const std::string_view bundle) -> std::shared_ptr<const bible::scripture>
+[[nodiscard]] auto find_bundle(const std::string_view bundle) -> test_utils::scripture_reading
 {
   const auto& scriptures = shipped_scriptures();
   const auto found = std::ranges::find(scriptures, bundle, &shipped_scripture::bundle);
-  return found != std::ranges::cend(scriptures) ? found->loaded : nullptr;
+  return found != std::ranges::cend(scriptures) ? found->loaded : test_utils::scripture_reading{};
 }
 
 ///
@@ -134,8 +136,8 @@ TEST_CASE("usx_reads_a_bundle", "[lua]")
   CHECK(info.language == "German");
   CHECK(info.copyright == "PublicDomain");
   // End milestones end nothing, a note is no text
-  CHECK(verse_of(*scripture, book_id::john, 1, 1) == R"(<p data-id="begin">The word &amp; <i>Lord</i></p>)");
-  CHECK(verse_of(*scripture, book_id::john, 1, 2) == R"(<p data-id="continue">Next</p>)");
+  CHECK(verse_of(scripture, book_id::john, 1, 1) == R"(<p data-id="begin">The word &amp; <i>Lord</i></p>)");
+  CHECK(verse_of(scripture, book_id::john, 1, 2) == R"(<p data-id="continue">Next</p>)");
   const auto names = scripture->book_information(book_id::john);
   REQUIRE(names);
   CHECK(names->short_name == "JHN short");
@@ -150,7 +152,7 @@ TEST_CASE("usx_reads_an_archive_of_usx_files", "[lua]")
   const auto scripture = read_scripture("usx_reads_an_archive_of_usx_files", entries);
   REQUIRE(scripture);
   CHECK(scripture->information().name == "scripture");
-  CHECK(verse_of(*scripture, book_id::john, 1, 2) == R"(<p data-id="continue">Next</p>)");
+  CHECK(verse_of(scripture, book_id::john, 1, 2) == R"(<p data-id="continue">Next</p>)");
 }
 
 TEST_CASE("usx_provides_names_for_every_book", "[lua]")
@@ -185,7 +187,7 @@ TEST_CASE("usx_book_names_are_read_from_the_book_documents", "[lua]")
   SECTION("german scripture")
   {
     const auto loaded = find_bundle("text-542b32484b6e38c2-246437.zip");
-    REQUIRE(loaded != nullptr);
+    REQUIRE(loaded);
     const auto genesis = loaded->book_information(book_id::genesis);
     REQUIRE(genesis.has_value());
     CHECK(genesis->short_name == "1. Mose");
@@ -195,7 +197,7 @@ TEST_CASE("usx_book_names_are_read_from_the_book_documents", "[lua]")
   SECTION("english scripture")
   {
     const auto loaded = find_bundle("text-de4e12af7f28f599-245514.zip");
-    REQUIRE(loaded != nullptr);
+    REQUIRE(loaded);
     const auto genesis = loaded->book_information(book_id::genesis);
     REQUIRE(genesis.has_value());
     CHECK(genesis->short_name == "Genesis");
@@ -207,7 +209,7 @@ TEST_CASE("usx_book_names_are_read_from_the_book_documents", "[lua]")
   {
     // This bundle ships no "h" paragraph at all, the table of contents entries carry the names
     const auto loaded = find_bundle("text-f492a38d0e52db0f-258505.zip");
-    REQUIRE(loaded != nullptr);
+    REQUIRE(loaded);
     const auto song = loaded->book_information(book_id::song_of_solomon);
     REQUIRE(song.has_value());
     CHECK(song->short_name == "Hohelied");
@@ -233,18 +235,18 @@ TEST_CASE("usx_reads_its_information_from_the_bundle_root_metadata", "[lua]")
 TEST_CASE("usx_reads_the_text_of_a_verse", "[lua]")
 {
   const auto loaded = find_bundle("text-de4e12af7f28f599-245514.zip");
-  REQUIRE(loaded != nullptr);
+  REQUIRE(loaded);
   // The verse sits inside a "wj" character style, which the markup has no node for and takes over as text
   CHECK(
-    verse_of(*loaded, book_id::john, 3, 16).value().contains("For God so loved the world, that he gave his only begotten Son")
+    verse_of(loaded, book_id::john, 3, 16).value().contains("For God so loved the world, that he gave his only begotten Son")
   );
 }
 
 TEST_CASE("usx_keeps_the_headings_of_a_book_out_of_its_verses", "[lua]")
 {
   const auto loaded = find_bundle("text-542b32484b6e38c2-246437.zip");
-  REQUIRE(loaded != nullptr);
-  const auto found = verse_of(*loaded, book_id::chronicles1, 1, 34);
+  REQUIRE(loaded);
+  const auto found = verse_of(loaded, book_id::chronicles1, 1, 34);
   REQUIRE(found.has_value());
   CHECK(found->contains("Abraham"));
   CHECK(!found->contains("Stammbaum"));
@@ -257,9 +259,9 @@ TEST_CASE("usx_keeps_the_headings_of_a_book_out_of_its_verses", "[lua]")
 TEST_CASE("usx_tells_where_a_verse_sits_in_its_paragraph", "[lua]")
 {
   const auto loaded = find_bundle("text-de4e12af7f28f599-245514.zip");
-  REQUIRE(loaded != nullptr);
-  CHECK(verse_of(*loaded, book_id::john, 3, 1).value().starts_with(paragraph_open(bible::passage_markup::paragraph_begin)));
-  CHECK(verse_of(*loaded, book_id::john, 3, 2).value().starts_with(paragraph_open(bible::passage_markup::paragraph_continue)));
+  REQUIRE(loaded);
+  CHECK(verse_of(loaded, book_id::john, 3, 1).value().starts_with(paragraph_open(bible::passage_markup::paragraph_begin)));
+  CHECK(verse_of(loaded, book_id::john, 3, 2).value().starts_with(paragraph_open(bible::passage_markup::paragraph_continue)));
 }
 
 TEST_CASE("usx_passages_are_well_formed_markup", "[lua]")
@@ -274,7 +276,7 @@ TEST_CASE("usx_passages_are_well_formed_markup", "[lua]")
         ref = versification.next(*ref))
     {
       INFO(std::format("reference: {}", *ref));
-      const auto found = loaded->passage(*ref);
+      const auto found = test_utils::passage_of(loaded, *ref);
       REQUIRE(found.has_value());
       auto document = pugi::xml_document{};
       // The passage is a sequence of paragraph sections, a single root is needed to parse it
@@ -289,7 +291,7 @@ TEST_CASE("usx_numbers_the_verses_by_its_text", "[lua]")
 {
   // The versification file of this bundle counts a verse 19 its text leaves out
   const auto loaded = find_bundle("text-f492a38d0e52db0f-258505.zip");
-  REQUIRE(loaded != nullptr);
+  REQUIRE(loaded);
   CHECK(loaded->versification().verse_count(book_id::numbers, bible::reference::chapter_type{25}) == 18);
   CHECK(find_bundle("text-de4e12af7f28f599-245514.zip")->versification() == bible::versification_kjv);
 }

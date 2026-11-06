@@ -4,7 +4,7 @@
 
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/bible/scripture.hpp>
+#include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/versification.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -29,8 +29,7 @@ using test_utils::verse_of;
 ///
 /// \return the scripture of a USFM archive, Genesis replaced by \p genesis
 ///
-[[nodiscard]] auto read_genesis(const std::string_view name, const std::string& genesis)
-  -> std::shared_ptr<const bible::scripture>
+[[nodiscard]] auto read_genesis(const std::string_view name, const std::string& genesis) -> test_utils::scripture_reading
 {
   return read_scripture(
     name,
@@ -99,13 +98,13 @@ TEST_CASE("usfm_reads_the_verses_of_paragraphs", "[lua]")
   );
   REQUIRE(scripture);
   // Headings and introductions are no text of a verse
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">In the beginning </p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">In the beginning </p>)");
   // A verse in several paragraphs has a section in each
   CHECK(
-    verse_of(*scripture, book_id::genesis, 1, 2) ==
+    verse_of(scripture, book_id::genesis, 1, 2) ==
     R"(<p data-id="continue">And the earth</p><p data-id="begin">was without form,</p><p data-id="begin">and void.</p>)"
   );
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 3) == R"(<p data-id="begin">And God said</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 3) == R"(<p data-id="begin">And God said</p>)");
 
   const auto names = scripture->book_information(book_id::genesis);
   REQUIRE(names);
@@ -125,7 +124,7 @@ TEST_CASE("usfm_keeps_the_notes_out_of_the_text", "[lua]")
 )"
   );
   REQUIRE(scripture);
-  const auto passage = scripture->passage(bible::reference::create_unguarded(book_id::genesis, 1u, 1u));
+  const auto passage = test_utils::passage_of(scripture, bible::reference::create_unguarded(book_id::genesis, 1u, 1u));
   REQUIRE(passage);
   CHECK(passage->xml() == R"(<p data-id="begin">Salt and light.</p>)");
   // The target references of a cross reference are kept
@@ -146,10 +145,10 @@ TEST_CASE("usfm_marks_character_styles_up", "[lua]")
   REQUIRE(scripture);
   // A style without markup is text, attributes and milestones are no text
   CHECK(
-    verse_of(*scripture, book_id::genesis, 1, 1) ==
+    verse_of(scripture, book_id::genesis, 1, 1) ==
     R"(<p data-id="begin">the word of the <i>Lord</i> is gracious, <i>said</i> he come. </p>)"
   );
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a &amp; b &lt; c</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a &amp; b &lt; c</p>)");
 }
 
 TEST_CASE("usfm_resolves_escapes_and_spaces", "[lua]")
@@ -166,11 +165,11 @@ TEST_CASE("usfm_resolves_escapes_and_spaces", "[lua]")
   REQUIRE(scripture);
   // "~" is a no-break space, "//" an optional line break
   CHECK(
-    verse_of(*scripture, book_id::genesis, 1, 1) == "<p data-id=\"begin\">a\xC2\xA0"
+    verse_of(scripture, book_id::genesis, 1, 1) == "<p data-id=\"begin\">a\xC2\xA0"
                                                     "b \\ c~d </p>"
   );
   // An escaped bar is text, the first bar that is none starts the attributes
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a|b</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a|b</p>)");
 }
 
 TEST_CASE("usfm_leaves_other_numberings_out", "[lua]")
@@ -185,7 +184,7 @@ TEST_CASE("usfm_leaves_other_numberings_out", "[lua]")
 )"
   );
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin"> text</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin"> text</p>)");
 }
 
 TEST_CASE("usfm_derives_the_versification_from_the_verses", "[lua]")
@@ -208,12 +207,12 @@ TEST_CASE("usfm_derives_the_versification_from_the_verses", "[lua]")
   CHECK(versification.chapter_count(book_id::genesis) == 2);
   // A bridged verse numbers its verses, its text is the one of its first verse
   CHECK(versification.verse_count(book_id::genesis, bible::reference::chapter_type{1}) == 4);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">two to four</p>)");
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 3) == "");
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 4) == "");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">two to four</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 3) == "");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 4) == "");
   // So does a verse without text
   CHECK(versification.verse_count(book_id::genesis, bible::reference::chapter_type{2}) == 2);
-  CHECK(verse_of(*scripture, book_id::genesis, 2, 2) == "");
+  CHECK(verse_of(scripture, book_id::genesis, 2, 2) == "");
 }
 
 TEST_CASE("usfm_ignores_a_versification_file", "[lua]")
@@ -265,7 +264,7 @@ TEST_CASE("usfm_takes_no_book_file_without_verses", "[lua]")
   entries.emplace_back("GEN2.usfm", "\\id GEN\n\\c 1\n\\p\n\\v 1 In the beginning\n");
   const auto scripture = read_scripture("usfm_takes_no_book_file_without_verses", entries);
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">In the beginning</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">In the beginning</p>)");
 }
 
 TEST_CASE("usfm_takes_a_range_beyond_the_longest_chapter_for_its_first_verse", "[lua]")
@@ -277,8 +276,8 @@ TEST_CASE("usfm_takes_a_range_beyond_the_longest_chapter_for_its_first_verse", "
   })
   );
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">Text</p>)");
-  CHECK_FALSE(verse_of(*scripture, book_id::genesis, 1, 2));
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">Text</p>)");
+  CHECK_FALSE(verse_of(scripture, book_id::genesis, 1, 2));
 }
 
 TEST_CASE("usfm_reads_a_bundle_of_the_digital_bible_library", "[lua]")
@@ -315,8 +314,8 @@ TEST_CASE("usfm_reads_a_new_testament", "[lua]")
   const auto entries = test_utils::usfm_entries() | std::views::drop(39) | std::ranges::to<std::vector>();
   const auto scripture = read_scripture("usfm_reads_a_new_testament", entries);
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::matthew, 1, 1) == R"(<p data-id="begin">MAT 1:1</p>)");
-  CHECK_FALSE(verse_of(*scripture, book_id::genesis, 1, 1));
+  CHECK(verse_of(scripture, book_id::matthew, 1, 1) == R"(<p data-id="begin">MAT 1:1</p>)");
+  CHECK_FALSE(verse_of(scripture, book_id::genesis, 1, 1));
   CHECK(scripture->versification().chapter_count(book_id::matthew) == 1);
   CHECK(scripture->versification().chapter_count(book_id::genesis) == 50);
   CHECK(scripture->versification().verse_count(book_id::genesis, bible::reference::chapter_type{1}) == 31);
@@ -406,7 +405,7 @@ TEST_CASE("usfm_keeps_the_markup_of_a_character_style_in_a_paragraph", "[lua]")
 )"
   );
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">the <i>Lord</i></p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">the <i>Lord</i></p>)");
 }
 
 TEST_CASE("usfm_keeps_figures_out_of_the_text", "[lua]")
@@ -420,7 +419,7 @@ TEST_CASE("usfm_keeps_figures_out_of_the_text", "[lua]")
 )"
   );
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">text </p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">text </p>)");
 }
 
 TEST_CASE("usfm_keeps_sidebars_out_of_the_text", "[lua]")
@@ -437,7 +436,7 @@ TEST_CASE("usfm_keeps_sidebars_out_of_the_text", "[lua]")
 )"
   );
   REQUIRE(scripture);
-  CHECK(verse_of(*scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">text</p>)");
+  CHECK(verse_of(scripture, book_id::genesis, 1, 1) == R"(<p data-id="begin">text</p>)");
 }
 
 } // namespace bibstd::lua
