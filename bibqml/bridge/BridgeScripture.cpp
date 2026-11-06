@@ -24,11 +24,23 @@ BridgeScripture::BridgeScripture(
   // Scripts add scriptures once they are loaded
   workflowScripture_->connect_queued(
     &bibstd::workflow::workflow_scripture_sigs::scriptures_changed,
-    [this]() { QMetaObject::invokeMethod(this, [this]() { updateAvailable(); }, Qt::QueuedConnection); },
+    [this]()
+    {
+      QMetaObject::invokeMethod(
+        this,
+        [this]()
+        {
+          updateAvailable();
+          updateLoaded();
+        },
+        Qt::QueuedConnection
+      );
+    },
     connections_
   );
   // After connecting, so no change is missed
   available_ = workflowScripture_->scripture_count() > 0;
+  loaded_ = workflowScripture_->loaded();
 }
 
 ///
@@ -39,7 +51,7 @@ BridgeScripture::~BridgeScripture() noexcept = default;
 ///
 void BridgeScripture::importFiles(const QList<QUrl>& files)
 {
-  if(importRunning_)
+  if(reading_)
   {
     return;
   }
@@ -50,15 +62,10 @@ void BridgeScripture::importFiles(const QList<QUrl>& files)
   }
   LOG_DEBUG("start scripture import: files={}", sources.size());
   const auto params = bibstd::workflow::workflow_scripture::import_params{{.sources = std::move(sources)}};
-  importRunning_ = true;
-  emit importRunningChanged();
+  setReading(true);
   auto finish = [this](const std::size_t imported)
   {
-    if(importRunning_)
-    {
-      importRunning_ = false;
-      emit importRunningChanged();
-    }
+    setReading(false);
     updateAvailable();
     emit importEnded(static_cast<int>(imported));
   };
@@ -68,6 +75,23 @@ void BridgeScripture::importFiles(const QList<QUrl>& files)
     QMetaObject::invokeMethod(this, [finish, imported]() { finish(imported); }, Qt::QueuedConnection);
   };
   bibstd::execution::launch(std::move(import), scope_);
+}
+
+///
+///
+void BridgeScripture::reload()
+{
+  if(reading_)
+  {
+    return;
+  }
+  setReading(true);
+  auto read = [this]()
+  {
+    workflowScripture_->reload_scriptures();
+    QMetaObject::invokeMethod(this, [this]() { setReading(false); }, Qt::QueuedConnection);
+  };
+  bibstd::execution::launch(std::move(read), scope_);
 }
 
 ///
@@ -86,6 +110,28 @@ void BridgeScripture::updateAvailable()
   {
     available_ = available;
     emit availableChanged();
+  }
+}
+
+///
+///
+void BridgeScripture::updateLoaded()
+{
+  if(const auto loaded = workflowScripture_->loaded(); loaded_ != loaded)
+  {
+    loaded_ = loaded;
+    emit loadedChanged();
+  }
+}
+
+///
+///
+void BridgeScripture::setReading(const bool reading)
+{
+  if(reading_ != reading)
+  {
+    reading_ = reading;
+    emit readingChanged();
   }
 }
 

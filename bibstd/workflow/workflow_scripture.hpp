@@ -270,6 +270,11 @@ public: // Modifiers
   ///
   [[nodiscard]] auto import_scriptures(const import_params& params) -> std::size_t;
 
+  ///
+  /// Read the files of the scripture folder anew, \see workflow_scripture_store::reload. Blocks until all are read.
+  ///
+  auto reload_scriptures() -> void;
+
 private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;

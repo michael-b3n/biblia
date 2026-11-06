@@ -43,6 +43,7 @@ class Icons final : public QObject
   Q_PROPERTY(QString pin MEMBER pin_ CONSTANT)
   Q_PROPERTY(QString pinFilled MEMBER pinFilled_ CONSTANT)
   Q_PROPERTY(QString play MEMBER play_ CONSTANT)
+  Q_PROPERTY(QString reload MEMBER reload_ CONSTANT)
   Q_PROPERTY(QString remove MEMBER remove_ CONSTANT)
   Q_PROPERTY(QString settings MEMBER settings_ CONSTANT)
   Q_PROPERTY(QString stop MEMBER stop_ CONSTANT)
@@ -63,6 +64,7 @@ class Icons final : public QObject
   QString pin_{detail::toIconUrl("pin.svg")};
   QString pinFilled_{detail::toIconUrl("pin_filled.svg")};
   QString play_{detail::toIconUrl("play.svg")};
+  QString reload_{detail::toIconUrl("reload.svg")};
   QString remove_{detail::toIconUrl("remove.svg")};
   QString settings_{detail::toIconUrl("settings.svg")};
   QString stop_{detail::toIconUrl("stop.svg")};

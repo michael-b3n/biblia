@@ -22,7 +22,7 @@ namespace bibqml
 
 ///
 /// QML bridge for workflow_scripture.
-/// This tells whether any scripture is loaded and takes scripture files into the scripture folder.
+/// This tells whether any scripture is loaded, takes scripture files into the scripture folder and reads them anew.
 ///
 class BridgeScripture final : public QObject
 {
@@ -30,12 +30,14 @@ class BridgeScripture final : public QObject
   QML_ELEMENT
 
   Q_PROPERTY(bool available MEMBER available_ NOTIFY availableChanged FINAL)
-  Q_PROPERTY(bool importRunning MEMBER importRunning_ NOTIFY importRunningChanged FINAL)
+  Q_PROPERTY(bool loaded MEMBER loaded_ NOTIFY loadedChanged FINAL)
+  Q_PROPERTY(bool reading MEMBER reading_ NOTIFY readingChanged FINAL)
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
   bool available_{false};
-  bool importRunning_{false};
+  bool loaded_{false};
+  bool reading_{false};
   bibstd::framework::queued_connections connections_;
   bibstd::execution::scope scope_;
 
@@ -55,6 +57,11 @@ public: // Modifiers
   Q_INVOKABLE void importFiles(const QList<QUrl>& files);
 
   ///
+  /// Read the scripture files anew. Like an import, a call made while one reads is ignored.
+  ///
+  Q_INVOKABLE void reload();
+
+  ///
   /// Disconnect all signal connections.
   /// This will stop the frontend backend communication.
   ///
@@ -62,11 +69,14 @@ public: // Modifiers
 
 signals:
   void availableChanged();
-  void importRunningChanged();
+  void loadedChanged();
+  void readingChanged();
   void importEnded(int count);
 
 private: // Implementation
   void updateAvailable();
+  void updateLoaded();
+  void setReading(bool reading);
 };
 
 } // namespace bibqml

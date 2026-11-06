@@ -22,6 +22,8 @@ Item
   required property BridgeScripture bridgeScripture
 
   readonly property bool scripturesAvailable: root.bridgeScripture.available
+  // Files are read on the start, an import and a reload
+  readonly property bool scripturesReading: root.bridgeScripture.reading || !root.bridgeScripture.loaded
 
   // The tab fades in when it is switched to, the layout takes the previous one off at once
   opacity: root.visible ? 1 : 0
@@ -388,7 +390,8 @@ Item
   }
 
   ///
-  /// Bottom bar, the copyright of the scripture shown on the left, the import of scripture files on the right.
+  /// Bottom bar, the copyright of the scripture shown on the left, the import and the reload of the
+  /// scripture files on the right.
   ///
   Item
   {
@@ -466,9 +469,10 @@ Item
         // Properties
         Layout.preferredWidth: Metrics.iconSize
         Layout.preferredHeight: Metrics.iconSize
-        enabled: !root.bridgeScripture.importRunning
-        opacity: barImportButton.hovered ? 1 : Metrics.opacityLow
+        enabled: !root.scripturesReading
+        opacity: barImportButton.hovered || root.scripturesReading ? 1 : Metrics.opacityLow
         svgSource: Icons.fileImport
+        busy: root.scripturesReading
 
         // Connections
         onClicked: { importDialog.open() }
@@ -484,6 +488,30 @@ Item
         }
       }
 
+      ButtonIconSimple
+      {
+        id: barReloadButton
+
+        // Properties
+        Layout.preferredWidth: Metrics.iconSize
+        Layout.preferredHeight: Metrics.iconSize
+        enabled: !root.scripturesReading
+        opacity: barReloadButton.hovered ? 1 : Metrics.opacityLow
+        svgSource: Icons.reload
+
+        // Connections
+        onClicked: { root.bridgeScripture.reload() }
+
+        // Animations
+        Behavior on opacity
+        {
+          NumberAnimation
+          {
+            duration: Metrics.durationShort
+            easing.type: Easing.InOutQuad
+          }
+        }
+      }
     }
   }
 
@@ -573,13 +601,10 @@ Item
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 2 * Metrics.controlHeight
         Layout.preferredHeight: 2 * Metrics.controlHeight
-        enabled: !root.bridgeScripture.importRunning
-        opacity: importButton.enabled ? 1 : Metrics.opacityMedium
+        enabled: !root.scripturesReading
         svgSource: Icons.fileImport
         iconSize: Math.round(1.5 * Metrics.controlHeight)
-
-        // Animations
-        Behavior on opacity { NumberAnimation { duration: Metrics.durationShort } }
+        busy: root.scripturesReading
 
         // Connections
         onClicked: { importDialog.open() }

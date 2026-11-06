@@ -429,6 +429,21 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   return imported;
 }
 
+///
+///
+auto workflow_scripture::reload_scriptures() -> void
+{
+  try
+  {
+    workflow_scripture_store_->reload();
+    update_scripture_name_setting();
+  }
+  catch(...)
+  {
+    LOG_ERROR("exception occurred: {}", util::exception_report());
+  }
+  notify(&signals_type::scriptures_changed);
+}
 
 ///
 ///
