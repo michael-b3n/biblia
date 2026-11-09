@@ -2,6 +2,7 @@
 #include "bibstd/framework/setting.hpp"
 #include "bibstd/math/rect.hpp"
 #include "bibstd/math/value_range.hpp"
+#include "bibstd/system/capture.hpp"
 #include "bibstd/system/screen.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/format.hpp"
@@ -213,7 +214,7 @@ auto workflow_bible_ref_ocr_auto::examine(
       return;
     }
     auto image = data::pixel_plane_type{};
-    if(!system::screen::capture(*window, image))
+    if(!system::capture::region(*window, image))
     {
       LOG_WARN("auto reference search failed to capture screen: position={}", position);
       return;

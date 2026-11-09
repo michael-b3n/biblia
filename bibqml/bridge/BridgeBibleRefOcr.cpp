@@ -2,6 +2,7 @@
 
 #include <bibstd/framework/setting.hpp>
 #include <bibstd/math/rect.hpp>
+#include <bibstd/system/capture.hpp>
 #include <bibstd/system/screen.hpp>
 #include <bibstd/util/enum.hpp>
 #include <bibstd/util/log.hpp>
@@ -63,7 +64,7 @@ struct CaptureResult final
     return std::nullopt;
   }
   auto image = bibstd::data::pixel_plane_type{};
-  if(!bibstd::system::screen::capture(*windowRect, image))
+  if(!bibstd::system::capture::region(*windowRect, image))
   {
     return std::nullopt;
   }

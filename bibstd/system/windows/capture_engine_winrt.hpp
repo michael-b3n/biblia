@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bibstd/system/windows/screen_capture.hpp"
-#include "bibstd/system/windows/screen_capture_winrt_device.hpp"
+#include "bibstd/system/windows/capture_engine.hpp"
+#include "bibstd/system/windows/capture_engine_winrt_device.hpp"
 
 #include <memory>
 #include <mutex>
@@ -19,7 +19,7 @@ namespace bibstd::system
 /// Screen capture backend on Windows.Graphics.Capture, one running capture per monitor asked for. A region costs a
 /// copy on the graphics device, and unlike gdi it sees composited content and leaves out the cursor.
 ///
-class screen_capture_winrt final : public screen_capture
+class capture_engine_winrt final : public capture_engine
 {
   // Variables
   const std::shared_ptr<winrt_capture::device> device_;
@@ -27,18 +27,18 @@ class screen_capture_winrt final : public screen_capture
   std::unordered_map<HMONITOR, std::shared_ptr<winrt_capture::monitor>> monitors_;
 
 public: // Constructor
-  explicit screen_capture_winrt(std::shared_ptr<winrt_capture::device> capture_device);
-  ~screen_capture_winrt() noexcept override;
+  explicit capture_engine_winrt(std::shared_ptr<winrt_capture::device> capture_device);
+  ~capture_engine_winrt() noexcept override;
 
-  screen_capture_winrt(const screen_capture_winrt&) = delete;
-  screen_capture_winrt(screen_capture_winrt&&) = delete;
-  auto operator=(const screen_capture_winrt&) -> screen_capture_winrt& = delete;
-  auto operator=(screen_capture_winrt&&) -> screen_capture_winrt& = delete;
+  capture_engine_winrt(const capture_engine_winrt&) = delete;
+  capture_engine_winrt(capture_engine_winrt&&) = delete;
+  auto operator=(const capture_engine_winrt&) -> capture_engine_winrt& = delete;
+  auto operator=(capture_engine_winrt&&) -> capture_engine_winrt& = delete;
 
 private: // Overrides
   ///
   /// A region reaching over a monitor edge is turned down, a capture covers exactly one monitor.
-  /// \see screen_capture::capture
+  /// \see capture_engine::capture
   ///
   [[nodiscard]] auto do_capture(screen_rect_type rect, pixel_plane_type& pix) -> bool override;
 

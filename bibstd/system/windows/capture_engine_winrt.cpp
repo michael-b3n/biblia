@@ -1,4 +1,4 @@
-#include "bibstd/system/windows/screen_capture_winrt.hpp"
+#include "bibstd/system/windows/capture_engine_winrt.hpp"
 #include "bibstd/util/enum.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/log.hpp"
@@ -340,7 +340,7 @@ auto request_borderless_capture() -> void
 
 ///
 ///
-auto screen_capture::create() -> std::unique_ptr<screen_capture>
+auto capture_engine::create() -> std::unique_ptr<capture_engine>
 {
   try
   {
@@ -367,7 +367,7 @@ auto screen_capture::create() -> std::unique_ptr<screen_capture>
     {
       return nullptr;
     }
-    return std::make_unique<screen_capture_winrt>(std::move(capture_device));
+    return std::make_unique<capture_engine_winrt>(std::move(capture_device));
   }
   catch(const winrt::hresult_error& error)
   {
@@ -378,18 +378,18 @@ auto screen_capture::create() -> std::unique_ptr<screen_capture>
 
 ///
 ///
-screen_capture_winrt::screen_capture_winrt(std::shared_ptr<winrt_capture::device> capture_device)
+capture_engine_winrt::capture_engine_winrt(std::shared_ptr<winrt_capture::device> capture_device)
   : device_{std::move(capture_device)}
 {
 }
 
 ///
 ///
-screen_capture_winrt::~screen_capture_winrt() noexcept = default;
+capture_engine_winrt::~capture_engine_winrt() noexcept = default;
 
 ///
 ///
-auto screen_capture_winrt::do_capture(const screen_rect_type rect, pixel_plane_type& pix) -> bool
+auto capture_engine_winrt::do_capture(const screen_rect_type rect, pixel_plane_type& pix) -> bool
 {
   try
   {
@@ -411,7 +411,7 @@ auto screen_capture_winrt::do_capture(const screen_rect_type rect, pixel_plane_t
 
 ///
 ///
-auto screen_capture_winrt::monitor_of(HMONITOR handle, const std::int32_t width, const std::int32_t height)
+auto capture_engine_winrt::monitor_of(HMONITOR handle, const std::int32_t width, const std::int32_t height)
   -> std::shared_ptr<winrt_capture::monitor>
 {
   // Declared before the lock and therefore given up after it: giving a capture up waits for a

@@ -11,7 +11,7 @@ namespace bibstd::system
 /// Interface of a screen capture backend. A backend may turn a region down, the caller then captures it otherwise.
 /// \note Implementations shall be thread-safe.
 ///
-class screen_capture
+class capture_engine
 {
 public: // Typedefs
   using screen_rect_type = data::screen_rect_type;
@@ -23,16 +23,16 @@ public: // Creators
   /// \return The created backend, or nullptr if the platform offers none. A nullptr is final,
   /// nothing will start working later on.
   ///
-  [[nodiscard]] static auto create() -> std::unique_ptr<screen_capture>;
+  [[nodiscard]] static auto create() -> std::unique_ptr<capture_engine>;
 
 public: // Constructor
-  screen_capture() = default;
-  virtual ~screen_capture() noexcept;
+  capture_engine() = default;
+  virtual ~capture_engine() noexcept;
 
-  screen_capture(const screen_capture&) = delete;
-  screen_capture(screen_capture&&) = delete;
-  auto operator=(const screen_capture&) -> screen_capture& = delete;
-  auto operator=(screen_capture&&) -> screen_capture& = delete;
+  capture_engine(const capture_engine&) = delete;
+  capture_engine(capture_engine&&) = delete;
+  auto operator=(const capture_engine&) -> capture_engine& = delete;
+  auto operator=(capture_engine&&) -> capture_engine& = delete;
 
 public: // Modifiers
   ///

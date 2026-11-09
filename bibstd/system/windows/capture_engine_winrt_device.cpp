@@ -1,4 +1,4 @@
-#include "bibstd/system/windows/screen_capture_winrt_device.hpp"
+#include "bibstd/system/windows/capture_engine_winrt_device.hpp"
 #include "bibstd/util/log.hpp"
 #include "bibstd/util/numeric_cast.hpp"
 #include "bibstd/util/ranges.hpp"

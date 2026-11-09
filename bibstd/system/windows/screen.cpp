@@ -1,120 +1,10 @@
 #include "bibstd/system/screen.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/non_owning_ptr.hpp"
 #include "bibstd/util/numeric_cast.hpp"
-#include "bibstd/util/ranges.hpp"
 
-#include "bibstd/system/windows/screen_capture.hpp"
 #include "bibstd/system/windows/win.hpp"
-
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
-#include <mutex>
-#include <ranges>
 
 namespace bibstd::system
 {
-
-namespace
-{
-
-///
-/// Capture a screen region through gdi, the fallback: it reads over the cpu and sees composited content as black.
-/// \return true if the region was captured
-///
-auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix) -> bool
-{
-  static std::mutex mtx;
-  static std::vector<std::byte> pixels_bytes;
-
-  const auto lock = std::scoped_lock{mtx};
-
-  HDC hdc = GetDC(nullptr);
-  HBITMAP bitmap = [&]
-  {
-    const auto hr = numeric_cast<int>(math::size(rect.horizontal_range()));
-    const auto vr = numeric_cast<int>(math::size(rect.vertical_range()));
-
-    HDC sdc = CreateCompatibleDC(hdc);
-    auto* hbitmap = CreateCompatibleBitmap(hdc, hr, vr);
-    HGDIOBJ old_bitmap = SelectObject(sdc, hbitmap);
-    const auto origin = rect.origin();
-    // No CAPTUREBLT: it makes the system hide and redraw the cursor, which blinks on every capture.
-    // The cursor is never part of the screen DC anyway, so leaving the flag out costs nothing here.
-    // NOLINTNEXTLINE(readability-suspicious-call-argument)
-    BitBlt(sdc, 0, 0, hr, vr, hdc, origin.x(), origin.y(), SRCCOPY);
-    SelectObject(sdc, old_bitmap);
-    DeleteDC(sdc);
-    return hbitmap;
-  }();
-
-  BITMAPINFO info = {};
-  info.bmiHeader.biSize = sizeof(info.bmiHeader);
-  if(0 == GetDIBits(hdc, bitmap, 0, 0, nullptr, &info, DIB_RGB_COLORS))
-  {
-    LOG_ERROR("capture screen failed: {}", "bitmap info not found");
-    return false;
-  }
-  info.bmiHeader.biCompression = BI_RGB;
-  if(pixels_bytes.size() < info.bmiHeader.biSizeImage)
-  {
-    pixels_bytes.resize(info.bmiHeader.biSizeImage);
-  }
-
-  if(0 == GetDIBits(hdc, bitmap, 0, info.bmiHeader.biHeight, static_cast<void*>(pixels_bytes.data()), &info, DIB_RGB_COLORS))
-  {
-    LOG_ERROR("capture screen failed: {}", "bitmap data not found");
-    return false;
-  }
-  DeleteObject(bitmap);
-  ReleaseDC(nullptr, hdc);
-  assert(info.bmiHeader.biBitCount >= 24);
-
-  // The rows are kept in reversed order: tesseract has its origin at the bottom left,
-  // the Windows screen at the top left.
-  const auto byte_count = info.bmiHeader.biBitCount / 8;
-  const auto height = numeric_cast<std::uint32_t>(info.bmiHeader.biHeight);
-  const auto width = numeric_cast<std::uint32_t>(info.bmiHeader.biWidth);
-
-  pix = data::pixel_plane_type(width, height);
-  std::ranges::for_each(
-    util::ranges::index_view_to(height) | std::views::reverse,
-    [&, counter = 0u](const auto row_idx) mutable
-    {
-      std::ranges::for_each(
-        util::ranges::index_view_between(width * row_idx, width * (row_idx + 1)),
-        [&](const auto index)
-        {
-          const auto i = counter++ * byte_count;
-          auto& p = pix.at(index);
-          p.blue = static_cast<std::uint8_t>(pixels_bytes[i + 0]);
-          p.green = static_cast<std::uint8_t>(pixels_bytes[i + 1]);
-          p.red = static_cast<std::uint8_t>(pixels_bytes[i + 2]);
-        }
-      );
-    }
-  );
-  return true;
-}
-
-///
-/// Access the capture backend, brought up by the first call on the thread of the first capture, so no other thread
-/// lands in a com apartment it did not ask for.
-/// \return the backend, nullptr if the platform offers none
-///
-auto capture_backend() -> util::non_owning_ptr<screen_capture>
-{
-  static const auto backend = []
-  {
-    auto created = screen_capture::create();
-    LOG_INFO("screen capture backend: {}", created != nullptr ? "graphics capture" : "gdi");
-    return created;
-  }();
-  return backend.get();
-}
-
-} // namespace
 
 ///
 ///
@@ -195,20 +85,6 @@ auto screen::monitor_at(const screen_coordinates_type coordinates) -> std::optio
     math::coordinates{numeric_cast<std::int32_t>(rect.left), numeric_cast<std::int32_t>(rect.top)},
     math::coordinates{numeric_cast<std::int32_t>(rect.right), numeric_cast<std::int32_t>(rect.bottom)}
   );
-}
-
-///
-///
-auto screen::capture(const screen_rect_type rect, pixel_plane_type& pix) -> bool
-{
-  // The backend turns a region down that it cannot serve, a region spanning two monitors for
-  // instance, so gdi stays the answer for everything the newer API leaves out.
-  const util::non_owning_ptr<screen_capture> backend = capture_backend();
-  if(backend != nullptr && backend->capture(rect, pix))
-  {
-    return true;
-  }
-  return capture_gdi(rect, pix);
 }
 
 } // namespace bibstd::system
