@@ -1,12 +1,12 @@
 #include "src/construct_bridge.hpp"
 #include "src/qml_application.hpp"
 
+#include <arca/workflow/workflow_hotkey.hpp>
+#include <arca/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
-#include <bibstd/workflow/workflow_hotkey.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <bibqml/bridge/BridgeApplication.hpp>

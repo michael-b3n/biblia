@@ -1,9 +1,9 @@
 #include "bibqml/bridge/BridgeScript.hpp"
 #include "bibqml/util/LocalPath.hpp"
 
-#include <bibstd/execution/launch.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
+#include <arca/execution/launch.hpp>
+#include <arca/util/log.hpp>
+#include <arca/workflow/workflow_script.hpp>
 
 #include <QMetaObject>
 #include <QStringList>

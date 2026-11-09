@@ -3,12 +3,12 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arca/core/core_cache.hpp>
+#include <arca/workflow/workflow_cache.hpp>
+#include <arca/workflow/workflow_script.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
-#include <bibstd/core/core_cache.hpp>
-#include <bibstd/lua/embedded_scripts.hpp>
-#include <bibstd/workflow/workflow_cache.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
+#include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
 
 #include <catch2/catch_test_macros.hpp>

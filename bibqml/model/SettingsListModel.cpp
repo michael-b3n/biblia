@@ -1,14 +1,14 @@
 #include "bibqml/model/SettingsListModel.hpp"
 #include "bibqml/util/SettingConversion.hpp"
 
-#include <bibstd/framework/setting.hpp>
-#include <bibstd/framework/setting_validator.hpp>
-#include <bibstd/math/arithmetic.hpp>
-#include <bibstd/util/contains.hpp>
-#include <bibstd/util/exception.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/path.hpp>
-#include <bibstd/util/visit_helper.hpp>
+#include <arca/framework/setting.hpp>
+#include <arca/framework/setting_validator.hpp>
+#include <arca/math/arithmetic.hpp>
+#include <arca/util/contains.hpp>
+#include <arca/util/exception.hpp>
+#include <arca/util/log.hpp>
+#include <arca/util/path.hpp>
+#include <arca/util/visit_helper.hpp>
 
 #include <algorithm>
 #include <chrono>

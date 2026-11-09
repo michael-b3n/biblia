@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bibstd/data/screen_types.hpp"
-#include "bibstd/math/value_range.hpp"
-#include "bibstd/txt/ocr_engine.hpp"
+#include "arca/data/screen_types.hpp"
+#include "arca/math/value_range.hpp"
+#include "bibocr/txt/ocr_engine.hpp"
 
 #include <expected>
 #include <optional>

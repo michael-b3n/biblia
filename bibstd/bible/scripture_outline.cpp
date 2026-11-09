@@ -1,7 +1,7 @@
 #include "bibstd/bible/scripture_outline.hpp"
-#include "bibstd/util/enum.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/ranges.hpp"
+#include "arca/util/enum.hpp"
+#include "arca/util/log.hpp"
+#include "arca/util/ranges.hpp"
 
 #include <algorithm>
 #include <cstdint>

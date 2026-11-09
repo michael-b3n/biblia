@@ -4,14 +4,14 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arca/util/enum.hpp>
+#include <arca/workflow/workflow_cache.hpp>
+#include <arca/workflow/workflow_script.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
-#include <bibstd/lua/embedded_scripts.hpp>
-#include <bibstd/util/enum.hpp>
-#include <bibstd/workflow/workflow_cache.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
+#include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
 

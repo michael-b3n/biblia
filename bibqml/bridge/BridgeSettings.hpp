@@ -2,7 +2,7 @@
 
 #include "bibqml/bridge/SettingBinding.hpp"
 
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arca/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QString>

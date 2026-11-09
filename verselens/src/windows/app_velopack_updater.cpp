@@ -3,8 +3,8 @@
 
 #include <bibqml/bridge/BridgeApplication.hpp>
 
-#include <bibstd/util/exception.hpp>
-#include <bibstd/util/log.hpp>
+#include <arca/util/exception.hpp>
+#include <arca/util/log.hpp>
 
 #include <Velopack.hpp>
 

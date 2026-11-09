@@ -1,11 +1,11 @@
 #include "test_utils/scripture_store.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arca/util/enum.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
-#include <bibstd/util/enum.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/interfaces/catch_interfaces_capture.hpp>

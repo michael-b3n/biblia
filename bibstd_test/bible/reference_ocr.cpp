@@ -1,15 +1,15 @@
 #include "test_utils/ocr_capture_data.hpp"
 
+#include <arca/data/pixel.hpp>
+#include <arca/data/plane.hpp>
+#include <arca/data/screen_types.hpp>
+#include <arca/math/coordinates.hpp>
+#include <arca/math/rect.hpp>
+#include <arca/math/value_range.hpp>
+#include <arca/util/ranges.hpp>
+#include <arca/util/scope_guard.hpp>
+#include <bibocr/txt/ocr_engine.hpp>
 #include <bibstd/bible/reference_ocr.hpp>
-#include <bibstd/data/pixel.hpp>
-#include <bibstd/data/plane.hpp>
-#include <bibstd/data/screen_types.hpp>
-#include <bibstd/math/coordinates.hpp>
-#include <bibstd/math/rect.hpp>
-#include <bibstd/math/value_range.hpp>
-#include <bibstd/txt/ocr_engine.hpp>
-#include <bibstd/util/ranges.hpp>
-#include <bibstd/util/scope_guard.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>

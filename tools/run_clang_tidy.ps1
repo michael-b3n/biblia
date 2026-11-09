@@ -3,7 +3,7 @@
 #
 # Examples:
 #   tools/run_clang_tidy.ps1
-#   tools/run_clang_tidy.ps1 -Path bibstd/util
+#   tools/run_clang_tidy.ps1 -Path arca/util
 #   tools/run_clang_tidy.ps1 -Fix
 #
 [CmdletBinding()]

@@ -1,17 +1,17 @@
 #include "bibqml/bridge/BridgeBibleRefOcr.hpp"
 
-#include <bibstd/framework/setting.hpp>
-#include <bibstd/math/rect.hpp>
-#include <bibstd/system/capture.hpp>
-#include <bibstd/system/screen.hpp>
-#include <bibstd/util/enum.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/numeric_cast.hpp>
-#include <bibstd/util/timer.hpp>
+#include <arca/framework/setting.hpp>
+#include <arca/math/rect.hpp>
+#include <arca/system/screen.hpp>
+#include <arca/util/enum.hpp>
+#include <arca/util/log.hpp>
+#include <arca/util/numeric_cast.hpp>
+#include <arca/util/timer.hpp>
+#include <arca/workflow/workflow_hotkey.hpp>
+#include <arca/workflow/workflow_settings.hpp>
+#include <bibocr/system/capture.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
-#include <bibstd/workflow/workflow_hotkey.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
 
 #include <QCursor>
 #include <QMetaObject>

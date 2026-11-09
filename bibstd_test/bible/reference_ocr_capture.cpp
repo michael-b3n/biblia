@@ -9,12 +9,12 @@
 //
 #include "test_utils/ocr_capture_data.hpp"
 
-#include <bibstd/data/pixel.hpp>
-#include <bibstd/data/plane.hpp>
-#include <bibstd/data/screen_types.hpp>
-#include <bibstd/math/value_range.hpp>
-#include <bibstd/txt/ocr_engine_tesseract.hpp>
-#include <bibstd/util/language.hpp>
+#include <arca/data/pixel.hpp>
+#include <arca/data/plane.hpp>
+#include <arca/data/screen_types.hpp>
+#include <arca/math/value_range.hpp>
+#include <arca/util/language.hpp>
+#include <bibocr/txt/ocr_engine_tesseract.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

@@ -1,9 +1,9 @@
 #pragma once
 
+#include <arca/execution/scope.hpp>
+#include <arca/framework/process_params.hpp>
+#include <arca/util/non_owning_ptr.hpp>
 #include <bibstd/bible/reference_range.hpp>
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/framework/process_params.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QString>

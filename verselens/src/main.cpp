@@ -15,10 +15,10 @@
   #include "src/windows/construct_velopack_updater.hpp"
 #endif
 
-#include <bibstd/framework/single_instance.hpp>
-#include <bibstd/system/filesystem.hpp>
-#include <bibstd/system/screen.hpp>
-#include <bibstd/util/log.hpp>
+#include <arca/framework/single_instance.hpp>
+#include <arca/system/filesystem.hpp>
+#include <arca/system/screen.hpp>
+#include <arca/util/log.hpp>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>

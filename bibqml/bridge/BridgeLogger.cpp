@@ -1,6 +1,6 @@
 #include "bibqml/bridge/BridgeLogger.hpp"
 
-#include <bibstd/util/log.hpp>
+#include <arca/util/log.hpp>
 
 namespace bibqml
 {

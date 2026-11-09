@@ -1,7 +1,7 @@
 #include "test_utils/files.hpp"
 #include "test_utils/temp_folder.hpp"
 
-#include <bibstd/core/core_cache.hpp>
+#include <arca/core/core_cache.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

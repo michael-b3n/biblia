@@ -1,7 +1,7 @@
 #include "bibstd/bible/ocr_book_variants.hpp"
-#include "bibstd/math/combination.hpp"
-#include "bibstd/txt/script_common.hpp"
-#include "bibstd/txt/script_letters.hpp"
+#include "arca/math/combination.hpp"
+#include "arca/txt/script_common.hpp"
+#include "arca/txt/script_letters.hpp"
 
 #include <string>
 

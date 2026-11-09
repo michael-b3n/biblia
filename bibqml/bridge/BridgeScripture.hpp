@@ -1,8 +1,8 @@
 #pragma once
 
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arca/execution/scope.hpp>
+#include <arca/framework/queued_connections.hpp>
+#include <arca/util/non_owning_ptr.hpp>
 
 #include <QList>
 #include <QObject>

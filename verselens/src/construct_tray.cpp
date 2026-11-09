@@ -5,9 +5,9 @@
 #include <bibqml/bridge/BridgeApplication.hpp>
 #include <bibqml/translation/Translations.hpp>
 
-#include <bibstd/system/open_browser.hpp>
-#include <bibstd/system/tray.hpp>
-#include <bibstd/util/incbin.hpp>
+#include <arca/system/open_browser.hpp>
+#include <arca/system/tray.hpp>
+#include <arca/util/incbin.hpp>
 
 #include <QMetaObject>
 #include <QObject>

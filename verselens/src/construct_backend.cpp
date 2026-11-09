@@ -1,17 +1,17 @@
 #include "src/construct_backend.hpp"
 #include "res/version.hpp"
 
-#include <bibstd/lua/embedded_scripts.hpp>
+#include <arca/workflow/workflow_cache.hpp>
+#include <arca/workflow/workflow_hotkey.hpp>
+#include <arca/workflow/workflow_script.hpp>
+#include <arca/workflow/workflow_settings.hpp>
+#include <arca/workflow/workflow_web.hpp>
+#include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
-#include <bibstd/workflow/workflow_cache.hpp>
-#include <bibstd/workflow/workflow_hotkey.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
-#include <bibstd/workflow/workflow_web.hpp>
 
 #include <memory>
 

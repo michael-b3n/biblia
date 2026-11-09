@@ -4,9 +4,9 @@
 
 #include <bibqml/translation/Translations.hpp>
 
-#include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/framework/setting.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arca/framework/queued_connections.hpp>
+#include <arca/framework/setting.hpp>
+#include <arca/util/non_owning_ptr.hpp>
 
 #include <optional>
 #include <string>

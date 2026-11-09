@@ -1,8 +1,8 @@
 #include "bibqml/bridge/BridgeSettings.hpp"
 #include "bibqml/bridge/SettingBinding.hpp"
 
-#include <bibstd/util/log.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
+#include <arca/util/log.hpp>
+#include <arca/workflow/workflow_settings.hpp>
 
 #include <memory>
 #include <utility>

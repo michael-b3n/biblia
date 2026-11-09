@@ -1,9 +1,9 @@
 #include "bibqml/util/ScreenConversion.hpp"
 
-#include <bibstd/math/rect.hpp>
-#include <bibstd/system/screen.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/numeric_cast.hpp>
+#include <arca/math/rect.hpp>
+#include <arca/system/screen.hpp>
+#include <arca/util/log.hpp>
+#include <arca/util/numeric_cast.hpp>
 
 #include <QGuiApplication>
 #include <QScreen>

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "arca/util/enum.hpp"
 #include "bibstd/bible/reference.hpp"
-#include "bibstd/util/enum.hpp"
 
 #include <array>
 #include <optional>

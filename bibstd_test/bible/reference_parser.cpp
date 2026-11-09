@@ -1,5 +1,5 @@
+#include <arca/util/contains.hpp>
 #include <bibstd/bible/reference_parser.hpp>
-#include <bibstd/util/contains.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

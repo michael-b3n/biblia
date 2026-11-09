@@ -1,6 +1,6 @@
-#include <bibstd/lua/script_table.hpp>
-#include <bibstd/lua/sol.hpp>
-#include <bibstd/lua/value_cast.hpp>
+#include <arca/lua/script_table.hpp>
+#include <arca/lua/sol.hpp>
+#include <arca/lua/value_cast.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

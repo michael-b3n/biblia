@@ -2,10 +2,10 @@
 #include "bibqml/bridge/BridgeSettings.hpp"
 #include "bibqml/util/SettingConversion.hpp"
 
-#include <bibstd/framework/setting_validator.hpp>
-#include <bibstd/util/exception.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/visit_helper.hpp>
+#include <arca/framework/setting_validator.hpp>
+#include <arca/util/exception.hpp>
+#include <arca/util/log.hpp>
+#include <arca/util/visit_helper.hpp>
 
 #include <QMetaObject>
 

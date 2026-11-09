@@ -2,7 +2,7 @@
 
 #include "bibqml/model/SettingsListModel.hpp"
 
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arca/util/non_owning_ptr.hpp>
 
 #include <QHash>
 #include <QSortFilterProxyModel>

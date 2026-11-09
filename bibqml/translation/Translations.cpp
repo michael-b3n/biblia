@@ -1,7 +1,7 @@
 #include "bibqml/translation/Translations.hpp"
 
-#include <bibstd/util/contains.hpp>
-#include <bibstd/util/log.hpp>
+#include <arca/util/contains.hpp>
+#include <arca/util/log.hpp>
 
 #include <algorithm>
 

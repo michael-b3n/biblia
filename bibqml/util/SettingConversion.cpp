@@ -1,13 +1,13 @@
 #include "bibqml/util/SettingConversion.hpp"
 
-#include <bibstd/framework/setting_type_erased.hpp>
-#include <bibstd/framework/setting_validator.hpp>
-#include <bibstd/meta/chrono.hpp>
-#include <bibstd/meta/type_traits.hpp>
-#include <bibstd/util/exception.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/numeric_cast.hpp>
-#include <bibstd/util/visit_helper.hpp>
+#include <arca/framework/setting_type_erased.hpp>
+#include <arca/framework/setting_validator.hpp>
+#include <arca/meta/chrono.hpp>
+#include <arca/meta/type_traits.hpp>
+#include <arca/util/exception.hpp>
+#include <arca/util/log.hpp>
+#include <arca/util/numeric_cast.hpp>
+#include <arca/util/visit_helper.hpp>
 
 #include <QColor>
 #include <QJSValue>
