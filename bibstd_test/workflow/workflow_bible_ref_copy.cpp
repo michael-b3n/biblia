@@ -1,6 +1,7 @@
 #include "test_utils/clipboard.hpp"
 #include "test_utils/files.hpp"
 #include "test_utils/scripts.hpp"
+#include "test_utils/scripture_names.hpp"
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 

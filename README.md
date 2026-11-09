@@ -8,9 +8,12 @@ Libraries that find bible references on the screen, and VerseLens, the Windows t
 
 | Folder | Content |
 |---|---|
-| `bibstd` | The library and most of the logic: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), OCR engines and text scripts (`txt`), scripture store, cache and web fetch (`core`), Lua scripting (`lua`, the scripts shipped with the app in `lua/bundled`), threading and settings (`framework`), the system layer (`system`, Windows in `system/windows`) |
+| `arca` | The general library without Bible content: the workflow base, settings and script workflows (`workflow`), cache and web fetch (`core`), Lua scripting (`lua`), threading and settings (`framework`), text scripts (`txt`), the system layer (`system`, Windows in `system/windows`) |
+| `bibocr` | OCR engines (`txt`), the Windows OCR and the screen capture (`system`) |
+| `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`) |
 | `bibqml` | The Qt layer: bridge between QML and the library, models, shared controls |
-| `bibstd_test` | Catch2 tests of `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
+| `arca_test` | Catch2 tests of `arca`, and the test helpers the other tests share (`test_utils`) |
+| `bibstd_test` | Catch2 tests of `bibocr` and `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
 | `verselens` | The app: window, tray, updater and the resources a release ships |
 | `libs_external` | Third party sources, used as they are |
 | `tools` | CMake helpers, the clang-tidy runner, the MSIX packaging script |

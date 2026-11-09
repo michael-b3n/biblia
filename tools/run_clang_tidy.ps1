@@ -11,7 +11,7 @@ param(
   # Directory of the CMake build holding compile_commands.json.
   [string] $BuildDir = "build",
   # Source directories that shall be analyzed, relative to the repository root.
-  [string[]] $Path = @("bibstd", "bibstd_test", "bibqml", "verselens"),
+  [string[]] $Path = @("arca", "arca_test", "bibocr", "bibstd", "bibstd_test", "bibqml", "verselens"),
   # Apply the fixes clang-tidy suggests instead of only reporting them.
   [switch] $Fix,
   # Amount of parallel clang-tidy processes.

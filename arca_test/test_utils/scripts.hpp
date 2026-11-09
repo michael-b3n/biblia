@@ -1,23 +1,17 @@
 #pragma once
 
-#include <arca/framework/setting_validator.hpp>
+#include <arca/lua/embedded_scripts.hpp>
 #include <arca/workflow/workflow_script.hpp>
 #include <arca/workflow/workflow_settings.hpp>
-#include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <future>
 #include <memory>
-#include <optional>
-#include <ranges>
-#include <string>
-#include <string_view>
+#include <span>
 #include <tuple>
-#include <vector>
 
 namespace bibstd::test_utils
 {
@@ -52,16 +46,11 @@ inline auto load_scripts(workflow::workflow_script& workflow) -> void
 }
 
 ///
-/// The scriptures of the app may come from bundled scripts too, so a test counts those of its own scripts.
-/// \return the names of the scriptures \p scripture offers from the script named \p script
+/// \return no bundled scripts, for a workflow script that loads only the scripts of the test
 ///
-[[nodiscard]] inline auto scripture_names_of(const workflow::workflow_scripture& scripture, const std::string_view script)
-  -> std::vector<std::string>
+[[nodiscard]] inline auto no_bundled() -> std::span<const lua::embedded_script>
 {
-  using validator_type = framework::setting_validator_list<std::optional<std::string>>::sptr_type;
-  const auto suffix = std::format(" ({})", script);
-  return std::get<validator_type>(scripture.settings().default_scripture_name->validator)->available() |
-         std::views::filter([&](const auto& name) { return name.ends_with(suffix); }) | std::ranges::to<std::vector>();
+  return {};
 }
 
 } // namespace bibstd::test_utils

@@ -1,6 +1,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
+#include <arca/lua/state_owner.hpp>
 #include <arca/workflow/workflow_script.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
@@ -71,6 +72,18 @@ auto bundled_fixture::url(
 }
 
 } // namespace
+
+TEST_CASE("bundled_scripts_compile", "[lua]")
+{
+  const auto owner = state_owner{};
+  auto s = owner.lock();
+  REQUIRE_FALSE(bundled::all().empty());
+  for(const auto& script : bundled::all())
+  {
+    INFO(script.name);
+    CHECK(s->load(script.code, std::string{script.name}).valid());
+  }
+}
 
 TEST_CASE("bundled_lookup_bibleserver_offers_its_translations", "[lua]")
 {

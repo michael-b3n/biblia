@@ -1,0 +1,14 @@
+---
+#
+# Test specific clang-tidy configuration. Inherits the checks of the repository root
+# and relaxes the ones that only make sense for production code.
+#
+InheritParentConfig: true
+Checks: >
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -misc-use-internal-linkage,
+  -readability-function-size
+
+#
+# Catch2 test case bodies are not headers, so nothing is diagnosed twice here.
+#

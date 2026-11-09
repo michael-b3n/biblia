@@ -2,12 +2,9 @@
 
 #include <arca/lua/embedded_scripts.hpp>
 #include <arca/lua/state_owner.hpp>
-#include <bibstd/lua/bundled_scripts.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <array>
-#include <ranges>
 #include <string>
 
 namespace bibstd::lua
@@ -141,8 +138,7 @@ TEST_CASE("lua_scripts_compile", "[lua]")
   REQUIRE_FALSE(internal::all().empty());
   CHECK(internal::find("init.lua"));
   CHECK_FALSE(internal::find("missing.lua"));
-  REQUIRE_FALSE(bundled::all().empty());
-  for(const auto& script : std::array{internal::all(), bundled::all()} | std::views::join)
+  for(const auto& script : internal::all())
   {
     INFO(script.name);
     CHECK(s->load(script.code, std::string{script.name}).valid());

@@ -9,7 +9,7 @@
 namespace bibstd::system
 {
 
-// Hidden, it replaces the clipboard of whoever runs it. Run it with: bibstd_test "[.clipboard]"
+// Hidden, it replaces the clipboard of whoever runs it. Run it with: arca_test "[.clipboard]"
 TEST_CASE("clipboard replaces the text", "[.clipboard]")
 {
   const auto restorer = test_utils::clipboard_restorer{};
