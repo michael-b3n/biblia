@@ -205,7 +205,7 @@ Item
           // Properties
           width: parent.width
           height: bookTitle.implicitHeight + Metrics.spacingLarge
-          color: Colors.bookHeader
+          color: Colors.header
           radius: Metrics.radiusMedium
 
           // Components
@@ -218,7 +218,7 @@ Item
             text: delegateRoot.bookName + " %1".arg(delegateRoot.chapterNumber)
             font.pointSize: Metrics.fontSizeHeading
             font.bold: true
-            color: Colors.bookHeaderText
+            color: Colors.headerText
             renderType: Text.CurveRendering
           }
         }
@@ -246,7 +246,7 @@ Item
           width: verseNum.implicitWidth + Metrics.spacingLarge
           height: verseNum.implicitHeight + Metrics.spacingSmall
           radius: Metrics.radiusMedium
-          color: Colors.verseBox
+          color: Colors.badge
           anchors.top: parent.top
           anchors.topMargin: Metrics.spacingTiny
 
@@ -259,7 +259,7 @@ Item
             text: delegateRoot.verseNumber
             font.pointSize: Metrics.fontSizeSmall
             font.bold: true
-            color: Colors.verseText
+            color: Colors.badgeText
             renderType: Text.CurveRendering
           }
         }

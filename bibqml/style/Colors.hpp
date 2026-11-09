@@ -41,10 +41,10 @@ class Colors final : public QObject
   Q_PROPERTY(QColor pressed MEMBER pressed_ NOTIFY pressedChanged)
 
   Q_PROPERTY(QColor text MEMBER text_ NOTIFY textChanged)
-  Q_PROPERTY(QColor verseBox MEMBER verseBox_ NOTIFY verseBoxChanged)
-  Q_PROPERTY(QColor verseText MEMBER verseText_ NOTIFY verseTextChanged)
-  Q_PROPERTY(QColor bookHeader MEMBER bookHeader_ NOTIFY bookHeaderChanged)
-  Q_PROPERTY(QColor bookHeaderText MEMBER bookHeaderText_ NOTIFY bookHeaderTextChanged)
+  Q_PROPERTY(QColor badge MEMBER badge_ NOTIFY badgeChanged)
+  Q_PROPERTY(QColor badgeText MEMBER badgeText_ NOTIFY badgeTextChanged)
+  Q_PROPERTY(QColor header MEMBER header_ NOTIFY headerChanged)
+  Q_PROPERTY(QColor headerText MEMBER headerText_ NOTIFY headerTextChanged)
 
   // Variables
   // Base colors
@@ -64,10 +64,10 @@ class Colors final : public QObject
 
   // TextColors
   QColor text_{detail::toQColor("#2e2319ff")};
-  QColor verseBox_{detail::toQColor("#7b5f42ff")};
-  QColor verseText_{detail::toQColor("#fef5deff")};
-  QColor bookHeader_{detail::toQColor("#8f633dff")};
-  QColor bookHeaderText_{detail::toQColor("#fef5deff")};
+  QColor badge_{detail::toQColor("#7b5f42ff")};
+  QColor badgeText_{detail::toQColor("#fef5deff")};
+  QColor header_{detail::toQColor("#8f633dff")};
+  QColor headerText_{detail::toQColor("#fef5deff")};
 
 public: // Structors
   explicit Colors(QObject* parent = nullptr);
@@ -83,10 +83,10 @@ signals:
   void pressedChanged();
 
   void textChanged();
-  void verseBoxChanged();
-  void verseTextChanged();
-  void bookHeaderChanged();
-  void bookHeaderTextChanged();
+  void badgeChanged();
+  void badgeTextChanged();
+  void headerChanged();
+  void headerTextChanged();
 };
 
 } // namespace bibqml
