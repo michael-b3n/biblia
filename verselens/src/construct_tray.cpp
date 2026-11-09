@@ -2,8 +2,8 @@
 #include "res/version.hpp"
 #include "src/qml_application.hpp"
 
-#include <bibqml/bridge/BridgeApplication.hpp>
-#include <bibqml/translation/Translations.hpp>
+#include <arca_qml/bridge/BridgeApplication.hpp>
+#include <arca_qml/translation/Translations.hpp>
 
 #include <arca/system/open_browser.hpp>
 #include <arca/system/tray.hpp>

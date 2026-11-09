@@ -1,7 +1,7 @@
 #include "src/windows/construct_velopack_updater.hpp"
 #include "src/qml_application.hpp"
 
-#include <bibqml/bridge/BridgeApplication.hpp>
+#include <arca_qml/bridge/BridgeApplication.hpp>
 
 #include <QObject>
 

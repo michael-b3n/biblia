@@ -111,8 +111,9 @@ qt_add_qml_module(
   ${${PROJECT_NAME}_QML_CPP_FILES_RELATIVE}
   ${${PROJECT_NAME}_QML_HPP_FILES_RELATIVE}
   IMPORTS
+  ArcaQml
   BibQml
-  DEPENDENCIES TARGET BibQml
+  DEPENDENCIES TARGET ArcaQml TARGET BibQml
   RESOURCES
   ${${PROJECT_NAME}_SVG_FILES_RELATIVE}
 )
@@ -179,6 +180,7 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE Qt6::QuickShapes
   PRIVATE Qt6::Svg
   PRIVATE bibstd
+  PRIVATE ArcaQmlplugin
   PRIVATE BibQmlplugin
 )
 

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import BibQml
+import ArcaQml
 
 ///
 /// Window a second instance shows to tell the user that the application is already running. It

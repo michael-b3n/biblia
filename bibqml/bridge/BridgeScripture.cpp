@@ -1,5 +1,5 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
-#include "bibqml/util/LocalPath.hpp"
+#include "arca_qml/util/LocalPath.hpp"
 
 #include <arca/execution/launch.hpp>
 #include <arca/util/log.hpp>

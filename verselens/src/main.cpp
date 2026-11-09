@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <format>
 
+Q_IMPORT_QML_PLUGIN(ArcaQmlPlugin)
 Q_IMPORT_QML_PLUGIN(BibQmlPlugin)
 
 ///

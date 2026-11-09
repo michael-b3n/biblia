@@ -1,7 +1,7 @@
 #include "src/windows/app_velopack_updater.hpp"
 #include "res/version.hpp"
 
-#include <bibqml/bridge/BridgeApplication.hpp>
+#include <arca_qml/bridge/BridgeApplication.hpp>
 
 #include <arca/util/exception.hpp>
 #include <arca/util/log.hpp>

@@ -61,7 +61,7 @@ Checks: >
 #
 # Only diagnose the projects own headers, not the ones of Qt, boost or other external libraries.
 #
-HeaderFilterRegex: '(arca|arca_test|bibocr|bibstd|bibqml|bibstd_test|verselens)[/\].*\.hpp$'
+HeaderFilterRegex: '(arca|arca_qml|arca_test|bibocr|bibstd|bibqml|bibstd_test|verselens)[/\].*\.hpp$'
 ExcludeHeaderFilterRegex: '(build|libs_external)[/\].*'
 
 #

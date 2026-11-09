@@ -9,15 +9,15 @@
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
-#include <bibqml/bridge/BridgeApplication.hpp>
+#include <arca_qml/bridge/BridgeApplication.hpp>
+#include <arca_qml/bridge/BridgeScript.hpp>
+#include <arca_qml/bridge/BridgeSettings.hpp>
+#include <arca_qml/model/SettingsListModel.hpp>
 #include <bibqml/bridge/BridgeBibleRefCopy.hpp>
 #include <bibqml/bridge/BridgeBibleRefLookup.hpp>
 #include <bibqml/bridge/BridgeBibleRefOcr.hpp>
-#include <bibqml/bridge/BridgeScript.hpp>
 #include <bibqml/bridge/BridgeScripture.hpp>
-#include <bibqml/bridge/BridgeSettings.hpp>
 #include <bibqml/model/ScriptureListModel.hpp>
-#include <bibqml/model/SettingsListModel.hpp>
 
 #include <memory>
 

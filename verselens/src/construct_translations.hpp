@@ -2,7 +2,7 @@
 
 #include "src/construct_backend.hpp"
 
-#include <bibqml/translation/Translations.hpp>
+#include <arca_qml/translation/Translations.hpp>
 
 #include <arca/framework/queued_connections.hpp>
 #include <arca/framework/setting.hpp>

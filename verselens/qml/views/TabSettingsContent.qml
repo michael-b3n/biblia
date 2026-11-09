@@ -1,5 +1,5 @@
 import QtQuick
-import BibQml
+import ArcaQml
 
 ///
 /// Content of the settings tab. It only fades the editor of the module in, like every other tab.

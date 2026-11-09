@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.VectorImage
-import BibQml
+import ArcaQml
 
 ///
 /// Tab button of the scripture tab. It doubles as the indicator of the reference search:
