@@ -6,6 +6,7 @@
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/core/core_cache.hpp>
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
@@ -195,7 +196,7 @@ TEST_CASE("workflow_scripture_store_reads_an_import_before_the_scripts_once_they
   io::test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
   const auto folder = test_utils::temp_folder{"workflow_scripture_store_import_early"};
   const auto settings = test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<workflow_script>(settings);
+  const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   const auto cache = std::make_shared<workflow_cache>(settings, script);
   const auto store = std::make_shared<workflow_scripture_store>(settings, script);
 

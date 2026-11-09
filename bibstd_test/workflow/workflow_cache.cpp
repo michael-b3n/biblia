@@ -1,6 +1,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 
@@ -20,7 +21,7 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
   { return script.state()->safe_script(code, sol::script_pass_on_error); };
   {
     const auto settings = test_utils::make_script_settings(folder.path());
-    const auto script = std::make_shared<workflow_script>(settings);
+    const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
     const auto cache = workflow_cache{settings, script};
     CHECK(run(*script, "return root.interface.workflow.cache.get('a', 'key') == nil").get<bool>());
     run(
@@ -39,7 +40,7 @@ TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
   }
   // Kept beyond the run, apart for each name
   const auto settings = test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<workflow_script>(settings);
+  const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   auto cache = workflow_cache{settings, script};
   CHECK(run(*script, "return root.interface.workflow.cache.get('a', 'key')").get<std::string>() == "value a");
   CHECK(run(*script, "return root.interface.workflow.cache.get('b', 'key')").get<std::string>() == "value b");
@@ -54,7 +55,7 @@ TEST_CASE("workflow_cache_takes_its_functions_back_on_destruction", "[workflow]"
 {
   const auto folder = test_utils::temp_folder{"workflow_cache_takes_its_functions_back_on_destruction"};
   const auto settings = test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<workflow_script>(settings);
+  const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   {
     const auto cache = workflow_cache{settings, script};
     CHECK(script->state()->script("return type(root.interface.workflow.cache.get) == 'function'").get<bool>());

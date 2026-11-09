@@ -4,6 +4,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -51,7 +52,7 @@ inline script_sandbox::script_sandbox(const std::string_view name, const std::ma
   {
     write_file(folder_of_scripts / file, code);
   }
-  script = std::make_shared<workflow::workflow_script>(make_script_settings(folder.path(), true));
+  script = std::make_shared<workflow::workflow_script>(make_script_settings(folder.path(), true), lua::bundled::all);
   load_scripts(*script);
 }
 

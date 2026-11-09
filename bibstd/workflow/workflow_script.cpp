@@ -1,5 +1,4 @@
 #include "bibstd/workflow/workflow_script.hpp"
-#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/names.hpp"
 #include "bibstd/util/exception.hpp"
 #include "bibstd/util/identifier.hpp"
@@ -65,8 +64,9 @@ workflow_script_settings::workflow_script_settings(std::shared_ptr<workflow_sett
 
 ///
 ///
-workflow_script::workflow_script(std::shared_ptr<workflow_settings> workflow_settings)
+workflow_script::workflow_script(std::shared_ptr<workflow_settings> workflow_settings, bundled_provider_type bundled)
   : workflow_base{std::move(workflow_settings)}
+  , bundled_{std::move(bundled)}
 {
 }
 
@@ -189,7 +189,7 @@ auto workflow_script::load(const std::stop_token& stop_token) -> void
   try
   {
     std::ranges::for_each(
-      lua::bundled::all() | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
+      bundled_() | std::views::take_while([&](const auto&) { return !stop_token.stop_requested(); }),
       [this](const auto& script) { load_script(script.name, script.code); }
     );
     if(settings().enabled->value())

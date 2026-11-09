@@ -8,6 +8,7 @@
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/util/enum.hpp>
 #include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
@@ -123,7 +124,7 @@ inline scripture_store::scripture_store(
     std::filesystem::copy_file(file, scripture_folder() / file.filename());
   }
   const auto settings = make_script_settings(folder.path());
-  script = std::make_shared<workflow::workflow_script>(settings);
+  script = std::make_shared<workflow::workflow_script>(settings, lua::bundled::all);
   cache = std::make_shared<workflow::workflow_cache>(settings, script);
   store = std::make_shared<workflow::workflow_scripture_store>(settings, script);
   load_scripts(*script);

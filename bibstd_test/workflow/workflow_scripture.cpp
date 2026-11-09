@@ -3,6 +3,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/workflow/workflow_cache.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
@@ -106,7 +107,7 @@ scripture_fixture::scripture_fixture(
     std::ignore = workflow_scripture_settings{writer}.default_scripture_name->value(selected);
   }
   const auto settings = test_utils::make_script_settings(folder.path(), true);
-  script = std::make_shared<workflow_script>(settings);
+  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   cache = std::make_shared<workflow_cache>(settings, script);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does

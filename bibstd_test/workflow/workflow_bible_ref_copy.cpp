@@ -4,6 +4,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
@@ -72,7 +73,7 @@ copy_fixture::copy_fixture(const std::string_view name, const bool with_scriptur
     test_utils::write_file(scripts_folder / "scripture.lua", scripture_script);
   }
   const auto settings = test_utils::make_script_settings(folder.path(), with_scripture);
-  script = std::make_shared<workflow_script>(settings);
+  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   copy = std::make_shared<workflow_bible_ref_copy>(settings, scripture);
   // Last, as the app does

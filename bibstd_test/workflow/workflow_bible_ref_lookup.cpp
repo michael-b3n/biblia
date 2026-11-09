@@ -3,6 +3,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
@@ -88,7 +89,7 @@ lookup_fixture::lookup_fixture(
     std::ignore = settings.translations->value(translations);
   }
   const auto settings = test_utils::make_script_settings(folder.path(), !scripts.empty());
-  script = std::make_shared<workflow_script>(settings);
+  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   lookup = std::make_shared<workflow_bible_ref_lookup>(settings, script);
   // Last, as the app does
   test_utils::load_scripts(*script);

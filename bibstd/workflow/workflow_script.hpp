@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bibstd/lua/embedded_scripts.hpp"
 #include "bibstd/lua/state.hpp"
 #include "bibstd/lua/state_owner.hpp"
 #include "bibstd/lua/value_cast.hpp"
@@ -19,9 +20,11 @@
 #include <mutex>
 #include <optional>
 #include <set>
+#include <span>
 #include <stop_token>
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -85,17 +88,22 @@ class workflow_script final
   static constexpr auto setting_node = "setting"; // below lua_node, the node of all settings
 
   // Variables
+  const std::function<std::span<const lua::embedded_script>()> bundled_;
   const lua::state_owner state_owner_;
   mutable std::mutex mtx_;
   std::map<std::string, script_info> scripts_; // the loaded scripts by name
   std::jthread loader_;                        // last, it joins before the members it uses are destroyed
 
 public: // Typedefs
+  using bundled_provider_type = std::remove_const_t<decltype(bundled_)>;
   using script_name_type = decltype(scripts_)::key_type;
   using scripts_type = decltype(scripts_);
 
 public: // Structors
-  workflow_script(std::shared_ptr<workflow_settings> workflow_settings);
+  ///
+  /// Construct the workflow, \p bundled shall provide the compiled scripts when called.
+  ///
+  workflow_script(std::shared_ptr<workflow_settings> workflow_settings, bundled_provider_type bundled);
   ~workflow_script() noexcept override;
 
 public: // Accessors

@@ -2,6 +2,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/lua/script_table.hpp>
 #include <bibstd/workflow/workflow_base.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
@@ -127,7 +128,7 @@ struct echo_manifest final
 ///
 [[nodiscard]] auto bundled_names(const test_utils::temp_folder& folder) -> std::vector<std::string>
 {
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path() / "bundled")};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path() / "bundled"), lua::bundled::all};
   test_utils::load_scripts(workflow);
   return names(workflow.scripts());
 }
@@ -187,7 +188,7 @@ workflow_test::~workflow_test() noexcept = default;
 TEST_CASE("workflow_script_sets_up_the_state", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_sets_up_the_state"};
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path())};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path()), lua::bundled::all};
   CHECK(workflow.state()->script("return type(root.interface.util) == 'table' and util == nil and io == nil").get<bool>());
   // Disabled, so loaded without a scripts folder
   test_utils::load_scripts(workflow);
@@ -197,7 +198,7 @@ TEST_CASE("workflow_script_sets_up_the_state", "[workflow]")
 TEST_CASE("workflow_script_registers_a_workflow", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_registers_a_workflow"};
-  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
+  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()), lua::bundled::all);
   const auto workflow = std::make_shared<workflow_test>(script);
   REQUIRE(workflow->registered);
   workflow->value = 7;
@@ -211,7 +212,7 @@ TEST_CASE("workflow_script_registers_a_workflow", "[workflow]")
 TEST_CASE("workflow_script_drops_the_functions_of_a_destroyed_workflow", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_drops_the_functions_of_a_destroyed_workflow"};
-  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
+  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()), lua::bundled::all);
   const auto other = workflow_test{script, "other"};
   {
     const auto workflow = workflow_test{script};
@@ -226,7 +227,7 @@ TEST_CASE("workflow_script_drops_the_functions_of_a_destroyed_workflow", "[workf
 TEST_CASE("workflow_script_rejects_a_taken_name", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_rejects_a_taken_name"};
-  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()));
+  const auto script = std::make_shared<workflow_script>(test_utils::make_script_settings(folder.path()), lua::bundled::all);
   const auto first = workflow_test{script, "shared"};
   const auto second = workflow_test{script, "shared"};
   CHECK(first.registered);
@@ -248,7 +249,7 @@ TEST_CASE("workflow_script_loads_the_user_scripts", "[workflow]")
   test_utils::write_file(scripts / "e.lua", report("e", "'ran'"));
   test_utils::write_file(scripts / "f.txt", report("f", "'ran'"));
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"a (a)", "nil (b)", "ran (e)"});
   CHECK(workflow.state()->script("return shared == nil").get<bool>());
@@ -262,7 +263,7 @@ TEST_CASE("workflow_script_imports_scripts_into_its_folder", "[workflow]")
   test_utils::write_file(source / "a.lua", report("a", "'first'"));
   test_utils::write_file(source / "b.txt", report("b", "'ran'"));
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   CHECK(workflow.import_scripts({source / "a.lua", source / "b.txt", source / "gone.lua"}) == 1);
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"first (a)"});
@@ -285,7 +286,7 @@ TEST_CASE("workflow_script_loads_the_scripts_anew", "[workflow]")
   std::filesystem::create_directories(scripts);
   test_utils::write_file(scripts / "a.lua", report("a", "'first'"));
   test_utils::write_file(scripts / "b.lua", report("b", "'b'"));
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"first (a)", "b (b)"});
 
@@ -304,7 +305,7 @@ TEST_CASE("workflow_script_ends_loading_once_destroyed", "[workflow]")
   test_utils::write_file(scripts / "a.lua", "while true do end");
   test_utils::write_file(scripts / "b.lua", "return {}");
 
-  auto workflow = std::make_unique<workflow_script>(test_utils::make_script_settings(folder.path(), true));
+  auto workflow = std::make_unique<workflow_script>(test_utils::make_script_settings(folder.path(), true), lua::bundled::all);
   auto loaded = std::atomic<bool>{false};
   const auto connection = workflow->connect(&workflow_script_sigs::scripts_loaded, [&]() { loaded = true; });
   workflow->load_scripts();
@@ -321,7 +322,7 @@ TEST_CASE("workflow_script_loads_no_bytecode", "[workflow]")
   const auto scripts = folder.path() / "scripts";
   std::filesystem::create_directories(scripts);
   {
-    const auto workflow = workflow_script{test_utils::make_script_settings(folder.path())};
+    const auto workflow = workflow_script{test_utils::make_script_settings(folder.path()), lua::bundled::all};
     const auto bytecode = "return string.dump(function() " + report("a", "'ran'") + " end)";
     test_utils::write_file(scripts / "a.lua", workflow.state()->script(bytecode).get<std::string>());
   }
@@ -329,7 +330,7 @@ TEST_CASE("workflow_script_loads_no_bytecode", "[workflow]")
     scripts / "b.lua", report("b", "load(string.dump(function() end)) == nil and dofile == nil and loadfile == nil")
   );
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   CHECK(reports(workflow) == std::vector<std::string>{"true (b)"});
 }
@@ -337,7 +338,7 @@ TEST_CASE("workflow_script_loads_no_bytecode", "[workflow]")
 TEST_CASE("workflow_script_creates_a_missing_folder", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_script_creates_a_missing_folder"};
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   REQUIRE_FALSE(std::filesystem::exists(folder.path() / "scripts"));
   test_utils::load_scripts(workflow);
   // Empty, for the user to put scripts into
@@ -356,7 +357,7 @@ TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 
   SECTION("without the scripts of the user")
   {
-    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false)};
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), false), lua::bundled::all};
     test_utils::load_scripts(workflow);
     CHECK(std::ranges::contains(names(workflow.scripts()), std::string{"Bibleserver"}));
     CHECK(reports(workflow).empty());
@@ -364,7 +365,7 @@ TEST_CASE("workflow_script_loads_the_bundled_scripts", "[workflow]")
 
   SECTION("before the scripts of the user")
   {
-    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+    auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
     test_utils::load_scripts(workflow);
     CHECK(user_names(workflow, folder) == std::vector<std::string>{"a"});
     CHECK(reports(workflow) == std::vector<std::string>{"ran (Bibleserver)", "ran (a)"});
@@ -386,7 +387,7 @@ TEST_CASE("workflow_script_offers_the_scripts_of_manifests", "[workflow]")
   // A script returning no table offers nothing
   test_utils::write_file(scripts / "none.lua", "return 1");
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   CHECK(names(workflow.scripts<a_manifest>()) == std::vector<std::string>{"Both", "One"});
   CHECK(names(workflow.scripts<a_manifest, b_manifest>()) == std::vector<std::string>{"Both"});
@@ -427,7 +428,7 @@ TEST_CASE("workflow_script_knows_a_script_by_its_name", "[workflow]")
   test_utils::write_file(scripts / "b.lua", script("name = 'Other', description = '', node = 'zeta',", "ran"));
   test_utils::write_file(scripts / "c.lua", script("name = 'Zeta', description = '', node = 'other',", "ran"));
 
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   REQUIRE(user_names(workflow, folder) == std::vector<std::string>{"Alpha page.com", "Zeta"});
   CHECK(reports(workflow) == std::vector<std::string>{"ran (Alpha page.com)", "first (Zeta)"});
@@ -465,7 +466,7 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
       }
     )"
   );
-  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true)};
+  auto workflow = workflow_script{test_utils::make_script_settings(folder.path(), true), lua::bundled::all};
   test_utils::load_scripts(workflow);
   const auto input = [](const std::string& text)
   {

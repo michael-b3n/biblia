@@ -1,6 +1,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
+#include <bibstd/lua/embedded_scripts.hpp>
 #include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_web.hpp>
 
@@ -18,7 +19,7 @@ TEST_CASE("workflow_web_fetches_web_pages", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_web_fetches_web_pages"};
   const auto settings = test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<workflow_script>(settings);
+  const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   const auto web = workflow_web{settings, script};
   // Fails before any request, so no network is needed, and the same when answered from memory
   CHECK(web.fetch("not a url") == std::unexpected{std::string{"invalid_url"}});
@@ -49,7 +50,7 @@ TEST_CASE("workflow_web_takes_its_function_back_on_destruction", "[workflow]")
 {
   const auto folder = test_utils::temp_folder{"workflow_web_takes_its_function_back_on_destruction"};
   const auto settings = test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<workflow_script>(settings);
+  const auto script = std::make_shared<workflow_script>(settings, lua::bundled::all);
   {
     const auto web = workflow_web{settings, script};
     CHECK(script->state()->script("return type(root.interface.workflow.web.fetch) == 'function'").get<bool>());
