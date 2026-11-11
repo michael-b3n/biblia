@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arca/util/const_map.hpp"
-#include "arca/util/language.hpp"
-#include "arca/util/ranges.hpp"
+#include "arcstd/util/const_map.hpp"
+#include "arcstd/util/language.hpp"
+#include "arcstd/util/ranges.hpp"
 #include "bibstd/bible/ocr_book_variants_de.hpp"
 #include "bibstd/bible/ocr_book_variants_en.hpp"
 

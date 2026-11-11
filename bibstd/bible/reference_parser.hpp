@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arca/math/value_range.hpp"
-#include "arca/util/language.hpp"
+#include "arcstd/math/value_range.hpp"
+#include "arcstd/util/language.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/bible/versification.hpp"

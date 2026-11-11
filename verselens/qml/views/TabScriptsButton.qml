@@ -1,5 +1,5 @@
 import QtQuick
-import ArcaQml
+import ArcQml
 
 ///
 /// Tab button of the scripts tab.

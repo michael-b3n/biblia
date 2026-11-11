@@ -29,7 +29,7 @@ pkg_search_module(LEPTONICA REQUIRED IMPORTED_TARGET lept)
 # Link libraries.
 #
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC arca
+  PUBLIC arcstd
   PUBLIC PkgConfig::TESSERACT
   PUBLIC PkgConfig::LEPTONICA
 )

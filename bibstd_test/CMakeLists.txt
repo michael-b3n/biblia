@@ -67,7 +67,7 @@ target_link_libraries(
   PRIVATE
   Catch2::Catch2WithMain
   pugixml::pugixml
-  arca_test_utils
+  arcstd_test_utils
   bibstd)
 
 #

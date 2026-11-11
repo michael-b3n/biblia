@@ -3,7 +3,7 @@
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/versification_common.hpp"
 #ifdef BIBSTD_DEBUG_DATA
-  #include "arca/util/log.hpp"
+  #include "arcstd/util/log.hpp"
 #endif
 
 #include <algorithm>

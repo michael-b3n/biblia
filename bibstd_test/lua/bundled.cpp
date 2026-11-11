@@ -1,8 +1,8 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
-#include <arca/lua/state_owner.hpp>
-#include <arca/workflow/workflow_script.hpp>
+#include <arcstd/lua/state_owner.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 

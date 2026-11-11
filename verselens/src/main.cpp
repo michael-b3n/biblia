@@ -15,10 +15,10 @@
   #include "src/windows/construct_velopack_updater.hpp"
 #endif
 
-#include <arca/framework/single_instance.hpp>
-#include <arca/system/filesystem.hpp>
-#include <arca/system/screen.hpp>
-#include <arca/util/log.hpp>
+#include <arcstd/framework/single_instance.hpp>
+#include <arcstd/system/filesystem.hpp>
+#include <arcstd/system/screen.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <format>
 
-Q_IMPORT_QML_PLUGIN(ArcaQmlPlugin)
+Q_IMPORT_QML_PLUGIN(ArcQmlPlugin)
 Q_IMPORT_QML_PLUGIN(BibQmlPlugin)
 
 ///

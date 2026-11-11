@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arca/data/screen_types.hpp"
-#include "arca/math/value_range.hpp"
+#include "arcstd/data/screen_types.hpp"
+#include "arcstd/math/value_range.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 
 #include <expected>

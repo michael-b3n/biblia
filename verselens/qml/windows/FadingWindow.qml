@@ -1,5 +1,5 @@
 import QtQuick
-import ArcaQml
+import ArcQml
 
 ///
 /// Transparent window whose content fades in when it is shown and disappears at once when it is

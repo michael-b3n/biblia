@@ -5,7 +5,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.VectorImage
-import ArcaQml
+import ArcQml
 import BibQml
 
 ///

@@ -1,7 +1,7 @@
 #include "bibqml/util/ScriptureAccess.hpp"
 
-#include <arca/util/enum.hpp>
-#include <arca/util/log.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/log.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 

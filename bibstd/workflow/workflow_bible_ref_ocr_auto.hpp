@@ -1,11 +1,11 @@
 #pragma once
 
-#include "arca/data/screen_types.hpp"
-#include "arca/framework/process_params.hpp"
-#include "arca/signal/adapter.hpp"
-#include "arca/signal/common.hpp"
-#include "arca/workflow/workflow_base.hpp"
-#include "arca/workflow/workflow_settings_base.hpp"
+#include "arcstd/data/screen_types.hpp"
+#include "arcstd/framework/process_params.hpp"
+#include "arcstd/signal/adapter.hpp"
+#include "arcstd/signal/common.hpp"
+#include "arcstd/workflow/workflow_base.hpp"
+#include "arcstd/workflow/workflow_settings_base.hpp"
 #include "bibstd/bible/reference_range.hpp"
 
 #include <sfsm/sfsm.hpp>

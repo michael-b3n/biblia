@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import ArcaQml
+import ArcQml
 
 ///
 /// Content of the notifications tab: the state of the updates and, if the application has an

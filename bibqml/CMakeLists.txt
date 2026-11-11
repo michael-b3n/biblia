@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 4.3)
 project(BibQml)
 
 #
-# Define target sources and headers, the qml files and icons are in ArcaQml.
+# Define target sources and headers, the qml files and icons are in ArcQml.
 #
 file(GLOB_RECURSE ${PROJECT_NAME}_CPP_FILES_RELATIVE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 file(GLOB_RECURSE ${PROJECT_NAME}_HPP_FILES_RELATIVE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*.hpp")
@@ -28,7 +28,7 @@ qt_add_qml_module(
   SOURCES
   ${${PROJECT_NAME}_CPP_FILES_RELATIVE}
   ${${PROJECT_NAME}_HPP_FILES_RELATIVE}
-  DEPENDENCIES TARGET ArcaQml
+  DEPENDENCIES TARGET ArcQml
 )
 
 #
@@ -36,7 +36,7 @@ qt_add_qml_module(
 #
 target_link_libraries(${PROJECT_NAME}
   PUBLIC bibstd
-  PUBLIC ArcaQml
+  PUBLIC ArcQml
   PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Gui
 )
 

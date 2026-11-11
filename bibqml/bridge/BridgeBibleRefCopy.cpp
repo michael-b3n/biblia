@@ -1,8 +1,8 @@
 #include "bibqml/bridge/BridgeBibleRefCopy.hpp"
 #include "bibqml/util/ScriptureAccess.hpp"
 
-#include <arca/execution/launch.hpp>
-#include <arca/util/log.hpp>
+#include <arcstd/execution/launch.hpp>
+#include <arcstd/util/log.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 

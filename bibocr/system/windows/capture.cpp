@@ -1,10 +1,10 @@
 #include "bibocr/system/capture.hpp"
-#include "arca/util/log.hpp"
-#include "arca/util/non_owning_ptr.hpp"
-#include "arca/util/numeric_cast.hpp"
-#include "arca/util/ranges.hpp"
+#include "arcstd/util/log.hpp"
+#include "arcstd/util/non_owning_ptr.hpp"
+#include "arcstd/util/numeric_cast.hpp"
+#include "arcstd/util/ranges.hpp"
 
-#include "arca/system/windows/win.hpp"
+#include "arcstd/system/windows/win.hpp"
 #include "bibocr/system/windows/capture_engine.hpp"
 
 #include <algorithm>

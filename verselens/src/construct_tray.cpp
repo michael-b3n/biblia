@@ -2,12 +2,12 @@
 #include "res/version.hpp"
 #include "src/qml_application.hpp"
 
-#include <arca_qml/bridge/BridgeApplication.hpp>
-#include <arca_qml/translation/Translations.hpp>
+#include <arcqml/bridge/BridgeApplication.hpp>
+#include <arcqml/translation/Translations.hpp>
 
-#include <arca/system/open_browser.hpp>
-#include <arca/system/tray.hpp>
-#include <arca/util/incbin.hpp>
+#include <arcstd/system/open_browser.hpp>
+#include <arcstd/system/tray.hpp>
+#include <arcstd/util/incbin.hpp>
 
 #include <QMetaObject>
 #include <QObject>

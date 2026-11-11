@@ -1,5 +1,5 @@
 import QtQuick
-import ArcaQml
+import ArcQml
 
 ///
 /// Area the main window covers and the math placing it. Only the functions below move it, never on its own.

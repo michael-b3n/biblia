@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
-import ArcaQml
+import ArcQml
 
 ///
 /// Content of the scripts tab: the loaded scripts with their description and

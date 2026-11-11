@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arca/util/enum.hpp"
+#include "arcstd/util/enum.hpp"
 #include "bibstd/bible/reference.hpp"
 
 #include <array>

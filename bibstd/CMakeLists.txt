@@ -25,7 +25,7 @@ target_sources(${PROJECT_NAME}
 include(incbin)
 file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua" "${CMAKE_CURRENT_LIST_DIR}/lua/private/*.lua")
 set(INCBIN_HEADER bibstd/lua/bundled_scripts.hpp)
-configure_incbin_source(bundled ${CMAKE_SOURCE_DIR}/arca/lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
+configure_incbin_source(bundled ${CMAKE_SOURCE_DIR}/arcstd/lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
 target_sources(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
 )
@@ -36,7 +36,7 @@ find_package(pugixml REQUIRED)
 # Link libraries.
 #
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC arca
+  PUBLIC arcstd
   PUBLIC bibocr
   PRIVATE pugixml::pugixml
 )
@@ -60,4 +60,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
 #
 include(lua_doc)
 option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
-add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} arca arca_qml bibocr bibstd bibqml verselens)
+add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} arcstd arcqml bibocr bibstd bibqml verselens)

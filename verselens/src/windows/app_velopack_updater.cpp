@@ -1,10 +1,10 @@
 #include "src/windows/app_velopack_updater.hpp"
 #include "res/version.hpp"
 
-#include <arca_qml/bridge/BridgeApplication.hpp>
+#include <arcqml/bridge/BridgeApplication.hpp>
 
-#include <arca/util/exception.hpp>
-#include <arca/util/log.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <Velopack.hpp>
 

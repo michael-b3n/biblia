@@ -1,8 +1,8 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
-#include "arca_qml/util/LocalPath.hpp"
+#include "arcqml/util/LocalPath.hpp"
 
-#include <arca/execution/launch.hpp>
-#include <arca/util/log.hpp>
+#include <arcstd/execution/launch.hpp>
+#include <arcstd/util/log.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <QMetaObject>

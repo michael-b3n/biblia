@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arca/data/screen_types.hpp"
-#include "arca/system/windows/win.hpp"
+#include "arcstd/data/screen_types.hpp"
+#include "arcstd/system/windows/win.hpp"
 
 #include <d3d11.h>
 #include <dxgi.h>

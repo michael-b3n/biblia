@@ -1,8 +1,8 @@
 #include "bibocr/system/windows/capture_engine_winrt.hpp"
-#include "arca/util/enum.hpp"
-#include "arca/util/exception.hpp"
-#include "arca/util/log.hpp"
-#include "arca/util/numeric_cast.hpp"
+#include "arcstd/util/enum.hpp"
+#include "arcstd/util/exception.hpp"
+#include "arcstd/util/log.hpp"
+#include "arcstd/util/numeric_cast.hpp"
 
 #include <winrt/Windows.Security.Authorization.AppCapabilityAccess.h>
 

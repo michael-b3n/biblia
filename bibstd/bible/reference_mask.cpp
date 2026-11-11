@@ -1,5 +1,5 @@
 #include "bibstd/bible/reference_mask.hpp"
-#include "arca/util/string.hpp"
+#include "arcstd/util/string.hpp"
 
 #include <algorithm>
 #include <array>

@@ -3,7 +3,7 @@
 #
 # Examples:
 #   tools/run_clang_tidy.ps1
-#   tools/run_clang_tidy.ps1 -Path arca/util
+#   tools/run_clang_tidy.ps1 -Path arcstd/util
 #   tools/run_clang_tidy.ps1 -Fix
 #
 [CmdletBinding()]
@@ -11,7 +11,7 @@ param(
   # Directory of the CMake build holding compile_commands.json.
   [string] $BuildDir = "build",
   # Source directories that shall be analyzed, relative to the repository root.
-  [string[]] $Path = @("arca", "arca_qml", "arca_test", "bibocr", "bibstd", "bibstd_test", "bibqml", "verselens"),
+  [string[]] $Path = @("arcstd", "arcqml", "arcstd_test", "bibocr", "bibstd", "bibstd_test", "bibqml", "verselens"),
   # Apply the fixes clang-tidy suggests instead of only reporting them.
   [switch] $Fix,
   # Amount of parallel clang-tidy processes.

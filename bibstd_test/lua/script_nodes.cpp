@@ -1,6 +1,6 @@
 #include "test_utils/script_sandbox.hpp"
 
-#include <arca/util/path.hpp>
+#include <arcstd/util/path.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

@@ -1,5 +1,5 @@
 import QtQuick
-import ArcaQml
+import ArcQml
 
 ///
 /// Tab button of the notifications tab. The bell rings while a notification is unread.

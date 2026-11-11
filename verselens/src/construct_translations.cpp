@@ -1,13 +1,13 @@
 #include "src/construct_translations.hpp"
 #include "res/version.hpp"
 
-#include <arca/framework/setting_validator.hpp>
-#include <arca/system/locale.hpp>
-#include <arca/util/enum.hpp>
-#include <arca/util/exception.hpp>
-#include <arca/util/incbin.hpp>
-#include <arca/util/log.hpp>
-#include <arca/workflow/workflow_settings.hpp>
+#include <arcstd/framework/setting_validator.hpp>
+#include <arcstd/system/locale.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/incbin.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
 
 #include <QMetaObject>
 

@@ -3,8 +3,8 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arca/system/locale.hpp>
-#include <arca/workflow/workflow_script.hpp>
+#include <arcstd/system/locale.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 

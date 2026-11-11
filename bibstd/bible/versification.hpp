@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arca/meta/contains.hpp"
-#include "arca/meta/pack.hpp"
-#include "arca/util/ranges.hpp"
+#include "arcstd/meta/contains.hpp"
+#include "arcstd/meta/pack.hpp"
+#include "arcstd/util/ranges.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/bible/versification_common.hpp"

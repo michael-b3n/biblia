@@ -8,12 +8,12 @@ Libraries that find bible references on the screen, and VerseLens, the Windows t
 
 | Folder | Content |
 |---|---|
-| `arca` | The general library without Bible content: the workflow base, settings and script workflows (`workflow`), cache and web fetch (`core`), Lua scripting (`lua`), threading and settings (`framework`), text scripts (`txt`), the system layer (`system`, Windows in `system/windows`) |
+| `arcstd` | The general library without Bible content: the workflow base, settings and script workflows (`workflow`), cache and web fetch (`core`), Lua scripting (`lua`), threading and settings (`framework`), text scripts (`txt`), the system layer (`system`, Windows in `system/windows`) |
 | `bibocr` | OCR engines (`txt`), the Windows OCR and the screen capture (`system`) |
 | `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`) |
-| `arca_qml` | The general Qt layer, QML module `ArcaQml`: controls, settings views, styles and icons, the bridges of the settings, scripts and logs |
+| `arcqml` | The general Qt layer, QML module `ArcQml`: controls, settings views, styles and icons, the bridges of the settings, scripts and logs |
 | `bibqml` | The Bible Qt layer, QML module `BibQml`: the bridges of the reference search and the scriptures, the scripture model |
-| `arca_test` | Catch2 tests of `arca`, and the test helpers the other tests share (`test_utils`) |
+| `arcstd_test` | Catch2 tests of `arcstd`, and the test helpers the other tests share (`test_utils`) |
 | `bibstd_test` | Catch2 tests of `bibocr` and `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
 | `verselens` | The app: window, tray, updater and the resources a release ships |
 | `libs_external` | Third party sources, used as they are |
