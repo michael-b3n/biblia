@@ -17,7 +17,7 @@ $iconDir = Join-Path $repoRoot "verselens/res/icon"
 $assetsDir = Join-Path $repoRoot "verselens/res/msix/assets"
 $icoPath = Join-Path $repoRoot "verselens/res/icon.ico"
 
-# The tray takes the first image of the icon file as it is, see libs_external/traypp, so 32x32 comes first.
+# The tray takes the first image of the icon file as it is, see arca/libs_external/traypp, so 32x32 comes first.
 # Windows scales that one into the notification area, the other sizes serve explorer, taskbar and alt-tab.
 $icoSizes = @(32, 16, 20, 24, 48, 64, 128, 256)
 

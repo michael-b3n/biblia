@@ -26,6 +26,7 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
         with:
+          submodules: true
           persist-credentials: false
 
       - name: Build

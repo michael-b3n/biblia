@@ -8,20 +8,18 @@ Libraries that find bible references on the screen, and VerseLens, the Windows t
 
 | Folder | Content |
 |---|---|
-| `arcstd` | The general library without Bible content: the workflow base, settings and script workflows (`workflow`), cache and web fetch (`core`), Lua scripting (`lua`), threading and settings (`framework`), text scripts (`txt`), the system layer (`system`, Windows in `system/windows`) |
+| `arca` | Submodule [arca](https://github.com/michael-b3n/arca): the general libraries `arcstd` and `arcqml` (QML module `ArcQml`), their tests and test helpers, the third party sources |
 | `bibocr` | OCR engines (`txt`), the Windows OCR and the screen capture (`system`) |
 | `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`) |
-| `arcqml` | The general Qt layer, QML module `ArcQml`: controls, settings views, styles and icons, the bridges of the settings, scripts and logs |
 | `bibqml` | The Bible Qt layer, QML module `BibQml`: the bridges of the reference search and the scriptures, the scripture model |
-| `arcstd_test` | Catch2 tests of `arcstd`, and the test helpers the other tests share (`test_utils`) |
 | `bibstd_test` | Catch2 tests of `bibocr` and `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
 | `verselens` | The app: window, tray, updater and the resources a release ships |
-| `libs_external` | Third party sources, used as they are |
+| `libs_external` | Velopack, used as it is |
 | `tools` | CMake helpers, the clang-tidy runner, the MSIX packaging script |
 
 ## Development
 
-Setup: [doc/setup_ide.md](doc/setup_ide.md). In the MSYS2 UCRT64 shell:
+Setup: [doc/setup_ide.md](doc/setup_ide.md). Clone with `--recurse-submodules`, or run `git submodule update --init` in a clone, for `arca`. In the MSYS2 UCRT64 shell:
 
 ```
 cmake --preset gcc-release --fresh
@@ -85,4 +83,4 @@ For the Microsoft Store the workflow also packs an MSIX and offers it as a build
 
 ## License
 
-[MIT](LICENSE). The libraries in `libs_external` keep their own licenses. Qt is used under the LGPLv3, Tesseract and its `tessdata` under the Apache License 2.0. Scriptures are not part of this repository or of a release.
+[MIT](LICENSE). The libraries in `libs_external` and `arca/libs_external` keep their own licenses. Qt is used under the LGPLv3, Tesseract and its `tessdata` under the Apache License 2.0. Scriptures are not part of this repository or of a release.

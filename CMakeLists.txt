@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 4.3)
 #
 # Set global CMake variables.
 #
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/tools/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/tools/cmake" "${CMAKE_CURRENT_LIST_DIR}/arca/tools/cmake")
 
 #
 # Limit CMake to only provide "Release" and "Debug" others are not needed.
@@ -68,15 +68,15 @@ set_property(GLOBAL APPEND
 # Include all subdirectories.
 #
 enable_testing()
-add_subdirectory(libs_external)
+
+# The general libraries, see arca/README.md. Their tests run here too, bibstd_test uses their helpers.
+set(ARCA_BUILD_TESTS ON)
+add_subdirectory(arca)
 
 add_compile_options(-Wswitch-enum)
 
-add_subdirectory(arcstd)
 add_subdirectory(bibocr)
 add_subdirectory(bibstd)
-add_subdirectory(arcqml)
 add_subdirectory(bibqml)
-add_subdirectory(arcstd_test)
 add_subdirectory(bibstd_test)
 add_subdirectory(verselens)
