@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import ArcQml
+import BibQml
 
 ///
 /// Content of the scripts tab: the loaded scripts with their description and
@@ -117,7 +118,7 @@ Item
     {
       // Properties
       Layout.fillWidth: true
-      svgSource: Icons.fileImport
+      svgSource: BibIcons.fileImport
       text: Translations.name("scripts_import", Translations.language)
       enabled: !root.bridgeScript.loading
 

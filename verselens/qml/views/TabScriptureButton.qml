@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.VectorImage
 import ArcQml
+import BibQml
 
 ///
 /// Tab button of the scripture tab. It doubles as the indicator of the reference search:
@@ -48,7 +49,7 @@ TabButtonBase
     anchors.fill: parent
     opacity: root.searchRunning ? 0 : 1
     visible: done.opacity > 0
-    source: Icons.checkMark
+    source: BibIcons.checkMark
     preferredRendererType: VectorImage.CurveRenderer
 
     // Animations

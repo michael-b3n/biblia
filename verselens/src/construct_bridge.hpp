@@ -7,7 +7,6 @@
 
 namespace arcqml
 {
-class BridgeApplication;
 class BridgeScript;
 class BridgeSettings;
 class SettingsListModel;
@@ -15,6 +14,7 @@ class SettingsListModel;
 
 namespace bibqml
 {
+class BridgeApplication;
 class BridgeBibleRefCopy;
 class BridgeBibleRefLookup;
 class BridgeBibleRefOcr;
@@ -31,7 +31,7 @@ struct bridge_instance final
   ~bridge_instance() noexcept;
 
   // Variables
-  std::unique_ptr<arcqml::BridgeApplication> bridge_application;
+  std::unique_ptr<bibqml::BridgeApplication> bridge_application;
   std::unique_ptr<arcqml::BridgeSettings> bridge_settings;
   std::unique_ptr<arcqml::SettingsListModel> settings_list_model;
   std::unique_ptr<bibqml::BridgeBibleRefOcr> bridge_bible_ref_ocr;

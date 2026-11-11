@@ -1,11 +1,11 @@
 #include "arcstd/math/coordinates.hpp"
 #include "arcstd/meta/lossless_conversion.hpp"
-#include "arcstd/system/windows/language_tag.hpp"
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/language.hpp"
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/numeric_cast.hpp"
 #include "bibocr/system/ocr.hpp"
+#include "bibocr/system/windows/language_tag.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 
 #include <winrt/Windows.Foundation.Collections.h>
@@ -35,7 +35,7 @@ namespace winrt_globalization = winrt::Windows::Globalization;
 ///
 auto to_language_tag(const arcstd::util::language language) -> winrt::hstring
 {
-  return winrt::hstring{arcstd::system::language_wtag_map.at(language)};
+  return winrt::hstring{bibocr::system::language_wtag_map.at(language)};
 }
 
 ///

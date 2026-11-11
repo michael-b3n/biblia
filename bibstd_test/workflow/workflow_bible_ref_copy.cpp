@@ -5,9 +5,9 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arcstd/system/locale.hpp>
 #include <arcstd/workflow/workflow_script.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
+#include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
@@ -53,7 +53,7 @@ constexpr auto scripture_script = R"(
 ///
 struct copy_fixture final
 {
-  arcstd::test_utils::clipboard_restorer clipboard;
+  bibstd::test_utils::clipboard_restorer clipboard;
   arcstd::test_utils::temp_folder folder;
   std::shared_ptr<arcstd::workflow::workflow_script> script;
   std::shared_ptr<workflow_scripture> scripture;
@@ -116,7 +116,7 @@ copy_fixture::copy_fixture(const std::string_view name, const bool with_scriptur
 [[nodiscard]] auto copied(const copy_fixture& fixture, const workflow_bible_ref_copy::params& params)
   -> std::optional<std::string>
 {
-  return fixture.copy->copy(params) ? arcstd::test_utils::clipboard_text() : std::nullopt;
+  return fixture.copy->copy(params) ? bibstd::test_utils::clipboard_text() : std::nullopt;
 }
 
 } // namespace
@@ -130,7 +130,7 @@ TEST_CASE("workflow_bible_ref_copy_defaults_to_the_reference", "[.clipboard][wor
                                    { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
   );
   REQUIRE(fixture.scripture->settings().default_scripture_name->value("ABC (Scripture)"));
-  const auto german = arcstd::system::locale::preferred_language() == arcstd::util::language::german;
+  const auto german = bibstd::system::locale::preferred_language() == arcstd::util::language::german;
   // The verses, then the reference and the abbreviation of the scripture
   const auto separator = german ? "," : ":";
   CHECK(

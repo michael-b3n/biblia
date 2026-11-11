@@ -1,5 +1,4 @@
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
-#include "arcstd/system/locale.hpp"
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/format.hpp"
 #include "arcstd/util/log.hpp"
@@ -11,6 +10,7 @@
 #include "bibocr/txt/ocr_engine_tesseract.hpp"
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_parser.hpp"
+#include "bibstd/system/locale.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
 
 #include <algorithm>
@@ -150,7 +150,7 @@ workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(
   , recognition_algorithm{workflow_settings_->create_setting(
       "ocr.recognition_algorithm", ocr_recognition_algorithm::line_recognition
     )}
-  , language{workflow_settings_->create_setting("ocr.language", arcstd::system::locale::preferred_language())}
+  , language{workflow_settings_->create_setting("ocr.language", bibstd::system::locale::preferred_language())}
 {
 }
 

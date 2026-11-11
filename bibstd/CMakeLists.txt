@@ -14,6 +14,14 @@ option(BIBSTD_DEBUG_DATA "Export debug data during runtime" OFF)
 file(GLOB BIBSTD_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/*.cpp")
 file(GLOB BIBSTD_INC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/*.hpp")
 
+# Include OS specific sources and headers
+if(WIN32)
+  file(GLOB BIBSTD_WINDOWS_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/windows/*.cpp")
+  file(GLOB BIBSTD_WINDOWS_INC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/windows/*.hpp")
+  list(APPEND BIBSTD_SRC_FILES ${BIBSTD_WINDOWS_SRC_FILES})
+  list(APPEND BIBSTD_INC_FILES ${BIBSTD_WINDOWS_INC_FILES})
+endif()
+
 target_sources(${PROJECT_NAME}
   PRIVATE ${BIBSTD_SRC_FILES} ${BIBSTD_INC_FILES}
 )
@@ -39,8 +47,14 @@ find_package(pugixml REQUIRED)
 target_link_libraries(${PROJECT_NAME}
   PUBLIC arcstd
   PUBLIC bibocr
+  PUBLIC tray::tray
   PRIVATE pugixml::pugixml
 )
+
+if(WIN32)
+  # open_browser starts the browser through COM
+  target_link_libraries(${PROJECT_NAME} PRIVATE ole32 oleaut32)
+endif()
 
 #
 # Target compile definitions.

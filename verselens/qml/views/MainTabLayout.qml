@@ -152,8 +152,8 @@ Item
         Layout.fillWidth: false
         Layout.preferredWidth: Metrics.controlHeight
         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-        svgSourceFirst: Icons.play
-        svgSourceSecond: Icons.stop
+        svgSourceFirst: BibIcons.play
+        svgSourceSecond: BibIcons.stop
         toggled: root.bridgeBibleRefOcr.autoSearchRunning
 
         // Connections
@@ -170,8 +170,8 @@ Item
         Layout.fillWidth: false
         Layout.preferredWidth: Metrics.controlHeight
         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-        svgSourceFirst: Icons.pin
-        svgSourceSecond: Icons.pinFilled
+        svgSourceFirst: BibIcons.pin
+        svgSourceSecond: BibIcons.pinFilled
         toggled: root.pinned
 
         // Connections
@@ -188,7 +188,7 @@ Item
         Layout.fillWidth: false
         Layout.preferredWidth: Metrics.controlHeight
         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-        svgSource: Icons.close
+        svgSource: BibIcons.close
 
         // Connections
         onClicked: { root.closeClicked() }

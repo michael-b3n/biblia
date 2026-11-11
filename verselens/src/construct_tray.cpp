@@ -2,12 +2,12 @@
 #include "res/version.hpp"
 #include "src/qml_application.hpp"
 
-#include <arcqml/bridge/BridgeApplication.hpp>
 #include <arcqml/translation/Translations.hpp>
+#include <bibqml/bridge/BridgeApplication.hpp>
 
-#include <arcstd/system/open_browser.hpp>
-#include <arcstd/system/tray.hpp>
 #include <arcstd/util/incbin.hpp>
+#include <bibstd/system/open_browser.hpp>
+#include <bibstd/system/tray.hpp>
 
 #include <QMetaObject>
 #include <QObject>
@@ -56,7 +56,7 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
   -> arcstd::util::shared_scope_guard
 {
   const auto do_on_exit = [&app, &bridge, &translations]() { quit_application(app, bridge, translations); };
-  const auto open_github = []() { std::ignore = arcstd::system::open_browser::open(std::string{version::repository_url}); };
+  const auto open_github = []() { std::ignore = bibstd::system::open_browser::open(std::string{version::repository_url}); };
   const auto show_window = [&bridge]() { bridge.bridge_application->requestShowWindow(); };
 
   // The position in this list is the index the tray knows an entry by.
@@ -66,13 +66,13 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
     {       .key = "tray_exit",  .callback = do_on_exit},
   };
 
-  auto entries = std::vector<arcstd::system::tray::entry_type>{};
+  auto entries = std::vector<bibstd::system::tray::entry_type>{};
   std::ranges::transform(
     buttons,
     std::back_inserter(entries),
-    [](const auto& button) { return arcstd::system::tray::button{.text = tray_name(button.key), .callback = button.callback}; }
+    [](const auto& button) { return bibstd::system::tray::button{.text = tray_name(button.key), .callback = button.callback}; }
   );
-  auto guard = arcstd::system::tray::init(arcstd::system::tray::icon_buffer{icon_view}, std::move(entries));
+  auto guard = bibstd::system::tray::init(bibstd::system::tray::icon_buffer{icon_view}, std::move(entries));
 
   if(const auto* const names = arcqml::Translations::instance(); names != nullptr)
   {
@@ -84,7 +84,7 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
       {
         for(auto index = std::size_t{0}; index < buttons.size(); ++index)
         {
-          arcstd::system::tray::set_text(index, tray_name(buttons[index].key));
+          bibstd::system::tray::set_text(index, tray_name(buttons[index].key));
         }
       }
     );

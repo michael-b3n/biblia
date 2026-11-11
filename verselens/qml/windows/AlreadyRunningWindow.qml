@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import ArcQml
+import BibQml
 
 ///
 /// Window a second instance shows to tell the user that the application is already running. It
@@ -145,7 +146,7 @@ Window
           Layout.fillWidth: false
           Layout.preferredWidth: Metrics.controlHeight
           Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-          svgSource: Icons.close
+          svgSource: BibIcons.close
 
           // Connections
           onClicked: { root.close() }

@@ -1,7 +1,7 @@
 #include "src/windows/construct_velopack_updater.hpp"
 #include "src/qml_application.hpp"
 
-#include <arcqml/bridge/BridgeApplication.hpp>
+#include <bibqml/bridge/BridgeApplication.hpp>
 
 #include <QObject>
 
@@ -16,13 +16,13 @@ auto construct_velopack_updater(QGuiApplication& app, bridge_instance& bridge, t
   auto instance = std::make_unique<app_velopack_updater>(*bridge.bridge_application);
   QObject::connect(
     bridge.bridge_application.get(),
-    &arcqml::BridgeApplication::updateCheckRequested,
+    &bibqml::BridgeApplication::updateCheckRequested,
     &app,
     [updater = instance.get()]() { updater->check_now(); }
   );
   QObject::connect(
     bridge.bridge_application.get(),
-    &arcqml::BridgeApplication::updateRequested,
+    &bibqml::BridgeApplication::updateRequested,
     &app,
     [&app, &bridge, &translations, updater = instance.get()]()
     {

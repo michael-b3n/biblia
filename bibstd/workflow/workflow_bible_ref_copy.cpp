@@ -1,12 +1,12 @@
 #include "bibstd/workflow/workflow_bible_ref_copy.hpp"
-#include "arcstd/system/clipboard.hpp"
-#include "arcstd/system/locale.hpp"
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/format.hpp"
 #include "arcstd/util/log.hpp"
 #include "bibstd/bible/reference_mask.hpp"
 #include "bibstd/bible/scripture_types.hpp"
 #include "bibstd/bible/versification.hpp"
+#include "bibstd/system/clipboard.hpp"
+#include "bibstd/system/locale.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
 
 #include <algorithm>
@@ -28,7 +28,7 @@ namespace
 ///
 [[nodiscard]] auto default_mask() -> std::string_view
 {
-  switch(arcstd::system::locale::preferred_language())
+  switch(bibstd::system::locale::preferred_language())
   {
     // clang-format off
   case arcstd::util::language::german: return R"("[content]" ({[book][nbsp]}[#chapter_begin], [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end],}[#verse_end]}{ [scripture_abbr]}))";
@@ -85,7 +85,7 @@ auto workflow_bible_ref_copy::copy(const params& params) -> bool
   {
     return false;
   }
-  if(!arcstd::system::clipboard::set_text(*copied))
+  if(!bibstd::system::clipboard::set_text(*copied))
   {
     LOG_WARN("failed to write the clipboard: reference=\"{}\"", params->range);
     return false;

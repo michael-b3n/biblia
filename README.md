@@ -9,12 +9,12 @@ Libraries that find bible references on the screen, and VerseLens, the Windows t
 | Folder | Content |
 |---|---|
 | `arca` | Submodule [arca](https://github.com/michael-b3n/arca): the general libraries `arcstd` and `arcqml` (QML module `ArcQml`), their tests and test helpers, the third party sources |
-| `bibocr` | OCR engines (`txt`), the Windows OCR and the screen capture (`system`) |
-| `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`) |
-| `bibqml` | The Bible Qt layer, QML module `BibQml`: the bridges of the reference search and the scriptures, the scripture model |
+| `bibocr` | OCR engines (`txt`), the Windows OCR, its language tags and the screen capture (`system`) |
+| `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`), the system layer of the app: clipboard, locale, browser and tray (`system`) |
+| `bibqml` | The Bible Qt layer, QML module `BibQml`: the bridges of the reference search, the scriptures and the application, the scripture model, the icons of the app |
 | `bibstd_test` | Catch2 tests of `bibocr` and `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
 | `verselens` | The app: window, tray, updater and the resources a release ships |
-| `libs_external` | Velopack, used as it is |
+| `libs_external` | Velopack and traypp, used as they are |
 | `tools` | CMake helpers, the clang-tidy runner, the MSIX packaging script |
 
 ## Development

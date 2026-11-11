@@ -2,12 +2,12 @@
 #include "res/version.hpp"
 
 #include <arcstd/framework/setting_validator.hpp>
-#include <arcstd/system/locale.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/incbin.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/workflow/workflow_settings.hpp>
+#include <bibstd/system/locale.hpp>
 
 #include <QMetaObject>
 
@@ -135,7 +135,7 @@ auto construct_translations(backend_instance& backend) -> translations_instance
   {
     auto translations = std::make_unique<arcqml::Translations>(display_names_view);
     const auto languages = available_languages(*translations);
-    const auto preferred_language = std::string{arcstd::util::enum_name(arcstd::system::locale::preferred_language())};
+    const auto preferred_language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
     auto* const language_setting = backend.workflow_settings->create_setting(
       std::string{translations_instance::language_setting_path},
       std::ranges::contains(languages, preferred_language) ? preferred_language : languages.front(),

@@ -1,12 +1,12 @@
 #include "bibstd/workflow/workflow_bible_ref_lookup.hpp"
-#include "arcstd/system/locale.hpp"
-#include "arcstd/system/open_browser.hpp"
 #include "arcstd/util/contains.hpp"
 #include "arcstd/util/enum.hpp"
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/url.hpp"
 #include "bibstd/bible/versification.hpp"
+#include "bibstd/system/locale.hpp"
+#include "bibstd/system/open_browser.hpp"
 
 #include <algorithm>
 #include <ranges>
@@ -88,7 +88,7 @@ auto workflow_bible_ref_lookup::lookup(const params& params) -> void
   {
     const auto open = [](const std::string& url)
     {
-      if(!arcstd::system::open_browser::open(url))
+      if(!bibstd::system::open_browser::open(url))
       {
         LOG_WARN("failed to open the browser: url=\"{}\"", url);
       }
@@ -156,7 +156,7 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
     std::ignore = list_validator(settings().script)->available(names);
     if(gone && !scripts.empty())
     {
-      const auto language = std::string{arcstd::util::enum_name(arcstd::system::locale::preferred_language())};
+      const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
       const auto translations = [&](const arcstd::workflow::workflow_script::scripts_type::value_type& script)
       {
         const auto output = workflow_script_->run<translations_manifest>(script.first, {language});
@@ -178,7 +178,7 @@ auto workflow_bible_ref_lookup::update_translations() -> void
 {
   try
   {
-    const auto language = std::string{arcstd::util::enum_name(arcstd::system::locale::preferred_language())};
+    const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
     const auto output = workflow_script_->run<translations_manifest>(settings().script->value(), {language});
     if(!output)
     {

@@ -9,10 +9,10 @@
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
-#include <arcqml/bridge/BridgeApplication.hpp>
 #include <arcqml/bridge/BridgeScript.hpp>
 #include <arcqml/bridge/BridgeSettings.hpp>
 #include <arcqml/model/SettingsListModel.hpp>
+#include <bibqml/bridge/BridgeApplication.hpp>
 #include <bibqml/bridge/BridgeBibleRefCopy.hpp>
 #include <bibqml/bridge/BridgeBibleRefLookup.hpp>
 #include <bibqml/bridge/BridgeBibleRefOcr.hpp>
@@ -62,7 +62,7 @@ auto construct_bridge([[maybe_unused]] QGuiApplication& /*app*/, backend_instanc
   auto workflow_scripture = std::static_pointer_cast<bibstd::workflow::workflow_scripture>(backend.workflow_scripture);
   auto workflow_script = std::static_pointer_cast<arcstd::workflow::workflow_script>(backend.workflow_script);
   return bridge_instance{
-    .bridge_application{std::make_unique<arcqml::BridgeApplication>()},
+    .bridge_application{std::make_unique<bibqml::BridgeApplication>()},
     .bridge_settings{std::make_unique<arcqml::BridgeSettings>(workflow_settings)},
     .settings_list_model{std::make_unique<arcqml::SettingsListModel>(workflow_settings)},
     .bridge_bible_ref_ocr{std::make_unique<bibqml::BridgeBibleRefOcr>(workflow_bible_ref_ocr, workflow_bible_ref_ocr_auto, workflow_hotkey, workflow_settings)},

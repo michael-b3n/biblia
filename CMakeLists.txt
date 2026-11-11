@@ -72,6 +72,7 @@ enable_testing()
 # The general libraries, see arca/README.md. Their tests run here too, bibstd_test uses their helpers.
 set(ARCA_BUILD_TESTS ON)
 add_subdirectory(arca)
+add_subdirectory(libs_external/traypp)
 
 add_compile_options(-Wswitch-enum)
 
