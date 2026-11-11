@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-namespace bibstd::core
+namespace arcstd::core
 {
 namespace
 {
@@ -54,7 +54,7 @@ auto core_fetch_web_content::fetch(std::string_view url) -> std::expected<std::s
   curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // Follow redirects
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);       // 30 second timeout
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, "bibstd-core-fetch/1.0");
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "arcstd-core-fetch/1.0");
 
   const CURLcode res = curl_easy_perform(curl);
 
@@ -92,4 +92,4 @@ auto core_fetch_web_content::fetch(std::string_view url) -> std::expected<std::s
   return result;
 }
 
-} // namespace bibstd::core
+} // namespace arcstd::core

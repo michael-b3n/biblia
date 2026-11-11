@@ -42,7 +42,7 @@ constexpr auto download_argument = std::string_view{"--download-update"};
 
 ///
 ///
-app_velopack_updater::app_velopack_updater(bibqml::BridgeApplication& bridge)
+app_velopack_updater::app_velopack_updater(arcqml::BridgeApplication& bridge)
   : bridge_{bridge}
 {
   try
@@ -52,10 +52,10 @@ app_velopack_updater::app_velopack_updater(bibqml::BridgeApplication& bridge)
   catch(...)
   {
     // Started from the build folder
-    LOG_INFO("update checks inactive: {}", bibstd::util::exception_report());
+    LOG_INFO("update checks inactive: {}", arcstd::util::exception_report());
     return;
   }
-  bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckIdle);
+  bridge_.notifyUpdateCheck(arcqml::BridgeApplication::UpdateCheckIdle);
   timer_.setSingleShot(true);
   download_.setProcessChannelMode(QProcess::MergedChannels);
   QObject::connect(&timer_, &QTimer::timeout, &timer_, [this]() { timer_elapsed(); });
@@ -75,7 +75,7 @@ app_velopack_updater::app_velopack_updater(bibqml::BridgeApplication& bridge)
       if(error == QProcess::FailedToStart)
       {
         LOG_WARN("update check failed to start: {}", download_.errorString().toStdString());
-        bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckFailed);
+        bridge_.notifyUpdateCheck(arcqml::BridgeApplication::UpdateCheckFailed);
         timer_.start(retry_interval);
       }
     }
@@ -131,7 +131,7 @@ auto app_velopack_updater::timer_elapsed() -> void
   }
   // Started first, a process that fails to start sets the retry
   timer_.start(download_timeout);
-  bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckRunning);
+  bridge_.notifyUpdateCheck(arcqml::BridgeApplication::UpdateCheckRunning);
   download_.start(QCoreApplication::applicationFilePath(), QStringList{QString::fromUtf8(download_argument)});
 }
 
@@ -143,11 +143,11 @@ auto app_velopack_updater::download_finished(const int exit_code, const QProcess
   {
     // Offline or GitHub not reachable
     LOG_WARN("update check failed: exit_code={}, output=\"{}\"", exit_code, download_.readAll().trimmed().toStdString());
-    bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckFailed);
+    bridge_.notifyUpdateCheck(arcqml::BridgeApplication::UpdateCheckFailed);
     timer_.start(retry_interval);
     return;
   }
-  bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckFinished);
+  bridge_.notifyUpdateCheck(arcqml::BridgeApplication::UpdateCheckFinished);
   timer_.start(check_interval);
   if(const auto pending = manager_->UpdatePendingRestart(); pending.has_value())
   {
@@ -182,7 +182,7 @@ auto run_update_download(const int argc, char** argv) -> std::optional<int>
   }
   catch(...)
   {
-    std::cout << bibstd::util::exception_report();
+    std::cout << arcstd::util::exception_report();
     return EXIT_FAILURE;
   }
 }
@@ -214,7 +214,7 @@ auto install_downloaded_update() -> bool
   }
   catch(...)
   {
-    LOG_WARN("update install failed: {}", bibstd::util::exception_report());
+    LOG_WARN("update install failed: {}", arcstd::util::exception_report());
     return false;
   }
 }

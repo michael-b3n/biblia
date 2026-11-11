@@ -15,12 +15,12 @@ namespace tesseract
 class TessBaseAPI;
 } // namespace tesseract
 
-namespace bibstd::data
+namespace bibocr::data
 {
 class pix;
-} // namespace bibstd::data
+} // namespace bibocr::data
 
-namespace bibstd::txt
+namespace bibocr::txt
 {
 
 ///
@@ -29,16 +29,16 @@ namespace bibstd::txt
 class ocr_engine_tesseract final : public ocr_engine<ocr_engine_tag_layout_analysis>
 {
   // Constants
-  static constexpr auto language_map = util::make_const_bimap<util::language, std::string_view>({
-    { util::language::german, "deu"},
-    {util::language::english, "eng"},
+  static constexpr auto language_map = arcstd::util::make_const_bimap<arcstd::util::language, std::string_view>({
+    { arcstd::util::language::german, "deu"},
+    {arcstd::util::language::english, "eng"},
     // ...
   });
-  static_assert(language_map.size() == util::enum_count<util::language>());
+  static_assert(language_map.size() == arcstd::util::enum_count<arcstd::util::language>());
 
   // Variables
   const std::unique_ptr<tesseract::TessBaseAPI> tesseract_;
-  std::vector<pixel_plane_view_type::value_type> image_data_;
+  std::vector<arcstd::data::pixel_plane_view_type::value_type> image_data_;
 
 public: // Static
   ///
@@ -47,7 +47,7 @@ public: // Static
   [[nodiscard]] static auto shipped_tessdata_folder() -> std::filesystem::path;
 
 public: // Structors
-  ocr_engine_tesseract(const std::filesystem::path& tessdata_path, util::language language);
+  ocr_engine_tesseract(const std::filesystem::path& tessdata_path, arcstd::util::language language);
   ~ocr_engine_tesseract() noexcept override;
 
 public: // Overrides
@@ -59,7 +59,9 @@ public: // Overrides
   ///
   /// \see ocr_engine::initialize
   ///
-  auto initialize(pixel_plane_view_type image, std::optional<pixel_plane_view_type::area_type> subarea) -> void override;
+  auto initialize(
+    arcstd::data::pixel_plane_view_type image, std::optional<arcstd::data::pixel_plane_view_type::area_type> subarea
+  ) -> void override;
 
   ///
   /// \see ocr_engine::recognize
@@ -72,4 +74,4 @@ public: // Overrides
   [[nodiscard]] auto layout_analysis() const -> std::vector<line_layout> override;
 };
 
-} // namespace bibstd::txt
+} // namespace bibocr::txt

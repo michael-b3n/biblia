@@ -7,7 +7,7 @@
 #include <format>
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -172,14 +172,14 @@ constexpr auto coordinates<ValueType, D>::operator-(const coordinates<value_type
   return coordinates(std::move(coords));
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math
 
 ///
 ///
 template<typename ValueType>
-struct std::formatter<bibstd::math::coordinates<ValueType, 2>> : std::formatter<std::string>
+struct std::formatter<arcstd::math::coordinates<ValueType, 2>> : std::formatter<std::string>
 {
-  auto format(const bibstd::math::coordinates<ValueType, 2>& e, std::format_context& ctx) const
+  auto format(const arcstd::math::coordinates<ValueType, 2>& e, std::format_context& ctx) const
   {
     return std::formatter<std::string>::format(std::format("({},{})", e.x(), e.y()), ctx);
   }
@@ -188,9 +188,9 @@ struct std::formatter<bibstd::math::coordinates<ValueType, 2>> : std::formatter<
 ///
 ///
 template<typename ValueType>
-struct std::formatter<bibstd::math::coordinates<ValueType, 3>> : std::formatter<std::string>
+struct std::formatter<arcstd::math::coordinates<ValueType, 3>> : std::formatter<std::string>
 {
-  auto format(const bibstd::math::coordinates<ValueType, 3>& e, std::format_context& ctx) const
+  auto format(const arcstd::math::coordinates<ValueType, 3>& e, std::format_context& ctx) const
   {
     return std::formatter<std::string>::format(std::format("({},{},{})", e.x(), e.y(), e.z()), ctx);
   }

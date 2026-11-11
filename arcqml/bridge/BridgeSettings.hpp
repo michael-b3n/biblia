@@ -15,12 +15,12 @@
 #include <map>
 #include <memory>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 class workflow_settings;
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -35,7 +35,7 @@ class BridgeSettings final : public QObject
   QML_SINGLETON
 
   // Variables
-  const std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings_;
+  const std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings_;
   std::map<QString, std::unique_ptr<SettingBinding>> bindings_;
 
 public: // Static interface
@@ -43,7 +43,7 @@ public: // Static interface
   /// Access the instance the QML layer operates on.
   /// \return the instance, nullptr if no instance exists
   ///
-  [[nodiscard]] static bibstd::util::non_owning_ptr<BridgeSettings> instance();
+  [[nodiscard]] static arcstd::util::non_owning_ptr<BridgeSettings> instance();
 
   ///
   /// QML singleton factory. The returned instance stays owned by the application.
@@ -53,8 +53,8 @@ public: // Static interface
 
 public: // Structors
   explicit BridgeSettings(
-    std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings,
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeSettings() noexcept override;
 
@@ -63,7 +63,7 @@ public: // Accessors
   /// Access the settings workflow all setting bindings operate on.
   /// \return settings workflow
   ///
-  [[nodiscard]] const std::shared_ptr<bibstd::workflow::workflow_settings>& workflowSettings() const;
+  [[nodiscard]] const std::shared_ptr<arcstd::workflow::workflow_settings>& workflowSettings() const;
 
   ///
   /// Check if a setting with the specified path exists.
@@ -103,4 +103,4 @@ private: // Implementation
   );
 };
 
-} // namespace bibqml
+} // namespace arcqml

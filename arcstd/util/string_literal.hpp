@@ -7,7 +7,7 @@
 #include <iterator>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -68,4 +68,4 @@ constexpr auto string_literal<N>::view() const -> std::string_view
   return {chars, N - 1};
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

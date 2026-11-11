@@ -28,18 +28,18 @@ namespace bibstd::workflow
 /// the files: each script offering scripture.read is a reader, e.g. the bundled ones for USX and USFM.
 /// A reader keeps the verses of a file, the store only what it tells about the file.
 ///
-class workflow_scripture_store final : public workflow_base<void>
+class workflow_scripture_store final : public arcstd::workflow::workflow_base<void>
 {
   // Typedefs
   struct file_scripture_t final
   {
     std::shared_ptr<bible::scripture_outline> outline;
-    workflow_script::script_name_type reader; // gives the verses, \see workflow_scripture::passage_manifest
+    arcstd::workflow::workflow_script::script_name_type reader; // gives the verses, \see workflow_scripture::passage_manifest
     std::string file_name;                    // the name the reader knows the scripture by
   };
 
   // Variables
-  const std::shared_ptr<workflow_script> workflow_script_;
+  const std::shared_ptr<arcstd::workflow::workflow_script> workflow_script_;
   const std::filesystem::path folder_;
   mutable std::mutex mtx_;
   std::map<std::filesystem::path, file_scripture_t> files_; // the scriptures by file
@@ -74,21 +74,21 @@ public: // Typedefs
   ///
   struct read_manifest final
   {
-    static inline const util::path id{"scripture.read"};
-    using input = lua::script_table<
-      lua::field<"file", std::string>,
-      lua::field<"entries", std::vector<std::string>>,
-      lua::field<"size", std::int64_t>,
-      lua::field<"modified", std::int64_t>,
-      lua::field<"reload", bool>>;
-    using output = lua::script_table<
-      lua::field<"name", std::optional<std::string>>,
-      lua::field<"abbreviation", std::optional<std::string>>,
-      lua::field<"language", std::optional<std::string>>,
-      lua::field<"copyright", std::optional<std::string>>,
-      lua::field<"book_names", std::optional<std::map<std::string, std::map<std::string, std::string>>>>,
-      lua::field<"verse_counts", std::optional<std::map<std::string, std::map<std::int64_t, std::int64_t>>>>,
-      lua::field<"error", std::optional<std::string>>>;
+    static inline const arcstd::util::path id{"scripture.read"};
+    using input = arcstd::lua::script_table<
+      arcstd::lua::field<"file", std::string>,
+      arcstd::lua::field<"entries", std::vector<std::string>>,
+      arcstd::lua::field<"size", std::int64_t>,
+      arcstd::lua::field<"modified", std::int64_t>,
+      arcstd::lua::field<"reload", bool>>;
+    using output = arcstd::lua::script_table<
+      arcstd::lua::field<"name", std::optional<std::string>>,
+      arcstd::lua::field<"abbreviation", std::optional<std::string>>,
+      arcstd::lua::field<"language", std::optional<std::string>>,
+      arcstd::lua::field<"copyright", std::optional<std::string>>,
+      arcstd::lua::field<"book_names", std::optional<std::map<std::string, std::map<std::string, std::string>>>>,
+      arcstd::lua::field<"verse_counts", std::optional<std::map<std::string, std::map<std::int64_t, std::int64_t>>>>,
+      arcstd::lua::field<"error", std::optional<std::string>>>;
   };
   // clang-format on
 
@@ -97,7 +97,8 @@ public: // Constants
 
 public: // Structors
   workflow_scripture_store(
-    std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+    std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
   );
   ~workflow_scripture_store() noexcept override;
 

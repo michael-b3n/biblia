@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 TEST_CASE("from_language_tag", "[system]")
@@ -27,4 +27,4 @@ TEST_CASE("language_tag_map round trip", "[system]")
   }
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

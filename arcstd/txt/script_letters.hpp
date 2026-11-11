@@ -7,7 +7,7 @@
 #include <functional>
 #include <variant>
 
-namespace bibstd::txt
+namespace arcstd::txt
 {
 
 ///
@@ -44,4 +44,4 @@ constexpr auto script_letters::visit(const util::language language, const auto& 
   return std::visit([&](const auto& letters) { return function(letters.get()); }, letters_var);
 }
 
-} // namespace bibstd::txt
+} // namespace arcstd::txt

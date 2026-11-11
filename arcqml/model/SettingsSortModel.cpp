@@ -1,7 +1,7 @@
 #include "arcqml/model/SettingsSortModel.hpp"
 #include "arcqml/translation/Translations.hpp"
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
@@ -13,7 +13,7 @@ constexpr auto category_index = qsizetype{0};
 
 ///
 ///
-SettingsSortModel::SettingsSortModel(const bibstd::util::non_owning_ptr<QObject> parent)
+SettingsSortModel::SettingsSortModel(const arcstd::util::non_owning_ptr<QObject> parent)
   : QSortFilterProxyModel{parent}
 {
   setDynamicSortFilter(true);
@@ -75,7 +75,7 @@ QStringList SettingsSortModel::sourceCategories(const QModelIndex& sourceIndex) 
   {
     return {};
   }
-  return source->data(sourceIndex, bibqml::SettingsListModel::CategoriesRole).toStringList();
+  return source->data(sourceIndex, arcqml::SettingsListModel::CategoriesRole).toStringList();
 }
 
 ///
@@ -96,4 +96,4 @@ QString SettingsSortModel::settingName(const QStringList& categories)
   return (translations != nullptr) ? translations->names(belowCategory) : belowCategory.join(Translations::nameSeparator);
 }
 
-} // namespace bibqml
+} // namespace arcqml

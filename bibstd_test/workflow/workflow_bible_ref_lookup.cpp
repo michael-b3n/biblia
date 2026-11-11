@@ -54,8 +54,8 @@ constexpr auto plain_script = R"(
 ///
 struct lookup_fixture final
 {
-  test_utils::temp_folder folder;
-  std::shared_ptr<workflow_script> script;
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
   std::shared_ptr<workflow_bible_ref_lookup> lookup;
 
   explicit lookup_fixture(
@@ -79,20 +79,20 @@ lookup_fixture::lookup_fixture(
   const auto scripts_folder = folder.path() / "scripts";
   std::filesystem::create_directories(scripts_folder);
   std::ranges::for_each(
-    scripts, [&](const auto& entry) { test_utils::write_file(scripts_folder / entry.first, entry.second); }
+    scripts, [&](const auto& entry) { arcstd::test_utils::write_file(scripts_folder / entry.first, entry.second); }
   );
   if(!selected.empty())
   {
-    const auto writer = std::make_shared<workflow_settings>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::workflow::workflow_settings>(folder.path().string());
     const auto settings = workflow_bible_ref_lookup_settings{writer};
     std::ignore = settings.script->value(selected);
     std::ignore = settings.translations->value(translations);
   }
-  const auto settings = test_utils::make_script_settings(folder.path(), !scripts.empty());
-  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
+  const auto settings = arcstd::test_utils::make_script_settings(folder.path(), !scripts.empty());
+  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
   lookup = std::make_shared<workflow_bible_ref_lookup>(settings, script);
   // Last, as the app does
-  test_utils::load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
 }
 
 ///
@@ -102,7 +102,7 @@ template<typename T>
 [[nodiscard]] auto available(const T& setting)
 {
   using value_type = std::remove_cvref_t<decltype(setting->value())>;
-  return std::get<typename framework::setting_validator_list<value_type>::sptr_type>(setting->validator)->available();
+  return std::get<typename arcstd::framework::setting_validator_list<value_type>::sptr_type>(setting->validator)->available();
 }
 
 ///
@@ -111,7 +111,7 @@ template<typename T>
 [[nodiscard]] auto default_translations() -> std::vector<std::string>
 {
   using result_type = std::vector<std::string>;
-  return system::locale::preferred_language() == util::language::german
+  return arcstd::system::locale::preferred_language() == arcstd::util::language::german
            ? result_type{"Neue Genfer Übersetzung", "Elberfelder Bibel"}
            : result_type{"New International Version", "English Standard Version"};
 }
@@ -123,7 +123,7 @@ TEST_CASE("workflow_bible_ref_lookup_chooses_the_bundled_script", "[workflow]")
   const auto fixture = lookup_fixture{"workflow_bible_ref_lookup_chooses_the_bundled_script"};
   const auto& settings = fixture.lookup->settings();
   // Loaded although the scripts of the user are not, with the translations of the language
-  REQUIRE(test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
   CHECK(settings.script->value() == "Bibleserver");
   CHECK(available(settings.script) == std::vector<std::string>{"Bible.com", "Bibleserver"});
   CHECK(available(settings.translations).size() == 17);
@@ -135,29 +135,29 @@ TEST_CASE("workflow_bible_ref_lookup_follows_the_chosen_script", "[workflow]")
     "workflow_bible_ref_lookup_follows_the_chosen_script", {{"mine.lua", lookup_script}, {"other.lua", "return 1"}}
   };
   const auto& settings = fixture.lookup->settings();
-  REQUIRE(test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
   // Only scripts offering the lookup, the chosen one stays
   CHECK(available(settings.script) == std::vector<std::string>{"Bible.com", "Bibleserver", "Mine"});
   CHECK(settings.script->value() == "Bibleserver");
 
   // Another script has other translations, the defaults it offers are chosen
   REQUIRE(settings.script->value("Mine"));
-  REQUIRE(test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
   CHECK(available(settings.translations) == std::vector<std::string>{"AAA", "BBB"});
   // The other bundled script, with the translation of the language
-  const auto german = system::locale::preferred_language() == util::language::german;
+  const auto german = arcstd::system::locale::preferred_language() == arcstd::util::language::german;
   REQUIRE(settings.script->value("Bible.com"));
-  REQUIRE(test_utils::wait_until([&]() { return available(settings.translations).size() == 12; }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return available(settings.translations).size() == 12; }));
   const auto translation = std::vector<std::string>{german ? "Elberfelder 1905" : "New International Version"};
-  CHECK(test_utils::wait_until([&]() { return settings.translations->value() == translation; }));
+  CHECK(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == translation; }));
   REQUIRE(settings.script->value("Mine"));
-  REQUIRE(test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
 
   // The script is gone, the lookup is the one of the script offering the most translations, not of the first one
   std::filesystem::remove(fixture.folder.path() / "scripts" / "mine.lua");
-  test_utils::load_scripts(*fixture.script);
-  REQUIRE(test_utils::wait_until([&]() { return settings.script->value() == "Bibleserver"; }));
-  CHECK(test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
+  arcstd::test_utils::load_scripts(*fixture.script);
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.script->value() == "Bibleserver"; }));
+  CHECK(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
 }
 
 TEST_CASE("workflow_bible_ref_lookup_keeps_the_settings_of_a_former_run", "[workflow]")
@@ -168,7 +168,7 @@ TEST_CASE("workflow_bible_ref_lookup_keeps_the_settings_of_a_former_run", "[work
       "workflow_bible_ref_lookup_keeps_the_settings_of_a_script", {{"mine.lua", lookup_script}}, "Mine", {"AAA"}
     };
     const auto& settings = fixture.lookup->settings();
-    REQUIRE(test_utils::wait_until([&]() { return available(settings.translations).size() == 2; }));
+    REQUIRE(arcstd::test_utils::wait_until([&]() { return available(settings.translations).size() == 2; }));
     CHECK(settings.script->value() == "Mine");
     CHECK(settings.translations->value() == std::vector<std::string>{"AAA"});
   }
@@ -179,16 +179,19 @@ TEST_CASE("workflow_bible_ref_lookup_keeps_the_settings_of_a_former_run", "[work
     const auto former = std::vector<std::string>{"ngu", "LUT", "Lutherbibel"};
     const auto fixture = lookup_fixture{"workflow_bible_ref_lookup_keeps_no_unknown_translation", {}, "Bibleserver", former};
     const auto& settings = fixture.lookup->settings();
-    REQUIRE(test_utils::wait_until([&]() { return !available(settings.translations).empty(); }));
-    CHECK(test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"Lutherbibel"}; }));
+    REQUIRE(arcstd::test_utils::wait_until([&]() { return !available(settings.translations).empty(); }));
+    CHECK(
+      arcstd::test_utils::wait_until([&]()
+                                     { return settings.translations->value() == std::vector<std::string>{"Lutherbibel"}; })
+    );
   }
 
   SECTION("but no script that is gone")
   {
     const auto fixture = lookup_fixture{"workflow_bible_ref_lookup_keeps_no_script_gone", {}, "Mine", {"AAA"}};
     const auto& settings = fixture.lookup->settings();
-    REQUIRE(test_utils::wait_until([&]() { return settings.script->value() == "Bibleserver"; }));
-    CHECK(test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
+    REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.script->value() == "Bibleserver"; }));
+    CHECK(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == default_translations(); }));
   }
 }
 
@@ -199,7 +202,7 @@ TEST_CASE("workflow_bible_ref_lookup_takes_a_script_without_translations", "[wor
   };
   const auto& settings = fixture.lookup->settings();
   // None to choose from, none is chosen
-  REQUIRE(test_utils::wait_until([&]() { return settings.translations->value().empty(); }));
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value().empty(); }));
   CHECK(settings.script->value() == "Plain");
   CHECK(available(settings.translations).empty());
 }

@@ -16,7 +16,7 @@ namespace bibqml
 ///
 ///
 BridgeScripture::BridgeScripture(
-  std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture, const bibstd::util::non_owning_ptr<QObject> parent
+  std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowScripture_{std::move(workflowScripture)}
@@ -55,7 +55,7 @@ void BridgeScripture::importFiles(const QList<QUrl>& files)
   {
     return;
   }
-  auto sources = LocalPath::toLocalPaths(files);
+  auto sources = arcqml::LocalPath::toLocalPaths(files);
   if(sources.empty())
   {
     return;
@@ -74,7 +74,7 @@ void BridgeScripture::importFiles(const QList<QUrl>& files)
     const auto imported = workflowScripture_->import_scriptures(params);
     QMetaObject::invokeMethod(this, [finish, imported]() { finish(imported); }, Qt::QueuedConnection);
   };
-  bibstd::execution::launch(std::move(import), scope_);
+  arcstd::execution::launch(std::move(import), scope_);
 }
 
 ///
@@ -91,7 +91,7 @@ void BridgeScripture::reload()
     workflowScripture_->reload_scriptures();
     QMetaObject::invokeMethod(this, [this]() { setReading(false); }, Qt::QueuedConnection);
   };
-  bibstd::execution::launch(std::move(read), scope_);
+  arcstd::execution::launch(std::move(read), scope_);
 }
 
 ///

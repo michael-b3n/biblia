@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace bibqml
+namespace arcqml
 {
 namespace detail
 {
@@ -33,4 +33,4 @@ Colors::Colors(QObject* parent)
 ///
 Colors::~Colors() noexcept = default;
 
-} // namespace bibqml
+} // namespace arcqml

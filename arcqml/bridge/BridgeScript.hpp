@@ -15,12 +15,12 @@
 #include <memory>
 #include <vector>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 class workflow_script;
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -36,15 +36,15 @@ class BridgeScript final : public QObject
   Q_PROPERTY(QVariantList scripts MEMBER scripts_ NOTIFY scriptsChanged FINAL)
 
   // Variables
-  const std::shared_ptr<bibstd::workflow::workflow_script> workflowScript_;
+  const std::shared_ptr<arcstd::workflow::workflow_script> workflowScript_;
   bool loading_{false};
   QVariantList scripts_;
-  bibstd::framework::queued_connections connections_;
-  bibstd::execution::scope scope_;
+  arcstd::framework::queued_connections connections_;
+  arcstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeScript(
-    std::shared_ptr<bibstd::workflow::workflow_script> workflowScript, bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    std::shared_ptr<arcstd::workflow::workflow_script> workflowScript, arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeScript() noexcept override;
 
@@ -75,4 +75,4 @@ private: // Implementation
   void updateScripts();
 };
 
-} // namespace bibqml
+} // namespace arcqml

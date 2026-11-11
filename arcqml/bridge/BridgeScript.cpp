@@ -15,19 +15,19 @@
 #include <utility>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
 BridgeScript::BridgeScript(
-  std::shared_ptr<bibstd::workflow::workflow_script> workflowScript, const bibstd::util::non_owning_ptr<QObject> parent
+  std::shared_ptr<arcstd::workflow::workflow_script> workflowScript, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowScript_{std::move(workflowScript)}
 {
   workflowScript_->connect_queued(
-    &bibstd::workflow::workflow_script_sigs::scripts_loaded,
+    &arcstd::workflow::workflow_script_sigs::scripts_loaded,
     [this]()
     {
       QMetaObject::invokeMethod(
@@ -92,7 +92,7 @@ void BridgeScript::load(std::vector<std::filesystem::path> files)
     std::ignore = workflowScript_->import_scripts(files);
     workflowScript_->load_scripts();
   };
-  bibstd::execution::launch(std::move(importAndLoad), scope_);
+  arcstd::execution::launch(std::move(importAndLoad), scope_);
 }
 
 ///
@@ -115,4 +115,4 @@ void BridgeScript::updateScripts()
   emit scriptsChanged();
 }
 
-} // namespace bibqml
+} // namespace arcqml

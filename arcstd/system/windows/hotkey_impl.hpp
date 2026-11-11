@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -48,4 +48,4 @@ private: // Static helpers
   static auto handle_message(unsigned int message, std::uintptr_t wparam) -> void;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

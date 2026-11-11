@@ -4,7 +4,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -40,4 +40,4 @@ namespace bibstd::util
   return std::ranges::find_if(view, pred) != std::ranges::cend(view);
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

@@ -5,12 +5,12 @@
 
 #include <algorithm>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-SimpleListModel::SimpleListModel(const bibstd::util::non_owning_ptr<QObject> parent)
+SimpleListModel::SimpleListModel(const arcstd::util::non_owning_ptr<QObject> parent)
   : QAbstractListModel{parent}
 {
 }
@@ -207,4 +207,4 @@ void SimpleListModel::clear()
   endResetModel();
 }
 
-} // namespace bibqml
+} // namespace arcqml

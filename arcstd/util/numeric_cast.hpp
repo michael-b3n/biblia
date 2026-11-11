@@ -6,7 +6,7 @@
 
 #define numeric_cast boost::numeric_cast
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -28,4 +28,4 @@ template<typename T>
   }
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

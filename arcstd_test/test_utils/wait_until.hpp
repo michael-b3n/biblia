@@ -4,7 +4,7 @@
 #include <functional>
 #include <thread>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 
 ///
@@ -25,4 +25,4 @@ namespace bibstd::test_utils
   return true;
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

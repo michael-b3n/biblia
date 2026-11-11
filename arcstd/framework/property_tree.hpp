@@ -8,7 +8,7 @@
 #include <memory>
 #include <mutex>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -66,4 +66,4 @@ auto property_tree::create_property(const property_path_type& path, T&& default_
   return prop;
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

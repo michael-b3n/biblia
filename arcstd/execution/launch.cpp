@@ -2,7 +2,7 @@
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/log.hpp"
 
-namespace bibstd::execution::detail
+namespace arcstd::execution::detail
 {
 
 ///
@@ -19,4 +19,4 @@ auto log_launch_error(const std::exception_ptr& error) noexcept -> void
   }
 }
 
-} // namespace bibstd::execution::detail
+} // namespace arcstd::execution::detail

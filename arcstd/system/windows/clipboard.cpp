@@ -11,7 +11,7 @@
 #include <string>
 #include <thread>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 namespace
 {
@@ -104,4 +104,4 @@ auto clipboard::set_text(const std::string& text) -> bool
   return true;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

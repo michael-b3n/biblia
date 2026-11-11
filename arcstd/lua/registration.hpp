@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 class state;
@@ -65,4 +65,4 @@ private: // Implementation
   auto release() noexcept -> void;
 };
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

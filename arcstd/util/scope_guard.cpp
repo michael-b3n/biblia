@@ -2,7 +2,7 @@
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/log.hpp"
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -100,4 +100,4 @@ shared_scope_guard::shared_scope_guard(scope_guard instance_guard, const bool is
 {
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

@@ -11,7 +11,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -32,7 +32,7 @@ public: // Static
   [[nodiscard]] static auto toLocalPaths(const QList<QUrl>& urls) -> std::vector<std::filesystem::path>;
 
 public: // Structors
-  explicit LocalPath(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit LocalPath(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~LocalPath() noexcept override;
 
 public: // Accessors
@@ -47,4 +47,4 @@ public: // Accessors
   Q_INVOKABLE QString fromUrl(const QUrl& url) const;
 };
 
-} // namespace bibqml
+} // namespace arcqml

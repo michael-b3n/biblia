@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 
 ///
@@ -151,4 +151,4 @@ TEST_CASE("adapter with connection_store", "[signal]")
   CHECK(count == 2);
 }
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

@@ -1,6 +1,6 @@
 #include "arcqml/style/Icons.hpp"
 
-namespace bibqml
+namespace arcqml
 {
 namespace detail
 {
@@ -17,7 +17,7 @@ auto toIconUrl(std::string_view name) -> QString
 
 ///
 ///
-Icons::Icons(bibstd::util::non_owning_ptr<QObject> parent)
+Icons::Icons(arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }
@@ -26,4 +26,4 @@ Icons::Icons(bibstd::util::non_owning_ptr<QObject> parent)
 ///
 Icons::~Icons() noexcept = default;
 
-} // namespace bibqml
+} // namespace arcqml

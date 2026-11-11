@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -99,4 +99,4 @@ private: // Constructors
   shared_scope_guard(scope_guard instance_guard, bool is_initial_instance);
 };
 
-} // namespace bibstd::util
+} // namespace arcstd::util

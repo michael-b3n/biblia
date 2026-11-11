@@ -2,7 +2,7 @@
 
 #include "arcstd/meta/pack.hpp"
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -35,4 +35,4 @@ struct for_each<P<A, Args...>, T>
 template<typename P, template<typename...> typename T>
 using for_each_t = typename for_each<P, T>::type;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

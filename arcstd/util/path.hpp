@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -79,4 +79,4 @@ path::path(const std::ranges::input_range auto& sections)
 {
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

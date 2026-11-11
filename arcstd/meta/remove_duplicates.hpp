@@ -4,7 +4,7 @@
 
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -43,4 +43,4 @@ struct remove_duplicates<P<A, Args...>>
 template<meta::packaged P>
 using remove_duplicates_t = remove_duplicates<P>::type;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

@@ -9,7 +9,7 @@
 #include <format>
 #include <ranges>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 namespace
 {
@@ -143,4 +143,4 @@ auto workflow_hotkey::apply_hotkey_impl(const path_type& path) -> void
   }
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

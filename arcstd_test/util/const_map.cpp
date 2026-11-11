@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 enum class const_map_test_enum
@@ -116,4 +116,4 @@ TEST_CASE("const_map rejects duplicated keys", "[util]")
   CHECK_NOTHROW(const_map<int, int, 2, false>(std::pair{0, 1}, std::pair{1, 1}));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

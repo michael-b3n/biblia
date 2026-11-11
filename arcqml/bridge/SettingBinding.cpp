@@ -16,7 +16,7 @@
 #include <variant>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
@@ -31,7 +31,7 @@ template<typename T>
   auto converted = tryNormalizeQVariant(value);
   if(!converted.convert(tryNormalizeQVariant(defaultValue).metaType()))
   {
-    throw bibstd::util::exception{
+    throw arcstd::util::exception{
       std::format(R"(validator value does not match the default value: value="{}")", value.toString().toStdString())
     };
   }
@@ -42,7 +42,7 @@ template<typename T>
 
 ///
 ///
-SettingBinding::SettingBinding(QString path, QVariant defaultValue, const bibstd::util::non_owning_ptr<QObject> parent)
+SettingBinding::SettingBinding(QString path, QVariant defaultValue, const arcstd::util::non_owning_ptr<QObject> parent)
   : SettingBinding{std::move(path), std::move(defaultValue), Validator{}, parent}
 {
 }
@@ -50,7 +50,7 @@ SettingBinding::SettingBinding(QString path, QVariant defaultValue, const bibstd
 ///
 ///
 SettingBinding::SettingBinding(
-  QString path, QVariant defaultValue, QVariantList available, const bibstd::util::non_owning_ptr<QObject> parent
+  QString path, QVariant defaultValue, QVariantList available, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : SettingBinding{std::move(path), std::move(defaultValue), Validator{std::move(available)}, parent}
 {
@@ -59,7 +59,7 @@ SettingBinding::SettingBinding(
 ///
 ///
 SettingBinding::SettingBinding(
-  QString path, QVariant defaultValue, QVariant minimum, QVariant maximum, const bibstd::util::non_owning_ptr<QObject> parent
+  QString path, QVariant defaultValue, QVariant minimum, QVariant maximum, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : SettingBinding{
       std::move(path),
@@ -124,7 +124,7 @@ void SettingBinding::setValue(const QVariant& value)
   }
   catch(...)
   {
-    LOG_ERROR("exception writing setting value: {}", bibstd::util::exception_report());
+    LOG_ERROR("exception writing setting value: {}", arcstd::util::exception_report());
     emit valueChanged();
   }
 }
@@ -132,7 +132,7 @@ void SettingBinding::setValue(const QVariant& value)
 ///
 ///
 SettingBinding::SettingBinding(
-  QString path, QVariant defaultValue, Validator validator, const bibstd::util::non_owning_ptr<QObject> parent
+  QString path, QVariant defaultValue, Validator validator, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , path_{std::move(path)}
@@ -177,7 +177,7 @@ void SettingBinding::bind()
   catch(...)
   {
     // Without a setting the default value stays the value of this binding.
-    LOG_ERROR("bind setting failed: {}", bibstd::util::exception_report());
+    LOG_ERROR("bind setting failed: {}", arcstd::util::exception_report());
     return;
   }
 
@@ -185,7 +185,7 @@ void SettingBinding::bind()
     [this](const auto setting)
     {
       setting->signal_adapter.connect_queued(
-        &bibstd::framework::setting_signals::value_changed,
+        &arcstd::framework::setting_signals::value_changed,
         [this]() { QMetaObject::invokeMethod(this, [this]() { emit valueChanged(); }, Qt::QueuedConnection); },
         connections_
       );
@@ -198,15 +198,15 @@ void SettingBinding::bind()
 ///
 ///
 template<typename T>
-auto SettingBinding::settingValidator() const -> bibstd::framework::setting_validator<T>
+auto SettingBinding::settingValidator() const -> arcstd::framework::setting_validator<T>
 {
-  using list_type = bibstd::framework::setting_validator_list<T>;
-  using range_type = bibstd::framework::setting_validator_range<T>;
-  using return_type = bibstd::framework::setting_validator<T>;
+  using list_type = arcstd::framework::setting_validator_list<T>;
+  using range_type = arcstd::framework::setting_validator_range<T>;
+  using return_type = arcstd::framework::setting_validator<T>;
   const auto toValue = [this](const QVariant& value) { return toValidatorValue<T>(value, defaultValue_); };
-  return bibstd::util::visit_lambdas(
+  return arcstd::util::visit_lambdas(
     validator_,
-    [](std::monostate) -> return_type { return std::make_shared<bibstd::framework::setting_validator_unbound>(); },
+    [](std::monostate) -> return_type { return std::make_shared<arcstd::framework::setting_validator_unbound>(); },
     [&](const QVariantList& available) -> return_type
     {
       if constexpr(list_type::is_plain_type)
@@ -215,21 +215,21 @@ auto SettingBinding::settingValidator() const -> bibstd::framework::setting_vali
       }
       else
       {
-        throw bibstd::util::exception{"list validator needs a plain setting"};
+        throw arcstd::util::exception{"list validator needs a plain setting"};
       }
     },
     [&](const ValueRange& range) -> return_type
     {
-      if constexpr(range_type::is_plain_type && bibstd::framework::detail::setting_validator_range_value_type<T>)
+      if constexpr(range_type::is_plain_type && arcstd::framework::detail::setting_validator_range_value_type<T>)
       {
         return std::make_shared<range_type>(toValue(range.minimum), toValue(range.maximum));
       }
       else
       {
-        throw bibstd::util::exception{"range validator needs a number setting"};
+        throw arcstd::util::exception{"range validator needs a number setting"};
       }
     }
   );
 }
 
-} // namespace bibqml
+} // namespace arcqml

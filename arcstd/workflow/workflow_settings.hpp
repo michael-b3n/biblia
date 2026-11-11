@@ -17,7 +17,7 @@
 #include <string_view>
 #include <utility>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 namespace detail
 {
@@ -293,4 +293,4 @@ auto workflow_settings::make_setting(
   };
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

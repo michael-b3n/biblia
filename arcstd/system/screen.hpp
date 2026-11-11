@@ -4,7 +4,7 @@
 
 #include <optional>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -51,4 +51,4 @@ public: // Static accessors
   [[nodiscard]] static auto monitor_at(screen_coordinates_type coordinates) -> std::optional<screen_rect_type>;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

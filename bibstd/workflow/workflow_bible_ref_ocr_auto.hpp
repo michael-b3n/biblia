@@ -55,9 +55,9 @@ struct workflow_bible_ref_ocr_auto_sigs final
   ///
   struct detection_started final
   {
-    framework::process_id_type process_id;
-    framework::process_id_type detection_id;
-    data::screen_coordinates_type cursor_position;
+    arcstd::framework::process_id_type process_id;
+    arcstd::framework::process_id_type detection_id;
+    arcstd::data::screen_coordinates_type cursor_position;
   };
 
   ///
@@ -66,24 +66,24 @@ struct workflow_bible_ref_ocr_auto_sigs final
   ///
   struct detection_result final
   {
-    framework::process_id_type process_id;
-    framework::process_id_type detection_id;
+    arcstd::framework::process_id_type process_id;
+    arcstd::framework::process_id_type detection_id;
     std::vector<bible::reference_range> reference_ranges;
-    std::optional<data::screen_rect_type> reference_bounding_box;
+    std::optional<arcstd::data::screen_rect_type> reference_bounding_box;
   };
 
   // Variables
-  signal::signal_type<void(const detection_started&)> detecting;
-  signal::signal_type<void(const std::expected<detection_result, error_code>&)> detected;
+  arcstd::signal::signal_type<void(const detection_started&)> detecting;
+  arcstd::signal::signal_type<void(const std::expected<detection_result, error_code>&)> detected;
 };
 
 ///
 /// Settings corresponding to workflow bible reference ocr auto.
 ///
-struct workflow_bible_ref_ocr_auto_settings final : public workflow_settings_base
+struct workflow_bible_ref_ocr_auto_settings final : public arcstd::workflow::workflow_settings_base
 {
   // Structors
-  workflow_bible_ref_ocr_auto_settings(std::shared_ptr<workflow_settings> workflow_settings);
+  workflow_bible_ref_ocr_auto_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
 
   // Variables
   const setting_type<std::chrono::milliseconds> poll_interval;
@@ -102,8 +102,8 @@ struct workflow_bible_ref_ocr_auto_settings final : public workflow_settings_bas
 /// \note detecting and detected are emitted from the thread of the run.
 ///
 class workflow_bible_ref_ocr_auto final
-  : public workflow_base<workflow_bible_ref_ocr_auto_settings>
-  , public signal::adapter<workflow_bible_ref_ocr_auto_sigs>
+  : public arcstd::workflow::workflow_base<workflow_bible_ref_ocr_auto_settings>
+  , public arcstd::signal::adapter<workflow_bible_ref_ocr_auto_sigs>
 {
   // Friends
   template<typename Owner>
@@ -121,7 +121,7 @@ class workflow_bible_ref_ocr_auto final
     struct s_running final { std::jthread worker; };
 
     // Events
-    struct e_start final { framework::process_id_type id; };
+    struct e_start final { arcstd::framework::process_id_type id; };
     struct e_stop final {};
     // clang-format on
   };
@@ -147,20 +147,21 @@ class workflow_bible_ref_ocr_auto final
   // Variables
   const std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr_;
   mutable std::mutex mtx_;
-  framework::process_id_type running_id_;
+  arcstd::framework::process_id_type running_id_;
   // Declared last since its running state holds the thread of a run, which is joined
   // by destroying the machine and must be gone before everything that thread uses.
   const std::unique_ptr<machine_holder> machine_;
 
 public: // Typedefs
-  using params = framework::process_params<void>;
+  using params = arcstd::framework::process_params<void>;
 
 public: // Structors
   ///
   /// Constructor for workflow_bible_ref_ocr_auto, starting the search right away if it is enabled.
   ///
   workflow_bible_ref_ocr_auto(
-    std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr
+    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+    std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr
   );
 
   ///
@@ -188,8 +189,10 @@ private: // Actions
   auto a_stop(sm::s_running& source) -> void;
 
 private: // Implementation
-  auto search(std::stop_token token, framework::process_id_type id) -> void;
-  auto examine(const std::stop_token& token, data::screen_coordinates_type position, framework::process_id_type id) -> void;
+  auto search(std::stop_token token, arcstd::framework::process_id_type id) -> void;
+  auto examine(
+    const std::stop_token& token, arcstd::data::screen_coordinates_type position, arcstd::framework::process_id_type id
+  ) -> void;
   [[nodiscard]] auto local_settings() const -> settings_t;
 };
 

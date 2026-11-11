@@ -7,7 +7,7 @@
 #include <set>
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 struct uid_test_tag_a final
@@ -74,4 +74,4 @@ TEST_CASE("uid formatter", "[util]")
   CHECK(std::format("{:>8}", id).size() >= 8);
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

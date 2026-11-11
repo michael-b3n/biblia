@@ -6,7 +6,7 @@
 #include <latch>
 #include <thread>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -61,4 +61,4 @@ private: // Implementation
   auto run() noexcept -> void;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("scope_guard calls the callable on destruction", "[util]")
@@ -158,4 +158,4 @@ TEST_CASE("shared_scope_guard default constructed does nothing", "[util]")
   CHECK_NOTHROW(guard.reset());
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

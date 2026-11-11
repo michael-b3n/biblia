@@ -19,7 +19,7 @@ extern "C"
 ///
 #define INC_RESOURCE(LABEL, FILE) INCBIN(std::byte, LABEL, FILE)
 
-namespace bibstd::util::incbin
+namespace arcstd::util::incbin
 {
 
 ///
@@ -33,4 +33,4 @@ template<typename T>
   return std::span(reinterpret_cast<const T* const>(data), size / sizeof(T));
 }
 
-} // namespace bibstd::util::incbin
+} // namespace arcstd::util::incbin

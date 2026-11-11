@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace bibstd::data
+namespace arcstd::data
 {
 
 ///
@@ -20,4 +20,4 @@ struct color_rgba final
   auto operator==(const color_rgba&) const -> bool = default;
 };
 
-} // namespace bibstd::data
+} // namespace arcstd::data

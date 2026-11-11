@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -396,4 +396,4 @@ auto value_cast<std::map<K, T>>::from(const sol::object& v) -> std::optional<std
          std::ranges::to<std::map<K, T>>();
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

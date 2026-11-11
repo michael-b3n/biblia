@@ -4,7 +4,7 @@
 
 #include <mutex>
 
-namespace bibstd::execution
+namespace arcstd::execution
 {
 
 ///
@@ -39,4 +39,4 @@ public: // Modifiers
   auto stop() noexcept -> void;
 };
 
-} // namespace bibstd::execution
+} // namespace arcstd::execution

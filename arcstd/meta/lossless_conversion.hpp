@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -32,7 +32,7 @@ struct is_lossless_conversion<F, T> : std::true_type
   using to_type = T;
 };
 
-#define BIBSTD_REGISTER_LOSSLESS_CONVERSION(F, T)                                                                              \
+#define ARCSTD_REGISTER_LOSSLESS_CONVERSION(F, T)                                                                              \
   template<>                                                                                                                   \
   struct is_lossless_conversion<F, T> : std::true_type                                                                         \
   {                                                                                                                            \
@@ -40,54 +40,54 @@ struct is_lossless_conversion<F, T> : std::true_type
     using to_type = T;                                                                                                         \
   };
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int8_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint8_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int16_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint16_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, float);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(bool, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int8_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint8_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int16_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint16_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::int64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, std::uint64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, float);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(bool, double);
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int16_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, float);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int16_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, std::int64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, float);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int8_t, double);
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int16_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint16_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int32_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint32_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int64_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint64_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, float)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, double)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int16_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint16_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int32_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint32_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::int64_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, std::uint64_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, float)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint8_t, double)
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, std::int32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, std::int64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, float);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, std::int32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, std::int64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, float);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int16_t, double);
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::int32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::uint32_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::int64_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::uint64_t)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, float)
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, double)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::int32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::uint32_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::int64_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, std::uint64_t)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, float)
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint16_t, double)
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int32_t, std::int64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::int32_t, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int32_t, std::int64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::int32_t, double);
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, std::int64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, std::uint64_t);
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, std::int64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, std::uint64_t);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(std::uint32_t, double);
 
-BIBSTD_REGISTER_LOSSLESS_CONVERSION(float, double);
+ARCSTD_REGISTER_LOSSLESS_CONVERSION(float, double);
 
-#undef BIBSTD_REGISTER_LOSSLESS_CONVERSION
+#undef ARCSTD_REGISTER_LOSSLESS_CONVERSION
 
 ///
 /// Boolean indicating if a conversion between two types is lossless or not.
@@ -270,4 +270,4 @@ using lossless_common_type_t = lossless_common_type<T...>::type;
 template<typename... T>
 concept has_lossless_common_type = !std::is_void_v<lossless_common_type_t<T...>>;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -98,8 +98,8 @@ class Metrics final : public QObject
   double opacityHigh_{0.8};
 
 public: // Structors
-  explicit Metrics(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit Metrics(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~Metrics() noexcept override;
 };
 
-} // namespace bibqml
+} // namespace arcqml

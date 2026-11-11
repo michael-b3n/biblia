@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace bibstd::core
+namespace arcstd::core
 {
 
 ///
@@ -37,4 +37,4 @@ public: // Operations
   [[nodiscard]] static auto fetch(std::string_view url) -> std::expected<std::string, error_code>;
 };
 
-} // namespace bibstd::core
+} // namespace arcstd::core

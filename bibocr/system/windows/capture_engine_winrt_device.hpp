@@ -22,7 +22,7 @@
 #include <mutex>
 #include <string>
 
-namespace bibstd::system::winrt_capture
+namespace bibocr::system::winrt_capture
 {
 
 namespace capture_api = winrt::Windows::Graphics::Capture;
@@ -96,7 +96,7 @@ class device final
   std::int32_t staging_height_{0};
 
 public: // Typedefs
-  using pixel_plane_type = data::pixel_plane_type;
+  using pixel_plane_type = arcstd::data::pixel_plane_type;
   using texture_type = winrt::com_ptr<ID3D11Texture2D>;
 
 public: // Creators
@@ -150,4 +150,4 @@ private: // Implementation
   [[nodiscard]] auto prepare_staging(std::int32_t width, std::int32_t height) -> bool;
 };
 
-} // namespace bibstd::system::winrt_capture
+} // namespace bibocr::system::winrt_capture

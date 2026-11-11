@@ -18,7 +18,7 @@ namespace bibqml
 BridgeBibleRefCopy::BridgeBibleRefCopy(
   std::shared_ptr<bibstd::workflow::workflow_bible_ref_copy> workflowBibleRefCopy,
   std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-  const bibstd::util::non_owning_ptr<QObject> parent
+  const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowBibleRefCopy_{std::move(workflowBibleRefCopy)}
@@ -65,7 +65,7 @@ void BridgeBibleRefCopy::copy(
     const auto copied = workflowBibleRefCopy_->copy(params);
     QMetaObject::invokeMethod(this, [finish, copied]() { finish(copied); }, Qt::QueuedConnection);
   };
-  bibstd::execution::launch(std::move(copy), scope_);
+  arcstd::execution::launch(std::move(copy), scope_);
 }
 
 ///

@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -54,4 +54,4 @@ private: // Constructors
   explicit single_instance(const std::string& name);
 };
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

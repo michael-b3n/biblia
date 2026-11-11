@@ -3,7 +3,7 @@
 
 #include "arcstd/system/windows/win.hpp"
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -19,4 +19,4 @@ auto environment_variable::set(const std::string& name, const std::string& value
   return result;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

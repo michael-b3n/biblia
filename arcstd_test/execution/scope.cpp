@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <thread>
 
-namespace bibstd::execution
+namespace arcstd::execution
 {
 
 TEST_CASE("launch_runs_work_on_another_thread", "[execution]")
@@ -70,4 +70,4 @@ TEST_CASE("launch_survives_failing_work", "[execution]")
   CHECK(ran);
 }
 
-} // namespace bibstd::execution
+} // namespace arcstd::execution

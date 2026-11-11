@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -73,4 +73,4 @@ private: // Implementation
   auto apply_hotkey_impl(const path_type& path) -> void;
 };
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

@@ -13,12 +13,12 @@
 #include <optional>
 #include <string>
 
-namespace bibstd::core
+namespace arcstd::core
 {
 class core_cache;
-} // namespace bibstd::core
+} // namespace arcstd::core
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -67,4 +67,4 @@ private: // Implementation
   [[nodiscard]] auto cache(const util::identifier& name) -> core::core_cache&;
 };
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

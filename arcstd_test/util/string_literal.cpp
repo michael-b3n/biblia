@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace
 {
@@ -30,4 +30,4 @@ TEST_CASE("string_literal_takes_only_one_terminating_zero", "[util]")
   STATIC_REQUIRE_FALSE(string_literal<2>::terminated_once(unterminated));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

@@ -5,7 +5,7 @@
 #include <mutex>
 #include <vector>
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 
 ///
@@ -33,4 +33,4 @@ public: // Modifiers
   auto clear() -> void;
 };
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

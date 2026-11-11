@@ -4,7 +4,7 @@
 #include <span>
 #include <string_view>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -16,9 +16,9 @@ struct embedded_script final
   std::string_view code;
 };
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua
 
-namespace bibstd::lua::internal
+namespace arcstd::lua::internal
 {
 
 ///
@@ -31,4 +31,4 @@ namespace bibstd::lua::internal
 ///
 [[nodiscard]] auto find(std::string_view name) -> std::optional<embedded_script>;
 
-} // namespace bibstd::lua::internal
+} // namespace arcstd::lua::internal

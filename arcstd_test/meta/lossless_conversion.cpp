@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 TEST_CASE("is_lossless_conversion identity", "[meta]")
@@ -117,4 +117,4 @@ TEST_CASE("has_lossless_common_type concept", "[meta]")
   static_assert(!has_lossless_common_type<std::int64_t, double>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

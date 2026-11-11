@@ -14,7 +14,7 @@
 #include <string>
 #include <string_view>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -63,4 +63,4 @@ public: // Operations
   [[nodiscard]] auto fetch(std::string_view url) const -> page_type;
 };
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

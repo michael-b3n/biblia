@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 TEST_CASE("sign of signed integrals", "[math]")
@@ -54,4 +54,4 @@ TEST_CASE("sign values", "[math]")
   static_assert(sign_value::positive == 1);
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

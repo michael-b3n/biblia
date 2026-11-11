@@ -46,12 +46,14 @@ versification::versification(const std::string_view name, const std::vector<refe
 {
   if(!std::ranges::all_of(visit_book_start_indices(data_), [size = visit_size(data_)](const auto i) { return i < size; }))
   {
-    throw util::exception{"invalid versification data: all book start indices must be smaller than the size of the data"};
+    throw arcstd::util::exception{
+      "invalid versification data: all book start indices must be smaller than the size of the data"
+    };
   }
 #ifdef BIBSTD_DEBUG_DATA
   const auto versification_found = [&]()
   {
-    using info_t = meta::pack_info<all_defaults_variant>;
+    using info_t = arcstd::meta::pack_info<all_defaults_variant>;
     return [&]<std::size_t... I>(std::index_sequence<I...>)
     { return ((versification{info_t::type_at<I>{}} == *this) || ...); }(std::make_index_sequence<info_t::size>{});
   }();
@@ -89,7 +91,7 @@ versification::versification(const std::string_view name, const std::vector<refe
         d.data,
         [&](const auto& r)
         {
-          versification_out << "    reference::create_unguarded(book_id::" << util::enum_name(r.book()) << ", "
+          versification_out << "    reference::create_unguarded(book_id::" << arcstd::util::enum_name(r.book()) << ", "
                             << r.chapter().value << ", " << r.verse().value << ")," << nl;
         }
       );

@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 TEST_CASE("combination", "[math]")
@@ -37,4 +37,4 @@ TEST_CASE("combination", "[math]")
   }
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

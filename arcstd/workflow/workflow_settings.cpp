@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <ranges>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -58,4 +58,4 @@ auto workflow_settings::type_erased_setting(const std::string& path) const
   return std::nullopt;
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

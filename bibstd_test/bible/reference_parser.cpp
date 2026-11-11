@@ -22,7 +22,7 @@ constexpr auto esv = versification_esv;
 ///
 auto parse(const std::string_view text, const std::size_t index) -> reference_parser::parse_result
 {
-  return reference_parser::parse(text, index, util::language::german, esv);
+  return reference_parser::parse(text, index, arcstd::util::language::german, esv);
 }
 
 ///
@@ -84,7 +84,7 @@ auto check_ranges(const std::string_view text, const std::size_t index, const st
   CHECK(result.size() == expected.size());
   for(const auto& range : expected)
   {
-    CHECK(util::contains(result, range));
+    CHECK(arcstd::util::contains(result, range));
   }
 }
 
@@ -185,14 +185,14 @@ TEST_CASE("reference_parser resolves the reference under the cursor", "[bible]")
   {
     const auto result = parse(text, 2);
     CHECK(result.ranges.size() == 1);
-    CHECK(util::contains(result.ranges, verse(book_id::genesis, 1, 1)));
+    CHECK(arcstd::util::contains(result.ranges, verse(book_id::genesis, 1, 1)));
     CHECK(origin(text, result) == "1.Mose 1,1");
   }
   SECTION("cursor on the numbers of the second reference")
   {
     const auto result = parse(text, 22);
     CHECK(result.ranges.size() == 1);
-    CHECK(util::contains(result.ranges, verse(book_id::exodus, 2, 2)));
+    CHECK(arcstd::util::contains(result.ranges, verse(book_id::exodus, 2, 2)));
     CHECK(origin(text, result) == "2.Mose 2,2");
   }
   SECTION("cursor on the filler word between both references")
@@ -241,7 +241,7 @@ TEST_CASE("reference_parser does not take numbers of a following book", "[bible]
   const auto text = std::string_view{"Joh 3,16 1.Mose 1,1"};
   const auto result = parse(text, 1);
   CHECK(result.ranges.size() == 1);
-  CHECK(util::contains(result.ranges, verse(book_id::john, 3, 16)));
+  CHECK(arcstd::util::contains(result.ranges, verse(book_id::john, 3, 16)));
   CHECK(origin(text, result) == "Joh 3,16");
 }
 
@@ -252,7 +252,7 @@ TEST_CASE("reference_parser parses a reference split by a line break", "[bible]"
     const auto text = std::string_view{"1.Mose\n1,1"};
     const auto result = parse(text, 2);
     CHECK(result.ranges.size() == 1);
-    CHECK(util::contains(result.ranges, verse(book_id::genesis, 1, 1)));
+    CHECK(arcstd::util::contains(result.ranges, verse(book_id::genesis, 1, 1)));
     CHECK(origin(text, result) == text);
   }
   SECTION("inside the numbers, directly after the transition character")
@@ -274,7 +274,7 @@ TEST_CASE("reference_parser parses a reference split by a line break", "[bible]"
     const auto text = std::string_view{"Der Vers steht in Joh 3,16\nund wurde oft zitiert"};
     const auto result = parse(text, 20);
     CHECK(result.ranges.size() == 1);
-    CHECK(util::contains(result.ranges, verse(book_id::john, 3, 16)));
+    CHECK(arcstd::util::contains(result.ranges, verse(book_id::john, 3, 16)));
     CHECK(origin(text, result) == "Joh 3,16");
   }
 }
@@ -318,7 +318,7 @@ TEST_CASE("reference_parser does not absorb an unrelated number from the next li
   const auto text = std::string_view{"Wie in Johannes 3,16\n12 Junger folgten ihm"};
   const auto result = parse(text, 9);
   CHECK(result.ranges.size() == 1);
-  CHECK(util::contains(result.ranges, verse(book_id::john, 3, 16)));
+  CHECK(arcstd::util::contains(result.ranges, verse(book_id::john, 3, 16)));
   CHECK(origin(text, result) == "Johannes 3,16");
 }
 

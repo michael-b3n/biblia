@@ -3,7 +3,7 @@
 #include <functional>
 #include <mutex>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -163,4 +163,4 @@ auto property<T>::exchange(const value_type& new_value) -> value_type
   return old_value;
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

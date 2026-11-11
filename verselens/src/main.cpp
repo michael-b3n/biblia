@@ -49,17 +49,17 @@ int main(int argc, char** argv)
 #endif
 
   // The instance check runs before the logger, a second instance would truncate the log of the running one.
-  const auto instance = bibstd::framework::single_instance::claim(std::string{verselens::version::data_folder_name});
+  const auto instance = arcstd::framework::single_instance::claim(std::string{verselens::version::data_folder_name});
   if(!instance.is_owner())
   {
     return verselens::show_already_running(argc, argv);
   }
 
-  const auto logger = bibstd::util::logger(
+  const auto logger = arcstd::util::logger(
     verselens::version::data_folder_name,
     std::format(
       "executable: {}\nversion: {}\ncommit_hash: {}\ncommit_date: {}\nupdater: {}\n",
-      bibstd::system::filesystem::executable_location().string(),
+      arcstd::system::filesystem::executable_location().string(),
       verselens::version::version_string,
       verselens::version::commit_hash,
       verselens::version::commit_date,
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   }
 #endif
 
-  if(!bibstd::system::screen::init())
+  if(!arcstd::system::screen::init())
   {
     LOG_ERROR("failed to initialize screen settings");
     return EXIT_FAILURE;

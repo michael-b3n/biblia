@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -44,4 +44,4 @@ auto format::to_string(const std::optional<T>& value) -> std::string
   return value ? std::format("{}", *value) : "nullopt";
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

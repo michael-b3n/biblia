@@ -7,20 +7,20 @@
 #include <memory>
 #include <utility>
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
 
 // Instance the QML layer operates on. It is registered by the constructor of the
 // application owned instance and reset when that instance is destroyed.
-bibstd::util::non_owning_ptr<BridgeSettings> instance_{nullptr};
+arcstd::util::non_owning_ptr<BridgeSettings> instance_{nullptr};
 
 } // anonymous namespace
 
 ///
 ///
-bibstd::util::non_owning_ptr<BridgeSettings> BridgeSettings::instance()
+arcstd::util::non_owning_ptr<BridgeSettings> BridgeSettings::instance()
 {
   return instance_;
 }
@@ -45,7 +45,7 @@ BridgeSettings* BridgeSettings::create([[maybe_unused]] QQmlEngine* qmlEngine, Q
 ///
 ///
 BridgeSettings::BridgeSettings(
-  std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings, const bibstd::util::non_owning_ptr<QObject> parent
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowSettings_{std::move(workflowSettings)}
@@ -70,7 +70,7 @@ BridgeSettings::~BridgeSettings() noexcept
 
 ///
 ///
-const std::shared_ptr<bibstd::workflow::workflow_settings>& BridgeSettings::workflowSettings() const
+const std::shared_ptr<arcstd::workflow::workflow_settings>& BridgeSettings::workflowSettings() const
 {
   return workflowSettings_;
 }
@@ -132,4 +132,4 @@ SettingBinding* BridgeSettings::bindingOf(
   return bindings_.emplace(path, std::move(binding)).first->second.get();
 }
 
-} // namespace bibqml
+} // namespace arcqml

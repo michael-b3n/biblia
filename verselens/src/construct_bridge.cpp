@@ -56,21 +56,21 @@ auto construct_bridge([[maybe_unused]] QGuiApplication& /*app*/, backend_instanc
   auto workflow_settings = backend.workflow_settings;
   auto workflow_bible_ref_ocr = std::static_pointer_cast<bibstd::workflow::workflow_bible_ref_ocr>(backend.workflow_bible_ref_ocr);
   auto workflow_bible_ref_ocr_auto = std::static_pointer_cast<bibstd::workflow::workflow_bible_ref_ocr_auto>(backend.workflow_bible_ref_ocr_auto);
-  auto workflow_hotkey = std::static_pointer_cast<bibstd::workflow::workflow_hotkey>(backend.workflow_hotkey);
+  auto workflow_hotkey = std::static_pointer_cast<arcstd::workflow::workflow_hotkey>(backend.workflow_hotkey);
   auto workflow_bible_ref_lookup = std::static_pointer_cast<bibstd::workflow::workflow_bible_ref_lookup>(backend.workflow_bible_ref_lookup);
   auto workflow_bible_ref_copy = std::static_pointer_cast<bibstd::workflow::workflow_bible_ref_copy>(backend.workflow_bible_ref_copy);
   auto workflow_scripture = std::static_pointer_cast<bibstd::workflow::workflow_scripture>(backend.workflow_scripture);
-  auto workflow_script = std::static_pointer_cast<bibstd::workflow::workflow_script>(backend.workflow_script);
+  auto workflow_script = std::static_pointer_cast<arcstd::workflow::workflow_script>(backend.workflow_script);
   return bridge_instance{
-    .bridge_application{std::make_unique<bibqml::BridgeApplication>()},
-    .bridge_settings{std::make_unique<bibqml::BridgeSettings>(workflow_settings)},
-    .settings_list_model{std::make_unique<bibqml::SettingsListModel>(workflow_settings)},
+    .bridge_application{std::make_unique<arcqml::BridgeApplication>()},
+    .bridge_settings{std::make_unique<arcqml::BridgeSettings>(workflow_settings)},
+    .settings_list_model{std::make_unique<arcqml::SettingsListModel>(workflow_settings)},
     .bridge_bible_ref_ocr{std::make_unique<bibqml::BridgeBibleRefOcr>(workflow_bible_ref_ocr, workflow_bible_ref_ocr_auto, workflow_hotkey, workflow_settings)},
     .bridge_bible_ref_lookup{std::make_unique<bibqml::BridgeBibleRefLookup>(workflow_bible_ref_lookup, workflow_scripture)},
     .bridge_bible_ref_copy{std::make_unique<bibqml::BridgeBibleRefCopy>(workflow_bible_ref_copy, workflow_scripture)},
     .scripture_list_model{std::make_unique<bibqml::ScriptureListModel>(workflow_scripture)},
     .bridge_scripture{std::make_unique<bibqml::BridgeScripture>(workflow_scripture)},
-    .bridge_script{std::make_unique<bibqml::BridgeScript>(workflow_script)}
+    .bridge_script{std::make_unique<arcqml::BridgeScript>(workflow_script)}
   };
   // clang-format on
 }

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 namespace detail
 {
@@ -26,4 +26,4 @@ struct is_duration<std::chrono::duration<T1, T2>> : std::true_type
 template<typename T>
 constexpr bool is_duration_v = detail::is_duration<std::remove_cvref_t<T>>::value;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace detail
 {
@@ -298,4 +298,4 @@ consteval auto make_const_bimap(std::pair<F, S> (&&p)[N]) -> auto
   return detail::make_const_map_impl<F, S, N, bidirectional>(std::forward<decltype(p)>(p), std::make_index_sequence<N>{});
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

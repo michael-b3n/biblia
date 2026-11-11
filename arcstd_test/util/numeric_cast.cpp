@@ -6,7 +6,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("numeric_cast_rt at compile time", "[util]")
@@ -49,4 +49,4 @@ TEST_CASE("numeric_cast macro", "[util]")
   CHECK_THROWS_AS(numeric_cast<std::uint8_t>(256), boost::numeric::bad_numeric_cast);
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

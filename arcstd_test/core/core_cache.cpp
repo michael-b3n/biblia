@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 
-namespace bibstd::core
+namespace arcstd::core
 {
 
 TEST_CASE("core_cache_keeps_values", "[core]")
@@ -112,4 +112,4 @@ TEST_CASE("core_cache_of_a_broken_file_holds_nothing", "[core]")
   CHECK(test_utils::read_file(file) == content);
 }
 
-} // namespace bibstd::core
+} // namespace arcstd::core

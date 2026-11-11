@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::system
+namespace bibocr::system
 {
 namespace winrt_capture
 {
@@ -24,7 +24,7 @@ namespace winrt_capture
 class monitor final
 {
 public: // Typedefs
-  using pixel_plane_type = data::pixel_plane_type;
+  using pixel_plane_type = arcstd::data::pixel_plane_type;
 
 public: // Constructor
   ///
@@ -141,7 +141,7 @@ monitor::~monitor() noexcept
   }
   catch(...)
   {
-    LOG_WARN("monitor capture not stopped: {}", util::exception_report());
+    LOG_WARN("monitor capture not stopped: {}", arcstd::util::exception_report());
   }
 }
 
@@ -255,8 +255,8 @@ namespace
 {
 
 ///
-/// A screen region as the capture API addresses it: the monitor showing it, the size that monitor
-/// has according to the screen metrics, and the region within that monitor.
+/// A arcstd::system::screen region as the capture API addresses it: the monitor showing it, the size that monitor
+/// has according to the arcstd::system::screen metrics, and the region within that monitor.
 ///
 struct placement final
 {
@@ -267,13 +267,13 @@ struct placement final
 };
 
 ///
-/// Locate a screen region on the monitor showing it.
+/// Locate a arcstd::system::screen region on the monitor showing it.
 /// \return Placement of the region, or std::nullopt if no single monitor shows all of it
 ///
-auto place(const data::screen_rect_type rect) -> std::optional<placement>
+auto place(const arcstd::data::screen_rect_type rect) -> std::optional<placement>
 {
-  const auto width = numeric_cast<std::int32_t>(math::size(rect.horizontal_range()));
-  const auto height = numeric_cast<std::int32_t>(math::size(rect.vertical_range()));
+  const auto width = numeric_cast<std::int32_t>(arcstd::math::size(rect.horizontal_range()));
+  const auto height = numeric_cast<std::int32_t>(arcstd::math::size(rect.vertical_range()));
   if(width == 0 || height == 0)
   {
     return std::nullopt;
@@ -328,11 +328,11 @@ auto request_borderless_capture() -> void
       LOG_WARN("borderless capture not answered in time, captures show the border until the next start");
       return;
     }
-    LOG_INFO("borderless capture access: {}", util::enum_name(request.GetResults()));
+    LOG_INFO("borderless capture access: {}", arcstd::util::enum_name(request.GetResults()));
   }
   catch(...)
   {
-    LOG_WARN("borderless capture access not requested: {}", util::exception_report());
+    LOG_WARN("borderless capture access not requested: {}", arcstd::util::exception_report());
   }
 }
 
@@ -404,7 +404,7 @@ auto capture_engine_winrt::do_capture(const screen_rect_type rect, pixel_plane_t
   }
   catch(...)
   {
-    LOG_WARN("windows graphics capture failed: {}", util::exception_report());
+    LOG_WARN("windows graphics capture failed: {}", arcstd::util::exception_report());
     return false;
   }
 }
@@ -454,4 +454,4 @@ auto capture_engine_winrt::monitor_of(HMONITOR handle, const std::int32_t width,
   return monitors_.emplace(handle, std::move(started)).first->second;
 }
 
-} // namespace bibstd::system
+} // namespace bibocr::system

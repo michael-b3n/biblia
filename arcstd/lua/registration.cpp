@@ -10,7 +10,7 @@
 #include <ranges>
 #include <utility>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -98,4 +98,4 @@ auto registration::release() noexcept -> void
   );
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

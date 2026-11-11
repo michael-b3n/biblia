@@ -10,7 +10,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 enum class enum_test_type
@@ -120,4 +120,4 @@ TEST_CASE("enum valid", "[util]")
   CHECK(!valid(static_cast<enum_test_offset_type>(2)));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

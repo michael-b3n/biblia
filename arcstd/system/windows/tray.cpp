@@ -9,7 +9,7 @@
 #include <condition_variable>
 #include <utility>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 namespace
 {
@@ -158,4 +158,4 @@ auto tray::set_text(const std::size_t index, std::string text) -> void
   loop_->post(std::move(rebuild));
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

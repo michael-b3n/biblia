@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 struct type_traits_test_struct final
@@ -71,4 +71,4 @@ TEST_CASE("conditional_unsigned", "[meta]")
   static_assert(std::is_same_v<conditional_unsigned_t<const double>, const double>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

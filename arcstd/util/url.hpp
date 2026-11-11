@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace bibstd::util::url
+namespace arcstd::util::url
 {
 
 ///
@@ -10,4 +10,4 @@ namespace bibstd::util::url
 ///
 [[nodiscard]] auto is_web_url(std::string_view url) -> bool;
 
-} // namespace bibstd::util::url
+} // namespace arcstd::util::url

@@ -11,7 +11,7 @@
 #include <string>
 #include <tuple>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 TEST_CASE("workflow_web_fetches_web_pages", "[workflow]")
@@ -59,4 +59,4 @@ TEST_CASE("workflow_web_takes_its_function_back_on_destruction", "[workflow]")
   CHECK(script->state().run_script("after.lua", "return 1"));
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

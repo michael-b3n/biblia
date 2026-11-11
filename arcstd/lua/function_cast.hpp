@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 namespace detail
 {
@@ -146,4 +146,4 @@ template<function_castable F>
   return detail::wrapped(detail::guarded(std::move(registered), std::function{std::forward<F>(function)}));
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::data
+namespace arcstd::data
 {
 
 TEST_CASE("plane", "[data]")
@@ -34,4 +34,4 @@ TEST_CASE("plane", "[data]")
   }
 }
 
-} // namespace bibstd::data
+} // namespace arcstd::data

@@ -53,18 +53,18 @@ auto report(const std::string& message) -> void
 /// Read an image of any supported format into a pixel plane.
 /// \return Pixel plane with the image content, an empty plane if the image cannot be read
 ///
-auto read_image(const std::filesystem::path& path) -> data::pixel_plane_type
+auto read_image(const std::filesystem::path& path) -> arcstd::data::pixel_plane_type
 {
   auto* raw = pixRead(path.string().c_str());
   if(raw == nullptr)
   {
-    return data::pixel_plane_type{};
+    return arcstd::data::pixel_plane_type{};
   }
   auto* rgb = pixConvertTo32(raw);
   pixDestroy(&raw);
   if(rgb == nullptr)
   {
-    return data::pixel_plane_type{};
+    return arcstd::data::pixel_plane_type{};
   }
 
   const auto width = static_cast<std::uint32_t>(pixGetWidth(rgb));
@@ -72,13 +72,13 @@ auto read_image(const std::filesystem::path& path) -> data::pixel_plane_type
   const auto words_per_line = static_cast<std::size_t>(pixGetWpl(rgb));
   const auto* const data = pixGetData(rgb);
 
-  auto result = data::pixel_plane_type{width, height};
+  auto result = arcstd::data::pixel_plane_type{width, height};
   for(auto y = std::uint32_t{0}; y < height; ++y)
   {
     const auto* const line = data + (static_cast<std::size_t>(y) * words_per_line);
     for(auto x = std::uint32_t{0}; x < width; ++x)
     {
-      result.at((static_cast<std::size_t>(y) * width) + x) = data::pixel{
+      result.at((static_cast<std::size_t>(y) * width) + x) = arcstd::data::pixel{
         .red = static_cast<std::uint8_t>(GET_DATA_BYTE(line, (4 * x) + COLOR_RED)),
         .green = static_cast<std::uint8_t>(GET_DATA_BYTE(line, (4 * x) + COLOR_GREEN)),
         .blue = static_cast<std::uint8_t>(GET_DATA_BYTE(line, (4 * x) + COLOR_BLUE)),
@@ -98,8 +98,8 @@ auto to_capture_box(const auto& box) -> test_utils::capture_box
   return test_utils::capture_box{
     .x = static_cast<std::int32_t>(box.origin().x()),
     .y = static_cast<std::int32_t>(box.origin().y()),
-    .width = static_cast<std::int32_t>(math::size(box.horizontal_range())),
-    .height = static_cast<std::int32_t>(math::size(box.vertical_range()))
+    .width = static_cast<std::int32_t>(arcstd::math::size(box.horizontal_range())),
+    .height = static_cast<std::int32_t>(arcstd::math::size(box.vertical_range()))
   };
 }
 
@@ -148,8 +148,9 @@ auto duplicate_stem(const std::vector<std::filesystem::path>& images) -> std::op
 ///
 /// \return Everything the engine recognized on the image it was initialized with
 ///
-auto capture_of(const std::string& id, const txt::ocr_engine_tesseract& engine, const data::pixel_plane_type& image)
-  -> test_utils::capture_data
+auto capture_of(
+  const std::string& id, const bibocr::txt::ocr_engine_tesseract& engine, const arcstd::data::pixel_plane_type& image
+) -> test_utils::capture_data
 {
   auto result = test_utils::capture_data{.id = id, .width = image.width(), .height = image.height()};
   for(const auto& layout : engine.layout_analysis())
@@ -209,7 +210,7 @@ TEST_CASE("capture ocr data of the images in the ocr folder", "[.capture]")
     FAIL(std::format("two images share the stem \"{}\", rename one of them", *duplicate));
   }
 
-  auto engine = txt::ocr_engine_tesseract{BIBSTD_TEST_TESSDATA_DIR, util::language::german};
+  auto engine = bibocr::txt::ocr_engine_tesseract{BIBSTD_TEST_TESSDATA_DIR, arcstd::util::language::german};
 
   for(const auto& path : images)
   {
@@ -219,7 +220,7 @@ TEST_CASE("capture ocr data of the images in the ocr folder", "[.capture]")
       report(std::format("skipped, image cannot be read: {}", path.filename().string()));
       continue;
     }
-    engine.initialize(data::pixel_plane_view_type{image}, std::nullopt);
+    engine.initialize(arcstd::data::pixel_plane_view_type{image}, std::nullopt);
     const auto data = capture_of(path.stem().string(), engine, image);
 
     const auto capture_path = std::filesystem::path{path}.replace_extension(".ocr");

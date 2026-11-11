@@ -15,17 +15,18 @@
 #include <ranges>
 #include <vector>
 
-namespace bibstd::system
+namespace bibocr::system
 {
 
 namespace
 {
 
 ///
-/// Capture a screen region through gdi, the fallback: it reads over the cpu and sees composited content as black.
+/// Capture a arcstd::system::screen region through gdi, the fallback: it reads over the cpu and sees composited content as
+/// black.
 /// \return true if the region was captured
 ///
-auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix) -> bool
+auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_plane_type& pix) -> bool
 {
   static std::mutex mtx;
   static std::vector<std::byte> pixels_bytes;
@@ -35,15 +36,15 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
   HDC hdc = GetDC(nullptr);
   HBITMAP bitmap = [&]
   {
-    const auto hr = numeric_cast<int>(math::size(rect.horizontal_range()));
-    const auto vr = numeric_cast<int>(math::size(rect.vertical_range()));
+    const auto hr = numeric_cast<int>(arcstd::math::size(rect.horizontal_range()));
+    const auto vr = numeric_cast<int>(arcstd::math::size(rect.vertical_range()));
 
     HDC sdc = CreateCompatibleDC(hdc);
     auto* hbitmap = CreateCompatibleBitmap(hdc, hr, vr);
     HGDIOBJ old_bitmap = SelectObject(sdc, hbitmap);
     const auto origin = rect.origin();
     // No CAPTUREBLT: it makes the system hide and redraw the cursor, which blinks on every capture.
-    // The cursor is never part of the screen DC anyway, so leaving the flag out costs nothing here.
+    // The cursor is never part of the arcstd::system::screen DC anyway, so leaving the flag out costs nothing here.
     // NOLINTNEXTLINE(readability-suspicious-call-argument)
     BitBlt(sdc, 0, 0, hr, vr, hdc, origin.x(), origin.y(), SRCCOPY);
     SelectObject(sdc, old_bitmap);
@@ -55,7 +56,7 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
   info.bmiHeader.biSize = sizeof(info.bmiHeader);
   if(0 == GetDIBits(hdc, bitmap, 0, 0, nullptr, &info, DIB_RGB_COLORS))
   {
-    LOG_ERROR("capture screen failed: {}", "bitmap info not found");
+    LOG_ERROR("capture arcstd::system::screen failed: {}", "bitmap info not found");
     return false;
   }
   info.bmiHeader.biCompression = BI_RGB;
@@ -66,7 +67,7 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
 
   if(0 == GetDIBits(hdc, bitmap, 0, info.bmiHeader.biHeight, static_cast<void*>(pixels_bytes.data()), &info, DIB_RGB_COLORS))
   {
-    LOG_ERROR("capture screen failed: {}", "bitmap data not found");
+    LOG_ERROR("capture arcstd::system::screen failed: {}", "bitmap data not found");
     return false;
   }
   DeleteObject(bitmap);
@@ -74,18 +75,18 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
   assert(info.bmiHeader.biBitCount >= 24);
 
   // The rows are kept in reversed order: tesseract has its origin at the bottom left,
-  // the Windows screen at the top left.
+  // the Windows arcstd::system::screen at the top left.
   const auto byte_count = info.bmiHeader.biBitCount / 8;
   const auto height = numeric_cast<std::uint32_t>(info.bmiHeader.biHeight);
   const auto width = numeric_cast<std::uint32_t>(info.bmiHeader.biWidth);
 
-  pix = data::pixel_plane_type(width, height);
+  pix = arcstd::data::pixel_plane_type(width, height);
   std::ranges::for_each(
-    util::ranges::index_view_to(height) | std::views::reverse,
+    arcstd::util::ranges::index_view_to(height) | std::views::reverse,
     [&, counter = 0u](const auto row_idx) mutable
     {
       std::ranges::for_each(
-        util::ranges::index_view_between(width * row_idx, width * (row_idx + 1)),
+        arcstd::util::ranges::index_view_between(width * row_idx, width * (row_idx + 1)),
         [&](const auto index)
         {
           const auto i = counter++ * byte_count;
@@ -105,7 +106,7 @@ auto capture_gdi(const data::screen_rect_type rect, data::pixel_plane_type& pix)
 /// lands in a com apartment it did not ask for.
 /// \return the backend, nullptr if the platform offers none
 ///
-auto capture_backend() -> util::non_owning_ptr<capture_engine>
+auto capture_backend() -> arcstd::util::non_owning_ptr<capture_engine>
 {
   static const auto backend = []
   {
@@ -124,7 +125,7 @@ auto capture::region(const screen_rect_type rect, pixel_plane_type& pix) -> bool
 {
   // The backend turns a region down that it cannot serve, a region spanning two monitors for
   // instance, so gdi stays the answer for everything the newer API leaves out.
-  const util::non_owning_ptr<capture_engine> backend = capture_backend();
+  const arcstd::util::non_owning_ptr<capture_engine> backend = capture_backend();
   if(backend != nullptr && backend->capture(rect, pix))
   {
     return true;
@@ -132,4 +133,4 @@ auto capture::region(const screen_rect_type rect, pixel_plane_type& pix) -> bool
   return capture_gdi(rect, pix);
 }
 
-} // namespace bibstd::system
+} // namespace bibocr::system

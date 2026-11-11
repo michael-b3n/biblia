@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -42,4 +42,4 @@ auto locale::preferred_language() -> util::language
   return fallback_language;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

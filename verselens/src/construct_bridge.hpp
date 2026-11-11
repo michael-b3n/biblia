@@ -5,17 +5,21 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-namespace bibqml
+namespace arcqml
 {
 class BridgeApplication;
+class BridgeScript;
+class BridgeSettings;
+class SettingsListModel;
+} // namespace arcqml
+
+namespace bibqml
+{
 class BridgeBibleRefCopy;
 class BridgeBibleRefLookup;
 class BridgeBibleRefOcr;
-class BridgeScript;
 class BridgeScripture;
-class BridgeSettings;
 class ScriptureListModel;
-class SettingsListModel;
 } // namespace bibqml
 
 namespace verselens
@@ -27,15 +31,15 @@ struct bridge_instance final
   ~bridge_instance() noexcept;
 
   // Variables
-  std::unique_ptr<bibqml::BridgeApplication> bridge_application;
-  std::unique_ptr<bibqml::BridgeSettings> bridge_settings;
-  std::unique_ptr<bibqml::SettingsListModel> settings_list_model;
+  std::unique_ptr<arcqml::BridgeApplication> bridge_application;
+  std::unique_ptr<arcqml::BridgeSettings> bridge_settings;
+  std::unique_ptr<arcqml::SettingsListModel> settings_list_model;
   std::unique_ptr<bibqml::BridgeBibleRefOcr> bridge_bible_ref_ocr;
   std::unique_ptr<bibqml::BridgeBibleRefLookup> bridge_bible_ref_lookup;
   std::unique_ptr<bibqml::BridgeBibleRefCopy> bridge_bible_ref_copy;
   std::unique_ptr<bibqml::ScriptureListModel> scripture_list_model;
   std::unique_ptr<bibqml::BridgeScripture> bridge_scripture;
-  std::unique_ptr<bibqml::BridgeScript> bridge_script;
+  std::unique_ptr<arcqml::BridgeScript> bridge_script;
 };
 
 ///

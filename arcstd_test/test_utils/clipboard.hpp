@@ -7,7 +7,7 @@
 #include <string>
 #include <tuple>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 
 ///
@@ -56,4 +56,4 @@ inline clipboard_restorer::~clipboard_restorer() noexcept
   }
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

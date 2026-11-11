@@ -5,7 +5,7 @@
 
 #include <expected>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -97,4 +97,4 @@ public: // Accessors
   [[nodiscard]] auto operator->() const -> util::non_owning_ptr<const ParamsType> { return &params_; }
 };
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

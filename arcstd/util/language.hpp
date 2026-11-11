@@ -3,7 +3,7 @@
 #include "arcstd/util/const_map.hpp"
 #include "arcstd/util/enum.hpp"
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -46,4 +46,4 @@ inline constexpr auto language_direction_map = util::make_const_map<language, la
 });
 static_assert(language_direction_map.size() == util::enum_count<language>());
 
-} // namespace bibstd::util
+} // namespace arcstd::util

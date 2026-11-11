@@ -2,7 +2,7 @@
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/source_location_helpers.hpp"
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -35,4 +35,4 @@ scoped_timer_logger::~scoped_timer_logger()
   LOG_DEBUG("measured scoped time duration: {} ms | {}", duration.count(), util::filter_function_name(source_location_));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

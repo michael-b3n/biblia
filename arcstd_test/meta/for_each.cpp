@@ -7,7 +7,7 @@
 #include <variant>
 #include <vector>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 template<typename...>
@@ -48,4 +48,4 @@ TEST_CASE("for_each with standard templates", "[meta]")
                 for_each_test_pack<std::vector<int>, std::vector<double>>>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

@@ -5,7 +5,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 template<typename...>
@@ -36,4 +36,4 @@ TEST_CASE("remove_duplicates", "[meta]")
                 remove_duplicates_test_pack<int, const int>>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

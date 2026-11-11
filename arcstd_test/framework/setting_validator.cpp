@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 TEST_CASE("setting_validator_range_limits_plain_values", "[framework]")
@@ -279,4 +279,4 @@ TEST_CASE("setting_validator_list_type_erased_wraps_a_validator", "[framework]")
   }
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

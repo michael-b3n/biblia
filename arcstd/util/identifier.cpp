@@ -5,7 +5,7 @@
 #include <ranges>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace
 {
@@ -61,4 +61,4 @@ auto identifier::string() const -> const std::string&
   return value_;
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

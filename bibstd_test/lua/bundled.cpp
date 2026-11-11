@@ -28,8 +28,8 @@ using lookup = workflow::workflow_bible_ref_lookup;
 ///
 struct bundled_fixture final
 {
-  test_utils::temp_folder folder;
-  std::shared_ptr<workflow::workflow_script> script;
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
 
   explicit bundled_fixture(std::string_view name);
 
@@ -50,9 +50,11 @@ struct bundled_fixture final
 ///
 bundled_fixture::bundled_fixture(const std::string_view name)
   : folder{name}
-  , script{std::make_shared<workflow::workflow_script>(test_utils::make_script_settings(folder.path()), lua::bundled::all)}
+  , script{std::make_shared<arcstd::workflow::workflow_script>(
+      arcstd::test_utils::make_script_settings(folder.path()), lua::bundled::all
+    )}
 {
-  test_utils::load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
 }
 
 ///
@@ -75,7 +77,7 @@ auto bundled_fixture::url(
 
 TEST_CASE("bundled_scripts_compile", "[lua]")
 {
-  const auto owner = state_owner{};
+  const auto owner = arcstd::lua::state_owner{};
   auto s = owner.lock();
   REQUIRE_FALSE(bundled::all().empty());
   for(const auto& script : bundled::all())

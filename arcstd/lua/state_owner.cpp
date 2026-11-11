@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 namespace
 {
@@ -116,4 +116,4 @@ auto state_owner::shutdown() const noexcept -> void
   data_->shutdown_flag = true;
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

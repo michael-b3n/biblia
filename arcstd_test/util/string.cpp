@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("split", "[util]")
@@ -68,4 +68,4 @@ TEST_CASE("ends_with_formatted_uint", "[util]")
   static_assert(string::ends_with_formatted_uint("Format without placeholder", " ()") == std::nullopt);
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

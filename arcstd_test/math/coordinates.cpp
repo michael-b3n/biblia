@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 TEST_CASE("coordinates construction", "[math]")
@@ -88,4 +88,4 @@ TEST_CASE("coordinates formatter", "[math]")
   CHECK(std::format("{}", coordinates{-1, -2}) == "(-1,-2)");
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

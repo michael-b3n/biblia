@@ -27,7 +27,7 @@ struct actions_stub final
 {
   // Variables
   std::vector<std::string> ran;
-  framework::process_id_type running_id;
+  arcstd::framework::process_id_type running_id;
   std::atomic_bool worker_left{false};
 
   // Actions
@@ -58,7 +58,7 @@ TEST_CASE("workflow_bible_ref_ocr_auto_sm run", "[workflow]")
 {
   auto stub = actions_stub{};
   auto machine = detail::workflow_bible_ref_ocr_auto_sm_builder<actions_stub>::build(stub);
-  const auto start_id = framework::process_id_type{};
+  const auto start_id = arcstd::framework::process_id_type{};
 
   REQUIRE(machine.is_state<sm::s_idle>());
 
@@ -90,8 +90,8 @@ TEST_CASE("workflow_bible_ref_ocr_auto_sm refuses an intent at the wrong time", 
   }
   SECTION("running")
   {
-    REQUIRE(machine.process_event(sm::e_start{framework::process_id_type{}}));
-    CHECK(!machine.process_event(sm::e_start{framework::process_id_type{}}));
+    REQUIRE(machine.process_event(sm::e_start{arcstd::framework::process_id_type{}}));
+    CHECK(!machine.process_event(sm::e_start{arcstd::framework::process_id_type{}}));
     CHECK(machine.is_state<sm::s_running>());
     CHECK(stub.ran == std::vector<std::string>{"a_start"});
   }
@@ -101,12 +101,12 @@ TEST_CASE("workflow_bible_ref_ocr_auto_sm keeps the runs apart", "[workflow]")
 {
   auto stub = actions_stub{};
   auto machine = detail::workflow_bible_ref_ocr_auto_sm_builder<actions_stub>::build(stub);
-  const auto first = framework::process_id_type{};
+  const auto first = arcstd::framework::process_id_type{};
 
   REQUIRE(machine.process_event(sm::e_start{first}));
   REQUIRE(machine.process_event(sm::e_stop{}));
 
-  const auto second = framework::process_id_type{};
+  const auto second = arcstd::framework::process_id_type{};
   REQUIRE(machine.process_event(sm::e_start{second}));
   CHECK(stub.running_id == second);
   CHECK(stub.running_id != first);

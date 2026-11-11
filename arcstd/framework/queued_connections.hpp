@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -125,4 +125,4 @@ auto queued_connections::queued(S slot) -> F
   };
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

@@ -7,7 +7,7 @@
 #include <QQuickPaintedItem>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -33,11 +33,11 @@ class FrameShape : public QQuickPaintedItem
   qreal gapEnd_{0.0};
 
 public: // Structors
-  explicit FrameShape(bibstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
+  explicit FrameShape(arcstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
   ~FrameShape() noexcept override;
 
 public: // Overrides
-  void paint(bibstd::util::non_owning_ptr<QPainter> painter) override;
+  void paint(arcstd::util::non_owning_ptr<QPainter> painter) override;
 
 signals:
   void strokeColorChanged();
@@ -55,4 +55,4 @@ private: // Implementation
   [[nodiscard]] auto buildPath() const -> QPainterPath;
 };
 
-} // namespace bibqml
+} // namespace arcqml

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -57,4 +57,4 @@ private: // Implementation
   qreal strokes() const;
 };
 
-} // namespace bibqml
+} // namespace arcqml

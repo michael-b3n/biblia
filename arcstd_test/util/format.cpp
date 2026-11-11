@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("format join", "[util]")
@@ -42,4 +42,4 @@ TEST_CASE("format to_string of optional", "[util]")
   CHECK(format::to_string(std::optional<bool>{true}) == "true");
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

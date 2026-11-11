@@ -6,7 +6,7 @@
 #include <QString>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 namespace detail
 {
@@ -72,8 +72,8 @@ class Icons final : public QObject
   QString stop_{detail::toIconUrl("stop.svg")};
 
 public: // Structors
-  explicit Icons(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit Icons(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~Icons() noexcept override;
 };
 
-} // namespace bibqml
+} // namespace arcqml

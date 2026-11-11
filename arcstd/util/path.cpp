@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -53,4 +53,4 @@ auto path::normalize(const std::string_view p) -> sections_type
   return sections;
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

@@ -9,7 +9,7 @@
 #include <format>
 #include <sstream>
 
-namespace bibstd::io
+namespace arcstd::io
 {
 namespace
 {
@@ -190,4 +190,4 @@ auto csv_reader::column(const std::string_view column) const -> std::vector<std:
   return result;
 }
 
-} // namespace bibstd::io
+} // namespace arcstd::io

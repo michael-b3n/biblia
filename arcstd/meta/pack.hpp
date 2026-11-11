@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 ///
 /// packaged trait.
@@ -249,4 +249,4 @@ struct pack_info<P<T, Args...>> final
   using last_type = type_at<size - 1>;
 };
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

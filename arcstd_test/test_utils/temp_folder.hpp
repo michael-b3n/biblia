@@ -4,7 +4,7 @@
 #include <string_view>
 #include <system_error>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 
 ///
@@ -33,7 +33,7 @@ public: // Accessors
 ///
 ///
 inline temp_folder::temp_folder(const std::string_view name)
-  : path_{std::filesystem::temp_directory_path() / "bibstd_test" / name}
+  : path_{std::filesystem::temp_directory_path() / "arcstd_test" / name}
 {
   std::filesystem::remove_all(path_);
   std::filesystem::create_directories(path_);
@@ -54,4 +54,4 @@ inline auto temp_folder::path() const -> const std::filesystem::path&
   return path_;
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

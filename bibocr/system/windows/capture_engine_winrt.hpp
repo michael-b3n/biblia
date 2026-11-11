@@ -7,12 +7,12 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace bibstd::system::winrt_capture
+namespace bibocr::system::winrt_capture
 {
 class monitor;
-} // namespace bibstd::system::winrt_capture
+} // namespace bibocr::system::winrt_capture
 
-namespace bibstd::system
+namespace bibocr::system
 {
 
 ///
@@ -52,4 +52,4 @@ private: // Implementation
     -> std::shared_ptr<winrt_capture::monitor>;
 };
 
-} // namespace bibstd::system
+} // namespace bibocr::system

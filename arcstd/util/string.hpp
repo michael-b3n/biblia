@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace bibstd::util::string
+namespace arcstd::util::string
 {
 
 ///
@@ -189,4 +189,4 @@ template<string_view_type... S>
   return std::nullopt;
 }
 
-} // namespace bibstd::util::string
+} // namespace arcstd::util::string

@@ -12,7 +12,7 @@
 #include <mutex>
 #include <ranges>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 namespace
 {
@@ -211,4 +211,4 @@ auto hotkey_impl::handle_message(const unsigned int message, const std::uintptr_
   it->second();
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

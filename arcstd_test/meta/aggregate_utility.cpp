@@ -5,7 +5,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 template<typename T1 = int, typename T2 = int, typename T3 = int>
@@ -43,4 +43,4 @@ TEST_CASE("aggregate_utility", "[meta]")
   CHECK(to_aggregate.t3.t3 == 5);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

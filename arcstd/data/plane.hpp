@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace bibstd::data
+namespace arcstd::data
 {
 namespace detail
 {
@@ -232,4 +232,4 @@ constexpr auto plane_view<T>::data_view_size(const math::rect<I> area) const -> 
   }
 }
 
-} // namespace bibstd::data
+} // namespace arcstd::data

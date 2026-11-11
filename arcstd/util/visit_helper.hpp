@@ -2,7 +2,7 @@
 
 #include <variant>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace detail
 {
@@ -31,4 +31,4 @@ overloaded(Ts...) -> overloaded<Ts...>;
   return std::visit(detail::overloaded{std::forward<decltype(lambdas)>(lambdas)...}, std::forward<decltype(var)>(var));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

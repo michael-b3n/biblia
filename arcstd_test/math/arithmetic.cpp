@@ -5,7 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <limits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 template<meta::packaged P>
@@ -124,4 +124,4 @@ TEST_CASE("Floating point arithmetic", "[math]")
   // clang-format on
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <optional>
 
-namespace bibstd::io
+namespace bibocr::io
 {
 
 ///
@@ -14,9 +14,9 @@ namespace bibstd::io
 /// \return true if successful, false otherwise
 ///
 [[nodiscard]] auto save_as_bitmap(
-  const data::plane_view<const data::pixel>& data,
-  std::optional<data::plane_view<const data::pixel>::area_type> subarea,
+  const arcstd::data::plane_view<const arcstd::data::pixel>& data,
+  std::optional<arcstd::data::plane_view<const arcstd::data::pixel>::area_type> subarea,
   const std::filesystem::path& path
 ) -> bool;
 
-} // namespace bibstd::io
+} // namespace bibocr::io

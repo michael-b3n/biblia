@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("contains element", "[util]")
@@ -49,4 +49,4 @@ TEST_CASE("contains predicate on view", "[util]")
   CHECK(!contains(empty, [](const auto) { return true; }));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

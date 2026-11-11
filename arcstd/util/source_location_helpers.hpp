@@ -3,7 +3,7 @@
 #include <source_location>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -59,4 +59,4 @@ namespace bibstd::util
   return pretty_folder_name;
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

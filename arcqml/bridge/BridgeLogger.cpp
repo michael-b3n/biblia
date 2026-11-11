@@ -2,12 +2,12 @@
 
 #include <arcstd/util/log.hpp>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-BridgeLogger::BridgeLogger(const bibstd::util::non_owning_ptr<QObject> parent)
+BridgeLogger::BridgeLogger(const arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }
@@ -41,4 +41,4 @@ void BridgeLogger::error(const QString& message) const
   LOG_ERROR("QML: {}", message.toStdString());
 }
 
-} // namespace bibqml
+} // namespace arcqml

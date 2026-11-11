@@ -10,7 +10,7 @@
 #include <QtQmlIntegration/qqmlintegration.h>
 #include <QVariant>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -33,12 +33,12 @@ public: // Typedefs
     /// It is the untranslated key, so that a section stays the same one while the language
     /// changes the name it is written under.
     ///
-    CategoryRole = bibqml::SettingsListModel::EndRole
+    CategoryRole = arcqml::SettingsListModel::EndRole
   };
   Q_ENUM(Role)
 
 public: // Structors
-  explicit SettingsSortModel(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit SettingsSortModel(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~SettingsSortModel() noexcept override;
 
 public: // Overrides
@@ -69,4 +69,4 @@ private: // Implementation
   [[nodiscard]] static QString settingName(const QStringList& categories);
 };
 
-} // namespace bibqml
+} // namespace arcqml

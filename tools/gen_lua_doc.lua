@@ -102,6 +102,8 @@ end
 ---
 local function fields(declaration, source)
   local result = {}
+  -- Code outside of arcstd names the table with its library
+  declaration = declaration:gsub("arcstd::lua::", "lua::")
   for _, field in ipairs(split(declaration:match("^lua::script_table<(.*)>$") or "")) do
     local name, type = field:match('^lua::field<"([%w_]+)"%s*,(.*)>$')
     result[#result + 1] = { name = name, type = lua_type(type, source) }

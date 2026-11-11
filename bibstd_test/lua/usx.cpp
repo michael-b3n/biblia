@@ -161,16 +161,16 @@ TEST_CASE("usx_provides_names_for_every_book", "[lua]")
   {
     INFO(std::format("bundle: {}", bundle));
     auto short_names = std::vector<std::string>{};
-    for(const auto book : util::enum_values<book_id>())
+    for(const auto book : arcstd::util::enum_values<book_id>())
     {
-      INFO(std::format("book: {}", util::enum_name(book)));
+      INFO(std::format("book: {}", arcstd::util::enum_name(book)));
       const auto names = loaded->book_information(book);
       REQUIRE(names.has_value());
       // Every form is filled from the header paragraphs of the book, falling back to the closest alternative
       CHECK(!names->short_name.empty());
       CHECK(!names->abbreviation.empty());
       CHECK(!names->long_name.empty());
-      CHECK(names->short_name != util::enum_name(book));
+      CHECK(names->short_name != arcstd::util::enum_name(book));
       // The header block ends at the first chapter, names grown into verses would be longer
       CHECK(names->long_name.size() < 100u);
       CHECK(names->short_name.size() <= names->long_name.size());

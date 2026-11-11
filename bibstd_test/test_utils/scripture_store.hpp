@@ -63,9 +63,9 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 ///
 struct scripture_store final
 {
-  temp_folder folder;
-  std::shared_ptr<workflow::workflow_script> script;
-  std::shared_ptr<workflow::workflow_cache> cache; // keeps the verses for the readers
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::workflow::workflow_cache> cache; // keeps the verses for the readers
   std::shared_ptr<workflow::workflow_scripture_store> store;
 
   explicit scripture_store(
@@ -123,11 +123,11 @@ inline scripture_store::scripture_store(
   {
     std::filesystem::copy_file(file, scripture_folder() / file.filename());
   }
-  const auto settings = make_script_settings(folder.path());
-  script = std::make_shared<workflow::workflow_script>(settings, lua::bundled::all);
-  cache = std::make_shared<workflow::workflow_cache>(settings, script);
+  const auto settings = arcstd::test_utils::make_script_settings(folder.path());
+  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
   store = std::make_shared<workflow::workflow_scripture_store>(settings, script);
-  load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
   store->load();
 }
 
@@ -148,7 +148,7 @@ inline auto scripture_store::passage(
     file.reader,
     {
       file.file_name,
-      std::string{util::enum_name(ref.book())},
+      std::string{arcstd::util::enum_name(ref.book())},
       static_cast<std::int64_t>(ref.chapter().value),
       static_cast<std::int64_t>(ref.verse().value),
     }

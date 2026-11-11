@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 namespace
 {
@@ -35,7 +35,7 @@ auto write_file(const std::filesystem::path& path, const std::string& content) -
 
 TEST_CASE("property_tree_whitespace", "[framework]")
 {
-  const auto path = std::filesystem::temp_directory_path() / "bibstd_test_property_tree_whitespace.xml";
+  const auto path = std::filesystem::temp_directory_path() / "arcstd_test_property_tree_whitespace.xml";
   // Whitespace an earlier version piled up between the elements on every write
   write_file(
     path, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<settings>\n\n\n  \n  \n<name>\n\n  stored\n</name></settings>\n"
@@ -53,4 +53,4 @@ TEST_CASE("property_tree_whitespace", "[framework]")
   std::filesystem::remove(path);
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

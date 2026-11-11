@@ -1,6 +1,6 @@
 #include "arcstd/workflow/workflow_template.hpp"
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -46,4 +46,4 @@ auto workflow_template::start([[maybe_unused]] const params& /*params*/) -> resu
   return return_failure;
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

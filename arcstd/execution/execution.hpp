@@ -5,9 +5,9 @@
 #include <beman/execution/execution.hpp>
 #include <beman/execution/stop_token.hpp>
 
-namespace bibstd
+namespace arcstd
 {
 
 namespace ex = beman::execution;
 
-} // namespace bibstd
+} // namespace arcstd

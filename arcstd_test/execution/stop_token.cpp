@@ -7,7 +7,7 @@
 #include <ranges>
 #include <thread>
 
-namespace bibstd::execution
+namespace arcstd::execution
 {
 
 // Guards a fix in the vendored library: a callback registered while the stop is requested was lost,
@@ -35,4 +35,4 @@ TEST_CASE("stop_callback_registered_while_the_stop_is_requested_is_called", "[ex
   CHECK(std::ranges::none_of(std::views::iota(0, 20000), loses_callback));
 }
 
-} // namespace bibstd::execution
+} // namespace arcstd::execution

@@ -28,6 +28,7 @@ target_sources(${PROJECT_NAME}
 include(incbin)
 file(GLOB ARCSTD_LUA_INTERNAL CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/internal/*.lua")
 set(INCBIN_HEADER arcstd/lua/embedded_scripts.hpp)
+set(INCBIN_NAMESPACE arcstd::lua::internal)
 configure_incbin_source(internal lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${ARCSTD_LUA_INTERNAL})
 target_sources(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp
@@ -68,7 +69,7 @@ endif()
 #
 # Target compile definitions.
 #
-target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:BIBSTD_DEBUG>)
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:ARCSTD_DEBUG>)
 
 if(WIN32)
   target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)

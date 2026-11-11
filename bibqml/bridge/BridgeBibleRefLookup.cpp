@@ -17,7 +17,7 @@ namespace bibqml
 BridgeBibleRefLookup::BridgeBibleRefLookup(
   std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup,
   std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-  const bibstd::util::non_owning_ptr<QObject> parent
+  const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowBibleRefLookup_{std::move(workflowBibleRefLookup)}
@@ -80,7 +80,7 @@ void BridgeBibleRefLookup::start(std::vector<bibstd::bible::reference_range>&& r
     running_ = true;
     emit runningChanged(running_);
   }
-  LOG_DEBUG("start bible reference lookup: references=[{}]", bibstd::util::format::join(params->references, ", "));
+  LOG_DEBUG("start bible reference lookup: references=[{}]", arcstd::util::format::join(params->references, ", "));
   auto finish = [this, processId = params.process_id()]()
   {
     // A newer lookup took over in the meantime, only its end is of interest.
@@ -95,7 +95,7 @@ void BridgeBibleRefLookup::start(std::vector<bibstd::bible::reference_range>&& r
     workflowBibleRefLookup_->lookup(params);
     QMetaObject::invokeMethod(this, std::move(finish), Qt::QueuedConnection);
   };
-  bibstd::execution::launch(std::move(lookup), scope_);
+  arcstd::execution::launch(std::move(lookup), scope_);
 }
 
 } // namespace bibqml

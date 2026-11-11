@@ -1,6 +1,6 @@
 #include "arcstd/util/exception.hpp"
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -39,4 +39,4 @@ exception::exception(const std::string& error, const std::source_location& loc, 
 {
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

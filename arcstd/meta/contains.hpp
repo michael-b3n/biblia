@@ -2,7 +2,7 @@
 
 #include "arcstd/meta/pack.hpp"
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -14,4 +14,4 @@ namespace bibstd::meta
 template<packaged P, typename T>
 constexpr bool contains_v = type_index_v<P, T> < pack_info<P>::size;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

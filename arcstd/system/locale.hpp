@@ -2,7 +2,7 @@
 
 #include "arcstd/util/language.hpp"
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -21,4 +21,4 @@ struct locale final
   [[nodiscard]] static auto preferred_language() -> util::language;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

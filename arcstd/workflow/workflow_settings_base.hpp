@@ -5,7 +5,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -32,4 +32,4 @@ protected: // Variables
   std::shared_ptr<workflow_settings> workflow_settings_;
 };
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

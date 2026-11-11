@@ -14,7 +14,7 @@
 #include <ranges>
 #include <type_traits>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 namespace detail
 {
@@ -785,4 +785,4 @@ auto setting_validator_list_type_erased<T>::contains(const plain_underlying_type
   return plain_contains_(value);
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

@@ -4,7 +4,7 @@
 
 #include <chrono>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 TEST_CASE("is_duration", "[meta]")
@@ -21,4 +21,4 @@ TEST_CASE("is_duration", "[meta]")
   static_assert(!is_duration_v<std::chrono::system_clock::time_point>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

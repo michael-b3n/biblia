@@ -5,7 +5,7 @@
 #include <chrono>
 #include <source_location>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -41,10 +41,10 @@ public: // Destructor
   ~scoped_timer_logger();
 };
 
-} // namespace bibstd::util
+} // namespace arcstd::util
 
 ///
 /// Scoped timer logging macro.
 ///
 #define SCOPED_TIMER_LOG()                                                                                                     \
-  [[maybe_unused]] const auto BOOST_PP_CAT(__scoped_timer_logger_instance, __LINE__) = ::bibstd::util::scoped_timer_logger();
+  [[maybe_unused]] const auto BOOST_PP_CAT(__scoped_timer_logger_instance, __LINE__) = ::arcstd::util::scoped_timer_logger();

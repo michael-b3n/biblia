@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -17,4 +17,4 @@ struct clipboard final
   [[nodiscard]] static auto set_text(const std::string& text) -> bool;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

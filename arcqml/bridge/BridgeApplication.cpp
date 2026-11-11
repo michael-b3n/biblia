@@ -2,12 +2,12 @@
 
 #include <QMetaObject>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-BridgeApplication::BridgeApplication(const bibstd::util::non_owning_ptr<QObject> parent)
+BridgeApplication::BridgeApplication(const arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }
@@ -87,4 +87,4 @@ void BridgeApplication::requestUpdate()
   emit updateRequested();
 }
 
-} // namespace bibqml
+} // namespace arcqml

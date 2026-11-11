@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -77,4 +77,4 @@ auto for_each_combination(const std::vector<std::vector<T>>& nested, F&& func) -
   );
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

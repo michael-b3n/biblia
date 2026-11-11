@@ -6,7 +6,7 @@
 #include <string>
 #include <variant>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("visit_lambdas dispatches on the active alternative", "[util]")
@@ -60,4 +60,4 @@ TEST_CASE("visit_lambdas returns a reference when the lambdas do", "[util]")
   CHECK(std::get<int>(v) == 42);
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

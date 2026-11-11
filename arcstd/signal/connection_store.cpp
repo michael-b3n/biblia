@@ -1,6 +1,6 @@
 #include "arcstd/signal/connection_store.hpp"
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 
 ///
@@ -26,4 +26,4 @@ auto connection_store::clear() -> void
   connections_.clear();
 }
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

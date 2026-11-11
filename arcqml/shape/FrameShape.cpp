@@ -4,12 +4,12 @@
 
 #include <algorithm>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-FrameShape::FrameShape(bibstd::util::non_owning_ptr<QQuickItem> parent)
+FrameShape::FrameShape(arcstd::util::non_owning_ptr<QQuickItem> parent)
   : QQuickPaintedItem{parent}
 {
   setAntialiasing(true);
@@ -27,7 +27,7 @@ FrameShape::~FrameShape() noexcept = default;
 
 ///
 ///
-void FrameShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
+void FrameShape::paint(arcstd::util::non_owning_ptr<QPainter> painter)
 {
   if((painter == nullptr) || width() <= strokeWidth_ || height() <= strokeWidth_)
   {
@@ -66,4 +66,4 @@ auto FrameShape::buildPath() const -> QPainterPath
   return path;
 }
 
-} // namespace bibqml
+} // namespace arcqml

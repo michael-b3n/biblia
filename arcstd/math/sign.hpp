@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -49,4 +49,4 @@ template<typename T>
   return static_cast<int>(T{0} < value) - static_cast<int>(value < T{0});
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

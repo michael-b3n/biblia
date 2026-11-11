@@ -20,11 +20,15 @@
 #include <mutex>
 #include <optional>
 
+namespace arcstd::workflow
+{
+class workflow_settings;
+} // namespace arcstd::workflow
+
 namespace bibstd::workflow
 {
 class workflow_bible_ref_ocr;
 class workflow_bible_ref_ocr_auto;
-class workflow_settings;
 } // namespace bibstd::workflow
 
 namespace bibqml
@@ -44,31 +48,31 @@ class BridgeBibleRefOcr final : public QObject
   Q_PROPERTY(QPoint cursorPosition MEMBER cursorPosition_ NOTIFY cursorPositionChanged FINAL)
 
   // Typedefs
-  using AutoSearchSettingType = bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<bool>>;
+  using AutoSearchSettingType = arcstd::util::non_owning_ptr<arcstd::framework::setting_type_erased<bool>>;
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr_;
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto_;
-  const bibstd::workflow::workflow_hotkey::shared_sig_type manualSearchSig_;
+  const arcstd::workflow::workflow_hotkey::shared_sig_type manualSearchSig_;
   const AutoSearchSettingType autoSearchSetting_;
 
-  std::optional<bibstd::framework::process_id_type> manualSearchProcessId_;
-  std::optional<CursorPositionPair> manualSearchCursor_;
-  std::optional<bibstd::framework::process_id_type> autoSearchDetectionId_;
-  std::optional<CursorPositionPair> autoSearchCursor_;
+  std::optional<arcstd::framework::process_id_type> manualSearchProcessId_;
+  std::optional<arcqml::CursorPositionPair> manualSearchCursor_;
+  std::optional<arcstd::framework::process_id_type> autoSearchDetectionId_;
+  std::optional<arcqml::CursorPositionPair> autoSearchCursor_;
   bool manualSearchRunning_{false};
   bool autoSearchRunning_{false};
   QPoint cursorPosition_{0, 0};
   mutable std::mutex autoSearchMtx_;
-  bibstd::framework::queued_connections connections_;
+  arcstd::framework::queued_connections connections_;
 
 public: // Structors
   explicit BridgeBibleRefOcr(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr,
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto,
-    const std::shared_ptr<bibstd::workflow::workflow_hotkey>& workflowHotkey,
-    const std::shared_ptr<bibstd::workflow::workflow_settings>& workflowSettings,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    const std::shared_ptr<arcstd::workflow::workflow_hotkey>& workflowHotkey,
+    const std::shared_ptr<arcstd::workflow::workflow_settings>& workflowSettings,
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
 
 public: // Modifiers
@@ -96,25 +100,25 @@ signals:
 private: // Implementation
   void runManualSearch();
   void applyAutoSearch();
-  void setManualSearch(std::optional<bibstd::framework::process_id_type> processId);
-  void notifyManualSearchStarted(bibstd::framework::process_id_type processId);
+  void setManualSearch(std::optional<arcstd::framework::process_id_type> processId);
+  void notifyManualSearchStarted(arcstd::framework::process_id_type processId);
   void notifyManualSearchFinished(
-    bibstd::framework::process_id_type processId,
+    arcstd::framework::process_id_type processId,
     std::optional<bibstd::bible::reference_range> referenceRange,
-    std::optional<bibstd::data::screen_rect_type> boundingBox
+    std::optional<arcstd::data::screen_rect_type> boundingBox
   );
-  void notifyAutoSearchDetecting(bibstd::framework::process_id_type detectionId);
+  void notifyAutoSearchDetecting(arcstd::framework::process_id_type detectionId);
   void notifyAutoSearchDetection(
-    bibstd::framework::process_id_type detectionId,
+    arcstd::framework::process_id_type detectionId,
     bibstd::bible::reference_range referenceRange,
-    std::optional<bibstd::data::screen_rect_type> boundingBox
+    std::optional<arcstd::data::screen_rect_type> boundingBox
   );
   void notifyAutoSearchRunning(bool running);
-  void emitCursorPosition(const std::optional<CursorPositionPair>& cursor);
+  void emitCursorPosition(const std::optional<arcqml::CursorPositionPair>& cursor);
   void emitReference(
     const bibstd::bible::reference_range& referenceRange,
-    const std::optional<bibstd::data::screen_rect_type>& boundingBox,
-    const std::optional<CursorPositionPair>& cursor
+    const std::optional<arcstd::data::screen_rect_type>& boundingBox,
+    const std::optional<arcqml::CursorPositionPair>& cursor
   );
 };
 

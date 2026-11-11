@@ -5,7 +5,7 @@
 #include <iterator>
 #include <string>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 
 ///
@@ -25,4 +25,4 @@ inline auto write_file(const std::filesystem::path& file, const std::string& con
   return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

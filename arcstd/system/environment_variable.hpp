@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -17,4 +17,4 @@ struct environment_variable final
   [[nodiscard]] static auto set(const std::string& name, const std::string& value) -> bool;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

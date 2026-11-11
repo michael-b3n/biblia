@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <numbers>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -42,4 +42,4 @@ qreal DashedBorder::strokes() const
   return std::max(0.0, length) / std::max(strokeWidth_, 1.0);
 }
 
-} // namespace bibqml
+} // namespace arcqml

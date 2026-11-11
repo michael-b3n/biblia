@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::txt
+namespace bibocr::txt
 {
 namespace
 {
@@ -34,7 +34,7 @@ auto forward_as_pix(auto& data, const std::uint32_t width, const std::uint32_t h
   return Pix{
     /*l_uint32          */ .w = width,                                      // width in pixels
     /*l_uint32          */ .h = height,                                     // height in pixels
-    /*l_uint32          */ .d = data::pixel::bits_per_pixel,                // depth in bits
+    /*l_uint32          */ .d = arcstd::data::pixel::bits_per_pixel,        // depth in bits
     /*l_uint32          */ .spp = 4u,                                       // number of samples per pixel
     /*l_uint32          */ .wpl = width,                                    // 32-bit words/line
     /*l_uint32          */ .refcount = 1u,                                  // reference count (1 if no clones)
@@ -57,7 +57,7 @@ constexpr auto page_iterator_level(ocr_engine_tesseract::resolution_tags resolut
   using word_tag = ocr_engine_resolution_tag<ocr_engine_tesseract::word>;
   using line_tag = ocr_engine_resolution_tag<ocr_engine_tesseract::line>;
   using paragraph_tag = ocr_engine_resolution_tag<ocr_engine_tesseract::paragraph>;
-  return util::visit_lambdas(
+  return arcstd::util::visit_lambdas(
     resolution_tag,
     []([[maybe_unused]] word_tag) { return tesseract::RIL_WORD; },
     []([[maybe_unused]] line_tag) { return tesseract::RIL_TEXTLINE; },
@@ -78,7 +78,9 @@ auto get_bounding_box(const auto& ri, const auto level) -> std::optional<ocr_eng
   const auto found = ri->BoundingBox(level, &left, &top, &right, &bottom);
   if(found && left >= 0 && top >= 0 && right >= 1 && bottom >= 1 && right > left && bottom > top)
   {
-    return ocr_engine_tesseract::bounding_box_type(math::coordinates{left, top}, math::coordinates{right, bottom});
+    return ocr_engine_tesseract::bounding_box_type(
+      arcstd::math::coordinates{left, top}, arcstd::math::coordinates{right, bottom}
+    );
   }
   else
   {
@@ -92,18 +94,18 @@ auto get_bounding_box(const auto& ri, const auto level) -> std::optional<ocr_eng
 ///
 auto ocr_engine_tesseract::shipped_tessdata_folder() -> std::filesystem::path
 {
-  return system::filesystem::executable_folder().parent_path() / "share" / "tessdata";
+  return arcstd::system::filesystem::executable_folder().parent_path() / "share" / "tessdata";
 }
 
 ///
 ///
-ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata_path, const util::language language)
+ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata_path, const arcstd::util::language language)
   : tesseract_{new tesseract::TessBaseAPI()}
 {
   if(!std::filesystem::exists(tessdata_path))
   {
     LOG_ERROR("tessdata path does not exist: \"{}\"", tessdata_path.generic_string());
-    throw util::exception("non existent tessdata path");
+    throw arcstd::util::exception("non existent tessdata path");
   }
   auto tessdata_string = tessdata_path.generic_string();
   const auto lang = std::string{language_map.at(language)};
@@ -139,11 +141,11 @@ auto ocr_engine_tesseract::initialize(
   {
     using area_type = pixel_plane_view_type::area_type;
     const auto image_area = area_type{
-      math::coordinates{0, 0},
+      arcstd::math::coordinates{0, 0},
       image.width(), image.height()
     };
-    const auto clipped = math::overlap(*subarea, image_area);
-    if(!clipped || math::empty(*clipped))
+    const auto clipped = arcstd::math::overlap(*subarea, image_area);
+    if(!clipped || arcstd::math::empty(*clipped))
     {
       // The subarea lies outside the image, so there is nothing to recognize. Without an image
       // recognize() and layout_analysis() report an empty result instead of tesseract working
@@ -152,8 +154,8 @@ auto ocr_engine_tesseract::initialize(
       tesseract_->Clear();
       return;
     }
-    width = numeric_cast<decltype(width)>(math::size(clipped->horizontal_range()));
-    height = numeric_cast<decltype(height)>(math::size(clipped->vertical_range()));
+    width = numeric_cast<decltype(width)>(arcstd::math::size(clipped->horizontal_range()));
+    height = numeric_cast<decltype(height)>(arcstd::math::size(clipped->vertical_range()));
     image_data_.resize(image.data_view_size(*clipped));
     std::ranges::copy(image.data_view(*clipped), image_data_.begin());
   }
@@ -178,12 +180,12 @@ auto ocr_engine_tesseract::recognize() const -> recognition_data
   }
   if(const auto retval = tesseract_->Recognize(nullptr); retval != 0)
   {
-    throw util::exception{std::format("tesseract recognition failure: code={}", retval)};
+    throw arcstd::util::exception{std::format("tesseract recognition failure: code={}", retval)};
   }
   std::unique_ptr<tesseract::ResultIterator> ri(tesseract_->GetIterator());
   if(!ri)
   {
-    throw util::exception{"tesseract result iterator creation failure"};
+    throw arcstd::util::exception{"tesseract result iterator creation failure"};
   }
 
   auto result = recognition_data{};
@@ -257,4 +259,4 @@ auto ocr_engine_tesseract::layout_analysis() const -> std::vector<line_layout>
   return result;
 }
 
-} // namespace bibstd::txt
+} // namespace bibocr::txt

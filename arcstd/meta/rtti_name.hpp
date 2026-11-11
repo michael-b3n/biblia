@@ -4,7 +4,7 @@
 
 #include <string_view>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 namespace detail
 {
@@ -55,4 +55,4 @@ struct rtti_name final
   static constexpr auto value = detail::rtti_name_impl<T>::value;
 };
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

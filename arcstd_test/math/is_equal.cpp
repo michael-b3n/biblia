@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 TEST_CASE("is_equal floating point", "[math]")
@@ -82,4 +82,4 @@ TEST_CASE("is_equal non integral comparable type", "[math]")
   static_assert(!is_equal(1.5, 1));
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

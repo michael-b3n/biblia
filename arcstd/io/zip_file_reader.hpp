@@ -14,7 +14,7 @@
 struct zip;
 struct zip_stat;
 
-namespace bibstd::io
+namespace arcstd::io
 {
 
 ///
@@ -178,4 +178,4 @@ private: // Helpers
   [[nodiscard]] auto error_message() const -> std::string;
 };
 
-} // namespace bibstd::io
+} // namespace arcstd::io

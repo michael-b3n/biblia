@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 template<typename...>
@@ -130,4 +130,4 @@ TEST_CASE("pack pack_info", "[meta]")
   static_assert(std::is_same_v<pack_info<test_single<int>>::first_type, int>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

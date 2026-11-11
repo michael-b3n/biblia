@@ -8,7 +8,7 @@
 #include <string>
 #include <thread>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 namespace
 {
@@ -119,4 +119,4 @@ TEST_CASE("queued_connections_survive_an_emission_after_destruction", "[signal]"
   CHECK(calls == 0);
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

@@ -5,7 +5,7 @@
 ///
 /// Global names the Lua state shares with its embedded scripts.
 ///
-namespace bibstd::lua::names
+namespace arcstd::lua::names
 {
 
 inline constexpr std::string_view embedded_script_init = "init.lua";
@@ -31,4 +31,4 @@ inline constexpr std::string_view script_name = "name";
 inline constexpr std::string_view script_description = "description";
 inline constexpr std::string_view script_node = "node";
 
-} // namespace bibstd::lua::names
+} // namespace arcstd::lua::names

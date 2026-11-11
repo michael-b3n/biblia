@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -17,4 +17,4 @@ struct open_browser final
   [[nodiscard]] static auto open(const std::string& url) -> bool;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

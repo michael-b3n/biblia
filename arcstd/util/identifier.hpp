@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -44,4 +44,4 @@ public: // Accessors
   [[nodiscard]] auto string() const -> const std::string&;
 };
 
-} // namespace bibstd::util
+} // namespace arcstd::util

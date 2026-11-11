@@ -6,7 +6,7 @@
 #include <concepts>
 #include <limits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -74,4 +74,4 @@ template<std::integral T, typename T1>
   return v1 == v2;
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <bitset>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -326,4 +326,4 @@ constexpr bitflags<E>::bitflags(const bitset_type bits)
 {
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

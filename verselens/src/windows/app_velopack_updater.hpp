@@ -12,10 +12,10 @@ namespace Velopack
 class UpdateManager;
 } // namespace Velopack
 
-namespace bibqml
+namespace arcqml
 {
 class BridgeApplication;
-} // namespace bibqml
+} // namespace arcqml
 
 namespace verselens
 {
@@ -34,7 +34,7 @@ class app_velopack_updater final
   static constexpr auto download_timeout = std::chrono::hours{2};
 
   // Variables
-  bibqml::BridgeApplication& bridge_;
+  arcqml::BridgeApplication& bridge_;
   std::unique_ptr<Velopack::UpdateManager> manager_;
   bool install_started_{false};
   QTimer timer_;
@@ -45,7 +45,7 @@ public: // Structors
   /// Start checking for updates. A downloaded update is reported
   /// to \p bridge, which has to outlive the updater.
   ///
-  explicit app_velopack_updater(bibqml::BridgeApplication& bridge);
+  explicit app_velopack_updater(arcqml::BridgeApplication& bridge);
   ~app_velopack_updater() noexcept;
   app_velopack_updater(const app_velopack_updater&) = delete;
   app_velopack_updater(app_velopack_updater&&) = delete;

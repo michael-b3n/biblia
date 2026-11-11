@@ -10,13 +10,13 @@
 #include <type_traits>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 /// Variant holding a non owning pointer to a type erased setting of any supported value type.
 ///
-using SettingVariantType = bibstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type;
+using SettingVariantType = arcstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type;
 
 ///
 /// Type trait that removes the optional or vector from a setting value type.
@@ -54,10 +54,10 @@ inline constexpr bool alwaysFalse = false;
 /// Shared pointers to the validators a type erased setting holds, one per validator kind.
 ///
 template<typename T>
-using ValidatorRangeSptrType = bibstd::framework::setting_validator_range_type_erased<T>::sptr_type;
+using ValidatorRangeSptrType = arcstd::framework::setting_validator_range_type_erased<T>::sptr_type;
 template<typename T>
-using ValidatorListSptrType = bibstd::framework::setting_validator_list_type_erased<T>::sptr_type;
-using ValidatorUnboundSptrType = bibstd::framework::setting_validator_unbound::sptr_type;
+using ValidatorListSptrType = arcstd::framework::setting_validator_list_type_erased<T>::sptr_type;
+using ValidatorUnboundSptrType = arcstd::framework::setting_validator_unbound::sptr_type;
 
 ///
 /// \return the value of a QJSValue QML wraps \p variant in, \p variant itself if it is none
@@ -70,7 +70,7 @@ using ValidatorUnboundSptrType = bibstd::framework::setting_validator_unbound::s
 /// \return default setting value, std::nullopt if the value type is not supported
 ///
 [[nodiscard]] auto toDefaultSettingValue(const QVariant& value)
-  -> std::optional<bibstd::framework::setting_type_erased_variant>;
+  -> std::optional<arcstd::framework::setting_type_erased_variant>;
 
 ///
 /// Convert the value of a type erased setting to a QML value.
@@ -99,4 +99,4 @@ using ValidatorUnboundSptrType = bibstd::framework::setting_validator_unbound::s
 ///
 [[nodiscard]] auto toQmlValidatorValues(const SettingVariantType& setting) -> QList<QVariant>;
 
-} // namespace bibqml
+} // namespace arcqml

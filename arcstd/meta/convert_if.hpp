@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -16,4 +16,4 @@ struct convert_if
 template<bool B, typename T, typename R>
 using convert_if_t = typename convert_if<B, T, R>::type;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

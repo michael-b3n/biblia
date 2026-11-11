@@ -9,7 +9,7 @@
 #include <format>
 #include <ranges>
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
@@ -30,7 +30,7 @@ constexpr auto key_column_name = std::string_view{"key"};
 {
   if(columns.size() <= key_column_index || columns.at(key_column_index) != key_column_name)
   {
-    throw bibstd::util::exception(
+    throw arcstd::util::exception(
       std::format(
         "display names document is not headed by the key column: columns={}, first=\"{}\"",
         columns.size(),
@@ -40,18 +40,18 @@ constexpr auto key_column_name = std::string_view{"key"};
   }
   if(columns.size() <= key_column_index + 1)
   {
-    throw bibstd::util::exception(std::format("display names document holds no language column: columns={}", columns.size()));
+    throw arcstd::util::exception(std::format("display names document holds no language column: columns={}", columns.size()));
   }
   auto languages = columns | std::views::drop(key_column_index + 1) | std::ranges::to<std::vector>();
   if(std::ranges::any_of(languages, [](const auto& language) { return language.empty(); }))
   {
-    throw bibstd::util::exception("display names document holds an unnamed language column");
+    throw arcstd::util::exception("display names document holds an unnamed language column");
   }
   auto sorted = languages;
   std::ranges::sort(sorted);
   if(const auto duplicate = std::ranges::adjacent_find(sorted); duplicate != std::ranges::cend(sorted))
   {
-    throw bibstd::util::exception(std::format("display names document names a language twice: language=\"{}\"", *duplicate));
+    throw arcstd::util::exception(std::format("display names document names a language twice: language=\"{}\"", *duplicate));
   }
   return languages;
 }
@@ -66,14 +66,14 @@ DisplayNameTable::DisplayNameTable(const std::span<const std::byte> csv)
   {
     return;
   }
-  const auto reader = bibstd::io::csv_reader{
-    csv, bibstd::io::csv_reader::params{.skip_comment_lines = true, .skip_empty_lines = true}
+  const auto reader = arcstd::io::csv_reader{
+    csv, arcstd::io::csv_reader::params{.skip_comment_lines = true, .skip_empty_lines = true}
   };
   const auto columns = reader.column_names();
   languages_ = read_languages(columns);
 
   std::ranges::for_each(
-    bibstd::util::ranges::index_view_to(reader.row_count()),
+    arcstd::util::ranges::index_view_to(reader.row_count()),
     [&](const auto row)
     {
       auto cells = reader.row(row);
@@ -128,4 +128,4 @@ auto DisplayNameTable::name(const std::string_view language, const std::string_v
   return entry_it->second.at(index);
 }
 
-} // namespace bibqml
+} // namespace arcqml

@@ -148,7 +148,10 @@ auto match_passage_template_section(
 ///
 ///
 auto reference_parser::parse(
-  const std::string_view text, const std::size_t index, const util::language language, const versification& versification
+  const std::string_view text,
+  const std::size_t index,
+  const arcstd::util::language language,
+  const versification& versification
 ) -> parse_result
 {
   if(text.empty() || index >= text.size())
@@ -160,8 +163,9 @@ auto reference_parser::parse(
   {
     return parse_result{};
   }
-  const auto passage_template =
-    create_passage_template(text.substr(book->index_range_numbers.begin, math::size(book->index_range_numbers)), language);
+  const auto passage_template = create_passage_template(
+    text.substr(book->index_range_numbers.begin, arcstd::math::size(book->index_range_numbers)), language
+  );
   const auto index_range_origin = reference_index_range(text, index, *book, passage_template, language);
   if(!index_range_origin)
   {
@@ -175,7 +179,7 @@ auto reference_parser::parse(
 
 ///
 ///
-auto reference_parser::find_book(const std::string_view text, const std::size_t index, const util::language language)
+auto reference_parser::find_book(const std::string_view text, const std::size_t index, const arcstd::util::language language)
   -> std::optional<find_book_result>
 {
   auto found_book = std::optional<find_book_result>{};
@@ -184,14 +188,14 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
   normalized_text.reserve(text.size());
   std::vector<index_range_type> raw_index_ranges;
   raw_index_ranges.reserve(text.size());
-  txt::script_letters::visit(
+  arcstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
-      txt::script_common::for_each_char(
+      arcstd::txt::script_common::for_each_char(
         letters,
         text,
-        [&](const auto character, const auto pos, const txt::script_common::category category) -> void
+        [&](const auto character, const auto pos, const arcstd::txt::script_common::category category) -> void
         {
           const auto append = [&](const std::string_view c) -> void
           {
@@ -206,12 +210,12 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
           };
           switch(category)
           {
-          case txt::script_common::category::letter: append(character); break;
-          case txt::script_common::category::whitespace: /*noop*/ break;
-          case txt::script_common::category::line: /*noop*/ break;
-          case txt::script_common::category::fullstop: /*noop*/ break;
-          case txt::script_common::category::digit: append(character); break;
-          case txt::script_common::category::other: append("*"); break;
+          case arcstd::txt::script_common::category::letter: append(character); break;
+          case arcstd::txt::script_common::category::whitespace: /*noop*/ break;
+          case arcstd::txt::script_common::category::line: /*noop*/ break;
+          case arcstd::txt::script_common::category::fullstop: /*noop*/ break;
+          case arcstd::txt::script_common::category::digit: append(character); break;
+          case arcstd::txt::script_common::category::other: append("*"); break;
           }
         }
       );
@@ -233,7 +237,7 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
       auto pos_rel = std::size_t{0};
       auto pos_offset = std::size_t{0};
       std::ranges::for_each(
-        util::ranges::index_view(normalized_text_view) |
+        arcstd::util::ranges::index_view(normalized_text_view) |
           std::views::take_while([&]([[maybe_unused]] const auto /*i*/)
                                  { return pos_rel != std::string_view::npos && !found_book.has_value(); }),
         [&]([[maybe_unused]] const auto)
@@ -255,7 +259,7 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
             const auto index_numbers_begin = raw_index_ranges.at(pos_abs + name_variant.size()).begin;
             const auto index_numbers_end = raw_index_ranges.at(pos_abs + name_variant.size() + number_end - 1).end;
 
-            if(math::contains(index_range_type{index_book_begin, index_numbers_end}, index))
+            if(arcstd::math::contains(index_range_type{index_book_begin, index_numbers_end}, index))
             {
               found_book = find_book_result{
                 .book = book_id,
@@ -281,7 +285,7 @@ auto reference_parser::reference_index_range(
   const std::size_t index,
   const find_book_result& book,
   const passage_template_result& passage_template,
-  const util::language language
+  const arcstd::util::language language
 ) -> std::optional<index_range_type>
 {
   // Without a passage number the reference ends with the book name.
@@ -298,21 +302,21 @@ auto reference_parser::reference_index_range(
 
 ///
 ///
-auto reference_parser::end_of_word(const std::string_view text, const std::size_t index, const util::language language)
+auto reference_parser::end_of_word(const std::string_view text, const std::size_t index, const arcstd::util::language language)
   -> std::size_t
 {
   auto end = text.size();
-  txt::script_letters::visit(
+  arcstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
       // finds the index of the first whitespace after the character at \p index
-      txt::script_common::for_each_char_while(
+      arcstd::txt::script_common::for_each_char_while(
         letters,
         text.substr(std::min(index, text.size())),
-        [&]([[maybe_unused]] const auto character, const auto pos, const txt::script_common::category category)
+        [&]([[maybe_unused]] const auto character, const auto pos, const arcstd::txt::script_common::category category)
         {
-          const auto whitespace = category == txt::script_common::category::whitespace;
+          const auto whitespace = category == arcstd::txt::script_common::category::whitespace;
           if(whitespace)
           {
             end = index + pos;
@@ -327,27 +331,30 @@ auto reference_parser::end_of_word(const std::string_view text, const std::size_
 
 ///
 ///
-auto reference_parser::find_numbers_after_book_name(const std::string_view text_after_name, const util::language language)
-  -> std::optional<std::size_t>
+auto reference_parser::find_numbers_after_book_name(
+  const std::string_view text_after_name, const arcstd::util::language language
+) -> std::optional<std::size_t>
 {
   auto digit_found = false;
   auto numbers_end = std::optional<std::size_t>{};
-  txt::script_letters::visit(
+  arcstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
-      txt::script_common::for_each_char_while(
+      arcstd::txt::script_common::for_each_char_while(
         letters,
         text_after_name,
-        [&](const auto character, const auto pos, const txt::script_common::category category)
+        [&](const auto character, const auto pos, const arcstd::txt::script_common::category category)
         {
-          if(category == txt::script_common::category::digit)
+          if(category == arcstd::txt::script_common::category::digit)
           {
             digit_found = true;
           }
           else if(
-            category == txt::script_common::category::letter &&
-            !util::contains(number_postfix_chars, [&](const auto v) { return util::string::starts_with(character, v); })
+            category == arcstd::txt::script_common::category::letter &&
+            !arcstd::util::contains(
+              number_postfix_chars, [&](const auto v) { return arcstd::util::string::starts_with(character, v); }
+            )
           )
           {
             numbers_end = pos;
@@ -363,16 +370,16 @@ auto reference_parser::find_numbers_after_book_name(const std::string_view text_
 ///
 ///
 auto reference_parser::try_validate_numbers_range(
-  const std::string_view text_after_name, std::size_t numbers_end, const util::language language
+  const std::string_view text_after_name, std::size_t numbers_end, const arcstd::util::language language
 ) -> std::size_t
 {
-  return txt::script_letters::visit(
+  return arcstd::txt::script_letters::visit(
     language,
     [&](const auto& letters) -> std::size_t
     {
       if(
         numbers_end < text_after_name.size() && numbers_end > 0 &&
-        txt::script_common::is_char(letters, text_after_name, numbers_end, txt::script_common::category::letter)
+        arcstd::txt::script_common::is_char(letters, text_after_name, numbers_end, arcstd::txt::script_common::category::letter)
       )
       {
         const auto text_from_last_number = text_after_name.substr(numbers_end - 1);
@@ -381,7 +388,7 @@ auto reference_parser::try_validate_numbers_range(
           [&](const auto& element)
           {
             const auto& [_, name_variant] = element;
-            return util::string::starts_with(text_from_last_number, name_variant);
+            return arcstd::util::string::starts_with(text_from_last_number, name_variant);
           }
         );
         if(belongs_to_book_name)
@@ -396,7 +403,7 @@ auto reference_parser::try_validate_numbers_range(
 
 ///
 ///
-auto reference_parser::create_passage_template(const std::string_view passage_text, const util::language language)
+auto reference_parser::create_passage_template(const std::string_view passage_text, const arcstd::util::language language)
   -> passage_template_result
 {
   const auto normalized = normalize_passage_text(passage_text, language);
@@ -406,7 +413,7 @@ auto reference_parser::create_passage_template(const std::string_view passage_te
   auto pos = std::size_t{0};
 
   std::ranges::for_each(
-    util::ranges::index_view(normalized.text) |
+    arcstd::util::ranges::index_view(normalized.text) |
       std::views::take_while([&]([[maybe_unused]] auto) { return pos < normalized.text.size(); }),
     [&]([[maybe_unused]] auto)
     {
@@ -456,9 +463,10 @@ auto reference_parser::create_passage_template(const std::string_view passage_te
 
 ///
 ///
-auto reference_parser::normalize_passage_text(const std::string_view text, const util::language language) -> normalized_passage
+auto reference_parser::normalize_passage_text(const std::string_view text, const arcstd::util::language language)
+  -> normalized_passage
 {
-  return txt::script_letters::visit(
+  return arcstd::txt::script_letters::visit(
     language,
     [&](const auto& letters) -> normalized_passage
     {
@@ -471,13 +479,14 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
         result.raw_index_ranges.insert(std::cend(result.raw_index_ranges), normalized.size(), index_range);
       };
       std::ranges::for_each(
-        util::ranges::index_view(text) | std::views::take_while([&](const auto /*i*/) { return counter < text.size(); }),
+        arcstd::util::ranges::index_view(text) |
+          std::views::take_while([&](const auto /*i*/) { return counter < text.size(); }),
         [&]([[maybe_unused]] const auto)
         {
           const auto subview = text.substr(counter);
           if(
             const auto iter = std::ranges::find_if(
-              number_postfixes, [&](const auto postfix) { return util::string::starts_with(subview, postfix); }
+              number_postfixes, [&](const auto postfix) { return arcstd::util::string::starts_with(subview, postfix); }
             );
             iter != std::ranges::cend(number_postfixes)
           )
@@ -485,16 +494,18 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
             append(std::string_view{&gap, 1}, iter->size()); // Ignore possible postfixes
             counter += iter->size();
           }
-          else if(const auto data = txt::script_common::char_info(letters, subview, 0); data)
+          else if(const auto data = arcstd::txt::script_common::char_info(letters, subview, 0); data)
           {
             switch(data->char_category)
             {
-            case txt::script_common::category::letter: [[fallthrough]];
-            case txt::script_common::category::whitespace: append(std::string_view{&gap, 1}, data->char_size); break;
-            case txt::script_common::category::line: append("-", data->char_size); break;
-            case txt::script_common::category::fullstop: [[fallthrough]];
-            case txt::script_common::category::digit: [[fallthrough]];
-            case txt::script_common::category::other: append(subview.substr(0, data->char_size), data->char_size); break;
+            case arcstd::txt::script_common::category::letter: [[fallthrough]];
+            case arcstd::txt::script_common::category::whitespace: append(std::string_view{&gap, 1}, data->char_size); break;
+            case arcstd::txt::script_common::category::line: append("-", data->char_size); break;
+            case arcstd::txt::script_common::category::fullstop: [[fallthrough]];
+            case arcstd::txt::script_common::category::digit: [[fallthrough]];
+            case arcstd::txt::script_common::category::other:
+              append(subview.substr(0, data->char_size), data->char_size);
+              break;
             }
             counter += data->char_size;
           }
@@ -515,7 +526,7 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
 ///
 auto reference_parser::identify_number(std::string_view text, std::size_t& pos) -> std::optional<std::uint32_t>
 {
-  const auto number = txt::find_uint(text.substr(pos));
+  const auto number = arcstd::txt::find_uint(text.substr(pos));
   if(number)
   {
     pos += number->post_value_offset;
@@ -533,7 +544,7 @@ auto reference_parser::identify_transition(const std::string_view text, std::siz
     return std::nullopt;
   }
   const auto transition_char = text.at(pos);
-  if(util::contains(transition_chars, transition_char))
+  if(arcstd::util::contains(transition_chars, transition_char))
   {
     ++pos;
     return transition_char;
@@ -564,7 +575,7 @@ auto reference_parser::skip_gap(
   }();
   // A pending full stop ends a sentence instead of waiting for a number, so it does not bridge the gap.
   const auto transition_bridges = transition_pending && *transition_pending != fullstop_char;
-  const auto transition_follows = end < text.size() && util::contains(transition_chars, text.at(end));
+  const auto transition_follows = end < text.size() && arcstd::util::contains(transition_chars, text.at(end));
   const auto result = transition_bridges || transition_follows;
   if(result)
   {
@@ -579,9 +590,9 @@ auto reference_parser::match_passage_template(
   const book_id book, const passage_template_type& passage_template, const versification& versification
 ) -> std::vector<reference_range>
 {
-  if(!util::valid(book))
+  if(!arcstd::util::valid(book))
   {
-    throw util::exception("invalid book ID");
+    throw arcstd::util::exception("invalid book ID");
   }
   auto result = std::vector<reference_range>{};
   const auto down_transition_chars = passage_template_transition_chars(passage_template);
@@ -680,7 +691,7 @@ auto reference_parser::passage_template_transition_chars(const passage_template_
     passage_template | std::views::filter([](const auto e) { return std::holds_alternative<char>(e); }) |
       std::views::transform([](const auto e) { return std::get<char>(e); }) |
       std::views::filter([](const auto c) { return c != '-'; }) |
-      std::views::filter([&](const auto c) { return !util::contains(result, c); }),
+      std::views::filter([&](const auto c) { return !arcstd::util::contains(result, c); }),
     [&](const auto c) { result.push_back(c); }
   );
   return result;
@@ -740,7 +751,7 @@ auto reference_parser::create_passage_sections(
       current_result = passage_section{};
     }
   };
-  std::ranges::for_each(passage_template, [&](const auto e) { util::visit_lambdas(e, handle_uint32_t, handle_char); });
+  std::ranges::for_each(passage_template, [&](const auto e) { arcstd::util::visit_lambdas(e, handle_uint32_t, handle_char); });
   result.emplace_back(std::move(current_result));
   return result;
 }

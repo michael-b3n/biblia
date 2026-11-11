@@ -10,7 +10,7 @@ namespace verselens::qml
 
 ///
 ///
-SpeechBubbleShape::SpeechBubbleShape(bibstd::util::non_owning_ptr<QQuickItem> parent)
+SpeechBubbleShape::SpeechBubbleShape(arcstd::util::non_owning_ptr<QQuickItem> parent)
   : QQuickPaintedItem{parent}
 {
   setAntialiasing(true);
@@ -38,7 +38,7 @@ SpeechBubbleShape::~SpeechBubbleShape() noexcept = default;
 
 ///
 ///
-void SpeechBubbleShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
+void SpeechBubbleShape::paint(arcstd::util::non_owning_ptr<QPainter> painter)
 {
   if((painter == nullptr) || path_.isEmpty())
   {

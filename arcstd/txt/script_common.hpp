@@ -11,7 +11,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace bibstd::txt
+namespace arcstd::txt
 {
 
 ///
@@ -293,4 +293,4 @@ constexpr auto script_common::is_digit_impl(const std::string_view string_view, 
            : std::nullopt;
 }
 
-} // namespace bibstd::txt
+} // namespace arcstd::txt

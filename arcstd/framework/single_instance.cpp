@@ -7,7 +7,7 @@
 #include <fstream>
 #include <tuple>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -55,4 +55,4 @@ auto single_instance::error() const -> const std::optional<std::string>&
   return error_;
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

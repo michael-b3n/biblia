@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 TEST_CASE("lua_state_owner_setup", "[lua]")
@@ -91,4 +91,4 @@ TEST_CASE("lua_state_owner_is_locked_again_from_a_script", "[lua]")
   CHECK(owner.lock()->script("return root.interface.read_value() * 2").get<int>() == 14);
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

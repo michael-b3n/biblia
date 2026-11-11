@@ -4,7 +4,7 @@
 #include <ranges>
 #include <type_traits>
 
-namespace bibstd::util::ranges
+namespace arcstd::util::ranges
 {
 
 ///
@@ -63,4 +63,4 @@ template<std::ranges::sized_range R>
   );
 }
 
-} // namespace bibstd::util::ranges
+} // namespace arcstd::util::ranges

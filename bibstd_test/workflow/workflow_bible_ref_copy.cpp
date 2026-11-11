@@ -53,9 +53,9 @@ constexpr auto scripture_script = R"(
 ///
 struct copy_fixture final
 {
-  test_utils::clipboard_restorer clipboard;
-  test_utils::temp_folder folder;
-  std::shared_ptr<workflow_script> script;
+  arcstd::test_utils::clipboard_restorer clipboard;
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
   std::shared_ptr<workflow_scripture> scripture;
   std::shared_ptr<workflow_bible_ref_copy> copy;
 
@@ -71,14 +71,14 @@ copy_fixture::copy_fixture(const std::string_view name, const bool with_scriptur
   std::filesystem::create_directories(scripts_folder);
   if(with_scripture)
   {
-    test_utils::write_file(scripts_folder / "scripture.lua", scripture_script);
+    arcstd::test_utils::write_file(scripts_folder / "scripture.lua", scripture_script);
   }
-  const auto settings = test_utils::make_script_settings(folder.path(), with_scripture);
-  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
+  const auto settings = arcstd::test_utils::make_script_settings(folder.path(), with_scripture);
+  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   copy = std::make_shared<workflow_bible_ref_copy>(settings, scripture);
   // Last, as the app does
-  test_utils::load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
 }
 
 ///
@@ -116,7 +116,7 @@ copy_fixture::copy_fixture(const std::string_view name, const bool with_scriptur
 [[nodiscard]] auto copied(const copy_fixture& fixture, const workflow_bible_ref_copy::params& params)
   -> std::optional<std::string>
 {
-  return fixture.copy->copy(params) ? test_utils::clipboard_text() : std::nullopt;
+  return fixture.copy->copy(params) ? arcstd::test_utils::clipboard_text() : std::nullopt;
 }
 
 } // namespace
@@ -126,10 +126,11 @@ TEST_CASE("workflow_bible_ref_copy_defaults_to_the_reference", "[.clipboard][wor
 {
   const auto fixture = copy_fixture{"workflow_bible_ref_copy_defaults_to_the_reference", true};
   REQUIRE(
-    test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
   );
   REQUIRE(fixture.scripture->settings().default_scripture_name->value("ABC (Scripture)"));
-  const auto german = system::locale::preferred_language() == util::language::german;
+  const auto german = arcstd::system::locale::preferred_language() == arcstd::util::language::german;
   // The verses, then the reference and the abbreviation of the scripture
   const auto separator = german ? "," : ":";
   CHECK(
@@ -152,7 +153,8 @@ TEST_CASE("workflow_bible_ref_copy_writes_through_the_mask", "[.clipboard][workf
   const auto fixture = copy_fixture{"workflow_bible_ref_copy_writes_through_the_mask", true};
   const auto& settings = fixture.copy->settings();
   REQUIRE(
-    test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
   );
   REQUIRE(fixture.scripture->settings().default_scripture_name->value("ABC (Scripture)"));
 

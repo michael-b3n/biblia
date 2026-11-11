@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace bibstd::data
+namespace arcstd::data
 {
 
 ///
@@ -25,4 +25,4 @@ struct pixel final
   auto operator==(const pixel&) const -> bool = default;
 };
 
-} // namespace bibstd::data
+} // namespace arcstd::data

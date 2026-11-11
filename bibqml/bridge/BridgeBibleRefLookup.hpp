@@ -36,15 +36,15 @@ class BridgeBibleRefLookup final : public QObject
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup_;
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
-  bibstd::framework::process_id_type processId_;
+  arcstd::framework::process_id_type processId_;
   bool running_{false};
-  bibstd::execution::scope scope_;
+  arcstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeBibleRefLookup(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup,
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeBibleRefLookup() noexcept override;
 

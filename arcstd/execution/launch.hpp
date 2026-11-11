@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace bibstd::execution
+namespace arcstd::execution
 {
 namespace detail
 {
@@ -33,4 +33,4 @@ auto launch(F&& work, scope& scope) -> void
   );
 }
 
-} // namespace bibstd::execution
+} // namespace arcstd::execution

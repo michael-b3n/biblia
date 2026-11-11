@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <ranges>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -23,7 +23,7 @@ auto LocalPath::toLocalPaths(const QList<QUrl>& urls) -> std::vector<std::filesy
 
 ///
 ///
-LocalPath::LocalPath(bibstd::util::non_owning_ptr<QObject> parent)
+LocalPath::LocalPath(arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }
@@ -46,4 +46,4 @@ QString LocalPath::fromUrl(const QUrl& url) const
   return url.toLocalFile();
 }
 
-} // namespace bibqml
+} // namespace arcqml

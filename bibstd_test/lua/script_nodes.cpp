@@ -32,7 +32,7 @@ TEST_CASE("script_nodes_are_offered_to_the_other_scripts", "[lua]")
   CHECK_FALSE(fixture.script->scripts().contains("Another"));
   CHECK_FALSE(fixture.script->scripts().contains("Empty"));
   // Only the functions named after a manifest are the script's functions
-  CHECK(fixture.script->scripts().at("Mine").functions == std::set<util::path>{util::path{"test.answer"}});
+  CHECK(fixture.script->scripts().at("Mine").functions == std::set<arcstd::util::path>{arcstd::util::path{"test.answer"}});
   // Name, description and node describe the script, they are no entries of its node
   CHECK(fixture.check("scripts.mine.description == nil"));
   // Read-only for scripts
@@ -40,7 +40,7 @@ TEST_CASE("script_nodes_are_offered_to_the_other_scripts", "[lua]")
 
   // Loaded anew, the node of a script gone is gone, the other one takes it
   std::filesystem::remove(fixture.folder.path() / "scripts" / "a.lua");
-  test_utils::load_scripts(*fixture.script);
+  arcstd::test_utils::load_scripts(*fixture.script);
   CHECK(fixture.check("scripts.mine.answer() == 0"));
 }
 

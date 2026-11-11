@@ -12,7 +12,7 @@
 #include <tuple>
 #include <utility>
 
-namespace bibstd::core
+namespace arcstd::core
 {
 namespace
 {
@@ -218,4 +218,4 @@ auto core_cache::succeeded(const int status, const std::string_view action) cons
   return false;
 }
 
-} // namespace bibstd::core
+} // namespace arcstd::core

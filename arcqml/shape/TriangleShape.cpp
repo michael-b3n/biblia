@@ -3,12 +3,12 @@
 #include <QPainter>
 #include <QPainterPath>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-TriangleShape::TriangleShape(bibstd::util::non_owning_ptr<QQuickItem> parent)
+TriangleShape::TriangleShape(arcstd::util::non_owning_ptr<QQuickItem> parent)
   : QQuickPaintedItem{parent}
 {
   setAntialiasing(true);
@@ -21,7 +21,7 @@ TriangleShape::~TriangleShape() noexcept = default;
 
 ///
 ///
-void TriangleShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
+void TriangleShape::paint(arcstd::util::non_owning_ptr<QPainter> painter)
 {
   if((painter == nullptr) || width() <= 0 || height() <= 0)
   {
@@ -38,4 +38,4 @@ void TriangleShape::paint(bibstd::util::non_owning_ptr<QPainter> painter)
   painter->fillPath(path, color_);
 }
 
-} // namespace bibqml
+} // namespace arcqml

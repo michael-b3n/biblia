@@ -14,7 +14,7 @@
 #include <optional>
 #include <variant>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -50,7 +50,7 @@ class SettingBinding final : public QObject
   const QVariant defaultValue_;
   const Validator validator_;
   std::optional<SettingVariantType> setting_;
-  bibstd::framework::queued_connections connections_;
+  arcstd::framework::queued_connections connections_;
 
 public: // Structors
   ///
@@ -58,16 +58,16 @@ public: // Structors
   /// setting of that path exists yet. A binding that cannot be established reports the
   /// default value as value and rejects any write.
   ///
-  explicit SettingBinding(QString path, QVariant defaultValue, bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit SettingBinding(QString path, QVariant defaultValue, arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   explicit SettingBinding(
-    QString path, QVariant defaultValue, QVariantList available, bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    QString path, QVariant defaultValue, QVariantList available, arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   explicit SettingBinding(
     QString path,
     QVariant defaultValue,
     QVariant minimum,
     QVariant maximum,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~SettingBinding() noexcept override;
 
@@ -103,7 +103,7 @@ signals:
   void valueChanged();
 
 private: // Structors
-  SettingBinding(QString path, QVariant defaultValue, Validator validator, bibstd::util::non_owning_ptr<QObject> parent);
+  SettingBinding(QString path, QVariant defaultValue, Validator validator, arcstd::util::non_owning_ptr<QObject> parent);
 
 private: // Implementation
   ///
@@ -117,7 +117,7 @@ private: // Implementation
   /// \return the validator of a new setting of type \p T
   ///
   template<typename T>
-  [[nodiscard]] auto settingValidator() const -> bibstd::framework::setting_validator<T>;
+  [[nodiscard]] auto settingValidator() const -> arcstd::framework::setting_validator<T>;
 };
 
-} // namespace bibqml
+} // namespace arcqml

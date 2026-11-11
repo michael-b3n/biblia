@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 namespace
 {
@@ -329,4 +329,4 @@ auto workflow_script::add_script(const lua::state& state, const std::string& fil
   script.functions.insert_range(function_names);
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

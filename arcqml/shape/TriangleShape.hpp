@@ -6,7 +6,7 @@
 #include <QQuickPaintedItem>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -23,14 +23,14 @@ class TriangleShape : public QQuickPaintedItem
   QColor color_{Qt::black};
 
 public: // Structors
-  explicit TriangleShape(bibstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
+  explicit TriangleShape(arcstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
   ~TriangleShape() noexcept override;
 
 public: // Overrides
-  void paint(bibstd::util::non_owning_ptr<QPainter> painter) override;
+  void paint(arcstd::util::non_owning_ptr<QPainter> painter) override;
 
 signals:
   void colorChanged();
 };
 
-} // namespace bibqml
+} // namespace arcqml

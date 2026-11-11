@@ -1,6 +1,6 @@
 #pragma once
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -83,4 +83,4 @@ struct hotkey_common final
   };
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

@@ -17,7 +17,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
@@ -38,7 +38,7 @@ auto isInternalSetting(const std::string_view path) -> bool
 ///
 auto toCategories(const std::string& path) -> QStringList
 {
-  return bibstd::util::path{path}.sections() |
+  return arcstd::util::path{path}.sections() |
          std::views::transform([](const auto& segment) { return QString::fromStdString(segment); }) |
          std::ranges::to<QStringList>();
 }
@@ -92,7 +92,7 @@ constexpr auto getWrapperType(const auto& setting) -> SettingsListModel::Wrapper
 auto getValidatorType(const auto& setting) -> SettingsListModel::ValidatorType
 {
   using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(setting)>>::value_type;
-  return bibstd::util::visit_lambdas(
+  return arcstd::util::visit_lambdas(
     setting->validator,
     []([[maybe_unused]] const ValidatorUnboundSptrType&) { return SettingsListModel::ValidatorType::UnboundValidatorType; },
     []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&)
@@ -107,7 +107,7 @@ auto getValidatorType(const auto& setting) -> SettingsListModel::ValidatorType
 ///
 ///
 SettingsListModel::SettingsListModel(
-  std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings, const bibstd::util::non_owning_ptr<QObject> parent
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings, const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QAbstractListModel{parent}
   , workflowSettings_{std::move(workflowSettings)}
@@ -121,7 +121,7 @@ SettingsListModel::SettingsListModel(
 
   // Settings may also be created after this model was constructed, e.g. by the QML layer.
   workflowSettings_->connect_queued(
-    &bibstd::workflow::workflow_settings_signals::setting_created,
+    &arcstd::workflow::workflow_settings_signals::setting_created,
     [this](const std::string& path)
     {
       LOG_DEBUG("notify setting created: path=\"{}\"", path)
@@ -212,7 +212,7 @@ bool SettingsListModel::setData(const QModelIndex& index, const QVariant& value,
   }
   catch(...)
   {
-    LOG_ERROR("exception writing setting value: {}", bibstd::util::exception_report());
+    LOG_ERROR("exception writing setting value: {}", arcstd::util::exception_report());
     emit dataChanged(index, index, {role});
     return false;
   }
@@ -236,7 +236,7 @@ void SettingsListModel::disconnect()
 ///
 void SettingsListModel::appendSetting(const std::string& path)
 {
-  if(isInternalSetting(path) || bibstd::util::contains(entries_, [&path](const auto& entry) { return entry.path == path; }))
+  if(isInternalSetting(path) || arcstd::util::contains(entries_, [&path](const auto& entry) { return entry.path == path; }))
   {
     return;
   }
@@ -262,9 +262,9 @@ void SettingsListModel::appendSetting(const std::string& path)
 void SettingsListModel::addSetting(const std::string& path, const auto& setting)
 {
   addEntry(path, setting);
-  const auto rowIndex = bibstd::math::arithmetic::subtract(entries_.size(), decltype(entries_.size()){1}).value();
+  const auto rowIndex = arcstd::math::arithmetic::subtract(entries_.size(), decltype(entries_.size()){1}).value();
   setting->signal_adapter.connect_queued(
-    &bibstd::framework::setting_signals::value_changed,
+    &arcstd::framework::setting_signals::value_changed,
     [this, path, rowIndex]()
     {
       LOG_DEBUG("notify setting value changed: path=\"{}\", row={}", path, rowIndex)
@@ -277,11 +277,11 @@ void SettingsListModel::addSetting(const std::string& path, const auto& setting)
     connections_
   );
   setting->signal_adapter.connect_queued(
-    &bibstd::framework::setting_signals::validator_changed,
+    &arcstd::framework::setting_signals::validator_changed,
     [this, setting, path, rowIndex]()
     {
       using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(setting)>>::value_type;
-      bibstd::util::visit_lambdas(
+      arcstd::util::visit_lambdas(
         setting->validator,
         []([[maybe_unused]] const ValidatorUnboundSptrType&) { /*noop*/ },
         []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&) { /*noop*/ },
@@ -323,4 +323,4 @@ void SettingsListModel::addEntry(std::string path, const auto& setting)
   );
 }
 
-} // namespace bibqml
+} // namespace arcqml

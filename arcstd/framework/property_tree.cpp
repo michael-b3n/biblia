@@ -9,7 +9,7 @@
 #include <fstream>
 #include <ranges>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -104,4 +104,4 @@ property_tree::~property_tree() noexcept
   }
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

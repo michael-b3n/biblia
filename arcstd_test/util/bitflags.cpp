@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -438,4 +438,4 @@ TEST_CASE("bitflags complex scenarios", "[util]")
   }
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

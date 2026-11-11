@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace
 {
@@ -202,4 +202,4 @@ logger::~logger() noexcept
   spdlog::shutdown();
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

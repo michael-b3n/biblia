@@ -14,7 +14,7 @@ namespace rapidcsv
 class Document;
 } // namespace rapidcsv
 
-namespace bibstd::io
+namespace arcstd::io
 {
 
 ///
@@ -117,4 +117,4 @@ public: // Accessors
   [[nodiscard]] auto column(std::string_view column) const -> std::vector<std::string>;
 };
 
-} // namespace bibstd::io
+} // namespace arcstd::io

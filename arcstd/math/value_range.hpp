@@ -14,7 +14,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -319,14 +319,14 @@ template<arithmetic_type T>
   }
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math
 
 ///
 ///
-template<bibstd::math::arithmetic_type ValueType>
-struct std::formatter<bibstd::math::value_range<ValueType>> : std::formatter<std::string>
+template<arcstd::math::arithmetic_type ValueType>
+struct std::formatter<arcstd::math::value_range<ValueType>> : std::formatter<std::string>
 {
-  auto format(const bibstd::math::value_range<ValueType>& e, std::format_context& ctx) const
+  auto format(const arcstd::math::value_range<ValueType>& e, std::format_context& ctx) const
   {
     if constexpr(std::integral<ValueType>)
     {

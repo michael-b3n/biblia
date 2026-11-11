@@ -3,7 +3,7 @@
 #include <cmath>
 #include <concepts>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 namespace detail
 {
@@ -33,4 +33,4 @@ template<std::floating_point... T>
   return (detail::is_valid(value) && ...);
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

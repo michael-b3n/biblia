@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -287,4 +287,4 @@ auto property_parser::write(const property_path_type& path, property_tree_type& 
   );
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

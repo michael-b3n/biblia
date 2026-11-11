@@ -3,7 +3,7 @@
 #include <array>
 #include <string_view>
 
-namespace bibstd::txt
+namespace arcstd::txt
 {
 
 ///
@@ -48,4 +48,4 @@ struct script_latin final
   };
 };
 
-} // namespace bibstd::txt
+} // namespace arcstd::txt

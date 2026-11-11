@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("identifier", "[util]")
@@ -23,4 +23,4 @@ TEST_CASE("identifier", "[util]")
   CHECK_FALSE(identifier::from(""));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

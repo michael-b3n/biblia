@@ -4,7 +4,7 @@
 #include <format>
 #include <string>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -18,4 +18,4 @@ namespace bibstd::util
   return std::format("{:%F_%H-%M-%S}", std::chrono::zoned_time{cet, std::chrono::floor<std::chrono::milliseconds>(time_point)});
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

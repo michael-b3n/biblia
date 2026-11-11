@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -37,14 +37,14 @@ protected: // Variables
 ///
 [[nodiscard]] auto exception_report() -> std::string;
 
-} // namespace bibstd::util
+} // namespace arcstd::util
 
 ///
 ///
 template<>
-struct std::formatter<bibstd::util::exception> : std::formatter<std::string>
+struct std::formatter<arcstd::util::exception> : std::formatter<std::string>
 {
-  auto format(const bibstd::util::exception& ex, std::format_context& ctx) const
+  auto format(const arcstd::util::exception& ex, std::format_context& ctx) const
   {
     const auto* msg = ex.what();
     decltype(auto) loc = ex.where();

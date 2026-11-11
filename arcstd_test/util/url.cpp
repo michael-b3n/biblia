@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::util::url
+namespace arcstd::util::url
 {
 
 TEST_CASE("is_web_url", "[util]")
@@ -24,4 +24,4 @@ TEST_CASE("is_web_url", "[util]")
   CHECK_FALSE(is_web_url(""));
 }
 
-} // namespace bibstd::util::url
+} // namespace arcstd::util::url

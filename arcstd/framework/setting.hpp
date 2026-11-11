@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -194,4 +194,4 @@ auto setting<T>::validate() -> void
   );
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

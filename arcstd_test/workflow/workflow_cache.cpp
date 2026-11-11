@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 TEST_CASE("workflow_cache_keeps_values_of_scripts", "[workflow]")
@@ -64,4 +64,4 @@ TEST_CASE("workflow_cache_takes_its_functions_back_on_destruction", "[workflow]"
   CHECK(script->state().run_script("after.lua", "return 1"));
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

@@ -5,7 +5,7 @@
 #include <concepts>
 #include <functional>
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 namespace detail
 {
@@ -119,4 +119,4 @@ auto adapter<T>::notify(auto sig_projection, auto&&... args) -> auto
   return std::invoke(sig_projection, sigs_)(std::forward<decltype(args)>(args)...);
 }
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

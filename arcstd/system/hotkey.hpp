@@ -5,7 +5,7 @@
 
 #include <functional>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -37,4 +37,4 @@ public: // Static modifiers
   static auto unregister_callback(key key, key_modifier mod) -> void;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

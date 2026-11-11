@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace bibstd::system::winrt_capture
+namespace bibocr::system::winrt_capture
 {
 namespace
 {
@@ -44,7 +44,7 @@ auto create_d3d_device(winrt::com_ptr<ID3D11Device>& d3d_device, winrt::com_ptr<
   }
   if(FAILED(hr))
   {
-    LOG_WARN("graphics device for screen capture not created: {}", to_string(hr));
+    LOG_WARN("graphics device for arcstd::system::screen capture not created: {}", to_string(hr));
     return false;
   }
   return true;
@@ -87,7 +87,7 @@ auto device::create() -> std::shared_ptr<device>
   }
   catch(const winrt::hresult_error& error)
   {
-    LOG_WARN("graphics device for screen capture not created: {}", winrt::to_string(error.message()));
+    LOG_WARN("graphics device for arcstd::system::screen capture not created: {}", winrt::to_string(error.message()));
     return nullptr;
   }
 }
@@ -186,19 +186,19 @@ auto device::read_region(const texture_type& source, const region reg, pixel_pla
   D3D11_MAPPED_SUBRESOURCE mapped = {};
   if(const auto hr = context_->Map(staging_.get(), 0, D3D11_MAP_READ, 0, &mapped); FAILED(hr))
   {
-    LOG_ERROR("capture screen failed: {}", "captured region not readable");
+    LOG_ERROR("capture arcstd::system::screen failed: {}", "captured region not readable");
     return false;
   }
-  const auto unmap = util::scope_guard{[this] { context_->Unmap(staging_.get(), 0); }};
+  const auto unmap = arcstd::util::scope_guard{[this] { context_->Unmap(staging_.get(), 0); }};
 
   // Both the texture rows and the pixels run from the topmost row down, so the rows map straight
   // onto each other. Only the stride differs, the texture pads its rows.
   const auto width = numeric_cast<std::size_t>(reg.width);
   const auto row_pitch = numeric_cast<std::size_t>(mapped.RowPitch);
-  for(const auto row : util::ranges::index_view_to(numeric_cast<std::size_t>(reg.height)))
+  for(const auto row : arcstd::util::ranges::index_view_to(numeric_cast<std::size_t>(reg.height)))
   {
     const auto* const source_row = static_cast<const std::uint8_t*>(mapped.pData) + (row * row_pitch);
-    for(const auto column : util::ranges::index_view_to(width))
+    for(const auto column : arcstd::util::ranges::index_view_to(width))
     {
       const auto* const source_pixel = source_row + (column * frame_pixel_size);
       auto& p = pix.at((row * width) + column);
@@ -233,7 +233,7 @@ auto device::prepare_staging(const std::int32_t width, const std::int32_t height
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
   if(const auto hr = d3d_device_->CreateTexture2D(&desc, nullptr, staging_.put()); FAILED(hr))
   {
-    LOG_ERROR("capture screen failed: {}", "readable texture not created");
+    LOG_ERROR("capture arcstd::system::screen failed: {}", "readable texture not created");
     return false;
   }
   staging_width_ = width;
@@ -241,4 +241,4 @@ auto device::prepare_staging(const std::int32_t width, const std::int32_t height
   return true;
 }
 
-} // namespace bibstd::system::winrt_capture
+} // namespace bibocr::system::winrt_capture

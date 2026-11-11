@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 // Hidden, it replaces the clipboard of whoever runs it. Run it with: arcstd_test "[.clipboard]"
@@ -18,4 +18,4 @@ TEST_CASE("clipboard replaces the text", "[.clipboard]")
   CHECK(test_utils::clipboard_text() == text);
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

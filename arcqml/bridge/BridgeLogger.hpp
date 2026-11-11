@@ -6,7 +6,7 @@
 #include <QString>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -19,7 +19,7 @@ class BridgeLogger : public QObject
   QML_SINGLETON
 
 public: // Structors
-  explicit BridgeLogger(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit BridgeLogger(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
 
 public: // Invokable methods
   Q_INVOKABLE void debug(const QString& message) const;
@@ -28,4 +28,4 @@ public: // Invokable methods
   Q_INVOKABLE void error(const QString& message) const;
 };
 
-} // namespace bibqml
+} // namespace arcqml

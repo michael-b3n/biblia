@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <span>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -45,7 +45,7 @@ public: // Static interface
   /// Access the instance the QML layer operates on.
   /// \return the instance, nullptr if no instance exists
   ///
-  [[nodiscard]] static bibstd::util::non_owning_ptr<Translations> instance();
+  [[nodiscard]] static arcstd::util::non_owning_ptr<Translations> instance();
 
   ///
   /// QML singleton factory. The returned instance stays owned by the application.
@@ -57,7 +57,7 @@ public: // Structors
   ///
   /// \throws util::exception if the document does not describe a table of display names
   ///
-  explicit Translations(std::span<const std::byte> csv, bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit Translations(std::span<const std::byte> csv, arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~Translations() noexcept override;
 
 public: // Accessors
@@ -94,4 +94,4 @@ signals:
   void languageChanged();
 };
 
-} // namespace bibqml
+} // namespace arcqml

@@ -7,7 +7,7 @@
 #include <string>
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -161,4 +161,4 @@ template<enum_type E>
   return magic_enum::enum_cast<E>(to_integral(e)).has_value();
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

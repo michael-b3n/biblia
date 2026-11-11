@@ -14,7 +14,7 @@
 #include <string_view>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 namespace
 {
@@ -178,4 +178,4 @@ TEST_CASE("lua_value_cast_converts_script_tables", "[lua]")
   CHECK(table{"a", 1, std::nullopt}.get<"count">() == 1);
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

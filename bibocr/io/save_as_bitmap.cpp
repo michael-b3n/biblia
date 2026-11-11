@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <fstream>
 
-namespace bibstd::io
+namespace bibocr::io
 {
 namespace
 {
@@ -55,8 +55,8 @@ struct bmp_file_dib_info final
 ///
 ///
 auto save_as_bitmap(
-  const data::plane_view<const data::pixel>& data,
-  const std::optional<data::plane_view<const data::pixel>::area_type> subarea,
+  const arcstd::data::plane_view<const arcstd::data::pixel>& data,
+  const std::optional<arcstd::data::plane_view<const arcstd::data::pixel>::area_type> subarea,
   const std::filesystem::path& path
 ) -> bool
 {
@@ -76,27 +76,27 @@ auto save_as_bitmap(
   {
     if(subarea)
     {
-      const auto img = decltype(subarea)::value_type(math::coordinates{0, 0}, data.width(), data.height());
-      const auto overlap = math::overlap(*subarea, img);
+      const auto img = decltype(subarea)::value_type(arcstd::math::coordinates{0, 0}, data.width(), data.height());
+      const auto overlap = arcstd::math::overlap(*subarea, img);
       if(overlap)
       {
         return *overlap;
       }
-      return decltype(overlap)::value_type{math::coordinates(0, 0), 0u, 0u};
+      return decltype(overlap)::value_type{arcstd::math::coordinates(0, 0), 0u, 0u};
     }
     else
     {
-      return decltype(subarea)::value_type{math::coordinates(0, 0), data.width(), data.height()};
+      return decltype(subarea)::value_type{arcstd::math::coordinates(0, 0), data.width(), data.height()};
     }
   }();
 
-  if(math::empty(rect))
+  if(arcstd::math::empty(rect))
   {
     LOG_INFO("empty pixels not be saved to {}", path.string());
     return true;
   }
-  const auto width = math::size(rect.horizontal_range());
-  const auto height = math::size(rect.vertical_range());
+  const auto width = arcstd::math::size(rect.horizontal_range());
+  const auto height = arcstd::math::size(rect.vertical_range());
   // Calculate row and pixels size
   const std::uint32_t row_size =
     (width * 3) + (width % 4); // The size of each row is rounded up to a multiple of 4 bytes by padding.
@@ -130,15 +130,15 @@ auto save_as_bitmap(
   // Write each row and column of Pixels into the image file -- we write
   // the rows upside-down to satisfy the easiest BMP format.
 
-  const auto contains_row_index = [&](const auto row_idx) { return math::contains(rect.vertical_range(), row_idx); };
+  const auto contains_row_index = [&](const auto row_idx) { return arcstd::math::contains(rect.vertical_range(), row_idx); };
   std::ranges::for_each(
-    util::ranges::index_view_to(full_image_height) | std::views::reverse | std::views::filter(contains_row_index),
+    arcstd::util::ranges::index_view_to(full_image_height) | std::views::reverse | std::views::filter(contains_row_index),
     [&](const auto row_idx)
     {
       const auto contains_coord = [&](const auto column_idx)
-      { return math::contains(rect, math::coordinates{column_idx, row_idx}); };
+      { return arcstd::math::contains(rect, arcstd::math::coordinates{column_idx, row_idx}); };
       std::ranges::for_each(
-        util::ranges::index_view_to(full_image_width) | std::views::filter(contains_coord),
+        arcstd::util::ranges::index_view_to(full_image_width) | std::views::filter(contains_coord),
         [&](const auto column_idx)
         {
           const auto index = (full_image_width * row_idx) + column_idx;
@@ -162,4 +162,4 @@ auto save_as_bitmap(
   return true;
 }
 
-} // namespace bibstd::io
+} // namespace bibocr::io

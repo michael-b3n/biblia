@@ -5,7 +5,7 @@
 #include <functional>
 #include <memory>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -108,4 +108,4 @@ auto setting_type_erased<T>::value(const value_type& v) -> bool
   return set_(v);
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

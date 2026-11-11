@@ -13,7 +13,7 @@
 #include <thread>
 #include <vector>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 TEST_CASE("message_loop_calls_on_its_thread", "[system]")
@@ -91,4 +91,4 @@ TEST_CASE("message_loop_keeps_running_after_a_quit_of_its_thread", "[system]")
   CHECK(calls == 3);
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

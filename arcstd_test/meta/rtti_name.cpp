@@ -2,7 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 namespace test
 {
@@ -31,4 +31,4 @@ TEST_CASE("rtti_name", "[meta]")
   // static_assert(meta::rtti_name<nested_templated_test_struct<int>>::value == "nested_templated_test_struct<int>");
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

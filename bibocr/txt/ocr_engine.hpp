@@ -8,12 +8,12 @@
 #include <variant>
 #include <vector>
 
-namespace bibstd::system
+namespace bibocr::system
 {
 class ocr_engine_system;
-} // namespace bibstd::system
+} // namespace bibocr::system
 
-namespace bibstd::txt
+namespace bibocr::txt
 {
 
 class ocr_engine_tesseract;
@@ -39,14 +39,14 @@ private: // Typedefs
   struct ocr_t final
   {
     std::string text;
-    data::screen_rect_type bounding_box;
+    arcstd::data::screen_rect_type bounding_box;
   };
 
 public: // Typedefs
   using bounding_box_type = decltype(ocr_t<void>::bounding_box);
   using word = ocr_t<struct word_tag>;
   using line = ocr_t<struct line_tag>;
-  using resolution_tags = meta::for_each_t<std::variant<word, line>, ocr_engine_resolution_tag>;
+  using resolution_tags = arcstd::meta::for_each_t<std::variant<word, line>, ocr_engine_resolution_tag>;
 
 protected: // Typedefs
   ///
@@ -74,9 +74,9 @@ struct ocr_engine_tag_layout_analysis
   struct paragraph final
   {
     std::string text;
-    data::screen_rect_type bounding_box;
+    arcstd::data::screen_rect_type bounding_box;
   };
-  using resolution_tags = meta::for_each_t<std::variant<word, line, paragraph>, ocr_engine_resolution_tag>;
+  using resolution_tags = arcstd::meta::for_each_t<std::variant<word, line, paragraph>, ocr_engine_resolution_tag>;
 
 protected: // Typedefs
   ///
@@ -122,7 +122,7 @@ protected:
 public: // Typedefs
   using uptr_type = std::unique_ptr<ocr_engine<EngineTag>>;
   using name_type = std::string;
-  using pixel_plane_view_type = data::pixel_plane_view_type;
+  using pixel_plane_view_type = arcstd::data::pixel_plane_view_type;
 
   using resolution_tags = typename EngineTag::resolution_tags;
   using recognition_data = std::vector<typename EngineTag::recognition_data_element>;
@@ -161,4 +161,4 @@ using ocr_engine_uptr_variant_type = std::variant<
   std::unique_ptr<ocr_engine<ocr_engine_tag_layout_analysis>>>;
 // clang-format on
 
-} // namespace bibstd::txt
+} // namespace bibocr::txt

@@ -16,13 +16,13 @@ auto construct_velopack_updater(QGuiApplication& app, bridge_instance& bridge, t
   auto instance = std::make_unique<app_velopack_updater>(*bridge.bridge_application);
   QObject::connect(
     bridge.bridge_application.get(),
-    &bibqml::BridgeApplication::updateCheckRequested,
+    &arcqml::BridgeApplication::updateCheckRequested,
     &app,
     [updater = instance.get()]() { updater->check_now(); }
   );
   QObject::connect(
     bridge.bridge_application.get(),
-    &bibqml::BridgeApplication::updateRequested,
+    &arcqml::BridgeApplication::updateRequested,
     &app,
     [&app, &bridge, &translations, updater = instance.get()]()
     {

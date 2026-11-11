@@ -107,8 +107,8 @@ class ScriptureListModel final : public QAbstractListModel
   std::deque<Entry> entries_;
   int referenceRow_{0};
   QString scriptureCopyright_;
-  bibstd::framework::queued_connections connections_;
-  bibstd::execution::scope scope_;
+  arcstd::framework::queued_connections connections_;
+  arcstd::execution::scope scope_;
   const std::unique_ptr<MachineHolder> machine_;
 
 public: // Typedefs
@@ -129,7 +129,7 @@ public: // Typedefs
 public: // Structors
   explicit ScriptureListModel(
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~ScriptureListModel() noexcept override;
 

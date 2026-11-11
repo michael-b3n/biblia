@@ -9,7 +9,7 @@
 #include <cstring>
 #include <utility>
 
-namespace bibstd::io
+namespace arcstd::io
 {
 namespace
 {
@@ -75,7 +75,7 @@ zip_file_reader::zip_file_reader(const std::filesystem::path& zip_path, const st
   , zip_handle_{nullptr}
 {
   int error_code = 0;
-#ifndef BIBSTD_DEBUG
+#ifndef ARCSTD_DEBUG
   const int flags = ZIP_RDONLY;
 #else
   const int flags = ZIP_RDONLY | ZIP_CHECKCONS;
@@ -124,7 +124,7 @@ zip_file_reader::zip_file_reader(const std::span<const std::byte> data, const st
     zip_error_fini(&error);
     return;
   }
-#ifndef BIBSTD_DEBUG
+#ifndef ARCSTD_DEBUG
   const int flags = ZIP_RDONLY;
 #else
   const int flags = ZIP_RDONLY | ZIP_CHECKCONS;
@@ -377,4 +377,4 @@ auto zip_file_reader::error_message() const -> std::string
   return std::string{"unknown error"};
 }
 
-} // namespace bibstd::io
+} // namespace arcstd::io

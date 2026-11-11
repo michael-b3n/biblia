@@ -15,7 +15,7 @@
 #include <variant>
 #include <vector>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -59,4 +59,4 @@ public: // Static modifiers
   static auto set_text(std::size_t index, std::string text) -> void;
 };
 
-} // namespace bibstd::system
+} // namespace arcstd::system

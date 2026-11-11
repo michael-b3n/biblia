@@ -22,7 +22,7 @@
 #include <vector>
 
 INC_RESOURCE(display_names, "res/display_names.csv");
-const auto display_names_view = bibstd::util::incbin::to_span<std::byte>(res_display_names_data, res_display_names_size);
+const auto display_names_view = arcstd::util::incbin::to_span<std::byte>(res_display_names_data, res_display_names_size);
 
 namespace verselens
 {
@@ -33,7 +33,7 @@ namespace
 /// The validator of the language setting lists what the document offers.
 /// \return languages of the translations
 ///
-[[nodiscard]] auto available_languages(const bibqml::Translations& translations) -> std::vector<std::string>
+[[nodiscard]] auto available_languages(const arcqml::Translations& translations) -> std::vector<std::string>
 {
   const auto languages = translations.availableLanguages();
   auto result = std::vector<std::string>{};
@@ -46,9 +46,9 @@ namespace
 /// Translations naming every key after itself, for a start that could not read the document.
 /// \return translations holding no names
 ///
-[[nodiscard]] auto no_translations() -> std::unique_ptr<bibqml::Translations>
+[[nodiscard]] auto no_translations() -> std::unique_ptr<arcqml::Translations>
 {
-  return std::make_unique<bibqml::Translations>(std::span<const std::byte>{});
+  return std::make_unique<arcqml::Translations>(std::span<const std::byte>{});
 }
 
 } // anonymous namespace
@@ -56,7 +56,7 @@ namespace
 ///
 ///
 translations_instance::translations_instance(
-  std::unique_ptr<bibqml::Translations> translations, const language_setting_type language_setting
+  std::unique_ptr<arcqml::Translations> translations, const language_setting_type language_setting
 )
   : translations_{std::move(translations)}
   , language_setting_{language_setting}
@@ -68,7 +68,7 @@ translations_instance::translations_instance(
   }
   translations_->setLanguage(QString::fromStdString(language_setting_->value()));
   language_setting_->connect_queued(
-    &bibstd::framework::setting_signals::value_changed,
+    &arcstd::framework::setting_signals::value_changed,
     [this]()
     {
       QMetaObject::invokeMethod(
@@ -84,7 +84,7 @@ translations_instance::translations_instance(
 ///
 ///
 translations_instance::translations_instance(
-  std::unique_ptr<bibqml::Translations> translations, const std::optional<std::string>& language
+  std::unique_ptr<arcqml::Translations> translations, const std::optional<std::string>& language
 )
   : translations_{std::move(translations)}
   , language_setting_{nullptr}
@@ -114,10 +114,10 @@ auto read_language_setting() -> std::optional<std::string>
   {
     auto tree = boost::property_tree::ptree{};
     boost::property_tree::read_xml(
-      bibstd::workflow::workflow_settings::settings_file_path(version::data_folder_name).generic_string(), tree
+      arcstd::workflow::workflow_settings::settings_file_path(version::data_folder_name).generic_string(), tree
     );
     const auto language = tree.get_optional<std::string>(std::format(
-      "{}.{}", bibstd::workflow::workflow_settings::settings_root_name, translations_instance::language_setting_path
+      "{}.{}", arcstd::workflow::workflow_settings::settings_root_name, translations_instance::language_setting_path
     ));
     return language ? std::optional{*language} : std::nullopt;
   }
@@ -133,19 +133,19 @@ auto construct_translations(backend_instance& backend) -> translations_instance
 {
   try
   {
-    auto translations = std::make_unique<bibqml::Translations>(display_names_view);
+    auto translations = std::make_unique<arcqml::Translations>(display_names_view);
     const auto languages = available_languages(*translations);
-    const auto preferred_language = std::string{bibstd::util::enum_name(bibstd::system::locale::preferred_language())};
+    const auto preferred_language = std::string{arcstd::util::enum_name(arcstd::system::locale::preferred_language())};
     auto* const language_setting = backend.workflow_settings->create_setting(
       std::string{translations_instance::language_setting_path},
       std::ranges::contains(languages, preferred_language) ? preferred_language : languages.front(),
-      std::make_shared<bibstd::framework::setting_validator_list<std::string>>(languages)
+      std::make_shared<arcstd::framework::setting_validator_list<std::string>>(languages)
     );
     return translations_instance{std::move(translations), language_setting};
   }
   catch(...)
   {
-    LOG_ERROR("construct translations failed: {}", bibstd::util::exception_report());
+    LOG_ERROR("construct translations failed: {}", arcstd::util::exception_report());
     return translations_instance{no_translations(), std::nullopt};
   }
 }
@@ -156,11 +156,11 @@ auto construct_translations(const std::optional<std::string>& language) -> trans
 {
   try
   {
-    return translations_instance{std::make_unique<bibqml::Translations>(display_names_view), language};
+    return translations_instance{std::make_unique<arcqml::Translations>(display_names_view), language};
   }
   catch(...)
   {
-    LOG_ERROR("construct translations failed: {}", bibstd::util::exception_report());
+    LOG_ERROR("construct translations failed: {}", arcstd::util::exception_report());
     return translations_instance{no_translations(), std::nullopt};
   }
 }

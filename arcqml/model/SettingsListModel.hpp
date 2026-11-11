@@ -15,7 +15,7 @@
 #include <memory>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -78,13 +78,13 @@ private: // Typedefs
     WrapperType wrapperType;
     ValidatorType validatorType;
     QString postfix;
-    bibstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type setting;
+    arcstd::workflow::workflow_settings::setting_type_erased_non_owning_ptr_variant_type setting;
   };
 
   // Variables
-  std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings_;
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings_;
   std::vector<Entry> entries_;
-  bibstd::framework::queued_connections connections_;
+  arcstd::framework::queued_connections connections_;
 
 public: // Typedefs
   enum Role
@@ -107,8 +107,8 @@ public: // Typedefs
 
 public: // Structors
   explicit SettingsListModel(
-    std::shared_ptr<bibstd::workflow::workflow_settings> workflowSettings,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    std::shared_ptr<arcstd::workflow::workflow_settings> workflowSettings,
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~SettingsListModel() noexcept override;
 
@@ -132,4 +132,4 @@ private: // Implementation
   void addEntry(std::string path, const auto& setting);
 };
 
-} // namespace bibqml
+} // namespace arcqml

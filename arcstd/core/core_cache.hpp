@@ -13,7 +13,7 @@
 struct sqlite3;
 struct sqlite3_stmt;
 
-namespace bibstd::core
+namespace arcstd::core
 {
 
 ///
@@ -88,4 +88,4 @@ private: // Implementation
   [[nodiscard]] auto succeeded(int status, std::string_view action) const -> bool;
 };
 
-} // namespace bibstd::core
+} // namespace arcstd::core

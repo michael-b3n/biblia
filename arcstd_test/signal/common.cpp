@@ -4,7 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <type_traits>
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 
 TEST_CASE("is_signal_type trait", "[signal]")
@@ -187,4 +187,4 @@ TEST_CASE("connection_store add after clear", "[signal]")
   CHECK(count == 2);
 }
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

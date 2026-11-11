@@ -5,7 +5,7 @@
 #include <tuple>
 #include <variant>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 template<typename...>
@@ -34,4 +34,4 @@ TEST_CASE("contains", "[meta]")
   static_assert(!contains_v<contains_test_pack<int>, double>);
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

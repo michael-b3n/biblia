@@ -24,8 +24,8 @@ namespace bibstd::test_utils
 ///
 struct script_sandbox final
 {
-  temp_folder folder;
-  std::shared_ptr<workflow::workflow_script> script;
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
   std::map<std::string, std::string> texts;
 
   explicit script_sandbox(std::string_view name, const std::map<std::string, std::string>& scripts = {});
@@ -50,10 +50,12 @@ inline script_sandbox::script_sandbox(const std::string_view name, const std::ma
   std::filesystem::create_directories(folder_of_scripts);
   for(const auto& [file, code] : scripts)
   {
-    write_file(folder_of_scripts / file, code);
+    arcstd::test_utils::write_file(folder_of_scripts / file, code);
   }
-  script = std::make_shared<workflow::workflow_script>(make_script_settings(folder.path(), true), lua::bundled::all);
-  load_scripts(*script);
+  script = std::make_shared<arcstd::workflow::workflow_script>(
+    arcstd::test_utils::make_script_settings(folder.path(), true), lua::bundled::all
+  );
+  arcstd::test_utils::load_scripts(*script);
 }
 
 ///

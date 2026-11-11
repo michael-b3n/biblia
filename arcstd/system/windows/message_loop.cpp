@@ -9,7 +9,7 @@
 #include <tuple>
 #include <utility>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 namespace
 {
@@ -17,7 +17,7 @@ namespace
 constexpr auto post_message = UINT{WM_APP};
 constexpr auto call_message = UINT{WM_APP + 1};
 constexpr auto quit_message = UINT{WM_APP + 2};
-constexpr auto* window_class_name = L"bibstd_message_loop";
+constexpr auto* window_class_name = L"arcstd_message_loop";
 
 ///
 /// Task of message_loop::call and the exception it ended with.
@@ -205,4 +205,4 @@ auto message_loop::run() noexcept -> void
   }
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

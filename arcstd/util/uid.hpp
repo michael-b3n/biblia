@@ -3,7 +3,7 @@
 #include <atomic>
 #include <format>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -66,14 +66,14 @@ constexpr uid<Tag>::uid(const underlying_type value)
 {
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util
 
 ///
 ///
 template<typename T>
-struct std::formatter<bibstd::util::uid<T>> : std::formatter<std::uint64_t>
+struct std::formatter<arcstd::util::uid<T>> : std::formatter<std::uint64_t>
 {
-  auto format(const bibstd::util::uid<T> id, std::format_context& ctx) const
+  auto format(const arcstd::util::uid<T> id, std::format_context& ctx) const
   {
     return formatter<std::uint64_t>::format(id.value_, ctx);
   }

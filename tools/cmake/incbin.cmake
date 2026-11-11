@@ -30,6 +30,7 @@ endfunction(add_incbin_resources)
 # Configure \p template into \p output for the files given after it, so a new file needs no code change.
 # The template receives @INCBIN_LABEL@, @INCBIN_DECLARATIONS@, @INCBIN_COUNT@ and @INCBIN_ENTRIES@, one entry per file:
 # `{"<file name>", res_<label>_<file name>_data, res_<label>_<file name>_size},`
+# Variables the caller sets reach the template too, e.g. INCBIN_HEADER and INCBIN_NAMESPACE.
 #
 function(configure_incbin_source label template output)
   unset(declarations)

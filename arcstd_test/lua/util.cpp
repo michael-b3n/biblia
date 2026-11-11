@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 TEST_CASE("lua_util", "[lua]")
@@ -145,4 +145,4 @@ TEST_CASE("lua_scripts_compile", "[lua]")
   }
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

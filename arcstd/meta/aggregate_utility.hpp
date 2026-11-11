@@ -5,7 +5,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 namespace detail
 {
@@ -278,4 +278,4 @@ template<typename T>
   );
 }
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

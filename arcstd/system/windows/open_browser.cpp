@@ -5,7 +5,7 @@
 #include <combaseapi.h>
 #include <shellapi.h>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -44,4 +44,4 @@ auto open_browser::open(const std::string& url) -> bool
   return (success != 0) && no_timeout;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

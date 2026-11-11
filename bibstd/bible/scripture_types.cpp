@@ -20,7 +20,7 @@ namespace bibstd::bible
 ///
 auto passage_markup::escaped_xml(const std::string_view text) -> std::string
 {
-  static constexpr auto entities = util::make_const_map<char, std::string_view>({
+  static constexpr auto entities = arcstd::util::make_const_map<char, std::string_view>({
     {'&', "&amp;"},
     {'<',  "&lt;"},
     {'>',  "&gt;"}
@@ -63,7 +63,7 @@ auto passage_markup::to_plain(const std::string_view xml) -> std::string
   const auto filled = [](const std::string& text) { return !text.empty(); };
   const auto sections =
     document.children() | std::views::transform(text_of) | std::views::filter(filled) | std::ranges::to<std::vector>();
-  return util::format::join(sections, " ");
+  return arcstd::util::format::join(sections, " ");
 }
 
 ///
@@ -97,7 +97,7 @@ auto passage::xml() const -> std::string
   {
   case passage_format::xml: return content_;
   case passage_format::plain: return passage_markup::to_xml(content_);
-  default: throw util::exception{"unsupported passage format"};
+  default: throw arcstd::util::exception{"unsupported passage format"};
   }
 }
 
@@ -109,7 +109,7 @@ auto passage::plain() const -> std::string
   {
   case passage_format::xml: return passage_markup::to_plain(content_);
   case passage_format::plain: return content_;
-  default: throw util::exception{"unsupported passage format"};
+  default: throw arcstd::util::exception{"unsupported passage format"};
   }
 }
 

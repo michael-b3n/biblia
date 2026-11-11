@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -41,7 +41,7 @@ private: // Variables
   UpdateCheck updateCheck_{UpdateCheckUnavailable};
 
 public: // Structors
-  explicit BridgeApplication(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit BridgeApplication(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~BridgeApplication() noexcept override;
 
 public: // Accessors
@@ -89,4 +89,4 @@ signals:
   void updateRequested();
 };
 
-} // namespace bibqml
+} // namespace arcqml

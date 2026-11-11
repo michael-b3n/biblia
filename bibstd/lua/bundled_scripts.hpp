@@ -12,11 +12,11 @@ namespace bibstd::lua::bundled
 ///
 /// \return the scripts of bibstd/lua/bundled and bibstd/lua/private
 ///
-[[nodiscard]] auto all() -> std::span<const embedded_script>;
+[[nodiscard]] auto all() -> std::span<const arcstd::lua::embedded_script>;
 
 ///
 /// \return the script with the file name \p name
 ///
-[[nodiscard]] auto find(std::string_view name) -> std::optional<embedded_script>;
+[[nodiscard]] auto find(std::string_view name) -> std::optional<arcstd::lua::embedded_script>;
 
 } // namespace bibstd::lua::bundled

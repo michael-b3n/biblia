@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 TEST_CASE("value_range", "[math]")
@@ -155,4 +155,4 @@ TEST_CASE("value_range", "[math]")
   }
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

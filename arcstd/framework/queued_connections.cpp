@@ -2,7 +2,7 @@
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/log.hpp"
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 
 ///
@@ -31,4 +31,4 @@ auto queued_connections::disconnect() -> void
   scope_.stop();
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

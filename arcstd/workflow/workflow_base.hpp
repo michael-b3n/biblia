@@ -9,7 +9,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -78,4 +78,4 @@ auto workflow_base<S>::settings() const -> const S&
   return *settings_;
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

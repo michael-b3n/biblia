@@ -4,7 +4,7 @@
 
 #include <limits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 // Constants
@@ -49,4 +49,4 @@ TEST_CASE("is_valid multiple values", "[math]")
   CHECK(!is_valid(0.0, nan<float>));
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math

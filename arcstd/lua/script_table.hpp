@@ -14,7 +14,7 @@
 #include <tuple>
 #include <utility>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -221,4 +221,4 @@ auto value_cast<script_table<Fields...>>::assign(T& target, const sol::object& v
   return value.has_value();
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

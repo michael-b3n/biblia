@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -221,4 +221,4 @@ auto workflow_script::run(const script_name_type& script, const typename M::inpu
   return output;
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

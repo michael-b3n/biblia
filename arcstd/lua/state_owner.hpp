@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -36,4 +36,4 @@ public: // Modifiers
   auto shutdown() const noexcept -> void;
 };
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

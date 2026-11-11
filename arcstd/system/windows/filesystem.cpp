@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -19,4 +19,4 @@ auto filesystem::local_data_folder(const std::optional<std::string_view> folder_
   return std::filesystem::path(appdata) / folder;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

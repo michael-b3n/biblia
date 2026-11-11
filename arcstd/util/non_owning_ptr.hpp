@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 ///
@@ -12,4 +12,4 @@ template<typename T>
   requires(!std::is_pointer_v<T>)
 using non_owning_ptr = T*;
 
-} // namespace bibstd::util
+} // namespace arcstd::util

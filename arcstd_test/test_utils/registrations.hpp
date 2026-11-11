@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 
 ///
@@ -32,4 +32,4 @@ inline auto registrations::operator()(lua::registration registration) -> bool
   return static_cast<bool>(kept_.back());
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

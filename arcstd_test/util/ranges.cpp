@@ -5,7 +5,7 @@
 #include <array>
 #include <vector>
 
-namespace bibstd::util::ranges
+namespace arcstd::util::ranges
 {
 namespace
 {
@@ -72,4 +72,4 @@ TEST_CASE("index_view_between", "[util]")
   CHECK(to_vector(index_view_between(std::size_t{1}, 4)) == std::vector<std::size_t>{1, 2, 3});
 }
 
-} // namespace bibstd::util::ranges
+} // namespace arcstd::util::ranges

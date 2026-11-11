@@ -27,7 +27,7 @@
 #include <thread>
 #include <vector>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 namespace
 {
@@ -518,4 +518,4 @@ TEST_CASE("workflow_script_runs_a_function", "[workflow]")
   CHECK_FALSE(workflow.run<missing_manifest>("Echo", {}));
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 ///
@@ -100,4 +100,4 @@ auto state::run(const std::function<sol::protected_function_result()>& code) -> 
   return result.return_count() > 0 ? result.get<sol::object>() : sol::make_object(data_->lua, sol::lua_nil);
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

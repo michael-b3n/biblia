@@ -1,6 +1,6 @@
 #include "bibocr/system/windows/capture_engine.hpp"
 
-namespace bibstd::system
+namespace bibocr::system
 {
 
 ///
@@ -14,4 +14,4 @@ auto capture_engine::capture(const screen_rect_type rect, pixel_plane_type& pix)
   return do_capture(rect, pix);
 }
 
-} // namespace bibstd::system
+} // namespace bibocr::system

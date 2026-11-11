@@ -34,16 +34,16 @@ namespace bibstd::workflow
 ///
 struct workflow_scripture_sigs final
 {
-  signal::signal_type<void()> scriptures_changed;
+  arcstd::signal::signal_type<void()> scriptures_changed;
 };
 
 ///
 /// Settings corresponding to workflow scripture.
 ///
-class workflow_scripture_settings final : public workflow_settings_base
+class workflow_scripture_settings final : public arcstd::workflow::workflow_settings_base
 {
 public: // Structors
-  workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings);
+  workflow_scripture_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
   ~workflow_scripture_settings() noexcept override = default;
 
 public: // Variables
@@ -58,8 +58,8 @@ public: // Variables
 /// - scriptures_changed: Emitted when the scriptures of the store and the scripts changed.
 ///
 class workflow_scripture final
-  : public workflow_base<workflow_scripture_settings>
-  , public signal::adapter<workflow_scripture_sigs>
+  : public arcstd::workflow::workflow_base<workflow_scripture_settings>
+  , public arcstd::signal::adapter<workflow_scripture_sigs>
 {
   // Typedefs
   ///
@@ -105,7 +105,7 @@ class workflow_scripture final
 
   struct script_scripture_t final
   {
-    workflow_script::script_name_type script;
+    arcstd::workflow::workflow_script::script_name_type script;
     std::string name;
   };
 
@@ -113,12 +113,12 @@ class workflow_scripture final
   using source_t = std::variant<workflow_scripture_store::file_scripture, script_scriptures_t::value_type>;
 
   // Variables
-  const std::shared_ptr<workflow_script> workflow_script_;
+  const std::shared_ptr<arcstd::workflow::workflow_script> workflow_script_;
   const std::unique_ptr<workflow_scripture_store> workflow_scripture_store_;
   mutable std::mutex mtx_;
   std::optional<script_scriptures_t> script_scriptures_;
-  framework::queued_connections connections_;
-  lua::registration registrations_;
+  arcstd::framework::queued_connections connections_;
+  arcstd::lua::registration registrations_;
 
 public: // Constants
   static constexpr auto default_versifications = []()
@@ -126,20 +126,20 @@ public: // Constants
     using all_defaults_variant = bible::versification::all_defaults_variant;
     return [&]<std::size_t... I>(std::index_sequence<I...>)
     {
-      return util::make_const_bimap<std::string_view, bible::versification>({
-        {std::string_view{meta::pack_info<all_defaults_variant>::type_at<I>::name},
-         bible::versification{meta::pack_info<all_defaults_variant>::type_at<I>{}}}
+      return arcstd::util::make_const_bimap<std::string_view, bible::versification>({
+        {std::string_view{arcstd::meta::pack_info<all_defaults_variant>::type_at<I>::name},
+         bible::versification{arcstd::meta::pack_info<all_defaults_variant>::type_at<I>{}}}
         ...
       });
-    }(std::make_index_sequence<meta::pack_info<all_defaults_variant>::size>{});
+    }(std::make_index_sequence<arcstd::meta::pack_info<all_defaults_variant>::size>{});
   }();
 
 public: // Typedefs
   using versification_wrapper_type = versification_wrapper;
-  using scripture_params = framework::process_params<scripture_params_t>;
-  using passage_params = framework::process_params<passage_params_t>;
+  using scripture_params = arcstd::framework::process_params<scripture_params_t>;
+  using passage_params = arcstd::framework::process_params<passage_params_t>;
   using passage_result = std::expected<passage_result_t, std::string>;
-  using import_params = framework::process_params<import_params_t>;
+  using import_params = arcstd::framework::process_params<import_params_t>;
 
   // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
@@ -151,9 +151,9 @@ public: // Typedefs
   ///
   struct names_manifest final
   {
-    static inline const util::path id{"scripture.names"};
-    using input = lua::script_table<>;
-    using output = lua::script_table<lua::field<"names", std::vector<std::string>>>;
+    static inline const arcstd::util::path id{"scripture.names"};
+    using input = arcstd::lua::script_table<>;
+    using output = arcstd::lua::script_table<arcstd::lua::field<"names", std::vector<std::string>>>;
   };
 
   ///
@@ -165,12 +165,12 @@ public: // Typedefs
   ///
   struct information_manifest final
   {
-    static inline const util::path id{"scripture.information"};
-    using input = lua::script_table<lua::field<"name", std::string>>;
-    using output = lua::script_table<
-      lua::field<"abbreviation", std::optional<std::string>>,
-      lua::field<"language", std::optional<std::string>>,
-      lua::field<"copyright", std::optional<std::string>>>;
+    static inline const arcstd::util::path id{"scripture.information"};
+    using input = arcstd::lua::script_table<arcstd::lua::field<"name", std::string>>;
+    using output = arcstd::lua::script_table<
+      arcstd::lua::field<"abbreviation", std::optional<std::string>>,
+      arcstd::lua::field<"language", std::optional<std::string>>,
+      arcstd::lua::field<"copyright", std::optional<std::string>>>;
   };
 
   ///
@@ -183,12 +183,12 @@ public: // Typedefs
   ///
   struct book_manifest final
   {
-    static inline const util::path id{"scripture.book"};
-    using input = lua::script_table<lua::field<"name", std::string>, lua::field<"book", std::string>>;
-    using output = lua::script_table<
-      lua::field<"abbreviation", std::optional<std::string>>,
-      lua::field<"short_name", std::optional<std::string>>,
-      lua::field<"long_name", std::optional<std::string>>>;
+    static inline const arcstd::util::path id{"scripture.book"};
+    using input = arcstd::lua::script_table<arcstd::lua::field<"name", std::string>, arcstd::lua::field<"book", std::string>>;
+    using output = arcstd::lua::script_table<
+      arcstd::lua::field<"abbreviation", std::optional<std::string>>,
+      arcstd::lua::field<"short_name", std::optional<std::string>>,
+      arcstd::lua::field<"long_name", std::optional<std::string>>>;
   };
 
   ///
@@ -208,22 +208,25 @@ public: // Typedefs
   ///
   struct passage_manifest final
   {
-    static inline const util::path id{"scripture.passage"};
-    using input = lua::script_table<
-      lua::field<"name", std::string>,
-      lua::field<"book", std::string>,
-      lua::field<"chapter", std::int64_t>,
-      lua::field<"verse", std::int64_t>>;
-    using output = lua::script_table<
-      lua::field<"markup", std::optional<std::string>>,
-      lua::field<"text", std::optional<std::string>>,
-      lua::field<"cross_references", std::optional<std::vector<std::string>>>,
-      lua::field<"error", std::optional<std::string>>>;
+    static inline const arcstd::util::path id{"scripture.passage"};
+    using input = arcstd::lua::script_table<
+      arcstd::lua::field<"name", std::string>,
+      arcstd::lua::field<"book", std::string>,
+      arcstd::lua::field<"chapter", std::int64_t>,
+      arcstd::lua::field<"verse", std::int64_t>>;
+    using output = arcstd::lua::script_table<
+      arcstd::lua::field<"markup", std::optional<std::string>>,
+      arcstd::lua::field<"text", std::optional<std::string>>,
+      arcstd::lua::field<"cross_references", std::optional<std::vector<std::string>>>,
+      arcstd::lua::field<"error", std::optional<std::string>>>;
   };
   // clang-format on
 
 public: // Structors
-  workflow_scripture(std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script);
+  workflow_scripture(
+    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+    std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+  );
   ~workflow_scripture() noexcept override;
 
 public: // Accessors
@@ -279,7 +282,7 @@ private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;
   [[nodiscard]] auto find(const std::optional<std::string>& name) const -> std::optional<source_t>;
-  template<script_manifest M>
+  template<arcstd::workflow::script_manifest M>
   [[nodiscard]] auto run_script(const script_scripture_t& scripture, typename M::input input) const
     -> std::optional<typename M::output>;
   auto update_scripts() -> void;

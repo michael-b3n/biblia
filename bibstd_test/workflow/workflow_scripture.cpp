@@ -57,9 +57,9 @@ constexpr auto scripture_script = R"(
 ///
 struct scripture_fixture final
 {
-  test_utils::temp_folder folder;
-  std::shared_ptr<workflow_script> script;
-  std::shared_ptr<workflow_cache> cache;
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::workflow::workflow_cache> cache;
   std::shared_ptr<workflow_scripture> scripture;
 
   explicit scripture_fixture(
@@ -91,7 +91,7 @@ scripture_fixture::scripture_fixture(
     scripts,
     [&](const auto& entry)
     {
-      test_utils::write_file(
+      arcstd::test_utils::write_file(
         scripts_folder / (entry.first + ".lua"),
         std::format(
           "local script = (function() {1} end)() script.name = 'Script {0}' script.description = '' script.node = 'script_{0}' "
@@ -104,15 +104,15 @@ scripture_fixture::scripture_fixture(
   );
   if(selected)
   {
-    const auto writer = std::make_shared<workflow_settings>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::workflow::workflow_settings>(folder.path().string());
     std::ignore = workflow_scripture_settings{writer}.default_scripture_name->value(selected);
   }
-  const auto settings = test_utils::make_script_settings(folder.path(), true);
-  script = std::make_shared<workflow_script>(settings, lua::bundled::all);
-  cache = std::make_shared<workflow_cache>(settings, script);
+  const auto settings = arcstd::test_utils::make_script_settings(folder.path(), true);
+  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does
-  test_utils::load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
 }
 
 [[nodiscard]] auto john(const int verse) -> bible::reference
@@ -143,7 +143,8 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_a_script", "[workflow]")
   auto fixture = scripture_fixture{"workflow_scripture_offers_the_scriptures_of_a_script", {{"test", scripture_script}}};
   const auto& scripture = *fixture.scripture;
   REQUIRE(
-    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script test)"; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return scripture.settings().default_scripture_name->value() == "AAA (Script test)"; })
   );
   CHECK(test_utils::scripture_names_of(scripture, "Script test").size() == 2);
   // Named after the name of the script, the script is asked with its own names. The first scripture is selected.
@@ -201,8 +202,9 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_to_scripts", "[workflow]")
 {
   auto fixture = scripture_fixture{"workflow_scripture_offers_the_scriptures_to_scripts", {{"test", scripture_script}}};
   REQUIRE(
-    test_utils::wait_until([&]()
-                           { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script test)"; })
+    arcstd::test_utils::wait_until(
+      [&]() { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script test)"; }
+    )
   );
   const auto run = [&](const std::string& code)
   {
@@ -243,7 +245,8 @@ TEST_CASE("workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", "[wo
   };
   // The scripts load while the workflows are constructed, the name of a former run survives it
   REQUIRE(
-    test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
   );
   CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
   CHECK(fixture.scripture->information({{}}));
@@ -266,7 +269,8 @@ TEST_CASE("workflow_scripture_keeps_the_name_of_a_script_next_to_stored_scriptur
     // Kept while the scripts load, although the stored scripture is known already, and after
     CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
     REQUIRE(
-      test_utils::wait_until([&]() { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
+      arcstd::test_utils::wait_until([&]()
+                                     { return test_utils::scripture_names_of(*fixture.scripture, "Script test").size() == 2; })
     );
     CHECK(fixture.scripture->settings().default_scripture_name->value() == "BBB (Script test)");
   }
@@ -278,7 +282,7 @@ TEST_CASE("workflow_scripture_keeps_the_name_of_a_script_next_to_stored_scriptur
     };
     // Pointed at the stored scripture once the scripts are loaded
     const auto& name = fixture.scripture->settings().default_scripture_name;
-    CHECK(test_utils::wait_until([&]() { return name->value() && !name->value()->ends_with("(Script test)"); }));
+    CHECK(arcstd::test_utils::wait_until([&]() { return name->value() && !name->value()->ends_with("(Script test)"); }));
   }
 }
 
@@ -294,7 +298,9 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_of_all_scripts", "[workflow]
   };
   const auto& scripture = *fixture.scripture;
   // Of the scripts offering all manifests, the same names told apart by the script
-  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script c_complete").size() == 2; }));
+  REQUIRE(
+    arcstd::test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script c_complete").size() == 2; })
+  );
   CHECK(test_utils::scripture_names_of(scripture, "Script b_complete").size() == 2);
   CHECK(test_utils::scripture_names_of(scripture, "Script a_partial").empty());
   const auto information = scripture.information({{"BBB (Script c_complete)"}});
@@ -310,7 +316,8 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   const auto& scripture = *fixture.scripture;
   const auto scripts = fixture.folder.path() / "scripts";
   REQUIRE(
-    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
   );
   const auto changed = [&]()
   {
@@ -319,15 +326,15 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   }();
 
   // While the app runs: a script added, its scriptures join the others and the selected one stays
-  test_utils::write_file(
+  arcstd::test_utils::write_file(
     scripts / "added.lua",
     "return {name = 'Second', description = '', node = 'second', ['scripture.names'] = function() return {names = {'AAC'}} "
     "end, "
     "['scripture.information'] = function(input) return {abbreviation = input.name} end, "
     "['scripture.book'] = function() end, ['scripture.passage'] = function() return {text = 'new'} end}"
   );
-  test_utils::load_scripts(*fixture.script);
-  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Second").size() == 1; }));
+  arcstd::test_utils::load_scripts(*fixture.script);
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Second").size() == 1; }));
   CHECK(test_utils::scripture_names_of(scripture, "Script first").size() == 2);
   CHECK(scripture.settings().default_scripture_name->value() == "AAA (Script first)");
   CHECK(scripture.information({{"AAC (Second)"}}));
@@ -335,9 +342,11 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
 
   // A script removed, its scriptures are gone and the selected one moves to one that is left
   std::filesystem::remove(scripts / "first.lua");
-  test_utils::load_scripts(*fixture.script);
-  REQUIRE(test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script first").empty(); }));
-  CHECK(test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAC (Second)"; }));
+  arcstd::test_utils::load_scripts(*fixture.script);
+  REQUIRE(arcstd::test_utils::wait_until([&]() { return test_utils::scripture_names_of(scripture, "Script first").empty(); }));
+  CHECK(
+    arcstd::test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAC (Second)"; })
+  );
   CHECK_FALSE(scripture.information({{"AAA (Script first)"}}));
   const auto passage = scripture.passage({
     {.reference = john(16), .scripture_name = std::nullopt}
@@ -345,7 +354,7 @@ TEST_CASE("workflow_scripture_follows_the_scripts_loaded_anew", "[workflow]")
   REQUIRE(passage);
   CHECK(passage->passage.xml().contains("new"));
   // The user interface is told each time
-  CHECK(test_utils::wait_until([&]() { return *changed.first >= 2; }));
+  CHECK(arcstd::test_utils::wait_until([&]() { return *changed.first >= 2; }));
 }
 
 TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[workflow]")
@@ -354,18 +363,20 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
     scripture_fixture{"workflow_scripture_changes_the_name_setting_without_its_lock", {{"first", scripture_script}}};
   const auto& scripture = *fixture.scripture;
   REQUIRE(
-    test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
+    arcstd::test_utils::wait_until([&]()
+                                   { return scripture.settings().default_scripture_name->value() == "AAA (Script first)"; })
   );
   // Listeners called right where the setting changes, each calls back into the workflow
   auto counted = std::make_shared<std::atomic<int>>(0);
   const auto count = [&scripture, counted]() { *counted += static_cast<int>(scripture.scripture_count()) + 1; };
-  const auto value = scripture.settings().default_scripture_name->connect(&framework::setting_signals::value_changed, count);
+  const auto value =
+    scripture.settings().default_scripture_name->connect(&arcstd::framework::setting_signals::value_changed, count);
   const auto validator =
-    scripture.settings().default_scripture_name->connect(&framework::setting_signals::validator_changed, count);
+    scripture.settings().default_scripture_name->connect(&arcstd::framework::setting_signals::validator_changed, count);
 
   // The selected scripture goes with its script, so the names and the name change
   std::filesystem::remove(fixture.folder.path() / "scripts" / "first.lua");
-  test_utils::write_file(
+  arcstd::test_utils::write_file(
     fixture.folder.path() / "scripts" / "second.lua",
     std::format(
       "local script = (function() {} end)() script.name = 'Second' script.description = '' script.node = 'second' return "
@@ -373,9 +384,11 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
       scripture_script
     )
   );
-  test_utils::load_scripts(*fixture.script);
-  CHECK(test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Second)"; }));
-  CHECK(test_utils::wait_until([&]() { return *counted > 0; }));
+  arcstd::test_utils::load_scripts(*fixture.script);
+  CHECK(
+    arcstd::test_utils::wait_until([&]() { return scripture.settings().default_scripture_name->value() == "AAA (Second)"; })
+  );
+  CHECK(arcstd::test_utils::wait_until([&]() { return *counted > 0; }));
 }
 
 TEST_CASE("workflow_scripture_passage_ends_on_stop", "[workflow]")
@@ -389,8 +402,9 @@ TEST_CASE("workflow_scripture_passage_ends_on_stop", "[workflow]")
   };
   // The passage is of the selected scripture
   REQUIRE(
-    test_utils::wait_until([&]()
-                           { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script endless)"; })
+    arcstd::test_utils::wait_until(
+      [&]() { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script endless)"; }
+    )
   );
   auto passage = std::async(
     std::launch::async,

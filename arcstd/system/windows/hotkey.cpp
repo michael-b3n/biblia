@@ -2,7 +2,7 @@
 #include "arcstd/system/windows/hotkey_impl.hpp"
 #include "arcstd/util/scope_guard.hpp"
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -26,4 +26,4 @@ auto hotkey::unregister_callback(const key key, const key_modifier mod) -> void
   hotkey_impl::unregister_callback(key, mod);
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace detail
 {
@@ -196,4 +196,4 @@ constexpr auto const_variant_map<P...>::visit_until(F&& f) const -> void
   { (... && visitor.template operator()<I>()); }(std::make_index_sequence<size>{});
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

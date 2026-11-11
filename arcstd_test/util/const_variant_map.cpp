@@ -9,7 +9,7 @@
 #include <variant>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 namespace
 {
@@ -127,4 +127,4 @@ TEST_CASE("const_variant_map rejects duplicated keys", "[util]")
   CHECK_NOTHROW(const_variant_map(int_to_double{1, 1.5}, int_to_double{2, 1.5}));
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

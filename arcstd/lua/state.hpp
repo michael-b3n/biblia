@@ -17,7 +17,7 @@
 #include <utility>
 #include <variant>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 
 class state_owner;
@@ -173,4 +173,4 @@ auto state::call(const sol::protected_function& function, Args&&... args) -> std
   return run([&] { return function(std::forward<Args>(args)...); });
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

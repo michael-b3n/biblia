@@ -20,7 +20,7 @@
 #include <ranges>
 #include <variant>
 
-namespace bibstd::system
+namespace bibocr::system
 {
 namespace
 {
@@ -30,19 +30,19 @@ namespace winrt_imaging = winrt::Windows::Graphics::Imaging;
 namespace winrt_globalization = winrt::Windows::Globalization;
 
 ///
-/// Map util::language to Windows BCP-47 language tag.
+/// Map arcstd::util::language to Windows BCP-47 language tag.
 /// \return BCP-47 language tag corresponding to the given language
 ///
-auto to_language_tag(const util::language language) -> winrt::hstring
+auto to_language_tag(const arcstd::util::language language) -> winrt::hstring
 {
-  return winrt::hstring{language_wtag_map.at(language)};
+  return winrt::hstring{arcstd::system::language_wtag_map.at(language)};
 }
 
 ///
 /// Windows OCR engine implementation using Windows.Media.Ocr WinRT API.
 /// \see base class ocr::engine
 ///
-class ocr_engine_windows final : public txt::ocr_engine<txt::ocr_engine_tag_plain>
+class ocr_engine_windows final : public bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>
 {
   // Variables
   winrt_ocr::OcrEngine engine_{nullptr};
@@ -50,7 +50,7 @@ class ocr_engine_windows final : public txt::ocr_engine<txt::ocr_engine_tag_plai
   mutable recognition_data recognition_data_;
 
 public: // Structors
-  explicit ocr_engine_windows(util::language language);
+  explicit ocr_engine_windows(arcstd::util::language language);
 
 public: // Accessors
   ///
@@ -82,13 +82,13 @@ private: // Implementation
 
 ///
 ///
-ocr_engine_windows::ocr_engine_windows(const util::language language)
+ocr_engine_windows::ocr_engine_windows(const arcstd::util::language language)
 {
   const auto tag = to_language_tag(language);
   const auto lang = winrt_globalization::Language(tag);
   if(
     winrt_ocr::OcrEngine::IsLanguageSupported(lang) &&
-    util::language_direction_map.at(language) == util::language_direction::ltr
+    arcstd::util::language_direction_map.at(language) == arcstd::util::language_direction::ltr
   )
   {
     engine_ = winrt_ocr::OcrEngine::TryCreateFromLanguage(lang);
@@ -125,7 +125,7 @@ auto ocr_engine_windows::recognize() const -> recognition_data
 {
   if(!engine_)
   {
-    throw util::exception{"Windows OCR engine is not initialized"};
+    throw arcstd::util::exception{"Windows OCR engine is not initialized"};
   }
   if(!bitmap_)
   {
@@ -141,8 +141,8 @@ auto ocr_engine_windows::recognize() const -> recognition_data
     const auto to_word_data = [](const auto& w)
     {
       const auto rect = w.BoundingRect();
-      const auto origin = math::coordinates{numeric_cast<std::int32_t>(rect.X), numeric_cast<std::int32_t>(rect.Y)};
-      const auto corner = math::coordinates{
+      const auto origin = arcstd::math::coordinates{numeric_cast<std::int32_t>(rect.X), numeric_cast<std::int32_t>(rect.Y)};
+      const auto corner = arcstd::math::coordinates{
         origin.x() + numeric_cast<std::int32_t>(rect.Width), origin.y() + numeric_cast<std::int32_t>(rect.Height)
       };
       return word{winrt::to_string(w.Text()), bounding_box_type(origin, corner)};
@@ -167,7 +167,7 @@ auto ocr_engine_windows::recognize() const -> recognition_data
   }
   catch(...)
   {
-    LOG_ERROR("unknown exception in Windows OCR recognition: {}", util::exception_report());
+    LOG_ERROR("unknown exception in Windows OCR recognition: {}", arcstd::util::exception_report());
     return {};
   }
 }
@@ -184,19 +184,20 @@ auto ocr_engine_windows::create_bitmap(
     using size_type = std::uint64_t;
     if(subarea)
     {
-      const auto overlap = math::overlap(*subarea, area_type(math::coordinates{0, 0}, image.width(), image.height()));
-      return overlap ? std::pair{math::size(overlap->horizontal_range()), math::size(overlap->vertical_range())}
+      const auto overlap =
+        arcstd::math::overlap(*subarea, area_type(arcstd::math::coordinates{0, 0}, image.width(), image.height()));
+      return overlap ? std::pair{arcstd::math::size(overlap->horizontal_range()), arcstd::math::size(overlap->vertical_range())}
                      : std::pair{size_type{0}, size_type{0}};
     }
     else
     {
-      static_assert(meta::is_lossless_conversion_v<decltype(image.width()), size_type>);
-      static_assert(meta::is_lossless_conversion_v<decltype(image.height()), size_type>);
+      static_assert(arcstd::meta::is_lossless_conversion_v<decltype(image.width()), size_type>);
+      static_assert(arcstd::meta::is_lossless_conversion_v<decltype(image.height()), size_type>);
       return std::pair{static_cast<size_type>(image.width()), static_cast<size_type>(image.height())};
     }
   }();
 
-  // Create SoftwareBitmap with Bgra8 format (alpha ignored since screen captures have no alpha)
+  // Create SoftwareBitmap with Bgra8 format (alpha ignored since arcstd::system::screen captures have no alpha)
   bitmap_ = winrt_imaging::SoftwareBitmap(
     winrt_imaging::BitmapPixelFormat::Bgra8,
     numeric_cast<int>(width),
@@ -223,7 +224,7 @@ auto ocr_engine_windows::create_bitmap(
   {
     const auto& [i, pixel] = p;
     // pixel is RGBA, SoftwareBitmap expects BGRA. Alpha is set to 255 (opaque)
-    // because screen captures do not set the alpha channel.
+    // because arcstd::system::screen captures do not set the alpha channel.
     dst_data[(i * 4) + 0] = pixel.blue;
     dst_data[(i * 4) + 1] = pixel.green;
     dst_data[(i * 4) + 2] = pixel.red;
@@ -246,8 +247,8 @@ auto ocr_engine_windows::create_bitmap(
 ///
 auto ocr_engine_windows::compute_line_bounding_box(const std::vector<word>& words) -> bounding_box_type
 {
-  auto rect = bounding_box_type(math::coordinates{0, 0}, 0u, 0u);
-  std::ranges::for_each(words, [&rect](const auto& word) { rect = math::surrounding_rect(rect, word.bounding_box); });
+  auto rect = bounding_box_type(arcstd::math::coordinates{0, 0}, 0u, 0u);
+  std::ranges::for_each(words, [&rect](const auto& word) { rect = arcstd::math::surrounding_rect(rect, word.bounding_box); });
   return rect;
 }
 
@@ -255,9 +256,9 @@ auto ocr_engine_windows::compute_line_bounding_box(const std::vector<word>& word
 
 ///
 ///
-auto ocr::create(const util::language language) -> txt::ocr_engine_uptr_variant_type
+auto ocr::create(const arcstd::util::language language) -> bibocr::txt::ocr_engine_uptr_variant_type
 {
-  using return_type = std::unique_ptr<txt::ocr_engine<txt::ocr_engine_tag_plain>>;
+  using return_type = std::unique_ptr<bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>>;
   return_type engine = std::make_unique<ocr_engine_windows>(language);
   if(!static_cast<ocr_engine_windows&>(*engine).initialized())
   {
@@ -267,4 +268,4 @@ auto ocr::create(const util::language language) -> txt::ocr_engine_uptr_variant_
   return engine;
 }
 
-} // namespace bibstd::system
+} // namespace bibocr::system

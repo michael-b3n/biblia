@@ -3,7 +3,7 @@
 
 #include "arcstd/system/windows/win.hpp"
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -87,4 +87,4 @@ auto screen::monitor_at(const screen_coordinates_type coordinates) -> std::optio
   );
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

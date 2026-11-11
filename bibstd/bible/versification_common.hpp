@@ -16,7 +16,7 @@ namespace bibstd::bible
 struct versification_common final
 {
   // Typedefs
-  using book_start_indices_type = std::array<std::size_t, util::enum_count<book_id>()>;
+  using book_start_indices_type = std::array<std::size_t, arcstd::util::enum_count<book_id>()>;
 
   // Helpers
   ///
@@ -54,7 +54,7 @@ constexpr auto versification_common::generate_book_start_indices(const auto& dat
     [&](const auto& p)
     {
       const auto& [i, ref] = p;
-      const auto book_index = util::to_integral(ref.book());
+      const auto book_index = arcstd::util::to_integral(ref.book());
       indices[book_index] = std::min(indices[book_index], static_cast<std::size_t>(i));
     }
   );
@@ -67,15 +67,16 @@ constexpr auto versification_common::chapter_count(
   const auto& data, const book_start_indices_type& book_start_indices, const book_id book
 ) -> std::optional<std::uint32_t>
 {
-  if(!util::valid(book))
+  if(!arcstd::util::valid(book))
   {
     return std::nullopt;
   }
-  const auto book_index = util::to_integral(book);
+  const auto book_index = arcstd::util::to_integral(book);
   const auto start_index = book_start_indices[book_index];
   if(start_index < data.size())
   {
-    const auto end_index = util::has_next(book) ? book_start_indices[util::to_integral(util::next(book))] : data.size();
+    const auto end_index =
+      arcstd::util::has_next(book) ? book_start_indices[arcstd::util::to_integral(arcstd::util::next(book))] : data.size();
     if(end_index <= data.size())
     {
       assert(end_index > start_index);
@@ -92,11 +93,11 @@ constexpr auto versification_common::verse_count(
   const auto& data, const book_start_indices_type& book_start_indices, const book_id book, const reference::chapter_type chapter
 ) -> std::optional<std::uint32_t>
 {
-  if(!util::valid(book) || chapter == reference::chapter_type{0})
+  if(!arcstd::util::valid(book) || chapter == reference::chapter_type{0})
   {
     return std::nullopt;
   }
-  const auto book_index = util::to_integral(book);
+  const auto book_index = arcstd::util::to_integral(book);
   const auto start_index = book_start_indices[book_index];
   if(start_index < data.size())
   {

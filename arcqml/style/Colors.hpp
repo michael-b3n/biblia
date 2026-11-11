@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-namespace bibqml
+namespace arcqml
 {
 namespace detail
 {
@@ -89,4 +89,4 @@ signals:
   void headerTextChanged();
 };
 
-} // namespace bibqml
+} // namespace arcqml

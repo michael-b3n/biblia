@@ -3,7 +3,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace bibstd::meta
+namespace arcstd::meta
 {
 
 ///
@@ -78,4 +78,4 @@ struct conditional_unsigned<T> final
 template<typename T>
 using conditional_unsigned_t = typename conditional_unsigned<T>::type;
 
-} // namespace bibstd::meta
+} // namespace arcstd::meta

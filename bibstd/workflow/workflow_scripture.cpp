@@ -32,31 +32,31 @@ namespace
 ///
 [[nodiscard]] auto list_validator(const auto& setting)
 {
-  return std::get<framework::setting_validator_list<std::optional<std::string>>::sptr_type>(setting->validator);
+  return std::get<arcstd::framework::setting_validator_list<std::optional<std::string>>::sptr_type>(setting->validator);
 }
 
 } // namespace
 
 ///
 ///
-workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : workflow_settings_base{std::move(workflow_settings)}
+workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings)
+  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
   , default_scripture_name{workflow_settings_->create_setting(
       "scripture.default_name",
       setting_value_t<decltype(default_scripture_name)>{},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
+      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
     )}
   , fallback_versification{workflow_settings_->create_setting(
       "scripture.fallback_versification_name",
       std::string{bible::versification::default_kjv::name},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(fallback_versification)>>>(
+      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(fallback_versification)>>>(
         workflow_scripture::default_versifications | std::views::keys |
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
       )
     )}
 {
   // The default value set above must be one of the default versifications, else it would be invalid.
-  static_assert(meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
+  static_assert(arcstd::meta::contains_v<bible::versification::all_defaults_variant, bible::versification::default_kjv>);
 }
 
 ///
@@ -77,17 +77,19 @@ workflow_scripture::versification_wrapper::versification_wrapper(bible::versific
 ///
 auto workflow_scripture::versification_wrapper::get() const -> const bible::versification&
 {
-  return util::visit_lambdas(
+  return arcstd::util::visit_lambdas(
     data_,
     [](const bible::versification& versification) -> const bible::versification& { return versification; },
-    [](const std::shared_ptr<bible::scripture_outline>& outline) -> const bible::versification& { return outline->versification(); }
+    [](const std::shared_ptr<bible::scripture_outline>& outline) -> const bible::versification&
+    { return outline->versification(); }
   );
 }
 
 ///
 ///
 workflow_scripture::workflow_scripture(
-  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
 )
   : workflow_base{workflow_settings}
   , workflow_script_{workflow_script}
@@ -97,14 +99,16 @@ workflow_scripture::workflow_scripture(
 {
   update_scripture_name_setting();
 
-  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, connections_);
+  workflow_script_->connect_queued(
+    &arcstd::workflow::workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, connections_
+  );
 
   static constexpr auto book_id_of = [](const std::string_view book_id) -> bible::book_id
   {
-    const auto id = util::to_enum<bible::book_id>(book_id);
+    const auto id = arcstd::util::to_enum<bible::book_id>(book_id);
     if(!id)
     {
-      throw util::exception{std::format("invalid book name: book=\"{}\"", book_id)};
+      throw arcstd::util::exception{std::format("invalid book name: book=\"{}\"", book_id)};
     }
     return *id;
   };
@@ -134,7 +138,7 @@ workflow_scripture::workflow_scripture(
     ///
     << workflow_script_->register_function(
          "scripture.book_identifiers",
-         []() { return util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
+         []() { return arcstd::util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
        )
     ///
     /// \lua
@@ -276,7 +280,7 @@ auto workflow_scripture::information(const scripture_params& params) const -> st
     {
       return std::nullopt;
     }
-    return util::visit_lambdas(
+    return arcstd::util::visit_lambdas(
       *source,
       [](const workflow_scripture_store::file_scripture& file) -> result_type { return file.outline->information(); },
       [this](const script_scriptures_t::value_type& entry) -> result_type
@@ -297,7 +301,7 @@ auto workflow_scripture::information(const scripture_params& params) const -> st
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
     return std::nullopt;
   }
 }
@@ -315,13 +319,13 @@ auto workflow_scripture::book_information(const scripture_params& params, const 
     {
       return std::nullopt;
     }
-    return util::visit_lambdas(
+    return arcstd::util::visit_lambdas(
       *source,
       [book](const workflow_scripture_store::file_scripture& file) -> result_type
       { return file.outline->book_information(book); },
       [this, book](const script_scriptures_t::value_type& entry) -> result_type
       {
-        const auto output = run_script<book_manifest>(entry.second, {entry.first, std::string{util::enum_name(book)}});
+        const auto output = run_script<book_manifest>(entry.second, {entry.first, std::string{arcstd::util::enum_name(book)}});
         if(!output || std::apply([](const auto&... names) { return !(names || ...); }, output->values()))
         {
           return std::nullopt;
@@ -336,7 +340,7 @@ auto workflow_scripture::book_information(const scripture_params& params, const 
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
     return std::nullopt;
   }
 }
@@ -369,7 +373,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
       return std::unexpected{std::string{scripture_not_found}};
     }
     // The reader of a file knows its scripture by the file name
-    const auto scripture = util::visit_lambdas(
+    const auto scripture = arcstd::util::visit_lambdas(
       *source,
       [](const workflow_scripture_store::file_scripture& file)
       { return script_scripture_t{.script = file.reader, .name = file.file_name}; },
@@ -379,7 +383,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
       scripture,
       {
         scripture.name,
-        std::string{util::enum_name(ref.book())},
+        std::string{arcstd::util::enum_name(ref.book())},
         static_cast<std::int64_t>(ref.chapter().value),
         static_cast<std::int64_t>(ref.verse().value),
       }
@@ -399,7 +403,7 @@ auto workflow_scripture::passage(const passage_params& params) const -> passage_
   }
   catch(...)
   {
-    auto report = util::exception_report();
+    auto report = arcstd::util::exception_report();
     LOG_ERROR("exception occurred: {}", report);
     return std::unexpected{std::move(report)};
   }
@@ -424,7 +428,7 @@ auto workflow_scripture::import_scriptures(const import_params& params) -> std::
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
   return imported;
 }
@@ -440,7 +444,7 @@ auto workflow_scripture::reload_scriptures() -> void
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
   notify(&signals_type::scriptures_changed);
 }
@@ -494,7 +498,7 @@ auto workflow_scripture::find(const std::optional<std::string>& name) const -> s
 
 ///
 ///
-template<script_manifest M>
+template<arcstd::workflow::script_manifest M>
 auto workflow_scripture::run_script(const script_scripture_t& scripture, typename M::input input) const
   -> std::optional<typename M::output>
 {
@@ -513,7 +517,7 @@ auto workflow_scripture::update_scripts() -> void
   {
     // The readers of the files are scripts too
     workflow_scripture_store_->load();
-    const auto of_script = [this](const workflow_script::scripts_type::value_type& script)
+    const auto of_script = [this](const arcstd::workflow::workflow_script::scripts_type::value_type& script)
     {
       const auto output = workflow_script_->run<names_manifest>(script.first, {});
       const auto names = output ? output->get<"names">() : std::vector<std::string>{};
@@ -538,7 +542,7 @@ auto workflow_scripture::update_scripts() -> void
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
   notify(&signals_type::scriptures_changed);
 }
@@ -567,7 +571,7 @@ auto workflow_scripture::update_scripture_name_setting() -> void
 
   // A setting naming a scripture that is not loaded leaves every lookup without one. That is what
   // a name left over from scriptures that are gone does, so it is pointed at a loaded scripture.
-  const auto name_contained = name.has_value() && util::contains(names, *name);
+  const auto name_contained = name.has_value() && arcstd::util::contains(names, *name);
   if(!(name_contained || names.empty()))
   {
     std::ignore = settings().default_scripture_name->value(preferred ? *preferred : names.front());

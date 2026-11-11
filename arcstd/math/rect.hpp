@@ -10,7 +10,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -257,14 +257,14 @@ template<arithmetic_type... T>
   }
 }
 
-} // namespace bibstd::math
+} // namespace arcstd::math
 
 ///
 ///
-template<bibstd::math::arithmetic_type ValueType>
-struct std::formatter<bibstd::math::rect<ValueType>> : std::formatter<std::string>
+template<arcstd::math::arithmetic_type ValueType>
+struct std::formatter<arcstd::math::rect<ValueType>> : std::formatter<std::string>
 {
-  auto format(const bibstd::math::rect<ValueType>& e, std::format_context& ctx) const
+  auto format(const arcstd::math::rect<ValueType>& e, std::format_context& ctx) const
   {
     return formatter<std::string>::format(std::format("[{} {}x{}]", e.origin(), e.horizontal_range(), e.vertical_range()), ctx);
   }

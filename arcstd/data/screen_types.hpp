@@ -4,7 +4,7 @@
 #include "arcstd/data/plane.hpp"
 #include "arcstd/math/rect.hpp"
 
-namespace bibstd::data
+namespace arcstd::data
 {
 
 ///
@@ -15,4 +15,4 @@ using screen_coordinates_type = screen_rect_type::coordinates_type;
 using pixel_plane_type = plane<pixel>;
 using pixel_plane_view_type = plane_view<const pixel>;
 
-} // namespace bibstd::data
+} // namespace arcstd::data

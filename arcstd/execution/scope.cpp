@@ -4,7 +4,7 @@
 
 #include <utility>
 
-namespace bibstd::execution
+namespace arcstd::execution
 {
 
 ///
@@ -41,4 +41,4 @@ auto scope::stop() noexcept -> void
   }
 }
 
-} // namespace bibstd::execution
+} // namespace arcstd::execution

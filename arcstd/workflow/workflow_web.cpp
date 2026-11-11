@@ -5,7 +5,7 @@
 
 #include <utility>
 
-namespace bibstd::workflow
+namespace arcstd::workflow
 {
 
 ///
@@ -83,4 +83,4 @@ auto workflow_web::fetch(const std::string_view url) const -> page_type
   }
 }
 
-} // namespace bibstd::workflow
+} // namespace arcstd::workflow

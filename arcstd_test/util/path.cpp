@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace bibstd::util
+namespace arcstd::util
 {
 
 TEST_CASE("path", "[util]")
@@ -39,4 +39,4 @@ TEST_CASE("path", "[util]")
   CHECK(path{"a"} / path{} == path{"a"});
 }
 
-} // namespace bibstd::util
+} // namespace arcstd::util

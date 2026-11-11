@@ -24,14 +24,14 @@
 #include <type_traits>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 namespace
 {
 
 // Typedefs
 template<typename T>
-using setting_ptr = bibstd::util::non_owning_ptr<bibstd::framework::setting_type_erased<T>>;
+using setting_ptr = arcstd::util::non_owning_ptr<arcstd::framework::setting_type_erased<T>>;
 
 ///
 /// Protected numeric cast between integers.
@@ -47,7 +47,7 @@ auto integer_cast(const std::integral auto value) -> std::optional<T>
   }
   catch(...)
   {
-    LOG_ERROR("bad numeric cast to {}:  {}", typeid(T).name(), bibstd::util::exception_report());
+    LOG_ERROR("bad numeric cast to {}:  {}", typeid(T).name(), arcstd::util::exception_report());
     return std::nullopt;
   }
 }
@@ -60,7 +60,7 @@ auto throw_type_mismatch_error(const auto setting, const auto& value) -> bool
 {
   using s_type = typename std::remove_pointer_t<std::remove_const_t<decltype(setting)>>::value_type;
   using v_type = std::remove_cvref_t<decltype(value)>;
-  throw bibstd::util::exception{
+  throw arcstd::util::exception{
     std::format(R"(type mismatch: setting_type="{}", value_type="{}")", typeid(s_type).name(), typeid(v_type).name())
   };
   return false;
@@ -98,7 +98,7 @@ auto toVariant(const double& value) -> QVariant
 /// \return QVariant converted from a duration
 ///
 template<typename T>
-  requires(bibstd::meta::is_duration_v<T>)
+  requires(arcstd::meta::is_duration_v<T>)
 auto toVariant(const T& value) -> QVariant
 {
   return toVariant(value.count());
@@ -146,7 +146,7 @@ auto toVariant(const std::vector<T>& list) -> QVariant
 /// \return unit the duration is displayed with
 ///
 template<typename T>
-  requires(bibstd::meta::is_duration_v<T>)
+  requires(arcstd::meta::is_duration_v<T>)
 constexpr auto durationPostfix() -> QLatin1StringView
 {
   // clang-format off
@@ -179,7 +179,7 @@ auto setValueConvertible(const auto setting, const auto& value) -> bool
 ///
 auto setValueConvertibleVec(const auto setting, const auto& value) -> bool
 {
-  using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
+  using vector_value_type = arcstd::meta::remove_wrapper_t<decltype(value)>;
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
   if constexpr(std::is_same_v<vector_value_type, SettingRawValueType<decltype(setting)>>)
   {
@@ -223,7 +223,7 @@ auto setValueInteger(const auto setting, const auto& value) -> bool
 auto setValueIntegerVec(const auto setting, const auto& value) -> bool
 {
   static_assert(std::integral<SettingRawValueType<decltype(setting)>>);
-  using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
+  using vector_value_type = arcstd::meta::remove_wrapper_t<decltype(value)>;
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
   if constexpr(std::is_same_v<vector_value_type, SettingRawValueType<decltype(setting)>>)
   {
@@ -265,7 +265,7 @@ auto setValueIntegerVec(const auto setting, const auto& value) -> bool
 auto setValueDuration(const auto setting, const auto value) -> bool
 {
   using duration_type = SettingRawValueType<decltype(setting)>;
-  static_assert(bibstd::meta::is_duration_v<duration_type>);
+  static_assert(arcstd::meta::is_duration_v<duration_type>);
   if constexpr(std::integral<std::remove_cvref_t<decltype(value)>>)
   {
     const auto count = integer_cast<typename duration_type::rep>(value);
@@ -284,8 +284,8 @@ auto setValueDuration(const auto setting, const auto value) -> bool
 auto setValueDurationVec(const auto setting, const auto& value) -> bool
 {
   using duration_type = SettingRawValueType<decltype(setting)>;
-  using vector_value_type = bibstd::meta::remove_wrapper_t<decltype(value)>;
-  static_assert(bibstd::meta::is_duration_v<duration_type>);
+  using vector_value_type = arcstd::meta::remove_wrapper_t<decltype(value)>;
+  static_assert(arcstd::meta::is_duration_v<duration_type>);
   static_assert(std::is_same_v<std::vector<vector_value_type>, std::remove_cvref_t<decltype(value)>>);
   if constexpr(std::integral<vector_value_type>)
   {
@@ -332,7 +332,7 @@ auto tryNormalizeQVariant(const QVariant& variant) -> QVariant
 
 ///
 ///
-auto toDefaultSettingValue(const QVariant& value) -> std::optional<bibstd::framework::setting_type_erased_variant>
+auto toDefaultSettingValue(const QVariant& value) -> std::optional<arcstd::framework::setting_type_erased_variant>
 {
   const auto v = tryNormalizeQVariant(value);
   switch(v.metaType().id())
@@ -372,7 +372,7 @@ auto setQmlValue(const SettingVariantType& setting, const QVariant& value) -> bo
 
   const auto v = tryNormalizeQVariant(value);
   // clang-format off
-  return bibstd::util::visit_lambdas(
+  return arcstd::util::visit_lambdas(
     setting,
     [&](const setting_ptr<bool> s) { return setValueConvertible(s, v.toBool()); },
     [&](const setting_ptr<std::int32_t> s) { return setValueInteger(s, v.toInt()); },
@@ -422,7 +422,7 @@ auto toQmlPostfix(const SettingVariantType& setting) -> QString
         return QString::fromStdString(s->postfix);
       }
       using value_type = SettingRawValueType<std::remove_cvref_t<decltype(s)>>;
-      if constexpr(bibstd::meta::is_duration_v<value_type>)
+      if constexpr(arcstd::meta::is_duration_v<value_type>)
       {
         return durationPostfix<value_type>();
       }
@@ -443,7 +443,7 @@ auto toQmlValidatorValues(const SettingVariantType& setting) -> QList<QVariant>
     [](const auto s)
     {
       using value_type = std::remove_pointer_t<std::remove_cvref_t<decltype(s)>>::value_type;
-      return bibstd::util::visit_lambdas(
+      return arcstd::util::visit_lambdas(
         s->validator,
         []([[maybe_unused]] const ValidatorUnboundSptrType&) { return QList<QVariant>{}; },
         []([[maybe_unused]] const ValidatorRangeSptrType<value_type>&) { return QList<QVariant>{}; },
@@ -461,4 +461,4 @@ auto toQmlValidatorValues(const SettingVariantType& setting) -> QList<QVariant>
   );
 }
 
-} // namespace bibqml
+} // namespace arcqml

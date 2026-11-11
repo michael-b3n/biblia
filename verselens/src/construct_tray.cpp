@@ -21,7 +21,7 @@
 #include <vector>
 
 INC_RESOURCE(icon, "res/icon.ico");
-const auto icon_view = bibstd::util::incbin::to_span<std::byte>(res_icon_data, res_icon_size);
+const auto icon_view = arcstd::util::incbin::to_span<std::byte>(res_icon_data, res_icon_size);
 
 namespace verselens
 {
@@ -44,7 +44,7 @@ struct tray_button final
 [[nodiscard]] auto tray_name(const char* const key) -> std::string
 {
   const auto name = QString::fromLatin1(key);
-  const auto* const translations = bibqml::Translations::instance();
+  const auto* const translations = arcqml::Translations::instance();
   return (translations != nullptr ? translations->name(name) : name).toStdString();
 }
 
@@ -53,10 +53,10 @@ struct tray_button final
 ///
 ///
 auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_instance& translations)
-  -> bibstd::util::shared_scope_guard
+  -> arcstd::util::shared_scope_guard
 {
   const auto do_on_exit = [&app, &bridge, &translations]() { quit_application(app, bridge, translations); };
-  const auto open_github = []() { std::ignore = bibstd::system::open_browser::open(std::string{version::repository_url}); };
+  const auto open_github = []() { std::ignore = arcstd::system::open_browser::open(std::string{version::repository_url}); };
   const auto show_window = [&bridge]() { bridge.bridge_application->requestShowWindow(); };
 
   // The position in this list is the index the tray knows an entry by.
@@ -66,25 +66,25 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
     {       .key = "tray_exit",  .callback = do_on_exit},
   };
 
-  auto entries = std::vector<bibstd::system::tray::entry_type>{};
+  auto entries = std::vector<arcstd::system::tray::entry_type>{};
   std::ranges::transform(
     buttons,
     std::back_inserter(entries),
-    [](const auto& button) { return bibstd::system::tray::button{.text = tray_name(button.key), .callback = button.callback}; }
+    [](const auto& button) { return arcstd::system::tray::button{.text = tray_name(button.key), .callback = button.callback}; }
   );
-  auto guard = bibstd::system::tray::init(bibstd::system::tray::icon_buffer{icon_view}, std::move(entries));
+  auto guard = arcstd::system::tray::init(arcstd::system::tray::icon_buffer{icon_view}, std::move(entries));
 
-  if(const auto* const names = bibqml::Translations::instance(); names != nullptr)
+  if(const auto* const names = arcqml::Translations::instance(); names != nullptr)
   {
     QObject::connect(
       names,
-      &bibqml::Translations::languageChanged,
+      &arcqml::Translations::languageChanged,
       &app,
       [buttons]()
       {
         for(auto index = std::size_t{0}; index < buttons.size(); ++index)
         {
-          bibstd::system::tray::set_text(index, tray_name(buttons[index].key));
+          arcstd::system::tray::set_text(index, tray_name(buttons[index].key));
         }
       }
     );

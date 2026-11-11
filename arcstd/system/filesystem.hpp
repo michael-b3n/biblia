@@ -5,7 +5,7 @@
 #include <optional>
 #include <string_view>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -47,4 +47,4 @@ inline auto filesystem::executable_folder() -> std::filesystem::path
   return boost::dll::program_location().parent_path().string();
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system

@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -47,4 +47,4 @@ public: // Accessors
   [[nodiscard]] auto name(std::string_view language, std::string_view key) const -> std::optional<std::string>;
 };
 
-} // namespace bibqml
+} // namespace arcqml

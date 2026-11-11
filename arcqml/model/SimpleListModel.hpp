@@ -9,7 +9,7 @@
 
 #include <vector>
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
@@ -31,7 +31,7 @@ public: // Typedefs
   Q_ENUM(Role)
 
 public: // Structors
-  explicit SimpleListModel(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit SimpleListModel(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~SimpleListModel() noexcept override;
 
 public: // Overrides
@@ -90,4 +90,4 @@ public: // Modifiers
   Q_INVOKABLE void clear();
 };
 
-} // namespace bibqml
+} // namespace arcqml

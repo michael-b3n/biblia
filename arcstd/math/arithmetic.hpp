@@ -10,7 +10,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace bibstd::math
+namespace arcstd::math
 {
 
 ///
@@ -531,4 +531,4 @@ constexpr auto arithmetic_operation<T>::divide(T first, T second) -> arithmetic:
 }
 
 } // namespace detail
-} // namespace bibstd::math
+} // namespace arcstd::math

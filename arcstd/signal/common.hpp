@@ -4,7 +4,7 @@
 
 #include <functional>
 
-namespace bibstd::signal
+namespace arcstd::signal
 {
 
 ///
@@ -112,4 +112,4 @@ using scoped_connection_type = boost::signals2::scoped_connection;
 ///
 using connection_block_type = boost::signals2::shared_connection_block;
 
-} // namespace bibstd::signal
+} // namespace arcstd::signal

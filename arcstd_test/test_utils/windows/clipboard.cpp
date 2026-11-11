@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 
-namespace bibstd::test_utils
+namespace arcstd::test_utils
 {
 namespace
 {
@@ -55,4 +55,4 @@ auto clipboard_text() -> std::optional<std::string>
   return result;
 }
 
-} // namespace bibstd::test_utils
+} // namespace arcstd::test_utils

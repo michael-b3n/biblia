@@ -1,11 +1,11 @@
 #include "arcqml/style/Metrics.hpp"
 
-namespace bibqml
+namespace arcqml
 {
 
 ///
 ///
-Metrics::Metrics(bibstd::util::non_owning_ptr<QObject> parent)
+Metrics::Metrics(arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }
@@ -14,4 +14,4 @@ Metrics::Metrics(bibstd::util::non_owning_ptr<QObject> parent)
 ///
 Metrics::~Metrics() noexcept = default;
 
-} // namespace bibqml
+} // namespace arcqml

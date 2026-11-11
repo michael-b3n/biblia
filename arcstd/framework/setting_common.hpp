@@ -14,7 +14,7 @@
 #include <variant>
 #include <vector>
 
-namespace bibstd::framework
+namespace arcstd::framework
 {
 namespace detail
 {
@@ -188,4 +188,4 @@ template<underlying_setting_type F, underlying_setting_type T>
   }
 }
 
-} // namespace bibstd::framework
+} // namespace arcstd::framework

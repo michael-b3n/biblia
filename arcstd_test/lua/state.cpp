@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::lua
+namespace arcstd::lua
 {
 namespace
 {
@@ -489,4 +489,4 @@ TEST_CASE("lua_state_protects_shared_tables", "[lua]")
   CHECK(s->script("return root.interface.b.f()").get<int>() == 2);
 }
 
-} // namespace bibstd::lua
+} // namespace arcstd::lua

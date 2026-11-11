@@ -7,7 +7,7 @@
 #include <optional>
 #include <string_view>
 
-namespace bibstd::system
+namespace arcstd::system
 {
 
 ///
@@ -33,4 +33,4 @@ static_assert(language_wtag_map.size() == util::enum_count<util::language>());
   return std::nullopt;
 }
 
-} // namespace bibstd::system
+} // namespace arcstd::system
