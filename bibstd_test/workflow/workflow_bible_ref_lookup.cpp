@@ -111,7 +111,7 @@ template<typename T>
 [[nodiscard]] auto default_translations() -> std::vector<std::string>
 {
   using result_type = std::vector<std::string>;
-  return bibstd::system::locale::preferred_language() == arcstd::util::language::german
+  return bibstd::system::locale::preferred_language() == bibocr::util::language::german
            ? result_type{"Neue Genfer Übersetzung", "Elberfelder Bibel"}
            : result_type{"New International Version", "English Standard Version"};
 }
@@ -145,7 +145,7 @@ TEST_CASE("workflow_bible_ref_lookup_follows_the_chosen_script", "[workflow]")
   REQUIRE(arcstd::test_utils::wait_until([&]() { return settings.translations->value() == std::vector<std::string>{"BBB"}; }));
   CHECK(available(settings.translations) == std::vector<std::string>{"AAA", "BBB"});
   // The other bundled script, with the translation of the language
-  const auto german = bibstd::system::locale::preferred_language() == arcstd::util::language::german;
+  const auto german = bibstd::system::locale::preferred_language() == bibocr::util::language::german;
   REQUIRE(settings.script->value("Bible.com"));
   REQUIRE(arcstd::test_utils::wait_until([&]() { return available(settings.translations).size() == 12; }));
   const auto translation = std::vector<std::string>{german ? "Elberfelder 1905" : "New International Version"};

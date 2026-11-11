@@ -1,18 +1,18 @@
 #include "bibstd/bible/reference_parser.hpp"
 #include "arcstd/math/value_range.hpp"
 #include "arcstd/txt/find_uint.hpp"
-#include "arcstd/txt/script_common.hpp"
-#include "arcstd/txt/script_letters.hpp"
 #include "arcstd/util/contains.hpp"
-#include "arcstd/util/language.hpp"
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/ranges.hpp"
 #include "arcstd/util/string.hpp"
 #include "arcstd/util/visit_helper.hpp"
+#include "bibocr/util/language.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/ocr_book_variants.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/versification.hpp"
+#include "bibstd/txt/script_common.hpp"
+#include "bibstd/txt/script_letters.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -150,7 +150,7 @@ auto match_passage_template_section(
 auto reference_parser::parse(
   const std::string_view text,
   const std::size_t index,
-  const arcstd::util::language language,
+  const bibocr::util::language language,
   const versification& versification
 ) -> parse_result
 {
@@ -179,7 +179,7 @@ auto reference_parser::parse(
 
 ///
 ///
-auto reference_parser::find_book(const std::string_view text, const std::size_t index, const arcstd::util::language language)
+auto reference_parser::find_book(const std::string_view text, const std::size_t index, const bibocr::util::language language)
   -> std::optional<find_book_result>
 {
   auto found_book = std::optional<find_book_result>{};
@@ -188,14 +188,14 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
   normalized_text.reserve(text.size());
   std::vector<index_range_type> raw_index_ranges;
   raw_index_ranges.reserve(text.size());
-  arcstd::txt::script_letters::visit(
+  bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
-      arcstd::txt::script_common::for_each_char(
+      bibstd::txt::script_common::for_each_char(
         letters,
         text,
-        [&](const auto character, const auto pos, const arcstd::txt::script_common::category category) -> void
+        [&](const auto character, const auto pos, const bibstd::txt::script_common::category category) -> void
         {
           const auto append = [&](const std::string_view c) -> void
           {
@@ -210,12 +210,12 @@ auto reference_parser::find_book(const std::string_view text, const std::size_t 
           };
           switch(category)
           {
-          case arcstd::txt::script_common::category::letter: append(character); break;
-          case arcstd::txt::script_common::category::whitespace: /*noop*/ break;
-          case arcstd::txt::script_common::category::line: /*noop*/ break;
-          case arcstd::txt::script_common::category::fullstop: /*noop*/ break;
-          case arcstd::txt::script_common::category::digit: append(character); break;
-          case arcstd::txt::script_common::category::other: append("*"); break;
+          case bibstd::txt::script_common::category::letter: append(character); break;
+          case bibstd::txt::script_common::category::whitespace: /*noop*/ break;
+          case bibstd::txt::script_common::category::line: /*noop*/ break;
+          case bibstd::txt::script_common::category::fullstop: /*noop*/ break;
+          case bibstd::txt::script_common::category::digit: append(character); break;
+          case bibstd::txt::script_common::category::other: append("*"); break;
           }
         }
       );
@@ -285,7 +285,7 @@ auto reference_parser::reference_index_range(
   const std::size_t index,
   const find_book_result& book,
   const passage_template_result& passage_template,
-  const arcstd::util::language language
+  const bibocr::util::language language
 ) -> std::optional<index_range_type>
 {
   // Without a passage number the reference ends with the book name.
@@ -302,21 +302,21 @@ auto reference_parser::reference_index_range(
 
 ///
 ///
-auto reference_parser::end_of_word(const std::string_view text, const std::size_t index, const arcstd::util::language language)
+auto reference_parser::end_of_word(const std::string_view text, const std::size_t index, const bibocr::util::language language)
   -> std::size_t
 {
   auto end = text.size();
-  arcstd::txt::script_letters::visit(
+  bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
       // finds the index of the first whitespace after the character at \p index
-      arcstd::txt::script_common::for_each_char_while(
+      bibstd::txt::script_common::for_each_char_while(
         letters,
         text.substr(std::min(index, text.size())),
-        [&]([[maybe_unused]] const auto character, const auto pos, const arcstd::txt::script_common::category category)
+        [&]([[maybe_unused]] const auto character, const auto pos, const bibstd::txt::script_common::category category)
         {
-          const auto whitespace = category == arcstd::txt::script_common::category::whitespace;
+          const auto whitespace = category == bibstd::txt::script_common::category::whitespace;
           if(whitespace)
           {
             end = index + pos;
@@ -332,26 +332,26 @@ auto reference_parser::end_of_word(const std::string_view text, const std::size_
 ///
 ///
 auto reference_parser::find_numbers_after_book_name(
-  const std::string_view text_after_name, const arcstd::util::language language
+  const std::string_view text_after_name, const bibocr::util::language language
 ) -> std::optional<std::size_t>
 {
   auto digit_found = false;
   auto numbers_end = std::optional<std::size_t>{};
-  arcstd::txt::script_letters::visit(
+  bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
-      arcstd::txt::script_common::for_each_char_while(
+      bibstd::txt::script_common::for_each_char_while(
         letters,
         text_after_name,
-        [&](const auto character, const auto pos, const arcstd::txt::script_common::category category)
+        [&](const auto character, const auto pos, const bibstd::txt::script_common::category category)
         {
-          if(category == arcstd::txt::script_common::category::digit)
+          if(category == bibstd::txt::script_common::category::digit)
           {
             digit_found = true;
           }
           else if(
-            category == arcstd::txt::script_common::category::letter &&
+            category == bibstd::txt::script_common::category::letter &&
             !arcstd::util::contains(
               number_postfix_chars, [&](const auto v) { return arcstd::util::string::starts_with(character, v); }
             )
@@ -370,16 +370,16 @@ auto reference_parser::find_numbers_after_book_name(
 ///
 ///
 auto reference_parser::try_validate_numbers_range(
-  const std::string_view text_after_name, std::size_t numbers_end, const arcstd::util::language language
+  const std::string_view text_after_name, std::size_t numbers_end, const bibocr::util::language language
 ) -> std::size_t
 {
-  return arcstd::txt::script_letters::visit(
+  return bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters) -> std::size_t
     {
       if(
         numbers_end < text_after_name.size() && numbers_end > 0 &&
-        arcstd::txt::script_common::is_char(letters, text_after_name, numbers_end, arcstd::txt::script_common::category::letter)
+        bibstd::txt::script_common::is_char(letters, text_after_name, numbers_end, bibstd::txt::script_common::category::letter)
       )
       {
         const auto text_from_last_number = text_after_name.substr(numbers_end - 1);
@@ -403,7 +403,7 @@ auto reference_parser::try_validate_numbers_range(
 
 ///
 ///
-auto reference_parser::create_passage_template(const std::string_view passage_text, const arcstd::util::language language)
+auto reference_parser::create_passage_template(const std::string_view passage_text, const bibocr::util::language language)
   -> passage_template_result
 {
   const auto normalized = normalize_passage_text(passage_text, language);
@@ -463,10 +463,10 @@ auto reference_parser::create_passage_template(const std::string_view passage_te
 
 ///
 ///
-auto reference_parser::normalize_passage_text(const std::string_view text, const arcstd::util::language language)
+auto reference_parser::normalize_passage_text(const std::string_view text, const bibocr::util::language language)
   -> normalized_passage
 {
-  return arcstd::txt::script_letters::visit(
+  return bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters) -> normalized_passage
     {
@@ -494,16 +494,16 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
             append(std::string_view{&gap, 1}, iter->size()); // Ignore possible postfixes
             counter += iter->size();
           }
-          else if(const auto data = arcstd::txt::script_common::char_info(letters, subview, 0); data)
+          else if(const auto data = bibstd::txt::script_common::char_info(letters, subview, 0); data)
           {
             switch(data->char_category)
             {
-            case arcstd::txt::script_common::category::letter: [[fallthrough]];
-            case arcstd::txt::script_common::category::whitespace: append(std::string_view{&gap, 1}, data->char_size); break;
-            case arcstd::txt::script_common::category::line: append("-", data->char_size); break;
-            case arcstd::txt::script_common::category::fullstop: [[fallthrough]];
-            case arcstd::txt::script_common::category::digit: [[fallthrough]];
-            case arcstd::txt::script_common::category::other:
+            case bibstd::txt::script_common::category::letter: [[fallthrough]];
+            case bibstd::txt::script_common::category::whitespace: append(std::string_view{&gap, 1}, data->char_size); break;
+            case bibstd::txt::script_common::category::line: append("-", data->char_size); break;
+            case bibstd::txt::script_common::category::fullstop: [[fallthrough]];
+            case bibstd::txt::script_common::category::digit: [[fallthrough]];
+            case bibstd::txt::script_common::category::other:
               append(subview.substr(0, data->char_size), data->char_size);
               break;
             }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
 #include "arcstd/framework/process_params.hpp"
-#include "arcstd/util/language.hpp"
 #include "arcstd/workflow/workflow_base.hpp"
 #include "arcstd/workflow/workflow_settings_base.hpp"
+#include "bibocr/data/screen_types.hpp"
+#include "bibocr/util/language.hpp"
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
@@ -43,7 +43,7 @@ struct workflow_bible_ref_ocr_settings final : public arcstd::workflow::workflow
   const setting_type<std::optional<std::string>> character_recognition_ocr_engine;
   const setting_type<std::optional<std::string>> layout_recognition_ocr_engine;
   const setting_type<ocr_recognition_algorithm> recognition_algorithm;
-  const setting_type<arcstd::util::language> language;
+  const setting_type<bibocr::util::language> language;
 };
 
 ///
@@ -54,20 +54,20 @@ class workflow_bible_ref_ocr final : public arcstd::workflow::workflow_base<work
   // Typedefs
   struct params_t final
   {
-    arcstd::data::pixel_plane_view_type image;
-    arcstd::data::screen_coordinates_type position;
+    bibocr::data::pixel_plane_view_type image;
+    bibocr::data::screen_coordinates_type position;
   };
 
   struct result_t final
   {
     std::vector<bible::reference_range> reference_ranges;
-    std::optional<arcstd::data::screen_rect_type> reference_bounding_box;
+    std::optional<bibocr::data::screen_rect_type> reference_bounding_box;
   };
 
   struct find_references_result_t final
   {
     std::vector<bible::reference_range> ranges;
-    std::optional<arcstd::data::screen_rect_type> bounding_box;
+    std::optional<bibocr::data::screen_rect_type> bounding_box;
   };
 
   struct settings_t final
@@ -75,7 +75,7 @@ class workflow_bible_ref_ocr final : public arcstd::workflow::workflow_base<work
     std::string character_recognition_ocr_engine;
     std::optional<std::string> layout_recognition_ocr_engine;
     workflow_bible_ref_ocr_settings::ocr_recognition_algorithm recognition_algorithm;
-    arcstd::util::language language;
+    bibocr::util::language language;
     workflow_scripture::versification_wrapper_type versification;
   };
 

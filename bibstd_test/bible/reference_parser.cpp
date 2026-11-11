@@ -22,7 +22,7 @@ constexpr auto esv = versification_esv;
 ///
 auto parse(const std::string_view text, const std::size_t index) -> reference_parser::parse_result
 {
-  return reference_parser::parse(text, index, arcstd::util::language::german, esv);
+  return reference_parser::parse(text, index, bibocr::util::language::german, esv);
 }
 
 ///

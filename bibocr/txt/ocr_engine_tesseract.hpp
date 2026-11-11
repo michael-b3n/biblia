@@ -2,8 +2,8 @@
 
 #include "arcstd/util/const_map.hpp"
 #include "arcstd/util/enum.hpp"
-#include "arcstd/util/language.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
+#include "bibocr/util/language.hpp"
 
 #include <filesystem>
 #include <optional>
@@ -29,16 +29,16 @@ namespace bibocr::txt
 class ocr_engine_tesseract final : public ocr_engine<ocr_engine_tag_layout_analysis>
 {
   // Constants
-  static constexpr auto language_map = arcstd::util::make_const_bimap<arcstd::util::language, std::string_view>({
-    { arcstd::util::language::german, "deu"},
-    {arcstd::util::language::english, "eng"},
+  static constexpr auto language_map = arcstd::util::make_const_bimap<bibocr::util::language, std::string_view>({
+    { bibocr::util::language::german, "deu"},
+    {bibocr::util::language::english, "eng"},
     // ...
   });
-  static_assert(language_map.size() == arcstd::util::enum_count<arcstd::util::language>());
+  static_assert(language_map.size() == arcstd::util::enum_count<bibocr::util::language>());
 
   // Variables
   const std::unique_ptr<tesseract::TessBaseAPI> tesseract_;
-  std::vector<arcstd::data::pixel_plane_view_type::value_type> image_data_;
+  std::vector<bibocr::data::pixel_plane_view_type::value_type> image_data_;
 
 public: // Static
   ///
@@ -47,7 +47,7 @@ public: // Static
   [[nodiscard]] static auto shipped_tessdata_folder() -> std::filesystem::path;
 
 public: // Structors
-  ocr_engine_tesseract(const std::filesystem::path& tessdata_path, arcstd::util::language language);
+  ocr_engine_tesseract(const std::filesystem::path& tessdata_path, bibocr::util::language language);
   ~ocr_engine_tesseract() noexcept override;
 
 public: // Overrides
@@ -60,7 +60,7 @@ public: // Overrides
   /// \see ocr_engine::initialize
   ///
   auto initialize(
-    arcstd::data::pixel_plane_view_type image, std::optional<arcstd::data::pixel_plane_view_type::area_type> subarea
+    bibocr::data::pixel_plane_view_type image, std::optional<bibocr::data::pixel_plane_view_type::area_type> subarea
   ) -> void override;
 
   ///

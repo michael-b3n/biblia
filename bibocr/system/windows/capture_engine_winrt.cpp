@@ -24,7 +24,7 @@ namespace winrt_capture
 class monitor final
 {
 public: // Typedefs
-  using pixel_plane_type = arcstd::data::pixel_plane_type;
+  using pixel_plane_type = bibocr::data::pixel_plane_type;
 
 public: // Constructor
   ///
@@ -255,8 +255,8 @@ namespace
 {
 
 ///
-/// A arcstd::system::screen region as the capture API addresses it: the monitor showing it, the size that monitor
-/// has according to the arcstd::system::screen metrics, and the region within that monitor.
+/// A bibstd::system::screen region as the capture API addresses it: the monitor showing it, the size that monitor
+/// has according to the bibstd::system::screen metrics, and the region within that monitor.
 ///
 struct placement final
 {
@@ -267,10 +267,10 @@ struct placement final
 };
 
 ///
-/// Locate a arcstd::system::screen region on the monitor showing it.
+/// Locate a bibstd::system::screen region on the monitor showing it.
 /// \return Placement of the region, or std::nullopt if no single monitor shows all of it
 ///
-auto place(const arcstd::data::screen_rect_type rect) -> std::optional<placement>
+auto place(const bibocr::data::screen_rect_type rect) -> std::optional<placement>
 {
   const auto width = numeric_cast<std::int32_t>(arcstd::math::size(rect.horizontal_range()));
   const auto height = numeric_cast<std::int32_t>(arcstd::math::size(rect.vertical_range()));

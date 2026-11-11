@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arcstd/data/pixel.hpp"
-#include "arcstd/data/plane.hpp"
+#include "bibocr/data/pixel.hpp"
+#include "bibocr/data/plane.hpp"
 
 #include <filesystem>
 #include <optional>
@@ -14,8 +14,8 @@ namespace bibocr::io
 /// \return true if successful, false otherwise
 ///
 [[nodiscard]] auto save_as_bitmap(
-  const arcstd::data::plane_view<const arcstd::data::pixel>& data,
-  std::optional<arcstd::data::plane_view<const arcstd::data::pixel>::area_type> subarea,
+  const bibocr::data::plane_view<const bibocr::data::pixel>& data,
+  std::optional<bibocr::data::plane_view<const bibocr::data::pixel>::area_type> subarea,
   const std::filesystem::path& path
 ) -> bool;
 

@@ -17,8 +17,8 @@
 
 #include <arcstd/framework/single_instance.hpp>
 #include <arcstd/system/filesystem.hpp>
-#include <arcstd/system/screen.hpp>
 #include <arcstd/util/log.hpp>
+#include <bibstd/system/screen.hpp>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   }
 #endif
 
-  if(!arcstd::system::screen::init())
+  if(!bibstd::system::screen::init())
   {
     LOG_ERROR("failed to initialize screen settings");
     return EXIT_FAILURE;

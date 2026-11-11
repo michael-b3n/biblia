@@ -2,7 +2,6 @@
 
 #include <arcstd/framework/setting.hpp>
 #include <arcstd/math/rect.hpp>
-#include <arcstd/system/screen.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/numeric_cast.hpp>
@@ -10,6 +9,7 @@
 #include <arcstd/workflow/workflow_hotkey.hpp>
 #include <arcstd/workflow/workflow_settings.hpp>
 #include <bibocr/system/capture.hpp>
+#include <bibstd/system/screen.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
 
@@ -30,9 +30,9 @@ namespace
 ///
 struct CaptureResult final
 {
-  arcstd::data::pixel_plane_type image;
-  arcstd::data::screen_coordinates_type relativeCursorPosition;
-  arcstd::data::screen_coordinates_type origin;
+  bibocr::data::pixel_plane_type image;
+  bibocr::data::screen_coordinates_type relativeCursorPosition;
+  bibocr::data::screen_coordinates_type origin;
 };
 
 ///
@@ -40,30 +40,30 @@ struct CaptureResult final
 /// \note This accesses the cursor of the QML layer, it must be called on its thread.
 /// \return cursor position pair, or std::nullopt if the native cursor position is unknown
 ///
-[[nodiscard]] auto readCursorPositionPair() -> std::optional<arcqml::CursorPositionPair>
+[[nodiscard]] auto readCursorPositionPair() -> std::optional<bibqml::CursorPositionPair>
 {
-  const auto native = arcstd::system::screen::cursor_position();
+  const auto native = bibstd::system::screen::cursor_position();
   if(!native)
   {
     LOG_WARN("identify cursor position failed: not found");
     return std::nullopt;
   }
-  return arcqml::CursorPositionPair{.native = *native, .deviceIndependent = QCursor::pos()};
+  return bibqml::CursorPositionPair{.native = *native, .deviceIndependent = QCursor::pos()};
 }
 
 ///
 /// Capture the screen area of the window at the specified cursor position.
 /// \return captured screen area, or std::nullopt if the area could not be captured
 ///
-[[nodiscard]] auto captureScreen(const arcstd::data::screen_coordinates_type& cursorPosition) -> std::optional<CaptureResult>
+[[nodiscard]] auto captureScreen(const bibocr::data::screen_coordinates_type& cursorPosition) -> std::optional<CaptureResult>
 {
   SCOPED_TIMER_LOG();
-  const auto windowRect = arcstd::system::screen::window_at(cursorPosition);
+  const auto windowRect = bibstd::system::screen::window_at(cursorPosition);
   if(!windowRect)
   {
     return std::nullopt;
   }
-  auto image = arcstd::data::pixel_plane_type{};
+  auto image = bibocr::data::pixel_plane_type{};
   if(!bibocr::system::capture::region(*windowRect, image))
   {
     return std::nullopt;
@@ -78,10 +78,10 @@ struct CaptureResult final
 /// \return rectangle in native screen pixels
 ///
 [[nodiscard]] auto toScreenRect(
-  const arcstd::data::screen_rect_type& rect, const arcstd::data::screen_coordinates_type& imageOrigin
-) -> arcstd::data::screen_rect_type
+  const bibocr::data::screen_rect_type& rect, const bibocr::data::screen_coordinates_type& imageOrigin
+) -> bibocr::data::screen_rect_type
 {
-  return arcstd::data::screen_rect_type{
+  return bibocr::data::screen_rect_type{
     rect.origin() + imageOrigin, arcstd::math::size(rect.horizontal_range()), arcstd::math::size(rect.vertical_range())
   };
 }
@@ -172,7 +172,7 @@ void BridgeBibleRefOcr::runManualSearch()
   // Capture the screen directly on call of this function to ensure the cursor position is up-to-date.
   // This is usually called from the main thread and takes only a few milliseconds.
   // This also ensures that no displayed windows are blocking the screen capture.
-  const auto cursorPosition = arcstd::system::screen::cursor_position();
+  const auto cursorPosition = bibstd::system::screen::cursor_position();
   if(!cursorPosition)
   {
     LOG_WARN("identify cursor position failed: not found");
@@ -197,7 +197,7 @@ void BridgeBibleRefOcr::runManualSearch()
     return;
   }
 
-  auto boundingBox = std::optional<arcstd::data::screen_rect_type>{};
+  auto boundingBox = std::optional<bibocr::data::screen_rect_type>{};
   if(result->reference_bounding_box)
   {
     boundingBox = toScreenRect(*result->reference_bounding_box, capture->origin);
@@ -254,7 +254,7 @@ void BridgeBibleRefOcr::notifyManualSearchStarted(const arcstd::framework::proce
 void BridgeBibleRefOcr::notifyManualSearchFinished(
   const arcstd::framework::process_id_type processId,
   const std::optional<bibstd::bible::reference_range> referenceRange,
-  const std::optional<arcstd::data::screen_rect_type> boundingBox
+  const std::optional<bibocr::data::screen_rect_type> boundingBox
 )
 {
   QMetaObject::invokeMethod(
@@ -298,7 +298,7 @@ void BridgeBibleRefOcr::notifyAutoSearchDetecting(const arcstd::framework::proce
 void BridgeBibleRefOcr::notifyAutoSearchDetection(
   const arcstd::framework::process_id_type detectionId,
   const bibstd::bible::reference_range referenceRange,
-  const std::optional<arcstd::data::screen_rect_type> boundingBox
+  const std::optional<bibocr::data::screen_rect_type> boundingBox
 )
 {
   QMetaObject::invokeMethod(
@@ -337,7 +337,7 @@ void BridgeBibleRefOcr::notifyAutoSearchRunning(const bool running)
 
 ///
 ///
-void BridgeBibleRefOcr::emitCursorPosition(const std::optional<arcqml::CursorPositionPair>& cursor)
+void BridgeBibleRefOcr::emitCursorPosition(const std::optional<bibqml::CursorPositionPair>& cursor)
 {
   cursorPosition_ = cursor ? cursor->deviceIndependent : QCursor::pos();
   emit cursorPositionChanged(cursorPosition_);
@@ -347,14 +347,14 @@ void BridgeBibleRefOcr::emitCursorPosition(const std::optional<arcqml::CursorPos
 ///
 void BridgeBibleRefOcr::emitReference(
   const bibstd::bible::reference_range& referenceRange,
-  const std::optional<arcstd::data::screen_rect_type>& boundingBox,
-  const std::optional<arcqml::CursorPositionPair>& cursor
+  const std::optional<bibocr::data::screen_rect_type>& boundingBox,
+  const std::optional<bibqml::CursorPositionPair>& cursor
 )
 {
   decltype(auto) begin = referenceRange.begin();
   decltype(auto) end = referenceRange.end();
   const auto bookId = QString::fromStdString(std::string{arcstd::util::enum_name(begin.book())});
-  const auto area = boundingBox && cursor ? arcqml::toDeviceIndependent(*boundingBox, *cursor) : std::nullopt;
+  const auto area = boundingBox && cursor ? bibqml::toDeviceIndependent(*boundingBox, *cursor) : std::nullopt;
 
   emit referenceFound(bookId, numeric_cast<int>(begin.chapter().value), numeric_cast<int>(begin.verse().value));
   emit referenceRangeFound(

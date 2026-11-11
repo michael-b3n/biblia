@@ -13,7 +13,7 @@ TEST_CASE("ocr_book_variants name_variant_aliases", "[bible]")
   GIVEN("name variant with several misreadable chars")
   {
     // '1' can be misread as 'I' and 'l', 'M' as 'm' and 'o' as '0' and 'O'.
-    const auto aliases = ocr_book_variants::name_variant_aliases("1Mose", arcstd::util::language::german);
+    const auto aliases = ocr_book_variants::name_variant_aliases("1Mose", bibocr::util::language::german);
     CHECK(arcstd::util::contains(aliases, std::string{"IMose"}));
     CHECK(arcstd::util::contains(aliases, std::string{"1mose"}));
     CHECK(arcstd::util::contains(aliases, std::string{"1MOse"}));
@@ -23,18 +23,18 @@ TEST_CASE("ocr_book_variants name_variant_aliases", "[bible]")
   }
   GIVEN("name variant without misreadable chars")
   {
-    CHECK(ocr_book_variants::name_variant_aliases("Ri", arcstd::util::language::german).empty());
+    CHECK(ocr_book_variants::name_variant_aliases("Ri", bibocr::util::language::german).empty());
   }
   GIVEN("name variant with multibyte chars")
   {
-    const auto aliases = ocr_book_variants::name_variant_aliases("1Kön", arcstd::util::language::german);
+    const auto aliases = ocr_book_variants::name_variant_aliases("1Kön", bibocr::util::language::german);
     CHECK(aliases.size() == 2);
     CHECK(arcstd::util::contains(aliases, std::string{"IKön"}));
     CHECK(arcstd::util::contains(aliases, std::string{"lKön"}));
   }
   GIVEN("empty name variant")
   {
-    CHECK(ocr_book_variants::name_variant_aliases("", arcstd::util::language::german).empty());
+    CHECK(ocr_book_variants::name_variant_aliases("", bibocr::util::language::german).empty());
   }
 }
 
@@ -42,7 +42,7 @@ TEST_CASE("ocr_book_variants name_variants_with_aliases", "[bible]")
 {
   GIVEN("all german name variants")
   {
-    const auto variants = ocr_book_variants::name_variants_with_aliases(arcstd::util::language::german);
+    const auto variants = ocr_book_variants::name_variants_with_aliases(bibocr::util::language::german);
     const auto contains = [&](const book_id id, const std::string_view name_variant)
     { return arcstd::util::contains(variants, [&](const auto& e) { return e.first == id && e.second == name_variant; }); };
     CHECK(contains(book_id::genesis, "1Mose"));

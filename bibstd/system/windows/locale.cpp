@@ -14,7 +14,7 @@ namespace bibstd::system
 
 ///
 ///
-auto locale::preferred_language() -> arcstd::util::language
+auto locale::preferred_language() -> bibocr::util::language
 {
   auto count = ULONG{0};
   auto size = ULONG{0};

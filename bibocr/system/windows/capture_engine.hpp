@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
+#include "bibocr/data/screen_types.hpp"
 
 #include <memory>
 
@@ -8,15 +8,15 @@ namespace bibocr::system
 {
 
 ///
-/// Interface of a arcstd::system::screen capture backend. A backend may turn a region down, the caller then captures it
+/// Interface of a bibstd::system::screen capture backend. A backend may turn a region down, the caller then captures it
 /// otherwise.
 /// \note Implementations shall be thread-safe.
 ///
 class capture_engine
 {
 public: // Typedefs
-  using screen_rect_type = arcstd::data::screen_rect_type;
-  using pixel_plane_type = arcstd::data::pixel_plane_type;
+  using screen_rect_type = bibocr::data::screen_rect_type;
+  using pixel_plane_type = bibocr::data::pixel_plane_type;
 
 public: // Creators
   ///
@@ -37,7 +37,7 @@ public: // Constructor
 
 public: // Modifiers
   ///
-  /// Capture the arcstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first.
+  /// Capture the bibstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first.
   /// \return true if the region was captured, false if the caller shall capture it by other means
   ///
   [[nodiscard]] auto capture(screen_rect_type rect, pixel_plane_type& pix) -> bool;

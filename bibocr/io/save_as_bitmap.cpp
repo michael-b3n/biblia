@@ -55,8 +55,8 @@ struct bmp_file_dib_info final
 ///
 ///
 auto save_as_bitmap(
-  const arcstd::data::plane_view<const arcstd::data::pixel>& data,
-  const std::optional<arcstd::data::plane_view<const arcstd::data::pixel>::area_type> subarea,
+  const bibocr::data::plane_view<const bibocr::data::pixel>& data,
+  const std::optional<bibocr::data::plane_view<const bibocr::data::pixel>::area_type> subarea,
   const std::filesystem::path& path
 ) -> bool
 {

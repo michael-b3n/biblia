@@ -33,7 +33,7 @@ namespace
 /// The validator of the language setting lists what the document offers.
 /// \return languages of the translations
 ///
-[[nodiscard]] auto available_languages(const arcqml::Translations& translations) -> std::vector<std::string>
+[[nodiscard]] auto available_languages(const bibqml::Translations& translations) -> std::vector<std::string>
 {
   const auto languages = translations.availableLanguages();
   auto result = std::vector<std::string>{};
@@ -46,9 +46,9 @@ namespace
 /// Translations naming every key after itself, for a start that could not read the document.
 /// \return translations holding no names
 ///
-[[nodiscard]] auto no_translations() -> std::unique_ptr<arcqml::Translations>
+[[nodiscard]] auto no_translations() -> std::unique_ptr<bibqml::Translations>
 {
-  return std::make_unique<arcqml::Translations>(std::span<const std::byte>{});
+  return std::make_unique<bibqml::Translations>(std::span<const std::byte>{});
 }
 
 } // anonymous namespace
@@ -56,7 +56,7 @@ namespace
 ///
 ///
 translations_instance::translations_instance(
-  std::unique_ptr<arcqml::Translations> translations, const language_setting_type language_setting
+  std::unique_ptr<bibqml::Translations> translations, const language_setting_type language_setting
 )
   : translations_{std::move(translations)}
   , language_setting_{language_setting}
@@ -84,7 +84,7 @@ translations_instance::translations_instance(
 ///
 ///
 translations_instance::translations_instance(
-  std::unique_ptr<arcqml::Translations> translations, const std::optional<std::string>& language
+  std::unique_ptr<bibqml::Translations> translations, const std::optional<std::string>& language
 )
   : translations_{std::move(translations)}
   , language_setting_{nullptr}
@@ -133,7 +133,7 @@ auto construct_translations(backend_instance& backend) -> translations_instance
 {
   try
   {
-    auto translations = std::make_unique<arcqml::Translations>(display_names_view);
+    auto translations = std::make_unique<bibqml::Translations>(display_names_view);
     const auto languages = available_languages(*translations);
     const auto preferred_language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
     auto* const language_setting = backend.workflow_settings->create_setting(
@@ -156,7 +156,7 @@ auto construct_translations(const std::optional<std::string>& language) -> trans
 {
   try
   {
-    return translations_instance{std::make_unique<arcqml::Translations>(display_names_view), language};
+    return translations_instance{std::make_unique<bibqml::Translations>(display_names_view), language};
   }
   catch(...)
   {

@@ -2,8 +2,8 @@
 #include "res/version.hpp"
 #include "src/qml_application.hpp"
 
-#include <arcqml/translation/Translations.hpp>
 #include <bibqml/bridge/BridgeApplication.hpp>
+#include <bibqml/translation/Translations.hpp>
 
 #include <arcstd/util/incbin.hpp>
 #include <bibstd/system/open_browser.hpp>
@@ -44,7 +44,7 @@ struct tray_button final
 [[nodiscard]] auto tray_name(const char* const key) -> std::string
 {
   const auto name = QString::fromLatin1(key);
-  const auto* const translations = arcqml::Translations::instance();
+  const auto* const translations = bibqml::Translations::instance();
   return (translations != nullptr ? translations->name(name) : name).toStdString();
 }
 
@@ -74,11 +74,11 @@ auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_
   );
   auto guard = bibstd::system::tray::init(bibstd::system::tray::icon_buffer{icon_view}, std::move(entries));
 
-  if(const auto* const names = arcqml::Translations::instance(); names != nullptr)
+  if(const auto* const names = bibqml::Translations::instance(); names != nullptr)
   {
     QObject::connect(
       names,
-      &arcqml::Translations::languageChanged,
+      &bibqml::Translations::languageChanged,
       &app,
       [buttons]()
       {

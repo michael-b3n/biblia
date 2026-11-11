@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
+#include "bibocr/data/screen_types.hpp"
 
 namespace bibocr::system
 {
@@ -11,12 +11,12 @@ namespace bibocr::system
 class capture final
 {
 public: // Typedefs
-  using screen_rect_type = arcstd::data::screen_rect_type;
-  using pixel_plane_type = arcstd::data::pixel_plane_type;
+  using screen_rect_type = bibocr::data::screen_rect_type;
+  using pixel_plane_type = bibocr::data::pixel_plane_type;
 
 public: // Static accessors
   ///
-  /// Capture the arcstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first as
+  /// Capture the bibstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first as
   /// tesseract reads them.
   /// \return true if the region was captured
   ///

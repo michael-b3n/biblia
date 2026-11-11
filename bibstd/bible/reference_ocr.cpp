@@ -1,6 +1,4 @@
 #include "bibstd/bible/reference_ocr.hpp"
-#include "arcstd/data/pixel.hpp"
-#include "arcstd/data/screen_types.hpp"
 #include "arcstd/math/coordinates.hpp"
 #include "arcstd/math/rect.hpp"
 #include "arcstd/util/log.hpp"
@@ -8,6 +6,8 @@
 #include "arcstd/util/ranges.hpp"
 #include "arcstd/util/timer.hpp"
 #include "arcstd/util/visit_helper.hpp"
+#include "bibocr/data/pixel.hpp"
+#include "bibocr/data/screen_types.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 
 #include <boost/gil/extension/numeric/resample.hpp>
@@ -104,7 +104,7 @@ struct position_text final
 struct character_run final
 {
   arcstd::math::value_range<std::size_t> index_range;
-  arcstd::data::screen_rect_type bounding_box;
+  bibocr::data::screen_rect_type bounding_box;
 };
 
 ///
@@ -523,12 +523,12 @@ struct line_words final
 /// recognized area, engines read them better there.
 /// \return padded area
 ///
-[[nodiscard]] auto padded(const arcstd::data::screen_rect_type& area, const arcstd::data::screen_rect_type& line)
-  -> arcstd::data::screen_rect_type
+[[nodiscard]] auto padded(const bibocr::data::screen_rect_type& area, const bibocr::data::screen_rect_type& line)
+  -> bibocr::data::screen_rect_type
 {
   const auto padding = arcstd::math::size(line.vertical_range()) / 2;
-  const auto signed_padding = numeric_cast<arcstd::data::screen_rect_type::value_type>(padding);
-  return arcstd::data::screen_rect_type{
+  const auto signed_padding = numeric_cast<bibocr::data::screen_rect_type::value_type>(padding);
+  return bibocr::data::screen_rect_type{
     arcstd::math::coordinates(area.origin().x() - signed_padding, area.origin().y() - signed_padding),
     arcstd::math::size(area.horizontal_range()) + (2 * padding),
     arcstd::math::size(area.vertical_range()) + (2 * padding)
@@ -541,7 +541,7 @@ struct line_words final
 /// it continues on is recognized as well.
 /// \return area of the relevant lines with a bit of padding around them
 ///
-[[nodiscard]] auto relevant_lines_area(const auto& layouts, const auto& relevant_line_it) -> arcstd::data::screen_rect_type
+[[nodiscard]] auto relevant_lines_area(const auto& layouts, const auto& relevant_line_it) -> bibocr::data::screen_rect_type
 {
   const auto& relevant_line = *relevant_line_it;
   const auto same_paragraph_line = [&](const auto& it)
@@ -568,10 +568,10 @@ struct line_words final
   const reference_ocr::engine_names& names,
   const reference_ocr::pixel_plane_view_type& image,
   const reference_ocr::position_type position
-) -> std::expected<arcstd::data::screen_rect_type, reference_ocr::unexpected_ocr_result>
+) -> std::expected<bibocr::data::screen_rect_type, reference_ocr::unexpected_ocr_result>
 {
   SCOPED_TIMER_LOG();
-  using return_type = std::expected<arcstd::data::screen_rect_type, reference_ocr::unexpected_ocr_result>;
+  using return_type = std::expected<bibocr::data::screen_rect_type, reference_ocr::unexpected_ocr_result>;
 
   if(!names.layout_recognition)
   {
@@ -608,7 +608,7 @@ struct line_words final
       if(relevant_line_it == std::ranges::cend(layouts))
       {
         LOG_DEBUG("paragraph recognition returns with empty rect");
-        return arcstd::data::screen_rect_type{arcstd::math::coordinates(0, 0), 0u, 0u};
+        return bibocr::data::screen_rect_type{arcstd::math::coordinates(0, 0), 0u, 0u};
       }
       if(!relevant_line_it->paragraph_bounding_box)
       {
@@ -647,7 +647,7 @@ struct line_words final
   // area clipped to the image, so the character boxes it reports are relative to the clipped
   // area and it is that origin the boxes have to be shifted back by.
   const auto clipped = arcstd::math::overlap(
-    *area, arcstd::data::screen_rect_type{arcstd::math::coordinates(0, 0), image.width(), image.height()}
+    *area, bibocr::data::screen_rect_type{arcstd::math::coordinates(0, 0), image.width(), image.height()}
   );
   if(!clipped || arcstd::math::empty(*clipped))
   {
@@ -793,7 +793,7 @@ struct line_words final
 /// \return padded area of those lines, nothing if the cursor character has no bounding box
 ///
 [[nodiscard]] auto cursor_lines_area(const reference_ocr::reference_position_data& position_data)
-  -> std::optional<arcstd::data::screen_rect_type>
+  -> std::optional<bibocr::data::screen_rect_type>
 {
   const auto cursor = position_data.cursor_character_index;
   const auto runs = character_runs(position_data);
@@ -817,7 +817,7 @@ struct line_words final
   // A reference may be broken over a line break, so the line above and below are taken as well. A line of another
   // column follows in the text too, it does not share a column with the cursor line.
   const auto cursor_area = cursor_line->first;
-  const auto same_column = [&](const arcstd::data::screen_rect_type& area)
+  const auto same_column = [&](const bibocr::data::screen_rect_type& area)
   { return arcstd::math::overlaps(area.horizontal_range(), cursor_area.horizontal_range()); };
   const auto lines_area = std::ranges::fold_left(
     with_neighbours(lines, cursor_line) | std::views::keys | std::views::filter(same_column),
@@ -834,30 +834,30 @@ struct line_words final
 /// \return enlarged copy of the area
 ///
 [[nodiscard]] auto enlarged_copy(
-  const reference_ocr::pixel_plane_view_type& image, const arcstd::data::screen_rect_type& area, const double scale
-) -> arcstd::data::pixel_plane_type
+  const reference_ocr::pixel_plane_view_type& image, const bibocr::data::screen_rect_type& area, const double scale
+) -> bibocr::data::pixel_plane_type
 {
   assert(!arcstd::math::empty(area) && scale >= 1.0);
   // A pixel holds red, green, blue and alpha in one byte each, the layout of an rgba8 pixel of boost::gil.
-  static_assert(sizeof(arcstd::data::pixel) == sizeof(boost::gil::rgba8_pixel_t));
+  static_assert(sizeof(bibocr::data::pixel) == sizeof(boost::gil::rgba8_pixel_t));
 
   const auto area_width = arcstd::math::size(area.horizontal_range());
   const auto area_height = arcstd::math::size(area.vertical_range());
   const auto enlarged_size = [&](const auto size)
   { return static_cast<std::uint32_t>(std::lround(static_cast<double>(size) * scale)); };
-  auto result = arcstd::data::pixel_plane_type{enlarged_size(area_width), enlarged_size(area_height)};
+  auto result = bibocr::data::pixel_plane_type{enlarged_size(area_width), enlarged_size(area_height)};
 
   const auto image_view = boost::gil::interleaved_view(
     image.width(),
     image.height(),
     reinterpret_cast<const boost::gil::rgba8_pixel_t*>(std::to_address(image.begin())),
-    static_cast<std::ptrdiff_t>(image.width()) * arcstd::data::pixel::bytes_per_pixel
+    static_cast<std::ptrdiff_t>(image.width()) * bibocr::data::pixel::bytes_per_pixel
   );
   const auto result_view = boost::gil::interleaved_view(
     result.width(),
     result.height(),
     reinterpret_cast<boost::gil::rgba8_pixel_t*>(&result.at(0)),
-    static_cast<std::ptrdiff_t>(result.width()) * arcstd::data::pixel::bytes_per_pixel
+    static_cast<std::ptrdiff_t>(result.width()) * bibocr::data::pixel::bytes_per_pixel
   );
   boost::gil::resize_view(
     boost::gil::subimage_view(
@@ -887,17 +887,17 @@ struct line_words final
 ) -> std::expected<reference_ocr::reference_position_data, reference_ocr::unexpected_ocr_result>
 {
   const auto scale = algorithm.scale;
-  const auto image_area = arcstd::data::screen_rect_type{arcstd::math::coordinates(0, 0), image.width(), image.height()};
+  const auto image_area = bibocr::data::screen_rect_type{arcstd::math::coordinates(0, 0), image.width(), image.height()};
   const auto lines_area = cursor_lines_area(algorithm.earlier_recognition);
   const auto area = lines_area ? arcstd::math::overlap(*lines_area, image_area) : std::nullopt;
 
-  const auto recognize = [&](const arcstd::data::screen_rect_type& area)
+  const auto recognize = [&](const bibocr::data::screen_rect_type& area)
   {
     const auto enlarged = enlarged_copy(image, area, scale);
     const auto origin = area.origin();
     const auto to_enlarged = [&](const auto value, const auto area_origin)
     {
-      return static_cast<arcstd::data::screen_rect_type::value_type>(
+      return static_cast<bibocr::data::screen_rect_type::value_type>(
         std::lround(static_cast<double>(value - area_origin) * scale)
       );
     };
@@ -909,12 +909,12 @@ struct line_words final
     );
     // The engine reports the boxes in the enlarged copy, the caller expects them in the image.
     const auto to_image = [&](const auto value) { return std::lround(static_cast<double>(value) / scale); };
-    const auto to_image_box = [&](const arcstd::data::screen_rect_type& box)
+    const auto to_image_box = [&](const bibocr::data::screen_rect_type& box)
     {
-      return arcstd::data::screen_rect_type{
+      return bibocr::data::screen_rect_type{
         arcstd::math::coordinates(
-          origin.x() + static_cast<arcstd::data::screen_rect_type::value_type>(to_image(box.origin().x())),
-          origin.y() + static_cast<arcstd::data::screen_rect_type::value_type>(to_image(box.origin().y()))
+          origin.x() + static_cast<bibocr::data::screen_rect_type::value_type>(to_image(box.origin().x())),
+          origin.y() + static_cast<bibocr::data::screen_rect_type::value_type>(to_image(box.origin().y()))
         ),
         static_cast<std::uint32_t>(to_image(arcstd::math::size(box.horizontal_range()))),
         static_cast<std::uint32_t>(to_image(arcstd::math::size(box.vertical_range())))

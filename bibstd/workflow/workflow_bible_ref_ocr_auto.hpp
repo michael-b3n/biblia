@@ -1,11 +1,11 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
 #include "arcstd/framework/process_params.hpp"
 #include "arcstd/signal/adapter.hpp"
 #include "arcstd/signal/common.hpp"
 #include "arcstd/workflow/workflow_base.hpp"
 #include "arcstd/workflow/workflow_settings_base.hpp"
+#include "bibocr/data/screen_types.hpp"
 #include "bibstd/bible/reference_range.hpp"
 
 #include <sfsm/sfsm.hpp>
@@ -57,7 +57,7 @@ struct workflow_bible_ref_ocr_auto_sigs final
   {
     arcstd::framework::process_id_type process_id;
     arcstd::framework::process_id_type detection_id;
-    arcstd::data::screen_coordinates_type cursor_position;
+    bibocr::data::screen_coordinates_type cursor_position;
   };
 
   ///
@@ -69,7 +69,7 @@ struct workflow_bible_ref_ocr_auto_sigs final
     arcstd::framework::process_id_type process_id;
     arcstd::framework::process_id_type detection_id;
     std::vector<bible::reference_range> reference_ranges;
-    std::optional<arcstd::data::screen_rect_type> reference_bounding_box;
+    std::optional<bibocr::data::screen_rect_type> reference_bounding_box;
   };
 
   // Variables
@@ -191,7 +191,7 @@ private: // Actions
 private: // Implementation
   auto search(std::stop_token token, arcstd::framework::process_id_type id) -> void;
   auto examine(
-    const std::stop_token& token, arcstd::data::screen_coordinates_type position, arcstd::framework::process_id_type id
+    const std::stop_token& token, bibocr::data::screen_coordinates_type position, arcstd::framework::process_id_type id
   ) -> void;
   [[nodiscard]] auto local_settings() const -> settings_t;
 };

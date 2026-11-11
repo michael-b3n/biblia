@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
 #include "arcstd/system/windows/win.hpp"
+#include "bibocr/data/screen_types.hpp"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -96,7 +96,7 @@ class device final
   std::int32_t staging_height_{0};
 
 public: // Typedefs
-  using pixel_plane_type = arcstd::data::pixel_plane_type;
+  using pixel_plane_type = bibocr::data::pixel_plane_type;
   using texture_type = winrt::com_ptr<ID3D11Texture2D>;
 
 public: // Creators

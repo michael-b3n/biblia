@@ -1,8 +1,8 @@
 #pragma once
 
 #include "arcstd/util/const_map.hpp"
-#include "arcstd/util/language.hpp"
 #include "arcstd/util/ranges.hpp"
+#include "bibocr/util/language.hpp"
 #include "bibstd/bible/ocr_book_variants_de.hpp"
 #include "bibstd/bible/ocr_book_variants_en.hpp"
 
@@ -71,33 +71,33 @@ public: // Constants
   ///
   /// \return the span of all name variants based on language.
   ///
-  [[nodiscard]] static constexpr auto name_variants_span(arcstd::util::language language)
+  [[nodiscard]] static constexpr auto name_variants_span(bibocr::util::language language)
     -> std::span<const std::pair<book_id, std::string_view>>;
 
   ///
   /// \return a list of name variants that are aliases of the given name variant.
   ///
-  [[nodiscard]] static auto name_variant_aliases(std::string_view name_variant, arcstd::util::language language)
+  [[nodiscard]] static auto name_variant_aliases(std::string_view name_variant, bibocr::util::language language)
     -> std::vector<std::string>;
 
   ///
   /// \return a complete list of all name variants with their aliases based on language.
   ///
-  [[nodiscard]] static auto name_variants_with_aliases(arcstd::util::language language)
+  [[nodiscard]] static auto name_variants_with_aliases(bibocr::util::language language)
     -> std::span<const std::pair<book_id, std::string>>;
 };
 
 ///
 ///
-constexpr auto ocr_book_variants::name_variants_span(const arcstd::util::language language)
+constexpr auto ocr_book_variants::name_variants_span(const bibocr::util::language language)
   -> std::span<const std::pair<book_id, std::string_view>>
 {
   using result_type = std::span<const std::pair<book_id, std::string_view>>;
   // clang-format off
   switch(language)
   {
-  case arcstd::util::language::german: return result_type{name_variants_list_de};
-  case arcstd::util::language::english: return result_type{name_variants_list_en};
+  case bibocr::util::language::german: return result_type{name_variants_list_de};
+  case bibocr::util::language::english: return result_type{name_variants_list_en};
   default: throw arcstd::util::exception{"unsupported language"}; return result_type{};
   }
   // clang-format on

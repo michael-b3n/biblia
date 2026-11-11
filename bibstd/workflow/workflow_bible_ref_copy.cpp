@@ -31,8 +31,8 @@ namespace
   switch(bibstd::system::locale::preferred_language())
   {
     // clang-format off
-  case arcstd::util::language::german: return R"("[content]" ({[book][nbsp]}[#chapter_begin], [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end],}[#verse_end]}{ [scripture_abbr]}))";
-  case arcstd::util::language::english: return R"("[content]" ({[book][nbsp]}[#chapter_begin]: [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end]:}[#verse_end]}{ [scripture_abbr]}))";
+  case bibocr::util::language::german: return R"("[content]" ({[book][nbsp]}[#chapter_begin], [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end],}[#verse_end]}{ [scripture_abbr]}))";
+  case bibocr::util::language::english: return R"("[content]" ({[book][nbsp]}[#chapter_begin]: [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end]:}[#verse_end]}{ [scripture_abbr]}))";
     // clang-format on
   default: throw arcstd::util::exception{"unsupported language"};
   }

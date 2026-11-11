@@ -2,13 +2,13 @@
 #include "arcstd/framework/setting.hpp"
 #include "arcstd/math/rect.hpp"
 #include "arcstd/math/value_range.hpp"
-#include "arcstd/system/screen.hpp"
 #include "arcstd/util/exception.hpp"
 #include "arcstd/util/format.hpp"
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/non_owning_ptr.hpp"
 #include "arcstd/workflow/workflow_settings.hpp"
 #include "bibocr/system/capture.hpp"
+#include "bibstd/system/screen.hpp"
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
 
 #include <algorithm>
@@ -32,10 +32,10 @@ namespace
 /// \return rectangle in native screen pixels
 ///
 [[nodiscard]] auto to_screen_rect(
-  const arcstd::data::screen_rect_type& rect, const arcstd::data::screen_coordinates_type& image_origin
-) -> arcstd::data::screen_rect_type
+  const bibocr::data::screen_rect_type& rect, const bibocr::data::screen_coordinates_type& image_origin
+) -> bibocr::data::screen_rect_type
 {
-  return arcstd::data::screen_rect_type{
+  return bibocr::data::screen_rect_type{
     rect.origin() + image_origin, arcstd::math::size(rect.horizontal_range()), arcstd::math::size(rect.vertical_range())
   };
 }
@@ -157,8 +157,8 @@ auto workflow_bible_ref_ocr_auto::a_stop(sm::s_running& source) -> void
 ///
 auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcstd::framework::process_id_type id) -> void
 {
-  auto examined = std::optional<arcstd::data::screen_coordinates_type>{};
-  auto resting_position = std::optional<arcstd::data::screen_coordinates_type>{};
+  auto examined = std::optional<bibocr::data::screen_coordinates_type>{};
+  auto resting_position = std::optional<bibocr::data::screen_coordinates_type>{};
   auto resting_since = clock_type::time_point{};
 
   while(!token.stop_requested())
@@ -169,7 +169,7 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcs
     {
       break;
     }
-    const auto position = arcstd::system::screen::cursor_position();
+    const auto position = bibstd::system::screen::cursor_position();
     if(!position)
     {
       LOG_WARN("auto reference search failed to identify cursor position");
@@ -179,7 +179,7 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcs
     const auto now = clock_type::now();
     const auto moved = [&](const auto& reference)
     {
-      return arcstd::data::screen_coordinates_type::distance(reference, *position) >
+      return bibocr::data::screen_coordinates_type::distance(reference, *position) >
              static_cast<double>(local.movement_tolerance);
     };
 
@@ -204,7 +204,7 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcs
 ///
 auto workflow_bible_ref_ocr_auto::examine(
   const std::stop_token& token,
-  const arcstd::data::screen_coordinates_type position,
+  const bibocr::data::screen_coordinates_type position,
   const arcstd::framework::process_id_type id
 ) -> void
 {
@@ -216,13 +216,13 @@ auto workflow_bible_ref_ocr_auto::examine(
       detection_started_type{.process_id = id, .detection_id = detection_id, .cursor_position = position}
     );
 
-    const auto window = arcstd::system::screen::window_at(position);
+    const auto window = bibstd::system::screen::window_at(position);
     if(!window)
     {
       LOG_DEBUG("auto reference search found no window: position={}", position);
       return;
     }
-    auto image = arcstd::data::pixel_plane_type{};
+    auto image = bibocr::data::pixel_plane_type{};
     if(!bibocr::system::capture::region(*window, image))
     {
       LOG_WARN("auto reference search failed to capture screen: position={}", position);
@@ -243,7 +243,7 @@ auto workflow_bible_ref_ocr_auto::examine(
       return;
     }
 
-    auto bounding_box = std::optional<arcstd::data::screen_rect_type>{};
+    auto bounding_box = std::optional<bibocr::data::screen_rect_type>{};
     if(result->reference_bounding_box)
     {
       bounding_box = to_screen_rect(*result->reference_bounding_box, window->origin());

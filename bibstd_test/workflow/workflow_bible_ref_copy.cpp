@@ -130,7 +130,7 @@ TEST_CASE("workflow_bible_ref_copy_defaults_to_the_reference", "[.clipboard][wor
                                    { return test_utils::scripture_names_of(*fixture.scripture, "Scripture").size() == 1; })
   );
   REQUIRE(fixture.scripture->settings().default_scripture_name->value("ABC (Scripture)"));
-  const auto german = bibstd::system::locale::preferred_language() == arcstd::util::language::german;
+  const auto german = bibstd::system::locale::preferred_language() == bibocr::util::language::german;
   // The verses, then the reference and the abbreviation of the scripture
   const auto separator = german ? "," : ":";
   CHECK(

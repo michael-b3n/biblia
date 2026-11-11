@@ -36,13 +36,13 @@ namespace
 [[nodiscard]] auto reference_bounding_box(
   const bible::reference_ocr::reference_position_data& position_data,
   const bible::reference_parser::index_range_type& index_range
-) -> std::optional<arcstd::data::screen_rect_type>
+) -> std::optional<bibocr::data::screen_rect_type>
 {
   decltype(auto) boxes = position_data.character_bounding_boxes;
   const auto begin = std::ranges::next(std::ranges::cbegin(boxes), std::min(index_range.begin, boxes.size()));
   const auto end = std::ranges::next(std::ranges::cbegin(boxes), std::min(index_range.end, boxes.size()));
 
-  auto result = std::optional<arcstd::data::screen_rect_type>{};
+  auto result = std::optional<bibocr::data::screen_rect_type>{};
   std::ranges::for_each(
     std::ranges::subrange(begin, end) | std::views::filter([](const auto& box) { return box.has_value(); }),
     [&](const auto& box) { result = result ? arcstd::math::surrounding_rect(*result, *box) : *box; }

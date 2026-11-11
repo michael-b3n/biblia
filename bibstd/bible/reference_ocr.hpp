@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arcstd/data/screen_types.hpp"
 #include "arcstd/math/value_range.hpp"
+#include "bibocr/data/screen_types.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 
 #include <expected>
@@ -21,8 +21,8 @@ struct reference_ocr final
 {
   // Typedefs
   using ocr_engine_list_type = std::vector<bibocr::txt::ocr_engine_uptr_variant_type>;
-  using pixel_plane_view_type = arcstd::data::pixel_plane_view_type;
-  using position_type = arcstd::data::screen_coordinates_type;
+  using pixel_plane_view_type = bibocr::data::pixel_plane_view_type;
+  using position_type = bibocr::data::screen_coordinates_type;
 
   ///
   /// OCR data of a reference position: the text of the relevant area, the index of the character closest to the
@@ -31,7 +31,7 @@ struct reference_ocr final
   struct reference_position_data final
   {
     // Typedefs
-    using bounding_box_type = arcstd::data::screen_rect_type;
+    using bounding_box_type = bibocr::data::screen_rect_type;
 
     // Variables
     std::string text;

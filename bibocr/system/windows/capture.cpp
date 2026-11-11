@@ -22,11 +22,11 @@ namespace
 {
 
 ///
-/// Capture a arcstd::system::screen region through gdi, the fallback: it reads over the cpu and sees composited content as
+/// Capture a bibstd::system::screen region through gdi, the fallback: it reads over the cpu and sees composited content as
 /// black.
 /// \return true if the region was captured
 ///
-auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_plane_type& pix) -> bool
+auto capture_gdi(const bibocr::data::screen_rect_type rect, bibocr::data::pixel_plane_type& pix) -> bool
 {
   static std::mutex mtx;
   static std::vector<std::byte> pixels_bytes;
@@ -44,7 +44,7 @@ auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_
     HGDIOBJ old_bitmap = SelectObject(sdc, hbitmap);
     const auto origin = rect.origin();
     // No CAPTUREBLT: it makes the system hide and redraw the cursor, which blinks on every capture.
-    // The cursor is never part of the arcstd::system::screen DC anyway, so leaving the flag out costs nothing here.
+    // The cursor is never part of the bibstd::system::screen DC anyway, so leaving the flag out costs nothing here.
     // NOLINTNEXTLINE(readability-suspicious-call-argument)
     BitBlt(sdc, 0, 0, hr, vr, hdc, origin.x(), origin.y(), SRCCOPY);
     SelectObject(sdc, old_bitmap);
@@ -56,7 +56,7 @@ auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_
   info.bmiHeader.biSize = sizeof(info.bmiHeader);
   if(0 == GetDIBits(hdc, bitmap, 0, 0, nullptr, &info, DIB_RGB_COLORS))
   {
-    LOG_ERROR("capture arcstd::system::screen failed: {}", "bitmap info not found");
+    LOG_ERROR("capture bibstd::system::screen failed: {}", "bitmap info not found");
     return false;
   }
   info.bmiHeader.biCompression = BI_RGB;
@@ -67,7 +67,7 @@ auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_
 
   if(0 == GetDIBits(hdc, bitmap, 0, info.bmiHeader.biHeight, static_cast<void*>(pixels_bytes.data()), &info, DIB_RGB_COLORS))
   {
-    LOG_ERROR("capture arcstd::system::screen failed: {}", "bitmap data not found");
+    LOG_ERROR("capture bibstd::system::screen failed: {}", "bitmap data not found");
     return false;
   }
   DeleteObject(bitmap);
@@ -75,12 +75,12 @@ auto capture_gdi(const arcstd::data::screen_rect_type rect, arcstd::data::pixel_
   assert(info.bmiHeader.biBitCount >= 24);
 
   // The rows are kept in reversed order: tesseract has its origin at the bottom left,
-  // the Windows arcstd::system::screen at the top left.
+  // the Windows bibstd::system::screen at the top left.
   const auto byte_count = info.bmiHeader.biBitCount / 8;
   const auto height = numeric_cast<std::uint32_t>(info.bmiHeader.biHeight);
   const auto width = numeric_cast<std::uint32_t>(info.bmiHeader.biWidth);
 
-  pix = arcstd::data::pixel_plane_type(width, height);
+  pix = bibocr::data::pixel_plane_type(width, height);
   std::ranges::for_each(
     arcstd::util::ranges::index_view_to(height) | std::views::reverse,
     [&, counter = 0u](const auto row_idx) mutable

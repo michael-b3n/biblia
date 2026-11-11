@@ -1,12 +1,12 @@
 #include "arcstd/math/coordinates.hpp"
 #include "arcstd/meta/lossless_conversion.hpp"
 #include "arcstd/util/exception.hpp"
-#include "arcstd/util/language.hpp"
 #include "arcstd/util/log.hpp"
 #include "arcstd/util/numeric_cast.hpp"
 #include "bibocr/system/ocr.hpp"
 #include "bibocr/system/windows/language_tag.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
+#include "bibocr/util/language.hpp"
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
@@ -30,10 +30,10 @@ namespace winrt_imaging = winrt::Windows::Graphics::Imaging;
 namespace winrt_globalization = winrt::Windows::Globalization;
 
 ///
-/// Map arcstd::util::language to Windows BCP-47 language tag.
+/// Map bibocr::util::language to Windows BCP-47 language tag.
 /// \return BCP-47 language tag corresponding to the given language
 ///
-auto to_language_tag(const arcstd::util::language language) -> winrt::hstring
+auto to_language_tag(const bibocr::util::language language) -> winrt::hstring
 {
   return winrt::hstring{bibocr::system::language_wtag_map.at(language)};
 }
@@ -50,7 +50,7 @@ class ocr_engine_windows final : public bibocr::txt::ocr_engine<bibocr::txt::ocr
   mutable recognition_data recognition_data_;
 
 public: // Structors
-  explicit ocr_engine_windows(arcstd::util::language language);
+  explicit ocr_engine_windows(bibocr::util::language language);
 
 public: // Accessors
   ///
@@ -82,13 +82,13 @@ private: // Implementation
 
 ///
 ///
-ocr_engine_windows::ocr_engine_windows(const arcstd::util::language language)
+ocr_engine_windows::ocr_engine_windows(const bibocr::util::language language)
 {
   const auto tag = to_language_tag(language);
   const auto lang = winrt_globalization::Language(tag);
   if(
     winrt_ocr::OcrEngine::IsLanguageSupported(lang) &&
-    arcstd::util::language_direction_map.at(language) == arcstd::util::language_direction::ltr
+    bibocr::util::language_direction_map.at(language) == bibocr::util::language_direction::ltr
   )
   {
     engine_ = winrt_ocr::OcrEngine::TryCreateFromLanguage(lang);
@@ -197,7 +197,7 @@ auto ocr_engine_windows::create_bitmap(
     }
   }();
 
-  // Create SoftwareBitmap with Bgra8 format (alpha ignored since arcstd::system::screen captures have no alpha)
+  // Create SoftwareBitmap with Bgra8 format (alpha ignored since bibstd::system::screen captures have no alpha)
   bitmap_ = winrt_imaging::SoftwareBitmap(
     winrt_imaging::BitmapPixelFormat::Bgra8,
     numeric_cast<int>(width),
@@ -224,7 +224,7 @@ auto ocr_engine_windows::create_bitmap(
   {
     const auto& [i, pixel] = p;
     // pixel is RGBA, SoftwareBitmap expects BGRA. Alpha is set to 255 (opaque)
-    // because arcstd::system::screen captures do not set the alpha channel.
+    // because bibstd::system::screen captures do not set the alpha channel.
     dst_data[(i * 4) + 0] = pixel.blue;
     dst_data[(i * 4) + 1] = pixel.green;
     dst_data[(i * 4) + 2] = pixel.red;
@@ -256,7 +256,7 @@ auto ocr_engine_windows::compute_line_bounding_box(const std::vector<word>& word
 
 ///
 ///
-auto ocr::create(const arcstd::util::language language) -> bibocr::txt::ocr_engine_uptr_variant_type
+auto ocr::create(const bibocr::util::language language) -> bibocr::txt::ocr_engine_uptr_variant_type
 {
   using return_type = std::unique_ptr<bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>>;
   return_type engine = std::make_unique<ocr_engine_windows>(language);

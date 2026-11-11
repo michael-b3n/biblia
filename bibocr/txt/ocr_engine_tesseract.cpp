@@ -34,7 +34,7 @@ auto forward_as_pix(auto& data, const std::uint32_t width, const std::uint32_t h
   return Pix{
     /*l_uint32          */ .w = width,                                      // width in pixels
     /*l_uint32          */ .h = height,                                     // height in pixels
-    /*l_uint32          */ .d = arcstd::data::pixel::bits_per_pixel,        // depth in bits
+    /*l_uint32          */ .d = bibocr::data::pixel::bits_per_pixel,        // depth in bits
     /*l_uint32          */ .spp = 4u,                                       // number of samples per pixel
     /*l_uint32          */ .wpl = width,                                    // 32-bit words/line
     /*l_uint32          */ .refcount = 1u,                                  // reference count (1 if no clones)
@@ -99,7 +99,7 @@ auto ocr_engine_tesseract::shipped_tessdata_folder() -> std::filesystem::path
 
 ///
 ///
-ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata_path, const arcstd::util::language language)
+ocr_engine_tesseract::ocr_engine_tesseract(const std::filesystem::path& tessdata_path, const bibocr::util::language language)
   : tesseract_{new tesseract::TessBaseAPI()}
 {
   if(!std::filesystem::exists(tessdata_path))
