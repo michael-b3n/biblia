@@ -1,4 +1,5 @@
 import QtQuick
+import ArcQml
 import BibQml
 
 ///
@@ -9,5 +10,5 @@ TabButtonIconSimple
   id: root
 
   // Properties
-  svgSource: Icons.settings
+  svgSource: BibIcons.settings
 }

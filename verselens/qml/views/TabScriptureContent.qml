@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.VectorImage
+import ArcQml
 import BibQml
 
 ///
@@ -87,7 +88,7 @@ Item
       height: stickyHeaderText.implicitHeight
       visible: listView.currentChapter > 0
       enabled: openInBrowserButton.visible && !root.bridgeBibleRefLookup.running
-      svgSource: Icons.openInBrowser
+      svgSource: BibIcons.openInBrowser
 
       // Connections
       onClicked: { root.bridgeBibleRefLookup.lookupChapter(listView.currentBookId, listView.currentChapter) }
@@ -205,7 +206,7 @@ Item
           // Properties
           width: parent.width
           height: bookTitle.implicitHeight + Metrics.spacingLarge
-          color: Colors.bookHeader
+          color: Colors.header
           radius: Metrics.radiusMedium
 
           // Components
@@ -218,7 +219,7 @@ Item
             text: delegateRoot.bookName + " %1".arg(delegateRoot.chapterNumber)
             font.pointSize: Metrics.fontSizeHeading
             font.bold: true
-            color: Colors.bookHeaderText
+            color: Colors.headerText
             renderType: Text.CurveRendering
           }
         }
@@ -246,7 +247,7 @@ Item
           width: verseNum.implicitWidth + Metrics.spacingLarge
           height: verseNum.implicitHeight + Metrics.spacingSmall
           radius: Metrics.radiusMedium
-          color: Colors.verseBox
+          color: Colors.badge
           anchors.top: parent.top
           anchors.topMargin: Metrics.spacingTiny
 
@@ -259,7 +260,7 @@ Item
             text: delegateRoot.verseNumber
             font.pointSize: Metrics.fontSizeSmall
             font.bold: true
-            color: Colors.verseText
+            color: Colors.badgeText
             renderType: Text.CurveRendering
           }
         }
@@ -429,7 +430,7 @@ Item
         Layout.preferredHeight: Metrics.iconSize
         visible: copyrightIcon.statement !== ""
         opacity: copyrightArea.containsMouse ? 1 : Metrics.opacityLow
-        source: Icons.copyright
+        source: BibIcons.copyright
         preferredRendererType: VectorImage.CurveRenderer
         // Faded as a whole, so the overlapping strokes do not darken
         layer.enabled: copyrightIcon.opacity < 1
@@ -471,7 +472,7 @@ Item
         Layout.preferredHeight: Metrics.iconSize
         enabled: !root.scripturesReading
         opacity: barImportButton.hovered || root.scripturesReading ? 1 : Metrics.opacityLow
-        svgSource: Icons.fileImport
+        svgSource: BibIcons.fileImport
         busy: root.scripturesReading
 
         // Connections
@@ -497,7 +498,7 @@ Item
         Layout.preferredHeight: Metrics.iconSize
         enabled: !root.scripturesReading
         opacity: barReloadButton.hovered ? 1 : Metrics.opacityLow
-        svgSource: Icons.reload
+        svgSource: BibIcons.reload
 
         // Connections
         onClicked: { root.bridgeScripture.reload() }
@@ -602,7 +603,7 @@ Item
         Layout.preferredWidth: 2 * Metrics.controlHeight
         Layout.preferredHeight: 2 * Metrics.controlHeight
         enabled: !root.scripturesReading
-        svgSource: Icons.fileImport
+        svgSource: BibIcons.fileImport
         iconSize: Math.round(1.5 * Metrics.controlHeight)
         busy: root.scripturesReading
 

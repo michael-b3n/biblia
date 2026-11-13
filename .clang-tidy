@@ -61,7 +61,7 @@ Checks: >
 #
 # Only diagnose the projects own headers, not the ones of Qt, boost or other external libraries.
 #
-HeaderFilterRegex: '(bibstd|bibqml|bibstd_test|verselens)[/\].*\.hpp$'
+HeaderFilterRegex: '(bibocr|bibstd|bibqml|bibstd_test|verselens)[/\].*\.hpp$'
 ExcludeHeaderFilterRegex: '(build|libs_external)[/\].*'
 
 #
@@ -106,8 +106,7 @@ CheckOptions:
   readability-identifier-naming.TemplateTemplateParameterIgnoredRegexp: '.*_+'
   readability-identifier-naming.ParameterIgnoredRegexp: '.*_+'
   readability-identifier-naming.TypeAliasIgnoredRegexp: '.*_+'
-  readability-identifier-naming.ClassIgnoredRegexp: 'Document|TessBaseAPI'
-  readability-identifier-naming.MacroDefinitionIgnoredRegexp: 'numeric_cast|_WIN32_WINNT'
+  readability-identifier-naming.ClassIgnoredRegexp: 'TessBaseAPI'
 
   readability-braces-around-statements.ShortStatementLines: "1"
 

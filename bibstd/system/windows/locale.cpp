@@ -1,9 +1,10 @@
 #include "bibstd/system/locale.hpp"
-#include "bibstd/system/windows/language_tag.hpp"
-#include "bibstd/util/enum.hpp"
-#include "bibstd/util/log.hpp"
 
-#include "bibstd/system/windows/win.hpp"
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/log.hpp>
+#include <bibocr/system/windows/language_tag.hpp>
+
+#include <arcstd/system/windows/win.hpp>
 
 #include <ranges>
 #include <string>
@@ -14,7 +15,7 @@ namespace bibstd::system
 
 ///
 ///
-auto locale::preferred_language() -> util::language
+auto locale::preferred_language() -> bibocr::util::language
 {
   auto count = ULONG{0};
   auto size = ULONG{0};
@@ -32,13 +33,13 @@ auto locale::preferred_language() -> util::language
   // The buffer holds null separated tags in order of preference, the first known one wins.
   for(const auto tag : std::wstring_view{buffer} | std::views::split(L'\0'))
   {
-    if(const auto language = from_language_tag(std::wstring_view{tag}))
+    if(const auto language = bibocr::system::from_language_tag(std::wstring_view{tag}))
     {
-      LOG_INFO("preferred language found: \"{}\"", util::enum_name(*language));
+      LOG_INFO("preferred language found: \"{}\"", arcstd::util::enum_name(*language));
       return *language;
     }
   }
-  LOG_INFO("no known preferred language: using fallback \"{}\"", util::enum_name(fallback_language));
+  LOG_INFO("no known preferred language: using fallback \"{}\"", arcstd::util::enum_name(fallback_language));
   return fallback_language;
 }
 

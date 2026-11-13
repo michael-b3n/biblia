@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bibstd/execution/scope.hpp"
-#include "bibstd/system/windows/message_loop.hpp"
-#include "bibstd/util/scope_guard.hpp"
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/system/windows/message_loop.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <tray.hpp>
 
@@ -26,8 +26,8 @@ class tray final
   // Variables
   inline static std::mutex mtx_;
   inline static bool active_{false};
-  inline static std::unique_ptr<message_loop> loop_{};
-  inline static std::unique_ptr<execution::scope> scope_{};
+  inline static std::unique_ptr<arcstd::system::message_loop> loop_{};
+  inline static std::unique_ptr<arcstd::execution::scope> scope_{};
   // The tray window belongs to the loop thread, the tray is only used there
   inline static std::unique_ptr<Tray::Tray> tray_{nullptr};
 
@@ -50,7 +50,7 @@ public: // Typedefs
   using entry_type = std::variant<button, label, separator, toggle>;
 
 public: // Static modifiers
-  [[nodiscard]] static auto init(icon_buffer icon, std::vector<entry_type>&& entries) -> util::shared_scope_guard;
+  [[nodiscard]] static auto init(icon_buffer icon, std::vector<entry_type>&& entries) -> arcstd::util::shared_scope_guard;
 
   ///
   /// Change the text of an entry, e.g. after a language change. Ignored if no tray exists.

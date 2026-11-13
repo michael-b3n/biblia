@@ -1,8 +1,7 @@
 #pragma once
 
-#include "bibqml/model/SettingsListModel.hpp"
-
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcqml/model/SettingsListModel.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QHash>
 #include <QSortFilterProxyModel>
@@ -33,12 +32,12 @@ public: // Typedefs
     /// It is the untranslated key, so that a section stays the same one while the language
     /// changes the name it is written under.
     ///
-    CategoryRole = bibqml::SettingsListModel::EndRole
+    CategoryRole = arcqml::SettingsListModel::EndRole
   };
   Q_ENUM(Role)
 
 public: // Structors
-  explicit SettingsSortModel(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit SettingsSortModel(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~SettingsSortModel() noexcept override;
 
 public: // Overrides

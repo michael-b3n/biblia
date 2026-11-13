@@ -2,11 +2,12 @@
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/system/locale.hpp"
 #include "bibstd/system/open_browser.hpp"
-#include "bibstd/util/contains.hpp"
-#include "bibstd/util/enum.hpp"
-#include "bibstd/util/exception.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/url.hpp"
+
+#include <arcstd/util/contains.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/url.hpp>
 
 #include <algorithm>
 #include <ranges>
@@ -21,25 +22,29 @@ namespace
 ///
 /// \return the list validator of \p setting
 ///
-template<framework::underlying_setting_type T>
-[[nodiscard]] auto list_validator(const workflow_settings::setting_non_owning_ptr_type<T>& setting)
+template<arcstd::framework::underlying_setting_type T>
+[[nodiscard]] auto list_validator(const arcstd::workflow::workflow_settings::setting_non_owning_ptr_type<T>& setting)
 {
-  return std::get<typename framework::setting_validator_list<T>::sptr_type>(setting->validator);
+  return std::get<typename arcstd::framework::setting_validator_list<T>::sptr_type>(setting->validator);
 }
 
 } // namespace
 
 ///
 ///
-workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : workflow_settings_base{std::move(workflow_settings)}
+workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
+)
+  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
   , script{workflow_settings_->create_setting(
-      "lookup.script", std::string{}, std::make_shared<framework::setting_validator_list<setting_value_t<decltype(script)>>>()
+      "lookup.script",
+      std::string{},
+      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(script)>>>()
     )}
   , translations{workflow_settings_->create_setting(
       "lookup.translations",
       setting_value_t<decltype(translations)>{},
-      std::make_shared<framework::setting_validator_list<setting_value_t<decltype(translations)>>>()
+      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(translations)>>>()
     )}
 {
 }
@@ -47,7 +52,8 @@ workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(std::shar
 ///
 ///
 workflow_bible_ref_lookup::workflow_bible_ref_lookup(
-  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
 )
   : workflow_base{std::move(workflow_settings)}
   , workflow_script_{std::move(workflow_script)}
@@ -63,8 +69,8 @@ workflow_bible_ref_lookup::workflow_bible_ref_lookup(
     update_scripts();
   };
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
-  settings().script->connect_queued(&framework::setting_signals::value_changed, translations_changed, connections_);
-  workflow_script_->connect_queued(&workflow_script_sigs::scripts_loaded, scripts_loaded, connections_);
+  settings().script->connect_queued(&arcstd::framework::setting_signals::value_changed, translations_changed, connections_);
+  workflow_script_->connect_queued(&arcstd::workflow::workflow_script_sigs::scripts_loaded, scripts_loaded, connections_);
 }
 
 ///
@@ -83,7 +89,7 @@ auto workflow_bible_ref_lookup::lookup(const params& params) -> void
   {
     const auto open = [](const std::string& url)
     {
-      if(!system::open_browser::open(url))
+      if(!bibstd::system::open_browser::open(url))
       {
         LOG_WARN("failed to open the browser: url=\"{}\"", url);
       }
@@ -95,7 +101,7 @@ auto workflow_bible_ref_lookup::lookup(const params& params) -> void
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
 }
 
@@ -119,7 +125,7 @@ auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const 
       script,
       {
         translations,
-        std::string{util::enum_name(begin.book())},
+        std::string{arcstd::util::enum_name(begin.book())},
         static_cast<std::int64_t>(begin.chapter().value),
         static_cast<std::int64_t>(begin.verse().value),
         static_cast<std::int64_t>(chapter.end().verse().value),
@@ -127,7 +133,7 @@ auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const 
     );
     auto url = output ? output->get<"url">() : std::nullopt;
     // A script built it, anything but a web page could start a program
-    if(!url || !util::url::is_web_url(*url))
+    if(!url || !arcstd::util::url::is_web_url(*url))
     {
       LOG_WARN("lookup without the url of a web page: script=\"{}\", url=\"{}\"", script, url.value_or(""));
       return std::nullopt;
@@ -147,12 +153,12 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
     const auto scripts = workflow_script_->scripts<translations_manifest, url_manifest>();
     const auto names = scripts | std::views::keys | std::ranges::to<std::vector>();
     // No script chosen yet, or the chosen one is gone: the one offering the most translations takes its place
-    const auto gone = !util::contains(names, settings().script->value());
+    const auto gone = !arcstd::util::contains(names, settings().script->value());
     std::ignore = list_validator(settings().script)->available(names);
     if(gone && !scripts.empty())
     {
-      const auto language = std::string{util::enum_name(system::locale::preferred_language())};
-      const auto translations = [&](const workflow_script::scripts_type::value_type& script)
+      const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
+      const auto translations = [&](const arcstd::workflow::workflow_script::scripts_type::value_type& script)
       {
         const auto output = workflow_script_->run<translations_manifest>(script.first, {language});
         return output ? output->get<"names">().size() : std::size_t{0};
@@ -163,7 +169,7 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
 }
 
@@ -173,14 +179,14 @@ auto workflow_bible_ref_lookup::update_translations() -> void
 {
   try
   {
-    const auto language = std::string{util::enum_name(system::locale::preferred_language())};
+    const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
     const auto output = workflow_script_->run<translations_manifest>(settings().script->value(), {language});
     if(!output)
     {
       return;
     }
     const auto& names = output->get<"names">();
-    const auto offered = [&](const std::string& name) { return util::contains(names, name); };
+    const auto offered = [&](const std::string& name) { return arcstd::util::contains(names, name); };
     const auto of_names = [&](const std::vector<std::string>& translations)
     { return translations | std::views::filter(offered) | std::ranges::to<std::vector>(); };
 
@@ -195,7 +201,7 @@ auto workflow_bible_ref_lookup::update_translations() -> void
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
   }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QString>
@@ -34,13 +34,13 @@ class BridgeBibleRefCopy final : public QObject
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_copy> workflowBibleRefCopy_;
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
   bool running_{false};
-  bibstd::execution::scope scope_;
+  arcstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeBibleRefCopy(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_copy> workflowBibleRefCopy,
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeBibleRefCopy() noexcept override;
 

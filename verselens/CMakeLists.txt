@@ -111,8 +111,9 @@ qt_add_qml_module(
   ${${PROJECT_NAME}_QML_CPP_FILES_RELATIVE}
   ${${PROJECT_NAME}_QML_HPP_FILES_RELATIVE}
   IMPORTS
+  ArcQml
   BibQml
-  DEPENDENCIES TARGET BibQml
+  DEPENDENCIES TARGET ArcQml TARGET BibQml
   RESOURCES
   ${${PROJECT_NAME}_SVG_FILES_RELATIVE}
 )
@@ -173,12 +174,13 @@ add_incbin_resources(src/construct_translations.cpp res/display_names.csv)
 # Link against external dependencies
 #
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE Qt6::Quick
-  PRIVATE Qt6::QuickControls2
-  PRIVATE Qt6::QuickDialogs2
-  PRIVATE Qt6::QuickShapes
-  PRIVATE Qt6::Svg
+  PRIVATE ${QT_VERSION_NAME}::Quick
+  PRIVATE ${QT_VERSION_NAME}::QuickControls2
+  PRIVATE ${QT_VERSION_NAME}::QuickDialogs2
+  PRIVATE ${QT_VERSION_NAME}::QuickShapes
+  PRIVATE ${QT_VERSION_NAME}::Svg
   PRIVATE bibstd
+  PRIVATE ArcQmlplugin
   PRIVATE BibQmlplugin
 )
 

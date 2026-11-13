@@ -3,8 +3,8 @@
 
 #include <bibqml/bridge/BridgeApplication.hpp>
 
-#include <bibstd/util/exception.hpp>
-#include <bibstd/util/log.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <Velopack.hpp>
 
@@ -52,7 +52,7 @@ app_velopack_updater::app_velopack_updater(bibqml::BridgeApplication& bridge)
   catch(...)
   {
     // Started from the build folder
-    LOG_INFO("update checks inactive: {}", bibstd::util::exception_report());
+    LOG_INFO("update checks inactive: {}", arcstd::util::exception_report());
     return;
   }
   bridge_.notifyUpdateCheck(bibqml::BridgeApplication::UpdateCheckIdle);
@@ -182,7 +182,7 @@ auto run_update_download(const int argc, char** argv) -> std::optional<int>
   }
   catch(...)
   {
-    std::cout << bibstd::util::exception_report();
+    std::cout << arcstd::util::exception_report();
     return EXIT_FAILURE;
   }
 }
@@ -214,7 +214,7 @@ auto install_downloaded_update() -> bool
   }
   catch(...)
   {
-    LOG_WARN("update install failed: {}", bibstd::util::exception_report());
+    LOG_WARN("update install failed: {}", arcstd::util::exception_report());
     return false;
   }
 }

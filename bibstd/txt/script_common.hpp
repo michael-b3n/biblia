@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/ranges.hpp"
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/ranges.hpp>
 
 #include <algorithm>
 #include <array>
@@ -216,7 +216,7 @@ constexpr auto script_common::for_each_char(const L& letters, const std::string_
 {
   auto counter = std::size_t{0};
   std::ranges::for_each(
-    util::ranges::index_view(string_view) |
+    arcstd::util::ranges::index_view(string_view) |
       std::views::take_while([&]([[maybe_unused]] const auto /*i*/) { return counter < string_view.size(); }),
     [&]([[maybe_unused]] const auto)
     {
@@ -244,7 +244,7 @@ constexpr auto script_common::for_each_char_while(const L& letters, const std::s
 {
   auto counter = std::size_t{0};
   std::ranges::for_each(
-    util::ranges::index_view(string_view) |
+    arcstd::util::ranges::index_view(string_view) |
       std::views::take_while([&]([[maybe_unused]] const auto /*i*/) { return counter < string_view.size(); }),
     [&]([[maybe_unused]] const auto)
     {

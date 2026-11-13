@@ -3,7 +3,7 @@
 #include "src/construct_bridge.hpp"
 #include "src/construct_translations.hpp"
 
-#include <bibstd/util/scope_guard.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <QGuiApplication>
 
@@ -16,6 +16,6 @@ namespace verselens
 /// \return guard removing the tray when it goes out of scope
 ///
 [[nodiscard]] auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_instance& translations)
-  -> bibstd::util::shared_scope_guard;
+  -> arcstd::util::shared_scope_guard;
 
 } // namespace verselens

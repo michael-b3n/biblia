@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.VectorImage
+import ArcQml
 import BibQml
 
 ///

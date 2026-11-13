@@ -1,7 +1,7 @@
 #include "bibqml/translation/Translations.hpp"
 
-#include <bibstd/util/contains.hpp>
-#include <bibstd/util/log.hpp>
+#include <arcstd/util/contains.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <algorithm>
 
@@ -12,13 +12,13 @@ namespace
 
 // Instance the QML layer operates on. It is registered by the constructor of the
 // application owned instance and reset when that instance is destroyed.
-bibstd::util::non_owning_ptr<Translations> instance_{nullptr};
+arcstd::util::non_owning_ptr<Translations> instance_{nullptr};
 
 } // anonymous namespace
 
 ///
 ///
-bibstd::util::non_owning_ptr<Translations> Translations::instance()
+arcstd::util::non_owning_ptr<Translations> Translations::instance()
 {
   return instance_;
 }
@@ -42,7 +42,7 @@ Translations* Translations::create([[maybe_unused]] QQmlEngine* qmlEngine, QJSEn
 
 ///
 ///
-Translations::Translations(const std::span<const std::byte> csv, const bibstd::util::non_owning_ptr<QObject> parent)
+Translations::Translations(const std::span<const std::byte> csv, const arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
   , names_{csv}
   , language_{names_.languages().empty() ? QString{} : QString::fromStdString(names_.languages().front())}
@@ -90,7 +90,7 @@ void Translations::setLanguage(const QString& language)
   {
     return;
   }
-  if(!bibstd::util::contains(names_.languages(), language.toStdString()))
+  if(!arcstd::util::contains(names_.languages(), language.toStdString()))
   {
     LOG_ERROR("set unknown language failed: language=\"{}\"", language.toStdString());
     return;

@@ -1,16 +1,17 @@
 #include "src/construct_backend.hpp"
 #include "res/version.hpp"
 
+#include <arcstd/workflow/workflow_cache.hpp>
+#include <arcstd/workflow/workflow_hotkey.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
+#include <arcstd/workflow/workflow_web.hpp>
+#include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
-#include <bibstd/workflow/workflow_cache.hpp>
-#include <bibstd/workflow/workflow_hotkey.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
-#include <bibstd/workflow/workflow_settings.hpp>
-#include <bibstd/workflow/workflow_web.hpp>
 
 #include <memory>
 
@@ -23,11 +24,11 @@ auto construct_backend() -> backend_instance
 {
   // Init backend
   // clang-format off
-  auto workflow_settings = std::make_shared<bibstd::workflow::workflow_settings>(version::data_folder_name);
-  auto workflow_script = std::make_shared<bibstd::workflow::workflow_script>(workflow_settings);
-  auto workflow_web = std::make_shared<bibstd::workflow::workflow_web>(workflow_settings, workflow_script);
-  auto workflow_cache = std::make_shared<bibstd::workflow::workflow_cache>(workflow_settings, workflow_script);
-  auto workflow_hotkey = std::make_shared<bibstd::workflow::workflow_hotkey>(workflow_settings);
+  auto workflow_settings = std::make_shared<arcstd::workflow::workflow_settings>(version::data_folder_name);
+  auto workflow_script = std::make_shared<arcstd::workflow::workflow_script>(workflow_settings, bibstd::lua::bundled::all);
+  auto workflow_web = std::make_shared<arcstd::workflow::workflow_web>(workflow_settings, workflow_script);
+  auto workflow_cache = std::make_shared<arcstd::workflow::workflow_cache>(workflow_settings, workflow_script);
+  auto workflow_hotkey = std::make_shared<arcstd::workflow::workflow_hotkey>(workflow_settings);
   auto workflow_scripture = std::make_shared<bibstd::workflow::workflow_scripture>(workflow_settings, workflow_script);
   auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(workflow_settings, workflow_scripture);
   auto workflow_bible_ref_ocr_auto = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr_auto>(workflow_settings, workflow_bible_ref_ocr);
@@ -55,7 +56,7 @@ auto construct_backend() -> backend_instance
 ///
 auto shutdown_backend(const backend_instance& backend) -> void
 {
-  std::static_pointer_cast<bibstd::workflow::workflow_script>(backend.workflow_script)->shutdown();
+  std::static_pointer_cast<arcstd::workflow::workflow_script>(backend.workflow_script)->shutdown();
 }
 
 } // namespace verselens

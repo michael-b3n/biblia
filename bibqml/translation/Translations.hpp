@@ -2,7 +2,7 @@
 
 #include "bibqml/translation/DisplayNameTable.hpp"
 
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QString>
@@ -45,7 +45,7 @@ public: // Static interface
   /// Access the instance the QML layer operates on.
   /// \return the instance, nullptr if no instance exists
   ///
-  [[nodiscard]] static bibstd::util::non_owning_ptr<Translations> instance();
+  [[nodiscard]] static arcstd::util::non_owning_ptr<Translations> instance();
 
   ///
   /// QML singleton factory. The returned instance stays owned by the application.
@@ -55,9 +55,9 @@ public: // Static interface
 
 public: // Structors
   ///
-  /// \throws util::exception if the document does not describe a table of display names
+  /// \throws arcstd::util::exception if the document does not describe a table of display names
   ///
-  explicit Translations(std::span<const std::byte> csv, bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit Translations(std::span<const std::byte> csv, arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~Translations() noexcept override;
 
 public: // Accessors

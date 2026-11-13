@@ -3,13 +3,14 @@
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/scripture_outline.hpp"
 #include "bibstd/bible/scripture_types.hpp"
-#include "bibstd/io/zip_file_reader.hpp"
-#include "bibstd/util/enum.hpp"
-#include "bibstd/util/exception.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/numeric_cast.hpp"
-#include "bibstd/util/string.hpp"
-#include "bibstd/workflow/workflow_settings.hpp"
+
+#include <arcstd/io/zip_file_reader.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/string.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -52,10 +53,10 @@ namespace
 ///
 [[nodiscard]] auto book_of(const std::string& name) -> bible::book_id
 {
-  const auto book = util::to_enum<bible::book_id>(name);
+  const auto book = arcstd::util::to_enum<bible::book_id>(name);
   if(!book)
   {
-    throw util::exception{std::format("unknown book: book=\"{}\"", name)};
+    throw arcstd::util::exception{std::format("unknown book: book=\"{}\"", name)};
   }
   return *book;
 }
@@ -68,7 +69,7 @@ namespace
   static constexpr auto max_number = static_cast<std::int64_t>(std::numeric_limits<std::uint32_t>::max());
   if(number < 1 || number > max_number)
   {
-    throw util::exception{std::format("invalid chapter or verse number: number={}", number)};
+    throw arcstd::util::exception{std::format("invalid chapter or verse number: number={}", number)};
   }
   return static_cast<std::uint32_t>(number);
 }
@@ -127,7 +128,7 @@ namespace
   auto chapter_ends = chapter_ends_of(filled(output.get<"verse_counts">()));
   if(chapter_ends.empty())
   {
-    throw util::exception{"no verse of the app"};
+    throw arcstd::util::exception{"no verse of the app"};
   }
 
   auto info = bible::scripture_info{
@@ -172,11 +173,11 @@ namespace
         // Study (3)". Not const: a filter view cannot be iterated through a const reference.
         const auto ending_of = [&name](const std::string& n) -> std::uint32_t
         {
-          const auto number = util::string::ends_with_formatted_uint(n, uint_ending_format);
+          const auto number = arcstd::util::string::ends_with_formatted_uint(n, uint_ending_format);
           return number && n == name + std::format(uint_ending_format, *number) ? *number : 0;
         };
         auto endings = scriptures | std::views::keys |
-                       std::views::filter([&name](const auto& n) { return util::string::starts_with(n, name); }) |
+                       std::views::filter([&name](const auto& n) { return arcstd::util::string::starts_with(n, name); }) |
                        std::views::transform(ending_of);
         name += std::format(uint_ending_format, std::ranges::max(endings) + 1);
       }
@@ -191,7 +192,8 @@ namespace
 ///
 ///
 workflow_scripture_store::workflow_scripture_store(
-  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_script> workflow_script
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
+  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
 )
   : workflow_script_{std::move(workflow_script)}
   , folder_{workflow_settings->data_folder() / folder_name}
@@ -324,7 +326,7 @@ auto workflow_scripture_store::read(const std::filesystem::path& file, const boo
   const auto file_name = file.filename().string();
   try
   {
-    const auto archive = io::zip_file_reader{file};
+    const auto archive = arcstd::io::zip_file_reader{file};
     if(!archive.is_open())
     {
       LOG_ERROR("failed to open scripture archive: file_name=\"{}\"", file_name);
@@ -381,7 +383,7 @@ auto workflow_scripture_store::read(const std::filesystem::path& file, const boo
   }
   catch(...)
   {
-    LOG_ERROR("failed to read scripture data: file_name=\"{}\", {}", file_name, util::exception_report());
+    LOG_ERROR("failed to read scripture data: file_name=\"{}\", {}", file_name, arcstd::util::exception_report());
   }
   return std::nullopt;
 }

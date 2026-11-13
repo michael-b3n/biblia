@@ -1,9 +1,9 @@
 #pragma once
 
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 #include <bibstd/bible/reference.hpp>
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QAbstractListModel>
 #include <QMetaEnum>
@@ -107,8 +107,8 @@ class ScriptureListModel final : public QAbstractListModel
   std::deque<Entry> entries_;
   int referenceRow_{0};
   QString scriptureCopyright_;
-  bibstd::framework::queued_connections connections_;
-  bibstd::execution::scope scope_;
+  arcstd::framework::queued_connections connections_;
+  arcstd::execution::scope scope_;
   const std::unique_ptr<MachineHolder> machine_;
 
 public: // Typedefs
@@ -129,7 +129,7 @@ public: // Typedefs
 public: // Structors
   explicit ScriptureListModel(
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~ScriptureListModel() noexcept override;
 

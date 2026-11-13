@@ -2,9 +2,10 @@
 
 #include "bibstd/bible/ocr_book_variants_de.hpp"
 #include "bibstd/bible/ocr_book_variants_en.hpp"
-#include "bibstd/util/const_map.hpp"
-#include "bibstd/util/language.hpp"
-#include "bibstd/util/ranges.hpp"
+
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <algorithm>
 #include <array>
@@ -25,7 +26,7 @@ private: // Constants
   ///
   /// A map of common misread characters by OCR to their correct character.
   ///
-  static constexpr auto ocr_char_alias_map = util::make_const_map<std::string_view, std::string_view>({
+  static constexpr auto ocr_char_alias_map = arcstd::util::make_const_map<std::string_view, std::string_view>({
     // Misread char         Correct char
     {std::string_view{"0"}, std::string_view{"o"}},
     {std::string_view{"I"}, std::string_view{"1"}},
@@ -47,7 +48,8 @@ private: // Constants
       constexpr auto size = std::tuple_size_v<decltype(element.second)>;
       std::array<std::pair<book_id, std::string_view>, size> result;
       std::ranges::for_each(
-        util::ranges::index_view(result), [&](const auto i) { result.at(i) = std::pair{element.first, element.second.at(i)}; }
+        arcstd::util::ranges::index_view(result),
+        [&](const auto i) { result.at(i) = std::pair{element.first, element.second.at(i)}; }
       );
       return result;
     };
@@ -70,31 +72,34 @@ public: // Constants
   ///
   /// \return the span of all name variants based on language.
   ///
-  [[nodiscard]] static constexpr auto name_variants_span(util::language language) -> std::span<const std::pair<book_id, std::string_view>>;
+  [[nodiscard]] static constexpr auto name_variants_span(bibocr::util::language language)
+    -> std::span<const std::pair<book_id, std::string_view>>;
 
   ///
   /// \return a list of name variants that are aliases of the given name variant.
   ///
-  [[nodiscard]] static auto name_variant_aliases(std::string_view name_variant, util::language language) -> std::vector<std::string>;
+  [[nodiscard]] static auto name_variant_aliases(std::string_view name_variant, bibocr::util::language language)
+    -> std::vector<std::string>;
 
   ///
   /// \return a complete list of all name variants with their aliases based on language.
   ///
-  [[nodiscard]] static auto name_variants_with_aliases(util::language language) -> std::span<const std::pair<book_id, std::string>>;
+  [[nodiscard]] static auto name_variants_with_aliases(bibocr::util::language language)
+    -> std::span<const std::pair<book_id, std::string>>;
 };
 
 ///
 ///
-constexpr auto ocr_book_variants::name_variants_span(const util::language language)
+constexpr auto ocr_book_variants::name_variants_span(const bibocr::util::language language)
   -> std::span<const std::pair<book_id, std::string_view>>
 {
   using result_type = std::span<const std::pair<book_id, std::string_view>>;
   // clang-format off
   switch(language)
   {
-  case util::language::german: return result_type{name_variants_list_de};
-  case util::language::english: return result_type{name_variants_list_en};
-  default: throw util::exception{"unsupported language"}; return result_type{};
+  case bibocr::util::language::german: return result_type{name_variants_list_de};
+  case bibocr::util::language::english: return result_type{name_variants_list_en};
+  default: throw arcstd::util::exception{"unsupported language"}; return result_type{};
   }
   // clang-format on
 }

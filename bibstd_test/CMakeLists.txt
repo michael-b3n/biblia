@@ -60,13 +60,14 @@ target_compile_definitions(bibstd_test
 )
 
 #
-# Link libaries.
+# Link libraries.
 #
 target_link_libraries(
   bibstd_test
   PRIVATE
   Catch2::Catch2WithMain
   pugixml::pugixml
+  arcstd_test_utils
   bibstd)
 
 #

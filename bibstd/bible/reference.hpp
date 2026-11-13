@@ -129,7 +129,7 @@ struct std::formatter<bibstd::bible::reference> : std::formatter<std::string>
   auto format(const bibstd::bible::reference e, std::format_context& ctx) const
   {
     return formatter<std::string>::format(
-      std::format("{} {}, {}", bibstd::util::enum_name(e.book()), e.chapter(), e.verse()), ctx
+      std::format("{} {}, {}", arcstd::util::enum_name(e.book()), e.chapter(), e.verse()), ctx
     );
   }
 };

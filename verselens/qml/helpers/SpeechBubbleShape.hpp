@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QColor>
 #include <QPainterPath>
@@ -31,11 +31,11 @@ class SpeechBubbleShape : public QQuickPaintedItem
   Q_PROPERTY(QColor fillColor MEMBER fillColor_ NOTIFY fillColorChanged)
 
 public: // Structors
-  explicit SpeechBubbleShape(bibstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
+  explicit SpeechBubbleShape(arcstd::util::non_owning_ptr<QQuickItem> parent = nullptr);
   ~SpeechBubbleShape() noexcept override;
 
 public: // Overrides
-  void paint(bibstd::util::non_owning_ptr<QPainter> painter) override;
+  void paint(arcstd::util::non_owning_ptr<QPainter> painter) override;
 
 protected: // Overrides
   void updatePolish() override;

@@ -5,9 +5,10 @@
 #include "bibstd/bible/versification_common.hpp"
 #include "bibstd/bible/versification_default_esv.hpp"
 #include "bibstd/bible/versification_default_kjv.hpp"
-#include "bibstd/meta/contains.hpp"
-#include "bibstd/meta/pack.hpp"
-#include "bibstd/util/ranges.hpp"
+
+#include <arcstd/meta/contains.hpp>
+#include <arcstd/meta/pack.hpp>
+#include <arcstd/util/ranges.hpp>
 
 #include <cstddef>
 #include <optional>
@@ -51,7 +52,7 @@ public: // Structors
   /// Creates a reference validator for the default Bible version (ESV).
   ///
   constexpr versification(auto&& versification_default)
-    requires(meta::contains_v<all_defaults_variant, std::decay_t<decltype(versification_default)>>);
+    requires(arcstd::meta::contains_v<all_defaults_variant, std::decay_t<decltype(versification_default)>>);
 
   ///
   /// Creates a versification for the given Bible version.
@@ -149,7 +150,7 @@ private: // Implementation
 ///
 ///
 constexpr versification::versification(auto&& versification_default)
-  requires(meta::contains_v<all_defaults_variant, std::decay_t<decltype(versification_default)>>)
+  requires(arcstd::meta::contains_v<all_defaults_variant, std::decay_t<decltype(versification_default)>>)
   : data_{std::forward<decltype(versification_default)>(versification_default)}
 {
 }
@@ -168,7 +169,7 @@ constexpr auto versification::operator==(const versification& other) const -> bo
     return false;
   }
   return std::ranges::all_of(
-    util::ranges::index_view_to(data_size),
+    arcstd::util::ranges::index_view_to(data_size),
     [&](const auto i) { return visit_last_reference(data_, i) == visit_last_reference(other.data_, i); }
   );
 }
@@ -184,13 +185,13 @@ constexpr auto versification::name() const -> std::string
 ///
 constexpr auto versification::chapter_count(const book_id book) const -> std::uint32_t
 {
-  if(!util::valid(book))
+  if(!arcstd::util::valid(book))
   {
     return 0;
   }
-  else if(util::has_next(book))
+  else if(arcstd::util::has_next(book))
   {
-    const auto next_book_start_index = visit_book_start_indices(data_).at(util::to_integral(util::next(book)));
+    const auto next_book_start_index = visit_book_start_indices(data_).at(arcstd::util::to_integral(arcstd::util::next(book)));
     const auto ref = visit_last_reference(data_, next_book_start_index - 1);
     return ref ? ref->chapter().value : 0;
   }
@@ -228,7 +229,7 @@ constexpr auto versification::count() const -> std::uint32_t
 constexpr auto versification::size(const reference_range& ref) const -> std::optional<std::uint32_t>
 {
   static constexpr auto is_invalid = [](const auto& r)
-  { return !util::valid(r.book()) || r.chapter() == decltype(r.chapter()){0} || r.verse() == decltype(r.verse()){0}; };
+  { return !arcstd::util::valid(r.book()) || r.chapter() == decltype(r.chapter()){0} || r.verse() == decltype(r.verse()){0}; };
 
   if(is_invalid(ref.begin()) || is_invalid(ref.end()))
   {
@@ -255,7 +256,7 @@ constexpr auto versification::size(const reference_range& ref) const -> std::opt
       if(*end_chapter_index > *begin_chapter_index)
       {
         result = std::ranges::fold_left(
-          util::ranges::index_view_between(*begin_chapter_index + 1, *end_chapter_index),
+          arcstd::util::ranges::index_view_between(*begin_chapter_index + 1, *end_chapter_index),
           *result,
           [&](const auto n, const auto i) { return n + visit_last_reference(data_, i).value().verse().value; }
         );
@@ -307,9 +308,9 @@ constexpr auto versification::next(const reference& ref) const -> std::optional<
     chapter = decltype(chapter){chapter.value + 1};
     verse = decltype(verse){1};
   }
-  else if(util::has_next(book))
+  else if(arcstd::util::has_next(book))
   {
-    book = util::next(book);
+    book = arcstd::util::next(book);
     chapter = decltype(chapter){1};
     verse = decltype(verse){1};
   }
@@ -341,9 +342,9 @@ constexpr auto versification::prev(const reference& ref) const -> std::optional<
     chapter = decltype(chapter){chapter.value - 1};
     verse = decltype(verse){verse_count(book, chapter)};
   }
-  else if(util::has_prev(book))
+  else if(arcstd::util::has_prev(book))
   {
-    book = util::prev(book);
+    book = arcstd::util::prev(book);
     chapter = decltype(chapter){chapter_count(book)};
     verse = decltype(verse){verse_count(book, chapter)};
   }
@@ -377,8 +378,8 @@ constexpr auto versification::split_by_chapter(const reference_range& ref) const
     };
     return std::views::iota(first_chapter, last_chapter + 1) | std::views::transform(to_range);
   };
-  return util::enum_values<book_id>() | std::views::filter(in_range) | std::views::transform(chapters_of) | std::views::join |
-         std::ranges::to<std::vector>();
+  return arcstd::util::enum_values<book_id>() | std::views::filter(in_range) | std::views::transform(chapters_of) |
+         std::views::join | std::ranges::to<std::vector>();
 }
 
 ///
@@ -411,11 +412,11 @@ constexpr auto versification::visit_book_start_indices(const data_type& data) ->
 constexpr auto versification::containing_index(const book_id book, const reference::chapter_type chapter) const
   -> std::optional<std::size_t>
 {
-  if(!util::valid(book) || chapter == decltype(chapter){0})
+  if(!arcstd::util::valid(book) || chapter == decltype(chapter){0})
   {
     return std::nullopt;
   }
-  const auto book_start_index = visit_book_start_indices(data_).at(util::to_integral(book));
+  const auto book_start_index = visit_book_start_indices(data_).at(arcstd::util::to_integral(book));
   const auto index = book_start_index + (chapter.value - 1);
   if(const auto r = visit_last_reference(data_, index); r && r->book() == book && r->chapter() == chapter)
   {
@@ -454,7 +455,7 @@ inline constexpr auto versification_kjv = versification{versification::default_k
 ///
 inline constexpr auto versifications_default = []()
 {
-  using info_t = meta::pack_info<versification::all_defaults_variant>;
+  using info_t = arcstd::meta::pack_info<versification::all_defaults_variant>;
   return [&]<std::size_t... I>(std::index_sequence<I...>)
   { return std::array{versification{info_t::type_at<I>{}}...}; }(std::make_index_sequence<info_t::size>{});
 }();

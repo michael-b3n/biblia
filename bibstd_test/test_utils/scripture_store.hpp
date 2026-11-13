@@ -4,13 +4,14 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arcstd/util/enum.hpp>
+#include <arcstd/workflow/workflow_cache.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
-#include <bibstd/util/enum.hpp>
-#include <bibstd/workflow/workflow_cache.hpp>
-#include <bibstd/workflow/workflow_script.hpp>
+#include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
 
@@ -43,9 +44,9 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 /// with the verse "<code> 1:1", or the content \p books has for its code
 ///
 [[nodiscard]] inline auto usfm_entries(const std::map<std::string, std::string>& books = {})
-  -> std::vector<io::test_utils::zip_entry>
+  -> std::vector<test_utils::zip_entry>
 {
-  auto entries = std::vector<io::test_utils::zip_entry>{};
+  auto entries = std::vector<test_utils::zip_entry>{};
   for(const auto code : usfm_codes)
   {
     const auto it = books.find(std::string{code});
@@ -62,14 +63,14 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 ///
 struct scripture_store final
 {
-  temp_folder folder;
-  std::shared_ptr<workflow::workflow_script> script;
-  std::shared_ptr<workflow::workflow_cache> cache; // keeps the verses for the readers
+  arcstd::test_utils::temp_folder folder;
+  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::workflow::workflow_cache> cache; // keeps the verses for the readers
   std::shared_ptr<workflow::workflow_scripture_store> store;
 
   explicit scripture_store(
     std::string_view name,
-    const std::map<std::string, std::vector<io::test_utils::zip_entry>>& archives = {},
+    const std::map<std::string, std::vector<test_utils::zip_entry>>& archives = {},
     const std::vector<std::filesystem::path>& files = {}
   );
 
@@ -108,7 +109,7 @@ struct scripture_reading final
 ///
 inline scripture_store::scripture_store(
   const std::string_view name,
-  const std::map<std::string, std::vector<io::test_utils::zip_entry>>& archives,
+  const std::map<std::string, std::vector<test_utils::zip_entry>>& archives,
   const std::vector<std::filesystem::path>& files
 )
   : folder{name}
@@ -116,17 +117,17 @@ inline scripture_store::scripture_store(
   std::filesystem::create_directories(scripture_folder());
   for(const auto& [file_name, entries] : archives)
   {
-    io::test_utils::write_zip_archive(scripture_folder() / file_name, entries);
+    test_utils::write_zip_archive(scripture_folder() / file_name, entries);
   }
   for(const auto& file : files)
   {
     std::filesystem::copy_file(file, scripture_folder() / file.filename());
   }
-  const auto settings = make_script_settings(folder.path());
-  script = std::make_shared<workflow::workflow_script>(settings);
-  cache = std::make_shared<workflow::workflow_cache>(settings, script);
+  const auto settings = arcstd::test_utils::make_script_settings(folder.path());
+  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
   store = std::make_shared<workflow::workflow_scripture_store>(settings, script);
-  load_scripts(*script);
+  arcstd::test_utils::load_scripts(*script);
   store->load();
 }
 
@@ -147,7 +148,7 @@ inline auto scripture_store::passage(
     file.reader,
     {
       file.file_name,
-      std::string{util::enum_name(ref.book())},
+      std::string{arcstd::util::enum_name(ref.book())},
       static_cast<std::int64_t>(ref.chapter().value),
       static_cast<std::int64_t>(ref.verse().value),
     }
@@ -189,10 +190,10 @@ inline auto scripture_reading::operator->() const -> const bible::scripture_outl
 ///
 /// \return the scripture the bundled readers read from a zip archive of \p entries, empty if none
 ///
-[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<io::test_utils::zip_entry>& entries)
+[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<test_utils::zip_entry>& entries)
   -> scripture_reading
 {
-  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<io::test_utils::zip_entry>>{{"scripture.zip", entries}}));
+  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<test_utils::zip_entry>>{{"scripture.zip", entries}}));
 }
 
 ///

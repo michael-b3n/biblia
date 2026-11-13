@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import ArcQml
 import BibQml
 
 ///
@@ -145,7 +146,7 @@ Window
           Layout.fillWidth: false
           Layout.preferredWidth: Metrics.controlHeight
           Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-          svgSource: Icons.close
+          svgSource: BibIcons.close
 
           // Connections
           onClicked: { root.close() }

@@ -1,7 +1,8 @@
 #include "bibstd/bible/ocr_book_variants.hpp"
-#include "bibstd/math/combination.hpp"
 #include "bibstd/txt/script_common.hpp"
 #include "bibstd/txt/script_letters.hpp"
+
+#include <arcstd/math/combination.hpp>
 
 #include <string>
 
@@ -10,15 +11,15 @@ namespace bibstd::bible
 
 ///
 ///
-auto ocr_book_variants::name_variant_aliases(const std::string_view name_variant, const util::language language)
+auto ocr_book_variants::name_variant_aliases(const std::string_view name_variant, const bibocr::util::language language)
   -> std::vector<std::string>
 {
   auto char_variants = std::vector<std::vector<std::string_view>>{};
-  txt::script_letters::visit(
+  bibstd::txt::script_letters::visit(
     language,
     [&](const auto& letters)
     {
-      txt::script_common::for_each_char(
+      bibstd::txt::script_common::for_each_char(
         letters,
         name_variant,
         [&](const auto character, [[maybe_unused]] const auto pos, [[maybe_unused]] const auto category)
@@ -35,7 +36,7 @@ auto ocr_book_variants::name_variant_aliases(const std::string_view name_variant
   );
 
   auto result = std::vector<std::string>{};
-  math::for_each_combination(
+  arcstd::math::for_each_combination(
     char_variants,
     [&](const auto& combination)
     {
@@ -55,9 +56,10 @@ auto ocr_book_variants::name_variant_aliases(const std::string_view name_variant
 
 ///
 ///
-auto ocr_book_variants::name_variants_with_aliases(util::language language) -> std::span<const std::pair<book_id, std::string>>
+auto ocr_book_variants::name_variants_with_aliases(bibocr::util::language language)
+  -> std::span<const std::pair<book_id, std::string>>
 {
-  const auto create = [](const util::language language)
+  const auto create = [](const bibocr::util::language language)
   {
     auto result = std::vector<std::pair<book_id, std::string>>{};
     std::ranges::for_each(
@@ -74,13 +76,13 @@ auto ocr_book_variants::name_variants_with_aliases(util::language language) -> s
     return result;
   };
 
-  static const auto name_variants_with_aliases_de = create(util::language::german);
-  static const auto name_variants_with_aliases_en = create(util::language::english);
+  static const auto name_variants_with_aliases_de = create(bibocr::util::language::german);
+  static const auto name_variants_with_aliases_en = create(bibocr::util::language::english);
   switch(language)
   {
-  case util::language::german: return name_variants_with_aliases_de;
-  case util::language::english: return name_variants_with_aliases_en;
-  default: throw util::exception{"unsupported language"}; return {};
+  case bibocr::util::language::german: return name_variants_with_aliases_de;
+  case bibocr::util::language::english: return name_variants_with_aliases_en;
+  default: throw arcstd::util::exception{"unsupported language"}; return {};
   }
 }
 

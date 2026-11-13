@@ -1,9 +1,9 @@
 #include "bibqml/util/ScreenConversion.hpp"
 
-#include <bibstd/math/rect.hpp>
+#include <arcstd/math/rect.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
 #include <bibstd/system/screen.hpp>
-#include <bibstd/util/log.hpp>
-#include <bibstd/util/numeric_cast.hpp>
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -23,7 +23,7 @@ namespace
 struct MonitorMapping final
 {
   // Variables
-  bibstd::data::screen_rect_type nativeGeometry;
+  bibocr::data::screen_rect_type nativeGeometry;
   QRect deviceIndependentGeometry;
 
   ///
@@ -42,7 +42,7 @@ struct MonitorMapping final
   /// Map a position in native pixels that is on this monitor to device independent pixels.
   /// \return position in device independent pixels
   ///
-  [[nodiscard]] auto map(const bibstd::data::screen_coordinates_type& position) const -> QPoint;
+  [[nodiscard]] auto map(const bibocr::data::screen_coordinates_type& position) const -> QPoint;
 };
 
 ///
@@ -61,19 +61,19 @@ struct MonitorMapping final
 ///
 auto MonitorMapping::horizontal(const std::int64_t nativePixels) const -> int
 {
-  return scaled(nativePixels, deviceIndependentGeometry.width(), bibstd::math::size(nativeGeometry.horizontal_range()));
+  return scaled(nativePixels, deviceIndependentGeometry.width(), arcstd::math::size(nativeGeometry.horizontal_range()));
 }
 
 ///
 ///
 auto MonitorMapping::vertical(const std::int64_t nativePixels) const -> int
 {
-  return scaled(nativePixels, deviceIndependentGeometry.height(), bibstd::math::size(nativeGeometry.vertical_range()));
+  return scaled(nativePixels, deviceIndependentGeometry.height(), arcstd::math::size(nativeGeometry.vertical_range()));
 }
 
 ///
 ///
-auto MonitorMapping::map(const bibstd::data::screen_coordinates_type& position) const -> QPoint
+auto MonitorMapping::map(const bibocr::data::screen_coordinates_type& position) const -> QPoint
 {
   const auto origin = nativeGeometry.origin();
   return deviceIndependentGeometry.topLeft() +
@@ -90,8 +90,8 @@ auto MonitorMapping::map(const bibstd::data::screen_coordinates_type& position) 
   const auto monitor = bibstd::system::screen::monitor_at(cursor.native);
   const auto* const screen = QGuiApplication::screenAt(cursor.deviceIndependent);
   if(
-    !monitor || screen == nullptr || screen->geometry().isEmpty() || bibstd::math::size(monitor->horizontal_range()) == 0u ||
-    bibstd::math::size(monitor->vertical_range()) == 0u
+    !monitor || screen == nullptr || screen->geometry().isEmpty() || arcstd::math::size(monitor->horizontal_range()) == 0u ||
+    arcstd::math::size(monitor->vertical_range()) == 0u
   )
   {
     LOG_WARN("no monitor or screen found at cursor: cursor={}", cursor.native);
@@ -104,7 +104,7 @@ auto MonitorMapping::map(const bibstd::data::screen_coordinates_type& position) 
 
 ///
 ///
-auto toDeviceIndependent(const bibstd::data::screen_rect_type& rect, const CursorPositionPair& cursor) -> std::optional<QRect>
+auto toDeviceIndependent(const bibocr::data::screen_rect_type& rect, const CursorPositionPair& cursor) -> std::optional<QRect>
 {
   const auto mapping = monitorMappingAt(cursor);
   if(!mapping)
@@ -112,8 +112,8 @@ auto toDeviceIndependent(const bibstd::data::screen_rect_type& rect, const Curso
     return std::nullopt;
   }
   const auto size = QSize{
-    mapping->horizontal(bibstd::math::size(rect.horizontal_range())),
-    mapping->vertical(bibstd::math::size(rect.vertical_range()))
+    mapping->horizontal(arcstd::math::size(rect.horizontal_range())),
+    mapping->vertical(arcstd::math::size(rect.vertical_range()))
   };
   return QRect{mapping->map(rect.origin()), size};
 }

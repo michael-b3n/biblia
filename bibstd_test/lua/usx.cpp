@@ -1,11 +1,11 @@
 #include "test_utils/scripture_store.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arcstd/util/enum.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/bible/scripture_types.hpp>
-#include <bibstd/util/enum.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/interfaces/catch_interfaces_capture.hpp>
@@ -35,9 +35,9 @@ using test_utils::verse_of;
 ///
 /// \return the entries of a USX bundle with the metadata of a scripture named "Test", a book document per book
 ///
-[[nodiscard]] auto usx_entries() -> std::vector<io::test_utils::zip_entry>
+[[nodiscard]] auto usx_entries() -> std::vector<test_utils::zip_entry>
 {
-  auto entries = std::vector<io::test_utils::zip_entry>{
+  auto entries = std::vector<test_utils::zip_entry>{
     {        "bundle/metadata.xml",
      R"(<?xml version="1.0"?><DBLMetadata><identification><name>Test</name><nameLocal>Test lokal</nameLocal>)"
      R"(<abbreviation>TST</abbreviation></identification><language><name>German</name></language>)"
@@ -89,7 +89,7 @@ struct shipped_scripture final
       // Each test case runs in its own process, which reads them into its own folder, the verses stay in it
       auto loaded = test_utils::reading_of(std::make_shared<const test_utils::scripture_store>(
         std::format("{}_{}", Catch::getResultCapture().getCurrentTestName(), file.path().stem().string()),
-        std::map<std::string, std::vector<io::test_utils::zip_entry>>{},
+        std::map<std::string, std::vector<test_utils::zip_entry>>{},
         std::vector{file.path()}
       ));
       REQUIRE(loaded);
@@ -161,16 +161,16 @@ TEST_CASE("usx_provides_names_for_every_book", "[lua]")
   {
     INFO(std::format("bundle: {}", bundle));
     auto short_names = std::vector<std::string>{};
-    for(const auto book : util::enum_values<book_id>())
+    for(const auto book : arcstd::util::enum_values<book_id>())
     {
-      INFO(std::format("book: {}", util::enum_name(book)));
+      INFO(std::format("book: {}", arcstd::util::enum_name(book)));
       const auto names = loaded->book_information(book);
       REQUIRE(names.has_value());
       // Every form is filled from the header paragraphs of the book, falling back to the closest alternative
       CHECK(!names->short_name.empty());
       CHECK(!names->abbreviation.empty());
       CHECK(!names->long_name.empty());
-      CHECK(names->short_name != util::enum_name(book));
+      CHECK(names->short_name != arcstd::util::enum_name(book));
       // The header block ends at the first chapter, names grown into verses would be longer
       CHECK(names->long_name.size() < 100u);
       CHECK(names->short_name.size() <= names->long_name.size());

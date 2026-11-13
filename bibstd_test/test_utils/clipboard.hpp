@@ -1,7 +1,7 @@
 #pragma once
 
+#include <arcstd/util/exception.hpp>
 #include <bibstd/system/clipboard.hpp>
-#include <bibstd/util/exception.hpp>
 
 #include <optional>
 #include <string>
@@ -26,7 +26,7 @@ class clipboard_restorer final
 
 public: // Structors
   ///
-  /// \throws util::exception if the clipboard can not be read, so a test leaves it alone
+  /// \throws arcstd::util::exception if the clipboard can not be read, so a test leaves it alone
   ///
   clipboard_restorer();
   ~clipboard_restorer() noexcept;
@@ -42,7 +42,7 @@ inline clipboard_restorer::clipboard_restorer()
 {
   if(!text_)
   {
-    throw util::exception{"the clipboard can not be read, it is left alone"};
+    throw arcstd::util::exception{"the clipboard can not be read, it is left alone"};
   }
 }
 

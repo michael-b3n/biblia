@@ -1,9 +1,9 @@
 #pragma once
 
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/framework/process_params.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 #include <bibstd/bible/reference_range.hpp>
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/framework/process_params.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QString>
@@ -36,15 +36,15 @@ class BridgeBibleRefLookup final : public QObject
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup_;
   const std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture_;
-  bibstd::framework::process_id_type processId_;
+  arcstd::framework::process_id_type processId_;
   bool running_{false};
-  bibstd::execution::scope scope_;
+  arcstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeBibleRefLookup(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_lookup> workflowBibleRefLookup,
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeBibleRefLookup() noexcept override;
 

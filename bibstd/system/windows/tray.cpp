@@ -1,9 +1,10 @@
 #include "bibstd/system/tray.hpp"
-#include "bibstd/execution/launch.hpp"
-#include "bibstd/util/exception.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/non_owning_ptr.hpp"
-#include "bibstd/util/visit_helper.hpp"
+
+#include <arcstd/execution/launch.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
+#include <arcstd/util/visit_helper.hpp>
 
 #include <algorithm>
 #include <condition_variable>
@@ -42,9 +43,9 @@ namespace
 
 ///
 ///
-auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> util::shared_scope_guard
+auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> arcstd::util::shared_scope_guard
 {
-  static util::shared_scope_guard::creator guard_creator;
+  static arcstd::util::shared_scope_guard::creator guard_creator;
   static std::condition_variable cv_init;
 
   auto lock = std::unique_lock{mtx_};
@@ -76,7 +77,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
       }
       catch(...)
       {
-        LOG_ERROR("exception occurred: {}", util::exception_report());
+        LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
       }
       scope.reset();
       loop.reset();
@@ -93,8 +94,8 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
     active_ = true;
     try
     {
-      scope_ = std::make_unique<execution::scope>();
-      loop_ = std::make_unique<message_loop>();
+      scope_ = std::make_unique<arcstd::execution::scope>();
+      loop_ = std::make_unique<arcstd::system::message_loop>();
     }
     catch(...)
     {
@@ -102,10 +103,10 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
       lock.unlock();
       throw;
     }
-    auto create = [&, scope = util::non_owning_ptr<execution::scope>{scope_.get()}]
+    auto create = [&, scope = arcstd::util::non_owning_ptr<arcstd::execution::scope>{scope_.get()}]
     {
       // The callbacks are called by the tray on the loop thread and run on the thread pool
-      const auto run = [scope](std::function<void()> f) { execution::launch(std::move(f), *scope); };
+      const auto run = [scope](std::function<void()> f) { arcstd::execution::launch(std::move(f), *scope); };
       const auto void_callback_wrapper = [run](const auto& callback) { return [callback, run]() { run(callback); }; };
       const auto toggle_callback_wrapper = [run](const auto& callback)
       { return [callback, run](bool flag) { run(callback(flag)); }; };
@@ -114,7 +115,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
         entries,
         [&](const auto& entry)
         {
-          util::visit_lambdas(
+          arcstd::util::visit_lambdas(
             entry,
             [&](const button& v) { tray_->addEntry(Tray::Button(to_ansi(v.text), void_callback_wrapper(v.callback))); },
             [&](const label& v) { tray_->addEntry(Tray::Label(to_ansi(v.text))); },
@@ -125,7 +126,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ut
         }
       );
     };
-    const auto loop = util::non_owning_ptr<message_loop>{loop_.get()};
+    const auto loop = arcstd::util::non_owning_ptr<arcstd::system::message_loop>{loop_.get()};
     // Released first: an exception of the tray reaches the caller, the guard then closes what exists
     lock.unlock();
     loop->call(create);

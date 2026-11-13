@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QObject>
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -41,7 +41,7 @@ private: // Variables
   UpdateCheck updateCheck_{UpdateCheckUnavailable};
 
 public: // Structors
-  explicit BridgeApplication(bibstd::util::non_owning_ptr<QObject> parent = nullptr);
+  explicit BridgeApplication(arcstd::util::non_owning_ptr<QObject> parent = nullptr);
   ~BridgeApplication() noexcept override;
 
 public: // Accessors

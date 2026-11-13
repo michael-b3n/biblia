@@ -1,5 +1,6 @@
 #include "bibstd/bible/reference_mask.hpp"
-#include "bibstd/util/string.hpp"
+
+#include <arcstd/util/string.hpp>
 
 #include <algorithm>
 #include <array>
@@ -176,14 +177,14 @@ constexpr auto characters = std::array{
 ///
 [[nodiscard]] auto render_first(const std::string_view mask, const values_type& values) -> std::pair<rendered, std::size_t>
 {
-  if(util::string::starts_with(mask, group_begin))
+  if(arcstd::util::string::starts_with(mask, group_begin))
   {
     if(const auto end = closing_brace(mask, 0); end != std::string_view::npos)
     {
       return {in_text(render_part(mask.substr(1, end - 1), values)), end + 1};
     }
   }
-  else if(util::string::starts_with(mask, variable_begin))
+  else if(arcstd::util::string::starts_with(mask, variable_begin))
   {
     if(const auto end = mask.find(variable_end); end != std::string_view::npos)
     {
@@ -235,7 +236,7 @@ auto reference_mask::render(const std::string_view mask, const values& values) -
 ///
 auto reference_mask::uses_content(const std::string_view mask) -> bool
 {
-  static constexpr auto names = util::string::to_string_view_array("[content]", "[content_numbered]");
+  static constexpr auto names = arcstd::util::string::to_string_view_array("[content]", "[content_numbered]");
   return std::ranges::any_of(names, [mask](const std::string_view name) { return mask.contains(name); });
 }
 

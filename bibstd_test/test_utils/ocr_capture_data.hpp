@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-namespace bibstd::bible::test_utils
+namespace bibstd::test_utils
 {
 
 ///
@@ -371,4 +371,4 @@ inline auto read_captures(const std::filesystem::path& folder) -> std::vector<ca
   return result;
 }
 
-} // namespace bibstd::bible::test_utils
+} // namespace bibstd::test_utils

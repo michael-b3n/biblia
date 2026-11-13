@@ -1,4 +1,5 @@
 import QtQuick
+import ArcQml
 import BibQml
 
 ///

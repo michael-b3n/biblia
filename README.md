@@ -8,16 +8,18 @@ Libraries that find bible references on the screen, and VerseLens, the Windows t
 
 | Folder | Content |
 |---|---|
-| `bibstd` | The library and most of the logic: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), OCR engines and text scripts (`txt`), scripture store, cache and web fetch (`core`), Lua scripting (`lua`, the scripts shipped with the app in `lua/bundled`), threading and settings (`framework`), the system layer (`system`, Windows in `system/windows`) |
-| `bibqml` | The Qt layer: bridge between QML and the library, models, shared controls |
-| `bibstd_test` | Catch2 tests of `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
+| `arca` | Submodule [arca](https://github.com/michael-b3n/arca): the general libraries `arcstd` and `arcqml` (QML module `ArcQml`), their tests and test helpers, the third party sources |
+| `bibocr` | OCR engines (`txt`), the Windows OCR, its language tags and the screen capture (`system`), image and screen types (`data`), the bitmap export of captures (`io`), the languages of the app (`util`) |
+| `bibstd` | The Bible library: references and their parsing (`bible`), the workflows that turn a hotkey into a lookup (`workflow`), the scripts shipped with the app (`lua/bundled`), letter tables of the languages (`txt`), the system layer of the app: clipboard, locale, browser, screen and tray (`system`) |
+| `bibqml` | The Bible Qt layer, QML module `BibQml`: the bridges of the reference search, the scriptures and the application, the scripture model, the settings views and their display names, the icons of the app |
+| `bibstd_test` | Catch2 tests of `bibocr` and `bibstd`. Their scripture zips are local only, see [bibstd_test/res/scripture](bibstd_test/res/scripture/README.md) |
 | `verselens` | The app: window, tray, updater and the resources a release ships |
-| `libs_external` | Third party sources, used as they are |
-| `tools` | CMake helpers, the clang-tidy runner, the MSIX packaging script |
+| `libs_external` | Velopack and traypp, used as they are |
+| `tools` | CMake helpers, the clang-tidy runner, the Lua reference generator, the icon and MSIX packaging scripts, a VS Code launcher |
 
 ## Development
 
-Setup: [doc/setup_ide.md](doc/setup_ide.md). In the MSYS2 UCRT64 shell:
+Setup: [doc/setup_ide.md](doc/setup_ide.md). Clone with `--recurse-submodules`, or run `git submodule update --init` in a clone, for `arca`. In the MSYS2 UCRT64 shell:
 
 ```
 cmake --preset gcc-release --fresh
@@ -81,4 +83,4 @@ For the Microsoft Store the workflow also packs an MSIX and offers it as a build
 
 ## License
 
-[MIT](LICENSE). The libraries in `libs_external` keep their own licenses. Qt is used under the LGPLv3, Tesseract and its `tessdata` under the Apache License 2.0. Scriptures are not part of this repository or of a release.
+[MIT](LICENSE). The libraries in `libs_external` and `arca/libs_external` keep their own licenses. Qt is used under the LGPLv3, Tesseract and its `tessdata` under the Apache License 2.0. Scriptures are not part of this repository or of a release.

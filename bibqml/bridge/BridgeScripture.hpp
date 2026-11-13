@@ -1,8 +1,8 @@
 #pragma once
 
-#include <bibstd/execution/scope.hpp>
-#include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QList>
 #include <QObject>
@@ -38,13 +38,13 @@ class BridgeScripture final : public QObject
   bool available_{false};
   bool loaded_{false};
   bool reading_{false};
-  bibstd::framework::queued_connections connections_;
-  bibstd::execution::scope scope_;
+  arcstd::framework::queued_connections connections_;
+  arcstd::execution::scope scope_;
 
 public: // Structors
   explicit BridgeScripture(
     std::shared_ptr<bibstd::workflow::workflow_scripture> workflowScripture,
-    bibstd::util::non_owning_ptr<QObject> parent = nullptr
+    arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
   ~BridgeScripture() noexcept override;
 

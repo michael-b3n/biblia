@@ -1,0 +1,154 @@
+#pragma once
+
+#include "bibocr/data/screen_types.hpp"
+
+#include <arcstd/system/windows/win.hpp>
+
+#include <d3d11.h>
+#include <dxgi.h>
+#include <inspectable.h>
+#include <roapi.h>
+
+#include <winrt/Windows.Foundation.Metadata.h>
+#include <winrt/Windows.Graphics.Capture.h>
+#include <winrt/Windows.Graphics.DirectX.Direct3D11.h>
+
+#include <windows.graphics.capture.interop.h>
+#include <windows.graphics.directx.direct3d11.interop.h>
+
+#include <chrono>
+#include <cstdint>
+#include <format>
+#include <memory>
+#include <mutex>
+#include <string>
+
+namespace bibocr::system::winrt_capture
+{
+
+namespace capture_api = winrt::Windows::Graphics::Capture;
+namespace directx_api = winrt::Windows::Graphics::DirectX;
+namespace direct3d_api = winrt::Windows::Graphics::DirectX::Direct3D11;
+namespace metadata_api = winrt::Windows::Foundation::Metadata;
+
+// Hands out the graphics device texture behind a captured frame.
+using dxgi_access_type = ::Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess;
+
+// Runtime class of the capture session, used to ask which of its properties this system has.
+inline constexpr auto session_class = L"Windows.Graphics.Capture.GraphicsCaptureSession";
+
+// How long a capture waits for the first frame of a session it just started.
+inline constexpr auto first_frame_timeout = std::chrono::milliseconds{500};
+
+// Frames the capture pool holds. Two suffice, only the newest frame is ever read.
+inline constexpr std::int32_t frame_pool_size = 2;
+
+// Bytes per pixel, frames are requested in a fixed bgra format.
+inline constexpr std::uint32_t frame_pixel_size = 4;
+
+///
+/// Region of a monitor, in the coordinate system of that monitor.
+///
+struct region final
+{
+  std::int32_t x{0};
+  std::int32_t y{0};
+  std::int32_t width{0};
+  std::int32_t height{0};
+};
+
+///
+/// Initialize the calling thread for the capture API, never taken back. Any apartment does, the frame pool is free
+/// threaded.
+///
+inline auto init_thread() -> void
+{
+  static thread_local const auto initialized = []
+  {
+    const auto hr = ::RoInitialize(RO_INIT_MULTITHREADED);
+    // Other code may initialize a thread itself, an already initialized thread is no error here
+    return SUCCEEDED(hr) || hr == RPC_E_CHANGED_MODE;
+  }();
+  static_cast<void>(initialized);
+}
+
+///
+/// Format a windows error code the way the windows documentation writes them.
+/// \return error code as hexadecimal string
+///
+[[nodiscard]] inline auto to_string(const HRESULT hr) -> std::string
+{
+  return std::format("{:#010x}", static_cast<std::uint32_t>(hr));
+}
+
+///
+/// Graphics device of the capture: copies the newest frame into a texture of our own and a region of it into cpu
+/// memory. Serializes the immediate context, which is not thread-safe, for the frame callbacks on other threads.
+///
+class device final
+{
+  // Variables
+  const winrt::com_ptr<ID3D11Device> d3d_device_;
+  const winrt::com_ptr<ID3D11DeviceContext> context_;
+  const direct3d_api::IDirect3DDevice capture_device_;
+  std::mutex mtx_;
+  winrt::com_ptr<ID3D11Texture2D> staging_;
+  std::int32_t staging_width_{0};
+  std::int32_t staging_height_{0};
+
+public: // Typedefs
+  using pixel_plane_type = bibocr::data::pixel_plane_type;
+  using texture_type = winrt::com_ptr<ID3D11Texture2D>;
+
+public: // Creators
+  ///
+  /// Create the graphics device.
+  /// \return The created device, or nullptr if no device can be created
+  ///
+  [[nodiscard]] static auto create() -> std::shared_ptr<device>;
+
+public: // Constructor
+  device(
+    winrt::com_ptr<ID3D11Device> d3d_device,
+    winrt::com_ptr<ID3D11DeviceContext> context,
+    direct3d_api::IDirect3DDevice capture_device
+  );
+  ~device() noexcept;
+
+  device(const device&) = delete;
+  device(device&&) = delete;
+  auto operator=(const device&) -> device& = delete;
+  auto operator=(device&&) -> device& = delete;
+
+public: // Accessors
+  ///
+  /// Access the device in the form the capture API takes it.
+  /// \return capture device
+  ///
+  [[nodiscard]] auto capture_device() const -> const direct3d_api::IDirect3DDevice&;
+
+public: // Modifiers
+  ///
+  /// Copy \p frame, which goes back to its pool when its callback returns, into \p target. The target is created on
+  /// the first copy and on a size change.
+  /// \return true if the frame was copied
+  ///
+  [[nodiscard]] auto keep_frame(const texture_type& frame, texture_type& target) -> bool;
+
+  ///
+  /// Read a region of a texture into pixels. The pixels are saved row by row, the topmost row of
+  /// the region first. A region reaching past the texture is turned down.
+  /// \return true if the region was read, false otherwise
+  ///
+  [[nodiscard]] auto read_region(const texture_type& source, region reg, pixel_plane_type& pix) -> bool;
+
+private: // Implementation
+  ///
+  /// Provide the texture the cpu reads a region of the given size out of, creating it if the
+  /// cached one was made for a differently sized region.
+  /// \return true if the texture is ready to be read into, false otherwise
+  ///
+  [[nodiscard]] auto prepare_staging(std::int32_t width, std::int32_t height) -> bool;
+};
+
+} // namespace bibocr::system::winrt_capture

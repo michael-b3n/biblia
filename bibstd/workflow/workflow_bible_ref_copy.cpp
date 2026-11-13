@@ -4,10 +4,11 @@
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/system/clipboard.hpp"
 #include "bibstd/system/locale.hpp"
-#include "bibstd/util/exception.hpp"
-#include "bibstd/util/format.hpp"
-#include "bibstd/util/log.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
+
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/format.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -28,13 +29,13 @@ namespace
 ///
 [[nodiscard]] auto default_mask() -> std::string_view
 {
-  switch(system::locale::preferred_language())
+  switch(bibstd::system::locale::preferred_language())
   {
     // clang-format off
-  case util::language::german: return R"("[content]" ({[book][nbsp]}[#chapter_begin], [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end],}[#verse_end]}{ [scripture_abbr]}))";
-  case util::language::english: return R"("[content]" ({[book][nbsp]}[#chapter_begin]: [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end]:}[#verse_end]}{ [scripture_abbr]}))";
+  case bibocr::util::language::german: return R"("[content]" ({[book][nbsp]}[#chapter_begin], [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end],}[#verse_end]}{ [scripture_abbr]}))";
+  case bibocr::util::language::english: return R"("[content]" ({[book][nbsp]}[#chapter_begin]: [#verse_begin]{[nbsp]- {[book_end] }{[#chapter_end]:}[#verse_end]}{ [scripture_abbr]}))";
     // clang-format on
-  default: throw util::exception{"unsupported language"};
+  default: throw arcstd::util::exception{"unsupported language"};
   }
 }
 
@@ -47,15 +48,17 @@ namespace
   { return numbered && !verse.second.empty() ? std::format("{} {}", verse.first, verse.second) : verse.second; };
   const auto filled = [](const std::string& plain) { return !plain.empty(); };
   const auto texts = verses | std::views::transform(text) | std::views::filter(filled) | std::ranges::to<std::vector>();
-  return util::format::join(texts, " ");
+  return arcstd::util::format::join(texts, " ");
 }
 
 } // namespace
 
 ///
 ///
-workflow_bible_ref_copy_settings::workflow_bible_ref_copy_settings(std::shared_ptr<workflow_settings> workflow_settings)
-  : workflow_settings_base{std::move(workflow_settings)}
+workflow_bible_ref_copy_settings::workflow_bible_ref_copy_settings(
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
+)
+  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
   , mask{workflow_settings_->create_setting("copy.mask", std::string{default_mask()})}
 {
 }
@@ -63,7 +66,7 @@ workflow_bible_ref_copy_settings::workflow_bible_ref_copy_settings(std::shared_p
 ///
 ///
 workflow_bible_ref_copy::workflow_bible_ref_copy(
-  std::shared_ptr<workflow_settings> workflow_settings, std::shared_ptr<workflow_scripture> workflow_scripture
+  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings, std::shared_ptr<workflow_scripture> workflow_scripture
 )
   : workflow_base{std::move(workflow_settings)}
   , workflow_scripture_{std::move(workflow_scripture)}
@@ -83,7 +86,7 @@ auto workflow_bible_ref_copy::copy(const params& params) -> bool
   {
     return false;
   }
-  if(!system::clipboard::set_text(*copied))
+  if(!bibstd::system::clipboard::set_text(*copied))
   {
     LOG_WARN("failed to write the clipboard: reference=\"{}\"", params->range);
     return false;
@@ -119,7 +122,7 @@ auto workflow_bible_ref_copy::text(const bible::reference_range& range) const ->
       const auto plain_verses = verses(range, scripture.scripture_name);
       if(!plain_verses)
       {
-        return std::unexpected{framework::process_result_unexpected::failure};
+        return std::unexpected{arcstd::framework::process_result_unexpected::failure};
       }
       values.content = joined_text(*plain_verses, false);
       values.content_numbered = joined_text(*plain_verses, true);
@@ -128,14 +131,14 @@ auto workflow_bible_ref_copy::text(const bible::reference_range& range) const ->
     if(text.empty())
     {
       LOG_WARN("nothing to copy: mask=\"{}\", reference=\"{}\"", mask, range);
-      return std::unexpected{framework::process_result_unexpected::failure};
+      return std::unexpected{arcstd::framework::process_result_unexpected::failure};
     }
     return text;
   }
   catch(...)
   {
-    LOG_ERROR("exception occurred: {}", util::exception_report());
-    return std::unexpected{framework::process_result_unexpected::failure};
+    LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
+    return std::unexpected{arcstd::framework::process_result_unexpected::failure};
   }
 }
 

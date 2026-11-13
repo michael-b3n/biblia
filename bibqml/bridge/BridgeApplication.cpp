@@ -7,7 +7,7 @@ namespace bibqml
 
 ///
 ///
-BridgeApplication::BridgeApplication(const bibstd::util::non_owning_ptr<QObject> parent)
+BridgeApplication::BridgeApplication(const arcstd::util::non_owning_ptr<QObject> parent)
   : QObject{parent}
 {
 }

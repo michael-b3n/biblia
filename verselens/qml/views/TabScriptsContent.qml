@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
+import ArcQml
 import BibQml
 
 ///
@@ -117,7 +118,7 @@ Item
     {
       // Properties
       Layout.fillWidth: true
-      svgSource: Icons.fileImport
+      svgSource: BibIcons.fileImport
       text: Translations.name("scripts_import", Translations.language)
       enabled: !root.bridgeScript.loading
 

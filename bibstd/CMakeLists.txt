@@ -27,77 +27,40 @@ target_sources(${PROJECT_NAME}
 )
 
 #
-# Compile the Lua scripts into the library, a new script in lua/internal or lua/bundled needs no other change.
-# The label is the namespace of the scripts, \see lua/embedded_scripts.hpp.
+# Compile the Lua scripts of lua/bundled and lua/private into the library, a new script needs no other change.
+# The label is the namespace of the scripts, \see lua/bundled_scripts.hpp.
 #
 include(incbin)
-file(GLOB BIBSTD_LUA_INTERNAL CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/internal/*.lua")
 file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua" "${CMAKE_CURRENT_LIST_DIR}/lua/private/*.lua")
-configure_incbin_source(internal lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${BIBSTD_LUA_INTERNAL})
-configure_incbin_source(bundled lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
+set(INCBIN_HEADER bibstd/lua/bundled_scripts.hpp)
+set(INCBIN_NAMESPACE bibstd::lua::bundled)
+configure_incbin_source(bundled ${arcstd_SOURCE_DIR}/lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
 target_sources(${PROJECT_NAME}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/internal.cpp ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
 )
 
-find_package(Boost REQUIRED COMPONENTS filesystem url)
-find_package(spdlog REQUIRED)
-find_package(libzip REQUIRED)
-find_package(sol2 3.5 REQUIRED)
 find_package(pugixml REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_search_module(TESSERACT REQUIRED IMPORTED_TARGET tesseract)
-pkg_search_module(LEPTONICA REQUIRED IMPORTED_TARGET lept)
-pkg_search_module(LIBCURL REQUIRED IMPORTED_TARGET libcurl)
-# sol2 3.5 is made for Lua 5.1 to 5.4, the unversioned mingw package already ships 5.5.
-pkg_search_module(LUA REQUIRED IMPORTED_TARGET lua5.4)
-pkg_search_module(SQLITE REQUIRED IMPORTED_TARGET sqlite3)
 
 #
 # Link libraries.
 #
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC Boost::headers
-  PUBLIC Boost::filesystem
-  PUBLIC Boost::url
-  PUBLIC spdlog::spdlog
-  PUBLIC libzip::zip
-  PUBLIC PkgConfig::TESSERACT
-  PUBLIC PkgConfig::LEPTONICA
-  PUBLIC PkgConfig::LIBCURL
-  PUBLIC PkgConfig::LUA
-  PRIVATE PkgConfig::SQLITE
+  PUBLIC arcstd
+  PUBLIC bibocr
+  PUBLIC tray::tray
   PRIVATE pugixml::pugixml
-  PUBLIC sol2::sol2
-  PUBLIC libs_external::all
-  PUBLIC stdc++exp
 )
 
 if(WIN32)
-  target_link_libraries(${PROJECT_NAME} PRIVATE mswsock)
-
-  # Windows OCR and the Windows.Graphics.Capture screen capture, both built on C++/WinRT
-  target_link_libraries(${PROJECT_NAME} PRIVATE runtimeobject ole32 oleaut32 d3d11 dxgi)
-
-  # The C++/WinRT headers hand objects across the ABI by reading them through void**.
-  # GCC is allowed to reorder around that from -O2 on and does, leading to crashes.
-  # Every source built on those headers carries winrt in its name and is compiled without
-  # the strict aliasing assumption.
-  file(GLOB BIBSTD_WINRT_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/*/windows/*winrt*.cpp")
-  set_source_files_properties(${BIBSTD_WINRT_SRC_FILES} PROPERTIES COMPILE_OPTIONS "-fno-strict-aliasing")
+  # open_browser starts the browser through COM
+  target_link_libraries(${PROJECT_NAME} PRIVATE ole32 oleaut32)
 endif()
 
 #
 # Target compile definitions.
 #
-target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:BIBSTD_DEBUG>)
-
 if(BIBSTD_DEBUG_DATA)
   target_compile_definitions(${PROJECT_NAME} PRIVATE BIBSTD_DEBUG_DATA)
-endif()
-
-if(WIN32)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 endif()
 
 #
@@ -112,4 +75,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${BIBSTD_INCLUDE_DIR})
 #
 include(lua_doc)
 option(BIBSTD_LUA_DOC_UPDATE "Regenerate doc/lua_api.md while building" ON)
-add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} bibstd bibqml verselens)
+add_lua_doc(doc/lua_api.md ${BIBSTD_LUA_DOC_UPDATE} arca/arcstd arca/arcqml bibocr bibstd bibqml verselens)

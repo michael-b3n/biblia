@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
+import ArcQml
 import BibQml
 
 ///
@@ -218,9 +219,9 @@ FadingWindow
         {
           if(root.confirmed)
           {
-            return Icons.checkMark
+            return BibIcons.checkMark
           }
-          return root.iconAction === root.actionCopyClipboard ? Icons.copy : Icons.openInBrowser
+          return root.iconAction === root.actionCopyClipboard ? BibIcons.copy : BibIcons.openInBrowser
         }
         iconSize: root.glyphSize
         busy: root.iconBusy

@@ -1,8 +1,8 @@
 #include "bibqml/util/ScriptureAccess.hpp"
 
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/log.hpp>
 #include <bibstd/bible/common.hpp>
-#include <bibstd/util/enum.hpp>
-#include <bibstd/util/log.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <algorithm>
@@ -23,7 +23,7 @@ auto bookName(bibstd::workflow::workflow_scripture& workflowScripture, const bib
 {
   static constexpr auto identifier = [](const bibstd::bible::book_id id)
   {
-    const auto name = bibstd::util::enum_name(id);
+    const auto name = arcstd::util::enum_name(id);
     return QString::fromLatin1(name.data(), static_cast<qsizetype>(name.size()));
   };
 
@@ -51,7 +51,7 @@ auto scriptureCopyright(bibstd::workflow::workflow_scripture& workflowScripture)
 auto toReference(const bibstd::bible::versification& versification, const QString& bookId, const int chapter, const int verse)
   -> std::optional<bibstd::bible::reference>
 {
-  const auto book = bibstd::util::to_enum<bibstd::bible::book_id>(bookId.toStdString());
+  const auto book = arcstd::util::to_enum<bibstd::bible::book_id>(bookId.toStdString());
   if(!book)
   {
     LOG_WARN("invalid book id: {}", bookId.toStdString());

@@ -1,5 +1,5 @@
 import QtQuick
-import BibQml
+import ArcQml
 
 ///
 /// Transparent window covering the screen of the window whose rect it is given, drawing the

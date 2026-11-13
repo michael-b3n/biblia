@@ -4,9 +4,9 @@
 
 #include <bibqml/translation/Translations.hpp>
 
-#include <bibstd/framework/queued_connections.hpp>
-#include <bibstd/framework/setting.hpp>
-#include <bibstd/util/non_owning_ptr.hpp>
+#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/framework/setting.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
 
 #include <optional>
 #include <string>
@@ -30,8 +30,8 @@ class translations_instance final
 {
   // Variables
   const std::unique_ptr<bibqml::Translations> translations_;
-  const bibstd::util::non_owning_ptr<bibstd::framework::setting<std::string>> language_setting_;
-  bibstd::framework::queued_connections connections_;
+  const arcstd::util::non_owning_ptr<arcstd::framework::setting<std::string>> language_setting_;
+  arcstd::framework::queued_connections connections_;
 
 public: // Typedefs
   using language_setting_type = decltype(language_setting_);

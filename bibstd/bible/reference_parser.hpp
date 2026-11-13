@@ -3,8 +3,9 @@
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/bible/versification.hpp"
-#include "bibstd/math/value_range.hpp"
-#include "bibstd/util/language.hpp"
+
+#include <arcstd/math/value_range.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <array>
 #include <cstdint>
@@ -38,8 +39,8 @@ private: // Typedefs
   struct find_book_result final
   {
     book_id book;
-    math::value_range<std::size_t> index_range_book;
-    math::value_range<std::size_t> index_range_numbers;
+    arcstd::math::value_range<std::size_t> index_range_book;
+    arcstd::math::value_range<std::size_t> index_range_numbers;
     std::string_view book_name_variant;
   };
 
@@ -52,7 +53,7 @@ private: // Typedefs
   struct normalized_passage final
   {
     std::string text;
-    std::vector<math::value_range<std::size_t>> raw_index_ranges;
+    std::vector<arcstd::math::value_range<std::size_t>> raw_index_ranges;
   };
 
   struct passage_template_result final
@@ -97,7 +98,7 @@ private: // Constants
   static constexpr auto fullstop_char = '.';
 
 public: // Typedefs
-  using index_range_type = math::value_range<std::size_t>;
+  using index_range_type = arcstd::math::value_range<std::size_t>;
 
   ///
   /// Parsed reference ranges together with the index range of the text they originate from.
@@ -114,7 +115,7 @@ public: // Operations
   /// \return Reference ranges and the index range of the text they originate from
   ///
   [[nodiscard]] static auto parse(
-    std::string_view text, std::size_t index, util::language language, const versification& versification
+    std::string_view text, std::size_t index, bibocr::util::language language, const versification& versification
   ) -> parse_result;
 
 private: // Implementation
@@ -122,7 +123,7 @@ private: // Implementation
   /// Find the book name variant surrounding the given index.
   /// \return Book and the index ranges of its name and of the numbers following it, std::nullopt if there is no book
   ///
-  [[nodiscard]] static auto find_book(std::string_view text, std::size_t index, util::language language)
+  [[nodiscard]] static auto find_book(std::string_view text, std::size_t index, bibocr::util::language language)
     -> std::optional<find_book_result>;
 
   ///
@@ -134,21 +135,22 @@ private: // Implementation
     std::size_t index,
     const find_book_result& book,
     const passage_template_result& passage_template,
-    util::language language
+    bibocr::util::language language
   ) -> std::optional<index_range_type>;
 
   ///
   /// Find the end of the word the character at \p index belongs to.
   /// \return index of the whitespace behind the word, the size of \p text if no whitespace follows
   ///
-  [[nodiscard]] static auto end_of_word(std::string_view text, std::size_t index, util::language language) -> std::size_t;
+  [[nodiscard]] static auto end_of_word(std::string_view text, std::size_t index, bibocr::util::language language)
+    -> std::size_t;
 
   ///
   /// Find the numbers after the book name that are possibly part of the reference. They are not guaranteed to be,
   /// the numbers might belong to another book or to a list.
   /// \return Index behind the last number, std::nullopt if there is no number
   ///
-  [[nodiscard]] static auto find_numbers_after_book_name(std::string_view text_after_name, util::language language)
+  [[nodiscard]] static auto find_numbers_after_book_name(std::string_view text_after_name, bibocr::util::language language)
     -> std::optional<std::size_t>;
 
   ///
@@ -156,7 +158,7 @@ private: // Implementation
   /// \return Numbers range without such a number
   ///
   [[nodiscard]] static auto try_validate_numbers_range(
-    std::string_view text_after_name, std::size_t numbers_end, util::language language
+    std::string_view text_after_name, std::size_t numbers_end, bibocr::util::language language
   ) -> std::size_t;
 
   ///
@@ -164,7 +166,7 @@ private: // Implementation
   /// beyond the reference, so the template also reports how much of the passage text it actually consumed.
   /// \return Passage template and the consumed part of the passage text
   ///
-  [[nodiscard]] static auto create_passage_template(std::string_view passage_text, util::language language)
+  [[nodiscard]] static auto create_passage_template(std::string_view passage_text, bibocr::util::language language)
     -> passage_template_result;
 
   ///
@@ -172,7 +174,8 @@ private: // Implementation
   /// separated by text or by a line break.
   /// \return Normalized text with every character mapped back to its index range in the original text
   ///
-  [[nodiscard]] static auto normalize_passage_text(std::string_view text, util::language language) -> normalized_passage;
+  [[nodiscard]] static auto normalize_passage_text(std::string_view text, bibocr::util::language language)
+    -> normalized_passage;
 
   ///
   /// Identify the number at the given index and move the index behind it.

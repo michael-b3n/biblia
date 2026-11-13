@@ -5,9 +5,9 @@
 #include <bibqml/bridge/BridgeApplication.hpp>
 #include <bibqml/translation/Translations.hpp>
 
+#include <arcstd/util/incbin.hpp>
 #include <bibstd/system/open_browser.hpp>
 #include <bibstd/system/tray.hpp>
-#include <bibstd/util/incbin.hpp>
 
 #include <QMetaObject>
 #include <QObject>
@@ -21,7 +21,7 @@
 #include <vector>
 
 INC_RESOURCE(icon, "res/icon.ico");
-const auto icon_view = bibstd::util::incbin::to_span<std::byte>(res_icon_data, res_icon_size);
+const auto icon_view = arcstd::util::incbin::to_span<std::byte>(res_icon_data, res_icon_size);
 
 namespace verselens
 {
@@ -53,7 +53,7 @@ struct tray_button final
 ///
 ///
 auto construct_tray(QGuiApplication& app, bridge_instance& bridge, translations_instance& translations)
-  -> bibstd::util::shared_scope_guard
+  -> arcstd::util::shared_scope_guard
 {
   const auto do_on_exit = [&app, &bridge, &translations]() { quit_application(app, bridge, translations); };
   const auto open_github = []() { std::ignore = bibstd::system::open_browser::open(std::string{version::repository_url}); };

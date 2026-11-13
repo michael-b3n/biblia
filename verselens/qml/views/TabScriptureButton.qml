@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.VectorImage
+import ArcQml
 import BibQml
 
 ///
@@ -48,7 +49,7 @@ TabButtonBase
     anchors.fill: parent
     opacity: root.searchRunning ? 0 : 1
     visible: done.opacity > 0
-    source: Icons.checkMark
+    source: BibIcons.checkMark
     preferredRendererType: VectorImage.CurveRenderer
 
     // Animations

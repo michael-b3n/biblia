@@ -1,15 +1,15 @@
 #include "test_utils/ocr_capture_data.hpp"
 
+#include <arcstd/math/coordinates.hpp>
+#include <arcstd/math/rect.hpp>
+#include <arcstd/math/value_range.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <arcstd/util/scope_guard.hpp>
+#include <bibocr/data/pixel.hpp>
+#include <bibocr/data/plane.hpp>
+#include <bibocr/data/screen_types.hpp>
+#include <bibocr/txt/ocr_engine.hpp>
 #include <bibstd/bible/reference_ocr.hpp>
-#include <bibstd/data/pixel.hpp>
-#include <bibstd/data/plane.hpp>
-#include <bibstd/data/screen_types.hpp>
-#include <bibstd/math/coordinates.hpp>
-#include <bibstd/math/rect.hpp>
-#include <bibstd/math/value_range.hpp>
-#include <bibstd/txt/ocr_engine.hpp>
-#include <bibstd/util/ranges.hpp>
-#include <bibstd/util/scope_guard.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -31,25 +31,27 @@ namespace bibstd::bible
 namespace
 {
 
-using area_type = data::pixel_plane_view_type::area_type;
+using area_type = bibocr::data::pixel_plane_view_type::area_type;
 
 ///
 /// \return Capture box as screen rect
 ///
-[[nodiscard]] auto to_rect(const test_utils::capture_box& box) -> data::screen_rect_type
+[[nodiscard]] auto to_rect(const test_utils::capture_box& box) -> bibocr::data::screen_rect_type
 {
-  return data::screen_rect_type{
-    math::coordinates(box.x, box.y), static_cast<std::uint32_t>(box.width), static_cast<std::uint32_t>(box.height)
+  return bibocr::data::screen_rect_type{
+    arcstd::math::coordinates(box.x, box.y), static_cast<std::uint32_t>(box.width), static_cast<std::uint32_t>(box.height)
   };
 }
 
 ///
 /// \return Screen rect moved by the given offset
 ///
-[[nodiscard]] auto shifted(const data::screen_rect_type& box, const data::screen_coordinates_type offset)
-  -> data::screen_rect_type
+[[nodiscard]] auto shifted(const bibocr::data::screen_rect_type& box, const bibocr::data::screen_coordinates_type offset)
+  -> bibocr::data::screen_rect_type
 {
-  return data::screen_rect_type{box.origin() + offset, math::size(box.horizontal_range()), math::size(box.vertical_range())};
+  return bibocr::data::screen_rect_type{
+    box.origin() + offset, arcstd::math::size(box.horizontal_range()), arcstd::math::size(box.vertical_range())
+  };
 }
 
 ///
@@ -65,7 +67,7 @@ using area_type = data::pixel_plane_view_type::area_type;
 /// subarea the same way a real engine does: only overlapping words are reported and their boxes are
 /// relative to the subarea, so that reference_ocr has to shift them back itself.
 ///
-class capture_engine final : public txt::ocr_engine<txt::ocr_engine_tag_layout_analysis>
+class capture_engine final : public bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_layout_analysis>
 {
   // Variables
   test_utils::capture_data data_;
@@ -148,20 +150,20 @@ private: // Implementation
     const auto image_box = test_utils::capture_box{
       .width = static_cast<std::int32_t>(data_.width), .height = static_cast<std::int32_t>(data_.height)
     };
-    return subarea_ ? math::overlap(*subarea_, area_type{to_rect(image_box)}) : std::nullopt;
+    return subarea_ ? arcstd::math::overlap(*subarea_, area_type{to_rect(image_box)}) : std::nullopt;
   }
 
   ///
   /// \return Offset turning image coordinates into the coordinates the engine reports its boxes in
   ///
-  [[nodiscard]] auto reported_offset() const -> data::screen_coordinates_type
+  [[nodiscard]] auto reported_offset() const -> bibocr::data::screen_coordinates_type
   {
     const auto clipped = clipped_subarea();
-    return clipped ? data::screen_coordinates_type{
-                       -static_cast<data::screen_rect_type::value_type>(clipped->origin().x()),
-                       -static_cast<data::screen_rect_type::value_type>(clipped->origin().y())
+    return clipped ? bibocr::data::screen_coordinates_type{
+                       -static_cast<bibocr::data::screen_rect_type::value_type>(clipped->origin().x()),
+                       -static_cast<bibocr::data::screen_rect_type::value_type>(clipped->origin().y())
                      }
-                   : data::screen_coordinates_type{0, 0};
+                   : bibocr::data::screen_coordinates_type{0, 0};
   }
 
   ///
@@ -174,14 +176,14 @@ private: // Implementation
       return true;
     }
     const auto clipped = clipped_subarea();
-    return clipped && math::overlap(*clipped, area_type{to_rect(box)}).has_value();
+    return clipped && arcstd::math::overlap(*clipped, area_type{to_rect(box)}).has_value();
   }
 };
 
 ///
 /// OCR engine replaying a capture without its paragraphs, the shape a system engine has.
 ///
-class line_capture_engine final : public txt::ocr_engine<txt::ocr_engine_tag_plain>
+class line_capture_engine final : public bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>
 {
   // Variables
   capture_engine engine_;
@@ -217,11 +219,11 @@ public: // Overrides
 ///
 /// OCR engine reporting fixed words, whatever image it is given. It keeps the image it was initialized with last.
 ///
-class fixed_words_engine final : public txt::ocr_engine<txt::ocr_engine_tag_plain>
+class fixed_words_engine final : public bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>
 {
   // Variables
   recognition_data data_;
-  data::pixel_plane_type image_;
+  bibocr::data::pixel_plane_type image_;
 
 public: // Constants
   static constexpr auto default_name = "fixed";
@@ -236,16 +238,16 @@ public: // Accessors
   ///
   /// \return Image the engine was initialized with last
   ///
-  [[nodiscard]] auto image() const -> const data::pixel_plane_type& { return image_; }
+  [[nodiscard]] auto image() const -> const bibocr::data::pixel_plane_type& { return image_; }
 
 public: // Overrides
   auto name() const -> name_type override { return name_type{default_name}; }
 
   auto initialize(pixel_plane_view_type image, [[maybe_unused]] std::optional<area_type> subarea) -> void override
   {
-    image_ = data::pixel_plane_type{image.width(), image.height()};
+    image_ = bibocr::data::pixel_plane_type{image.width(), image.height()};
     std::ranges::for_each(
-      util::ranges::index_view_to(image.size()), [&](const auto i) { image_.at(i) = std::as_const(image).at(i); }
+      arcstd::util::ranges::index_view_to(image.size()), [&](const auto i) { image_.at(i) = std::as_const(image).at(i); }
     );
   }
 
@@ -255,7 +257,7 @@ public: // Overrides
 ///
 /// OCR engine without layout analysis support, to reach the paths that require one.
 ///
-class plain_engine final : public txt::ocr_engine<txt::ocr_engine_tag_plain>
+class plain_engine final : public bibocr::txt::ocr_engine<bibocr::txt::ocr_engine_tag_plain>
 {
 public: // Constants
   static constexpr auto default_name = "plain";
@@ -470,7 +472,7 @@ struct repeated_word_capture final
 class ocr_driver final
 {
   // Variables
-  data::pixel_plane_type image_;
+  bibocr::data::pixel_plane_type image_;
   reference_ocr::ocr_engine_list_type engines_;
   // Adding engines may move the list, the engines themselves stay put behind their unique_ptr.
   const capture_engine* capture_engine_{nullptr};
@@ -493,7 +495,10 @@ public: // Accessors
   ///
   /// \return Blank image with the dimensions of the capture
   ///
-  [[nodiscard]] auto image() const -> data::pixel_plane_view_type { return data::pixel_plane_view_type{image_}; }
+  [[nodiscard]] auto image() const -> bibocr::data::pixel_plane_view_type
+  {
+    return bibocr::data::pixel_plane_view_type{image_};
+  }
 
   ///
   /// \return Subarea the replaying engine was initialized with last
@@ -570,8 +575,8 @@ struct placed_word final
       {
         result.text.push_back(character);
         result.character_bounding_boxes.emplace_back(
-          data::screen_rect_type{
-            math::coordinates(word.x + (static_cast<std::int32_t>(character_index) * character_width), y),
+          bibocr::data::screen_rect_type{
+            arcstd::math::coordinates(word.x + (static_cast<std::int32_t>(character_index) * character_width), y),
             static_cast<std::uint32_t>(character_width),
             static_cast<std::uint32_t>(word.height)
           }
@@ -588,11 +593,11 @@ struct placed_word final
 /// \return Index range of the first occurrence of the text
 ///
 [[nodiscard]] auto range_of(const reference_ocr::reference_position_data& position_data, const std::string_view text)
-  -> math::value_range<std::size_t>
+  -> arcstd::math::value_range<std::size_t>
 {
   const auto begin = position_data.text.find(text);
   REQUIRE(begin != std::string::npos);
-  return math::value_range<std::size_t>{begin, begin + text.size()};
+  return arcstd::math::value_range<std::size_t>{begin, begin + text.size()};
 }
 
 ///
@@ -656,7 +661,7 @@ struct placed_word final
 ///
 [[nodiscard]] auto consecutive_characters_at(
   const reference_ocr::reference_position_data& position_data, const std::string_view reference, const std::string_view word
-) -> math::value_range<std::size_t>
+) -> arcstd::math::value_range<std::size_t>
 {
   const auto& box = position_data.character_bounding_boxes.at(range_of(position_data, word).begin);
   REQUIRE(box.has_value());
@@ -667,26 +672,27 @@ struct placed_word final
 /// \return Index range from the first character of the text up to the end of \p word
 ///
 [[nodiscard]] auto up_to(const reference_ocr::reference_position_data& position_data, const std::string_view word)
-  -> math::value_range<std::size_t>
+  -> arcstd::math::value_range<std::size_t>
 {
-  return math::value_range<std::size_t>{0u, range_of(position_data, word).end};
+  return arcstd::math::value_range<std::size_t>{0u, range_of(position_data, word).end};
 }
 
 ///
 /// \return Index range from the beginning of \p word up to the end of the text
 ///
 [[nodiscard]] auto from(const reference_ocr::reference_position_data& position_data, const std::string_view word)
-  -> math::value_range<std::size_t>
+  -> arcstd::math::value_range<std::size_t>
 {
-  return math::value_range<std::size_t>{range_of(position_data, word).begin, position_data.text.size()};
+  return arcstd::math::value_range<std::size_t>{range_of(position_data, word).begin, position_data.text.size()};
 }
 
 ///
 /// \return Index range of the whole text
 ///
-[[nodiscard]] auto whole_text(const reference_ocr::reference_position_data& position_data) -> math::value_range<std::size_t>
+[[nodiscard]] auto whole_text(const reference_ocr::reference_position_data& position_data)
+  -> arcstd::math::value_range<std::size_t>
 {
-  return math::value_range<std::size_t>{0u, position_data.text.size()};
+  return arcstd::math::value_range<std::size_t>{0u, position_data.text.size()};
 }
 
 } // namespace
@@ -719,7 +725,7 @@ TEST_CASE("reference_ocr resolves the position to a character of the paragraph",
   }
   SECTION("a position outside every line")
   {
-    const auto result = driver.run(math::coordinates(290, 175));
+    const auto result = driver.run(arcstd::math::coordinates(290, 175));
     REQUIRE(result.has_value());
     CHECK(result->text.empty());
     CHECK(result->character_bounding_boxes.empty());
@@ -779,8 +785,8 @@ TEST_CASE("reference_ocr widens the recognition area to the paragraph", "[bible]
     // The next line of the same paragraph is taken in, then half a line height is added as padding.
     CHECK(area.origin().x() == 40);
     CHECK(area.origin().y() == 40);
-    CHECK(math::size(area.horizontal_range()) == 220);
-    CHECK(math::size(area.vertical_range()) == 70);
+    CHECK(arcstd::math::size(area.horizontal_range()) == 220);
+    CHECK(arcstd::math::size(area.vertical_range()) == 70);
   }
   SECTION("a position on a paragraph of a single line")
   {
@@ -791,8 +797,8 @@ TEST_CASE("reference_ocr widens the recognition area to the paragraph", "[bible]
     // There is no neighbouring line of the same paragraph, so only the padding is added.
     CHECK(area.origin().x() == 40);
     CHECK(area.origin().y() == 110);
-    CHECK(math::size(area.horizontal_range()) == 220);
-    CHECK(math::size(area.vertical_range()) == 40);
+    CHECK(arcstd::math::size(area.horizontal_range()) == 220);
+    CHECK(arcstd::math::size(area.vertical_range()) == 40);
   }
 }
 
@@ -810,7 +816,7 @@ TEST_CASE("reference_ocr reports character boxes in image coordinates", "[bible]
 
   const auto& cursor_box = result->character_bounding_boxes.at(result->cursor_character_index);
   REQUIRE(cursor_box.has_value());
-  CHECK(math::overlap(*cursor_box, to_rect(johannes)).has_value());
+  CHECK(arcstd::math::overlap(*cursor_box, to_rect(johannes)).has_value());
 }
 
 TEST_CASE("reference_ocr reports character boxes of a paragraph at the image edge", "[bible]")
@@ -842,7 +848,7 @@ TEST_CASE("reference_ocr reports character boxes of a paragraph at the image edg
   REQUIRE(result->cursor_character_index < result->character_bounding_boxes.size());
   const auto& cursor_box = result->character_bounding_boxes.at(result->cursor_character_index);
   REQUIRE(cursor_box.has_value());
-  CHECK(math::overlap(*cursor_box, to_rect(johannes)).has_value());
+  CHECK(arcstd::math::overlap(*cursor_box, to_rect(johannes)).has_value());
 }
 
 TEST_CASE("reference_ocr keeps a word of a neighbouring line out of the text it did not supply", "[bible]")
@@ -883,7 +889,7 @@ TEST_CASE("reference_ocr keeps a word of a neighbouring line out of the text it 
   REQUIRE(repeated_begin != std::string::npos);
   const auto& repeated_box = result->character_bounding_boxes.at(repeated_begin);
   REQUIRE(repeated_box.has_value());
-  CHECK(math::overlap(*repeated_box, to_rect(capture.data.words.back().word.box)).has_value());
+  CHECK(arcstd::math::overlap(*repeated_box, to_rect(capture.data.words.back().word.box)).has_value());
 
   // A word repeated within the text takes the occurrence belonging to it, so the boxes of the two
   // occurrences stay on the line each of them was recognized on.
@@ -897,8 +903,8 @@ TEST_CASE("reference_ocr keeps a word of a neighbouring line out of the text it 
   const auto& second_box = result->character_bounding_boxes.at(second_begin);
   REQUIRE(first_box.has_value());
   REQUIRE(second_box.has_value());
-  CHECK(math::overlap(*first_box, to_rect(boxes_of.front())).has_value());
-  CHECK(math::overlap(*second_box, to_rect(boxes_of.back())).has_value());
+  CHECK(arcstd::math::overlap(*first_box, to_rect(boxes_of.front())).has_value());
+  CHECK(arcstd::math::overlap(*second_box, to_rect(boxes_of.back())).has_value());
 }
 
 TEST_CASE("reference_ocr reports no position data when the pointed at line stays unlocated", "[bible]")
@@ -960,7 +966,7 @@ TEST_CASE("reference_ocr rejects unusable engine setups", "[bible]")
 TEST_CASE("capture data survives a write and read cycle", "[bible]")
 {
   const auto path = std::filesystem::temp_directory_path() / "bibstd_test_capture.ocr";
-  const auto guard = util::scope_guard{[&] { std::filesystem::remove(path); }};
+  const auto guard = arcstd::util::scope_guard{[&] { std::filesystem::remove(path); }};
 
   const auto capture = designed_capture{};
   REQUIRE(test_utils::write_capture(path, capture.data));
@@ -1016,7 +1022,7 @@ TEST_CASE("reference_ocr handles captured screenshots", "[bible]")
   for(const auto& capture : captures)
   {
     INFO(std::format("capture: {}", capture.id));
-    const auto image_area = data::screen_rect_type{math::coordinates(0, 0), capture.width, capture.height};
+    const auto image_area = bibocr::data::screen_rect_type{arcstd::math::coordinates(0, 0), capture.width, capture.height};
 
     // run() re-initializes the engine on every call, so one driver serves the whole capture.
     auto driver = ocr_driver{capture};
@@ -1047,14 +1053,15 @@ TEST_CASE("reference_ocr handles captured screenshots", "[bible]")
 
         // Every reported box has been shifted back into the coordinate system of the image.
         const auto boxes_within_image = std::ranges::all_of(
-          result->character_bounding_boxes, [&](const auto& box) { return !box || math::overlap(image_area, *box).has_value(); }
+          result->character_bounding_boxes,
+          [&](const auto& box) { return !box || arcstd::math::overlap(image_area, *box).has_value(); }
         );
         CHECK(boxes_within_image);
 
         // The character the cursor resolved to belongs to the word that was pointed at.
         const auto& cursor_box = result->character_bounding_boxes.at(result->cursor_character_index);
         REQUIRE(cursor_box.has_value());
-        CHECK(math::overlap(*cursor_box, to_rect(element.word.box)).has_value());
+        CHECK(arcstd::math::overlap(*cursor_box, to_rect(element.word.box)).has_value());
       }
     }
   }
@@ -1093,7 +1100,7 @@ TEST_CASE("reference_ocr ends the consecutive characters at a gap of dropped tex
     // Pointing at the dropped "Gal" itself, between "7,19;" ending at x=97 and "6,13)" beginning at x=138, none of
     // the characters around belong to it.
     const auto within_gap = reference_ocr::consecutive_characters(data, {115, 60}, range_of(data, "Joh 7,19; 6,13"));
-    CHECK(math::empty(within_gap));
+    CHECK(arcstd::math::empty(within_gap));
   }
   SECTION("a gap on the line a reference continues on")
   {
@@ -1234,9 +1241,9 @@ TEST_CASE("reference_ocr reads the lines around the position again from an enlar
   // The line of the cursor and the line below span x=100..260 and y=90..150, half their height pads them to the area
   // x=70..290 and y=60..180. The line of the other column stays out.
   const auto to_enlarged = [](const std::int32_t x, const std::int32_t y, const std::uint32_t width)
-  { return data::screen_rect_type{math::coordinates((x - 70) * 2, (y - 60) * 2), width * 2, 40u}; };
-  const auto line = txt::ocr_engine<>::line{.text = "(Jes 48,", .bounding_box = to_enlarged(160, 90, 70)};
-  auto engine = std::make_unique<fixed_words_engine>(txt::ocr_engine<>::recognition_data{
+  { return bibocr::data::screen_rect_type{arcstd::math::coordinates((x - 70) * 2, (y - 60) * 2), width * 2, 40u}; };
+  const auto line = bibocr::txt::ocr_engine<>::line{.text = "(Jes 48,", .bounding_box = to_enlarged(160, 90, 70)};
+  auto engine = std::make_unique<fixed_words_engine>(bibocr::txt::ocr_engine<>::recognition_data{
     {.word_data = {.text = "(Jes", .bounding_box = to_enlarged(160, 90, 32)}, .line_data = line},
     { .word_data = {.text = "48,", .bounding_box = to_enlarged(200, 90, 30)}, .line_data = line}
   });
@@ -1245,17 +1252,17 @@ TEST_CASE("reference_ocr reads the lines around the position again from an enlar
   engines.emplace_back(std::move(engine));
 
   // A horizontal gradient, the red of a pixel is its column less 50.
-  auto image = data::pixel_plane_type{480, 200};
+  auto image = bibocr::data::pixel_plane_type{480, 200};
   std::ranges::for_each(
-    util::ranges::index_view_to(image.size()),
-    [&](const auto i) { image.at(i) = data::pixel{.red = static_cast<std::uint8_t>((i % 480) - 50), .alpha = 255}; }
+    arcstd::util::ranges::index_view_to(image.size()),
+    [&](const auto i) { image.at(i) = bibocr::data::pixel{.red = static_cast<std::uint8_t>((i % 480) - 50), .alpha = 255}; }
   );
 
   const auto jes = reference_ocr::position_type{178, 100};
   const auto result = reference_ocr::run(
     engines,
     {.character_recognition = fixed_words_engine::default_name},
-    data::pixel_plane_view_type{image},
+    bibocr::data::pixel_plane_view_type{image},
     jes,
     reference_ocr::enlarged_lines_recognition{.earlier_recognition = position_data, .scale = 2.0}
   );
@@ -1268,7 +1275,7 @@ TEST_CASE("reference_ocr reads the lines around the position again from an enlar
     CHECK(enlarged.height() == 240);
     // The first and the last enlarged pixel of a row lie on the first and the last column of the area, the pixels in
     // between rise with the gradient.
-    const auto first_row = util::ranges::index_view_to(enlarged.width()) |
+    const auto first_row = arcstd::util::ranges::index_view_to(enlarged.width()) |
                            std::views::transform([&](const auto x) { return static_cast<int>(enlarged.at(x).red); });
     CHECK(first_row.front() == 20);
     CHECK(first_row.back() == 239);
@@ -1279,7 +1286,9 @@ TEST_CASE("reference_ocr reads the lines around the position again from an enlar
     CHECK(result->text == "(Jes 48, ");
     CHECK(result->cursor_character_index == range_of(*result, "(Jes").begin + 2);
     REQUIRE(result->character_bounding_boxes.front().has_value());
-    CHECK(*result->character_bounding_boxes.front() == data::screen_rect_type{math::coordinates(160, 90), 8u, 20u});
+    CHECK(
+      *result->character_bounding_boxes.front() == bibocr::data::screen_rect_type{arcstd::math::coordinates(160, 90), 8u, 20u}
+    );
   }
 }
 

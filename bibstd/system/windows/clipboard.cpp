@@ -1,7 +1,7 @@
 #include "bibstd/system/clipboard.hpp"
 
-#include "bibstd/system/windows/win.hpp"
-#include "bibstd/util/scope_guard.hpp"
+#include <arcstd/system/windows/win.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -84,12 +84,12 @@ auto clipboard::set_text(const std::string& text) -> bool
   {
     return false;
   }
-  const auto owner_guard = util::scope_guard{[owner]() { DestroyWindow(owner); }};
+  const auto owner_guard = arcstd::util::scope_guard{[owner]() { DestroyWindow(owner); }};
   if(!open_clipboard(owner))
   {
     return false;
   }
-  const auto clipboard_guard = util::scope_guard{[]() { CloseClipboard(); }};
+  const auto clipboard_guard = arcstd::util::scope_guard{[]() { CloseClipboard(); }};
 
   auto* const memory = to_clipboard_memory(text);
   if(memory == nullptr)

@@ -168,6 +168,15 @@ Removes all values of a cache, see `workflow.cache.get`.
 
 - `name` (`string`): the cache
 
+### `workflow.web.fetch(url)`
+
+Fetches a web page. The script waits for the page, and other scripts wait too. During
+`Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
+
+- `url` (`string`): the address of the page, http or https
+- Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
+  `timeout` (after 30 s), `init_failed` or `request_failed`
+
 ### `workflow.scripture.scripture_count()`
 
 - Returns the number of scriptures, including those of scripts
@@ -238,18 +247,14 @@ manifest `scripture.read`. It exists only while a reader runs.
 - `name` (`string`): the name of the entry, one of the `entries` of the input
 - Returns its content, or `nil` and `not found`
 
-### `workflow.web.fetch(url)`
-
-Fetches a web page. The script waits for the page, and other scripts wait too. During
-`Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
-
-- `url` (`string`): the address of the page, http or https
-- Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
-  `timeout` (after 30 s), `init_failed` or `request_failed`
-
 ## Settings
 
 Settings of the app at `workflow.setting`, each with the functions at the end, `<setting>` stands for one of them.
+
+### `workflow.setting.web.retry_pause`
+
+How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
+request a failed url again right away.
 
 ### `workflow.setting.scripture.default_name`
 
@@ -260,11 +265,6 @@ scripture name use it, so without a default scripture they find no scripture.
 
 The versification for scriptures that have none, including those of scripts,
 `Scripture > Fallback versification`.
-
-### `workflow.setting.web.retry_pause`
-
-How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
-request a failed url again right away.
 
 ### `<setting>.get()`
 

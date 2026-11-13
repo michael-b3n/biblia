@@ -1,7 +1,8 @@
 #include "bibstd/bible/scripture_outline.hpp"
-#include "bibstd/util/enum.hpp"
-#include "bibstd/util/log.hpp"
-#include "bibstd/util/ranges.hpp"
+
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/ranges.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -38,7 +39,7 @@ namespace
 [[nodiscard]] auto references_of(const std::string& name, std::vector<reference> references) -> std::vector<reference>
 {
   const auto books = references | std::views::transform(&reference::book) | std::ranges::to<std::set>();
-  const auto lacking = util::enum_values<book_id>() |
+  const auto lacking = arcstd::util::enum_values<book_id>() |
                        std::views::filter([&books](const book_id book) { return !books.contains(book); }) |
                        std::ranges::to<std::vector>();
   if(lacking.empty())
@@ -50,7 +51,7 @@ namespace
     "scripture lacks books, they take a default versification: name=\"{}\", versification=\"{}\", books={}",
     name,
     closest.name(),
-    lacking | std::views::transform([](const book_id book) { return util::enum_name(book); })
+    lacking | std::views::transform([](const book_id book) { return arcstd::util::enum_name(book); })
   );
   const auto closest_ends = [&closest](const book_id book)
   {
@@ -59,7 +60,7 @@ namespace
       const auto chapter = reference::chapter_type{chapter_value};
       return reference::create_unguarded(book, chapter, reference::verse_type{closest.verse_count(book, chapter)});
     };
-    return util::ranges::index_view_to(closest.chapter_count(book)) |
+    return arcstd::util::ranges::index_view_to(closest.chapter_count(book)) |
            std::views::transform([](const auto i) { return i + 1; }) | std::views::transform(chapter_end);
   };
   references.append_range(lacking | std::views::transform(closest_ends) | std::views::join);

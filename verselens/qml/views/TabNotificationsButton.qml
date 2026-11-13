@@ -1,4 +1,5 @@
 import QtQuick
+import ArcQml
 import BibQml
 
 ///
@@ -11,5 +12,5 @@ TabButtonIconSimple
   // Properties
   required property bool unread
 
-  svgSource: root.unread ? Icons.bellRinging : Icons.bell
+  svgSource: root.unread ? BibIcons.bellRinging : BibIcons.bell
 }

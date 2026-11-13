@@ -2,7 +2,7 @@
 #include "src/construct_bridge.hpp"
 #include "src/construct_translations.hpp"
 
-#include <bibstd/util/log.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <QMetaObject>
 #include <QQuickStyle>
