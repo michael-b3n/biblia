@@ -1,8 +1,9 @@
 #pragma once
 
-#include "arcstd/util/exception.hpp"
-#include "bibocr/util/language.hpp"
 #include "bibstd/txt/script_latin.hpp"
+
+#include <arcstd/util/exception.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <functional>
 #include <variant>

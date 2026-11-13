@@ -1,11 +1,12 @@
 #include "bibocr/txt/ocr_engine_tesseract.hpp"
-#include "arcstd/math/coordinates.hpp"
-#include "arcstd/system/filesystem.hpp"
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/numeric_cast.hpp"
-#include "arcstd/util/visit_helper.hpp"
+
+#include <arcstd/math/coordinates.hpp>
+#include <arcstd/system/filesystem.hpp>
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/visit_helper.hpp>
 
 #include <leptonica/allheaders.h>
 #include <leptonica/environ.h>

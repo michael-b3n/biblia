@@ -1,8 +1,9 @@
 #include "bibocr/io/save_as_bitmap.hpp"
-#include "arcstd/math/coordinates.hpp"
-#include "arcstd/math/value_range.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/ranges.hpp"
+
+#include <arcstd/math/coordinates.hpp>
+#include <arcstd/math/value_range.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/ranges.hpp>
 
 #include <algorithm>
 #include <fstream>

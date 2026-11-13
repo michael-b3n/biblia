@@ -1,12 +1,13 @@
-#include "arcstd/math/coordinates.hpp"
-#include "arcstd/meta/lossless_conversion.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/numeric_cast.hpp"
 #include "bibocr/system/ocr.hpp"
 #include "bibocr/system/windows/language_tag.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 #include "bibocr/util/language.hpp"
+
+#include <arcstd/math/coordinates.hpp>
+#include <arcstd/meta/lossless_conversion.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>

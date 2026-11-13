@@ -1,8 +1,9 @@
 #include "bibocr/system/windows/capture_engine_winrt_device.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/numeric_cast.hpp"
-#include "arcstd/util/ranges.hpp"
-#include "arcstd/util/scope_guard.hpp"
+
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <cstddef>
 #include <utility>

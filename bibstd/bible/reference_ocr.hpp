@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arcstd/math/value_range.hpp"
-#include "bibocr/data/screen_types.hpp"
-#include "bibocr/txt/ocr_engine.hpp"
+#include <arcstd/math/value_range.hpp>
+#include <bibocr/data/screen_types.hpp>
+#include <bibocr/txt/ocr_engine.hpp>
 
 #include <expected>
 #include <optional>

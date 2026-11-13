@@ -1,10 +1,11 @@
 #pragma once
 
-#include "arcstd/math/value_range.hpp"
-#include "bibocr/util/language.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/bible/versification.hpp"
+
+#include <arcstd/math/value_range.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <array>
 #include <cstdint>

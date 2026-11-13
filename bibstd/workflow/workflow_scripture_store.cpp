@@ -1,15 +1,16 @@
 #include "bibstd/workflow/workflow_scripture_store.hpp"
-#include "arcstd/io/zip_file_reader.hpp"
-#include "arcstd/util/enum.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/numeric_cast.hpp"
-#include "arcstd/util/string.hpp"
-#include "arcstd/workflow/workflow_settings.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/scripture_outline.hpp"
 #include "bibstd/bible/scripture_types.hpp"
+
+#include <arcstd/io/zip_file_reader.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/string.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
 
 #include <algorithm>
 #include <cstdint>

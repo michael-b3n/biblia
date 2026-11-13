@@ -1,7 +1,6 @@
 #pragma once
 
-#include "arcqml/model/SettingsListModel.hpp"
-
+#include <arcqml/model/SettingsListModel.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QHash>

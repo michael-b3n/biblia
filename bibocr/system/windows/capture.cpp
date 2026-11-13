@@ -1,11 +1,12 @@
 #include "bibocr/system/capture.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/non_owning_ptr.hpp"
-#include "arcstd/util/numeric_cast.hpp"
-#include "arcstd/util/ranges.hpp"
-
-#include "arcstd/system/windows/win.hpp"
 #include "bibocr/system/windows/capture_engine.hpp"
+
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/ranges.hpp>
+
+#include <arcstd/system/windows/win.hpp>
 
 #include <algorithm>
 #include <cassert>

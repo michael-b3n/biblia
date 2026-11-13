@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arcstd/lua/embedded_scripts.hpp"
+#include <arcstd/lua/embedded_scripts.hpp>
 
 #include <optional>
 #include <span>

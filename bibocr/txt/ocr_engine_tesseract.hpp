@@ -1,9 +1,10 @@
 #pragma once
 
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/enum.hpp"
 #include "bibocr/txt/ocr_engine.hpp"
 #include "bibocr/util/language.hpp"
+
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/enum.hpp>
 
 #include <filesystem>
 #include <optional>

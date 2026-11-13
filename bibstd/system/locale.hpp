@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibocr/util/language.hpp"
+#include <bibocr/util/language.hpp>
 
 namespace bibstd::system
 {

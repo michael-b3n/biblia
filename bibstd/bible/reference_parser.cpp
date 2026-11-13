@@ -1,18 +1,19 @@
 #include "bibstd/bible/reference_parser.hpp"
-#include "arcstd/math/value_range.hpp"
-#include "arcstd/txt/find_uint.hpp"
-#include "arcstd/util/contains.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/ranges.hpp"
-#include "arcstd/util/string.hpp"
-#include "arcstd/util/visit_helper.hpp"
-#include "bibocr/util/language.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/ocr_book_variants.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/txt/script_common.hpp"
 #include "bibstd/txt/script_letters.hpp"
+
+#include <arcstd/math/value_range.hpp>
+#include <arcstd/txt/find_uint.hpp>
+#include <arcstd/util/contains.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <arcstd/util/string.hpp>
+#include <arcstd/util/visit_helper.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <algorithm>
 #include <cassert>

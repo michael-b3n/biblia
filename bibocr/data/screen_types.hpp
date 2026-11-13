@@ -1,8 +1,9 @@
 #pragma once
 
-#include "arcstd/math/rect.hpp"
 #include "bibocr/data/pixel.hpp"
 #include "bibocr/data/plane.hpp"
+
+#include <arcstd/math/rect.hpp>
 
 namespace bibocr::data
 {

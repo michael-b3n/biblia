@@ -1,10 +1,11 @@
 #pragma once
 
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/ranges.hpp"
-#include "bibocr/util/language.hpp"
 #include "bibstd/bible/ocr_book_variants_de.hpp"
 #include "bibstd/bible/ocr_book_variants_en.hpp"
+
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <bibocr/util/language.hpp>
 
 #include <algorithm>
 #include <array>

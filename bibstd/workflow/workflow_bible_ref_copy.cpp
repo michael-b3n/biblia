@@ -1,13 +1,14 @@
 #include "bibstd/workflow/workflow_bible_ref_copy.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/format.hpp"
-#include "arcstd/util/log.hpp"
 #include "bibstd/bible/reference_mask.hpp"
 #include "bibstd/bible/scripture_types.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/system/clipboard.hpp"
 #include "bibstd/system/locale.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
+
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/format.hpp>
+#include <arcstd/util/log.hpp>
 
 #include <algorithm>
 #include <cstdint>

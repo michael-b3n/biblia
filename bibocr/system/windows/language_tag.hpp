@@ -1,8 +1,9 @@
 #pragma once
 
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/enum.hpp"
 #include "bibocr/util/language.hpp"
+
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/enum.hpp>
 
 #include <optional>
 #include <string_view>

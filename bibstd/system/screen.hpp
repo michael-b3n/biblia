@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bibocr/data/screen_types.hpp"
+#include <bibocr/data/screen_types.hpp>
 
 #include <optional>
 

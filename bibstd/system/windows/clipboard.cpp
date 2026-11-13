@@ -1,7 +1,7 @@
 #include "bibstd/system/clipboard.hpp"
 
-#include "arcstd/system/windows/win.hpp"
-#include "arcstd/util/scope_guard.hpp"
+#include <arcstd/system/windows/win.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <algorithm>
 #include <chrono>

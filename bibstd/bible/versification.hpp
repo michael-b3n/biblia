@@ -1,13 +1,14 @@
 #pragma once
 
-#include "arcstd/meta/contains.hpp"
-#include "arcstd/meta/pack.hpp"
-#include "arcstd/util/ranges.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/reference_range.hpp"
 #include "bibstd/bible/versification_common.hpp"
 #include "bibstd/bible/versification_default_esv.hpp"
 #include "bibstd/bible/versification_default_kjv.hpp"
+
+#include <arcstd/meta/contains.hpp>
+#include <arcstd/meta/pack.hpp>
+#include <arcstd/util/ranges.hpp>
 
 #include <cstddef>
 #include <optional>

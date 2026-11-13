@@ -1,17 +1,18 @@
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/format.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/ranges.hpp"
-#include "arcstd/util/visit_helper.hpp"
-#include "arcstd/workflow/workflow_settings.hpp"
-#include "bibocr/system/ocr.hpp"
-#include "bibocr/txt/ocr_engine.hpp"
-#include "bibocr/txt/ocr_engine_tesseract.hpp"
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_parser.hpp"
 #include "bibstd/system/locale.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
+
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/format.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <arcstd/util/visit_helper.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
+#include <bibocr/system/ocr.hpp>
+#include <bibocr/txt/ocr_engine.hpp>
+#include <bibocr/txt/ocr_engine_tesseract.hpp>
 
 #include <algorithm>
 #include <array>

@@ -1,18 +1,19 @@
 #pragma once
 
-#include "arcstd/framework/process_params.hpp"
-#include "arcstd/framework/queued_connections.hpp"
-#include "arcstd/lua/script_table.hpp"
-#include "arcstd/signal/adapter.hpp"
-#include "arcstd/signal/common.hpp"
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/path.hpp"
-#include "arcstd/workflow/workflow_base.hpp"
-#include "arcstd/workflow/workflow_script.hpp"
-#include "arcstd/workflow/workflow_settings.hpp"
-#include "arcstd/workflow/workflow_settings_base.hpp"
 #include "bibstd/bible/scripture_outline.hpp"
 #include "bibstd/workflow/workflow_scripture_store.hpp"
+
+#include <arcstd/framework/process_params.hpp>
+#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/lua/script_table.hpp>
+#include <arcstd/signal/adapter.hpp>
+#include <arcstd/signal/common.hpp>
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/path.hpp>
+#include <arcstd/workflow/workflow_base.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
+#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <cstddef>
 #include <cstdint>

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "arcstd/util/enum.hpp"
-#include "arcstd/util/string.hpp"
 #include "bibstd/bible/common.hpp"
+
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/string.hpp>
 
 #include <tuple>
 #include <utility>

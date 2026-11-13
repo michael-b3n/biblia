@@ -1,12 +1,13 @@
 #pragma once
 
-#include "arcstd/framework/process_params.hpp"
-#include "arcstd/signal/adapter.hpp"
-#include "arcstd/signal/common.hpp"
-#include "arcstd/workflow/workflow_base.hpp"
-#include "arcstd/workflow/workflow_settings_base.hpp"
-#include "bibocr/data/screen_types.hpp"
 #include "bibstd/bible/reference_range.hpp"
+
+#include <arcstd/framework/process_params.hpp>
+#include <arcstd/signal/adapter.hpp>
+#include <arcstd/signal/common.hpp>
+#include <arcstd/workflow/workflow_base.hpp>
+#include <arcstd/workflow/workflow_settings_base.hpp>
+#include <bibocr/data/screen_types.hpp>
 
 #include <sfsm/sfsm.hpp>
 

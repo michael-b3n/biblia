@@ -1,14 +1,15 @@
 #include "bibstd/bible/reference_ocr.hpp"
-#include "arcstd/math/coordinates.hpp"
-#include "arcstd/math/rect.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/numeric_cast.hpp"
-#include "arcstd/util/ranges.hpp"
-#include "arcstd/util/timer.hpp"
-#include "arcstd/util/visit_helper.hpp"
-#include "bibocr/data/pixel.hpp"
-#include "bibocr/data/screen_types.hpp"
-#include "bibocr/txt/ocr_engine.hpp"
+
+#include <arcstd/math/coordinates.hpp>
+#include <arcstd/math/rect.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/numeric_cast.hpp>
+#include <arcstd/util/ranges.hpp>
+#include <arcstd/util/timer.hpp>
+#include <arcstd/util/visit_helper.hpp>
+#include <bibocr/data/pixel.hpp>
+#include <bibocr/data/screen_types.hpp>
+#include <bibocr/txt/ocr_engine.hpp>
 
 #include <boost/gil/extension/numeric/resample.hpp>
 #include <boost/gil/extension/numeric/sampler.hpp>

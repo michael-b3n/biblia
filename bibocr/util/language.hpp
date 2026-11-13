@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arcstd/util/const_map.hpp"
-#include "arcstd/util/enum.hpp"
+#include <arcstd/util/const_map.hpp>
+#include <arcstd/util/enum.hpp>
 
 namespace bibocr::util
 {

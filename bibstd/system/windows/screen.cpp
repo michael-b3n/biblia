@@ -1,7 +1,8 @@
 #include "bibstd/system/screen.hpp"
-#include "arcstd/util/numeric_cast.hpp"
 
-#include "arcstd/system/windows/win.hpp"
+#include <arcstd/util/numeric_cast.hpp>
+
+#include <arcstd/system/windows/win.hpp>
 
 namespace bibstd::system
 {

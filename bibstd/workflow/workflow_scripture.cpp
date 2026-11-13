@@ -1,14 +1,15 @@
 #include "bibstd/workflow/workflow_scripture.hpp"
-#include "arcstd/util/contains.hpp"
-#include "arcstd/util/enum.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/visit_helper.hpp"
-#include "arcstd/workflow/workflow_settings.hpp"
-#include "arcstd/workflow/workflow_settings_base.hpp"
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/workflow/workflow_scripture_store.hpp"
+
+#include <arcstd/util/contains.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/visit_helper.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
+#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <algorithm>
 #include <cstddef>

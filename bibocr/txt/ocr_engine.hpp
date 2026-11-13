@@ -1,7 +1,8 @@
 #pragma once
 
-#include "arcstd/meta/for_each.hpp"
 #include "bibocr/data/screen_types.hpp"
+
+#include <arcstd/meta/for_each.hpp>
 
 #include <memory>
 #include <string>

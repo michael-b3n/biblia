@@ -1,15 +1,16 @@
 #include "bibstd/workflow/workflow_bible_ref_ocr_auto.hpp"
-#include "arcstd/framework/setting.hpp"
-#include "arcstd/math/rect.hpp"
-#include "arcstd/math/value_range.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/format.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/non_owning_ptr.hpp"
-#include "arcstd/workflow/workflow_settings.hpp"
-#include "bibocr/system/capture.hpp"
 #include "bibstd/system/screen.hpp"
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
+
+#include <arcstd/framework/setting.hpp>
+#include <arcstd/math/rect.hpp>
+#include <arcstd/math/value_range.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/format.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/non_owning_ptr.hpp>
+#include <arcstd/workflow/workflow_settings.hpp>
+#include <bibocr/system/capture.hpp>
 
 #include <algorithm>
 #include <chrono>

@@ -1,6 +1,6 @@
 #include "bibqml/bridge/BridgeScripture.hpp"
-#include "arcqml/util/LocalPath.hpp"
 
+#include <arcqml/util/LocalPath.hpp>
 #include <arcstd/execution/launch.hpp>
 #include <arcstd/util/log.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>

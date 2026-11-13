@@ -1,13 +1,14 @@
 #pragma once
 
-#include "arcstd/framework/process_params.hpp"
-#include "arcstd/framework/queued_connections.hpp"
-#include "arcstd/lua/script_table.hpp"
-#include "arcstd/util/path.hpp"
-#include "arcstd/workflow/workflow_base.hpp"
-#include "arcstd/workflow/workflow_script.hpp"
-#include "arcstd/workflow/workflow_settings_base.hpp"
 #include "bibstd/bible/reference_range.hpp"
+
+#include <arcstd/framework/process_params.hpp>
+#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/lua/script_table.hpp>
+#include <arcstd/util/path.hpp>
+#include <arcstd/workflow/workflow_base.hpp>
+#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <cstdint>
 #include <memory>

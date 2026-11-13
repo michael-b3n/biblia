@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arcstd/execution/scope.hpp"
-#include "arcstd/system/windows/message_loop.hpp"
-#include "arcstd/util/scope_guard.hpp"
+#include <arcstd/execution/scope.hpp>
+#include <arcstd/system/windows/message_loop.hpp>
+#include <arcstd/util/scope_guard.hpp>
 
 #include <tray.hpp>
 

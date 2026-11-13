@@ -1,9 +1,10 @@
 #include "bibstd/system/locale.hpp"
-#include "arcstd/util/enum.hpp"
-#include "arcstd/util/log.hpp"
-#include "bibocr/system/windows/language_tag.hpp"
 
-#include "arcstd/system/windows/win.hpp"
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/log.hpp>
+#include <bibocr/system/windows/language_tag.hpp>
+
+#include <arcstd/system/windows/win.hpp>
 
 #include <ranges>
 #include <string>

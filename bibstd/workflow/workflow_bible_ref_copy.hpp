@@ -1,10 +1,11 @@
 #pragma once
 
-#include "arcstd/framework/process_params.hpp"
-#include "arcstd/workflow/workflow_base.hpp"
-#include "arcstd/workflow/workflow_settings_base.hpp"
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/reference_range.hpp"
+
+#include <arcstd/framework/process_params.hpp>
+#include <arcstd/workflow/workflow_base.hpp>
+#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <memory>
 #include <optional>

@@ -1,12 +1,13 @@
 #include "bibstd/workflow/workflow_bible_ref_lookup.hpp"
-#include "arcstd/util/contains.hpp"
-#include "arcstd/util/enum.hpp"
-#include "arcstd/util/exception.hpp"
-#include "arcstd/util/log.hpp"
-#include "arcstd/util/url.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/system/locale.hpp"
 #include "bibstd/system/open_browser.hpp"
+
+#include <arcstd/util/contains.hpp>
+#include <arcstd/util/enum.hpp>
+#include <arcstd/util/exception.hpp>
+#include <arcstd/util/log.hpp>
+#include <arcstd/util/url.hpp>
 
 #include <algorithm>
 #include <ranges>
