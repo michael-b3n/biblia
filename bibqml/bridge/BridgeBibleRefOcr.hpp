@@ -20,11 +20,6 @@
 #include <mutex>
 #include <optional>
 
-namespace arcstd::workflow
-{
-class workflow_settings;
-} // namespace arcstd::workflow
-
 namespace bibstd::workflow
 {
 class workflow_bible_ref_ocr;

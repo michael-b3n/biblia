@@ -43,7 +43,7 @@ qt_add_qml_module(
 target_link_libraries(${PROJECT_NAME}
   PUBLIC bibstd
   PUBLIC ArcQml
-  PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::Gui
+  PRIVATE ${QT_VERSION_NAME}::Quick ${QT_VERSION_NAME}::QuickControls2 ${QT_VERSION_NAME}::Gui
 )
 
 #

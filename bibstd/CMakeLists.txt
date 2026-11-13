@@ -34,7 +34,7 @@ include(incbin)
 file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua" "${CMAKE_CURRENT_LIST_DIR}/lua/private/*.lua")
 set(INCBIN_HEADER bibstd/lua/bundled_scripts.hpp)
 set(INCBIN_NAMESPACE bibstd::lua::bundled)
-configure_incbin_source(bundled ${CMAKE_SOURCE_DIR}/arca/arcstd/lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
+configure_incbin_source(bundled ${arcstd_SOURCE_DIR}/lua/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
 target_sources(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
 )

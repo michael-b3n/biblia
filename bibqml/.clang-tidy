@@ -1,0 +1,11 @@
+#
+# Clang-Tidy configuration of the Qt layer, see the configuration of the repository root.
+#
+# The Qt and QML layer follows the naming conventions of Qt, not the lower_case naming of the
+# other sources: QML addresses a type by its PascalCase name and a property, signal or invokable
+# method by its camelCase name, so those names are not ours to choose.
+#
+InheritParentConfig: true
+
+Checks: >
+  -readability-identifier-naming

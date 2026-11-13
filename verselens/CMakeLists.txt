@@ -174,11 +174,11 @@ add_incbin_resources(src/construct_translations.cpp res/display_names.csv)
 # Link against external dependencies
 #
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE Qt6::Quick
-  PRIVATE Qt6::QuickControls2
-  PRIVATE Qt6::QuickDialogs2
-  PRIVATE Qt6::QuickShapes
-  PRIVATE Qt6::Svg
+  PRIVATE ${QT_VERSION_NAME}::Quick
+  PRIVATE ${QT_VERSION_NAME}::QuickControls2
+  PRIVATE ${QT_VERSION_NAME}::QuickDialogs2
+  PRIVATE ${QT_VERSION_NAME}::QuickShapes
+  PRIVATE ${QT_VERSION_NAME}::Svg
   PRIVATE bibstd
   PRIVATE ArcQmlplugin
   PRIVATE BibQmlplugin

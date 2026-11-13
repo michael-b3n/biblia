@@ -60,7 +60,7 @@ target_compile_definitions(bibstd_test
 )
 
 #
-# Link libaries.
+# Link libraries.
 #
 target_link_libraries(
   bibstd_test

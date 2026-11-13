@@ -106,8 +106,7 @@ CheckOptions:
   readability-identifier-naming.TemplateTemplateParameterIgnoredRegexp: '.*_+'
   readability-identifier-naming.ParameterIgnoredRegexp: '.*_+'
   readability-identifier-naming.TypeAliasIgnoredRegexp: '.*_+'
-  readability-identifier-naming.ClassIgnoredRegexp: 'Document|TessBaseAPI'
-  readability-identifier-naming.MacroDefinitionIgnoredRegexp: 'numeric_cast|_WIN32_WINNT'
+  readability-identifier-naming.ClassIgnoredRegexp: 'TessBaseAPI'
 
   readability-braces-around-statements.ShortStatementLines: "1"
 
