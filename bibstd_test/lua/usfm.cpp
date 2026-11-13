@@ -331,7 +331,7 @@ TEST_CASE("usfm_fills_a_scripture_with_the_closest_default_versification", "[lua
     {
       text += std::format("\\v {} Text\n", verse);
     }
-    return std::vector<io::test_utils::zip_entry>{
+    return std::vector<test_utils::zip_entry>{
       {"3JN.usfm", text}
     };
   };
@@ -345,12 +345,12 @@ TEST_CASE("usfm_fills_a_scripture_with_the_closest_default_versification", "[lua
 
 TEST_CASE("usfm_rejects_an_archive_without_a_book_of_the_app", "[lua]")
 {
-  const auto entries = std::vector<io::test_utils::zip_entry>{
+  const auto entries = std::vector<test_utils::zip_entry>{
     {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
   };
   CHECK_FALSE(read_scripture("usfm_rejects_an_archive_without_a_book_of_the_app", entries));
   // A book of the app without verses is none either
-  const auto empty = std::vector<io::test_utils::zip_entry>{
+  const auto empty = std::vector<test_utils::zip_entry>{
     {"GEN.usfm", "\\id GEN\n\\h Genesis\n"}
   };
   CHECK_FALSE(read_scripture("usfm_rejects_an_archive_of_an_empty_book", empty));

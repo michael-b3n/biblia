@@ -38,7 +38,7 @@ auto touch(const std::filesystem::path& path) -> void
 ///
 /// \return the entries of a USFM archive of the scripture named \p name in its Paratext settings
 ///
-[[nodiscard]] auto named_usfm(const std::string& name) -> std::vector<io::test_utils::zip_entry>
+[[nodiscard]] auto named_usfm(const std::string& name) -> std::vector<test_utils::zip_entry>
 {
   auto entries = test_utils::usfm_entries();
   entries.emplace_back("Settings.xml", "<ScriptureText><FullName>" + name + "</FullName></ScriptureText>");
@@ -116,7 +116,7 @@ TEST_CASE("workflow_scripture_store_keeps_the_verses_of_a_file_an_import_fails_t
 {
   const auto source = arcstd::test_utils::temp_folder{"workflow_scripture_store_failed_replace_source"};
   // Of the format, but without a book of the app
-  io::test_utils::write_zip_archive(
+  test_utils::write_zip_archive(
     source.path() / "a.zip",
     {
       {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
@@ -138,7 +138,7 @@ TEST_CASE("workflow_scripture_store_leaves_files_it_cannot_read_where_they_are",
   const auto source = arcstd::test_utils::temp_folder{"workflow_scripture_store_import_unreadable_source"};
   // A zip holding no scripture, an archive of an unknown format and a file of a type the store does not know
   touch(source.path() / "scripture.zip");
-  io::test_utils::write_zip_archive(
+  test_utils::write_zip_archive(
     source.path() / "unknown.zip",
     {
       {"readme.txt", "no scripture here"}
@@ -158,11 +158,11 @@ TEST_CASE("workflow_scripture_store_leaves_files_it_cannot_read_where_they_are",
 TEST_CASE("workflow_scripture_store_takes_over_the_scripture_files_of_a_folder", "[workflow]")
 {
   const auto source = arcstd::test_utils::temp_folder{"workflow_scripture_store_import_source"};
-  io::test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
-  io::test_utils::write_zip_archive(source.path() / "b.zip", test_utils::usfm_entries());
+  test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
+  test_utils::write_zip_archive(source.path() / "b.zip", test_utils::usfm_entries());
   touch(source.path() / "notes.txt");
   std::filesystem::create_directories(source.path() / "nested");
-  io::test_utils::write_zip_archive(source.path() / "nested" / "nested.zip", test_utils::usfm_entries());
+  test_utils::write_zip_archive(source.path() / "nested" / "nested.zip", test_utils::usfm_entries());
 
   auto fixture = test_utils::scripture_store{"workflow_scripture_store_import_target"};
   CHECK(fixture.store->import(source.path()) == 2);
@@ -193,7 +193,7 @@ TEST_CASE("workflow_scripture_store_takes_nothing_from_its_own_folder", "[workfl
 TEST_CASE("workflow_scripture_store_reads_an_import_before_the_scripts_once_they_are_loaded", "[workflow]")
 {
   const auto source = arcstd::test_utils::temp_folder{"workflow_scripture_store_import_early_source"};
-  io::test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
+  test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
   const auto folder = arcstd::test_utils::temp_folder{"workflow_scripture_store_import_early"};
   const auto settings = arcstd::test_utils::make_script_settings(folder.path());
   const auto script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
@@ -219,7 +219,7 @@ TEST_CASE("workflow_scripture_store_reads_a_changed_file_anew", "[workflow]")
 
   auto entries = test_utils::usfm_entries();
   entries.emplace_back("Settings.xml", "<ScriptureText><FullName>Changed</FullName></ScriptureText>");
-  io::test_utils::write_zip_archive(fixture.scripture_folder() / "a.zip", entries);
+  test_utils::write_zip_archive(fixture.scripture_folder() / "a.zip", entries);
   const auto file = fixture.scripture_folder() / "a.zip";
   std::filesystem::last_write_time(file, std::filesystem::last_write_time(file) + std::chrono::seconds{10});
   fixture.store->load();

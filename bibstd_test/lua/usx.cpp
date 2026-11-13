@@ -35,9 +35,9 @@ using test_utils::verse_of;
 ///
 /// \return the entries of a USX bundle with the metadata of a scripture named "Test", a book document per book
 ///
-[[nodiscard]] auto usx_entries() -> std::vector<io::test_utils::zip_entry>
+[[nodiscard]] auto usx_entries() -> std::vector<test_utils::zip_entry>
 {
-  auto entries = std::vector<io::test_utils::zip_entry>{
+  auto entries = std::vector<test_utils::zip_entry>{
     {        "bundle/metadata.xml",
      R"(<?xml version="1.0"?><DBLMetadata><identification><name>Test</name><nameLocal>Test lokal</nameLocal>)"
      R"(<abbreviation>TST</abbreviation></identification><language><name>German</name></language>)"
@@ -89,7 +89,7 @@ struct shipped_scripture final
       // Each test case runs in its own process, which reads them into its own folder, the verses stay in it
       auto loaded = test_utils::reading_of(std::make_shared<const test_utils::scripture_store>(
         std::format("{}_{}", Catch::getResultCapture().getCurrentTestName(), file.path().stem().string()),
-        std::map<std::string, std::vector<io::test_utils::zip_entry>>{},
+        std::map<std::string, std::vector<test_utils::zip_entry>>{},
         std::vector{file.path()}
       ));
       REQUIRE(loaded);

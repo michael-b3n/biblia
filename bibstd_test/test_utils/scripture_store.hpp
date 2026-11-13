@@ -44,9 +44,9 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 /// with the verse "<code> 1:1", or the content \p books has for its code
 ///
 [[nodiscard]] inline auto usfm_entries(const std::map<std::string, std::string>& books = {})
-  -> std::vector<io::test_utils::zip_entry>
+  -> std::vector<test_utils::zip_entry>
 {
-  auto entries = std::vector<io::test_utils::zip_entry>{};
+  auto entries = std::vector<test_utils::zip_entry>{};
   for(const auto code : usfm_codes)
   {
     const auto it = books.find(std::string{code});
@@ -70,7 +70,7 @@ struct scripture_store final
 
   explicit scripture_store(
     std::string_view name,
-    const std::map<std::string, std::vector<io::test_utils::zip_entry>>& archives = {},
+    const std::map<std::string, std::vector<test_utils::zip_entry>>& archives = {},
     const std::vector<std::filesystem::path>& files = {}
   );
 
@@ -109,7 +109,7 @@ struct scripture_reading final
 ///
 inline scripture_store::scripture_store(
   const std::string_view name,
-  const std::map<std::string, std::vector<io::test_utils::zip_entry>>& archives,
+  const std::map<std::string, std::vector<test_utils::zip_entry>>& archives,
   const std::vector<std::filesystem::path>& files
 )
   : folder{name}
@@ -117,7 +117,7 @@ inline scripture_store::scripture_store(
   std::filesystem::create_directories(scripture_folder());
   for(const auto& [file_name, entries] : archives)
   {
-    io::test_utils::write_zip_archive(scripture_folder() / file_name, entries);
+    test_utils::write_zip_archive(scripture_folder() / file_name, entries);
   }
   for(const auto& file : files)
   {
@@ -190,10 +190,10 @@ inline auto scripture_reading::operator->() const -> const bible::scripture_outl
 ///
 /// \return the scripture the bundled readers read from a zip archive of \p entries, empty if none
 ///
-[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<io::test_utils::zip_entry>& entries)
+[[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<test_utils::zip_entry>& entries)
   -> scripture_reading
 {
-  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<io::test_utils::zip_entry>>{{"scripture.zip", entries}}));
+  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<test_utils::zip_entry>>{{"scripture.zip", entries}}));
 }
 
 ///

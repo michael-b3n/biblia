@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace bibstd::io::test_utils
+namespace bibstd::test_utils
 {
 
 ///
@@ -34,4 +34,4 @@ inline auto write_zip_archive(const std::filesystem::path& path, const std::vect
   REQUIRE(zip_close(archive) == 0);
 }
 
-} // namespace bibstd::io::test_utils
+} // namespace bibstd::test_utils
