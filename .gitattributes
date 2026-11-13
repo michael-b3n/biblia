@@ -1,0 +1,2 @@
+# Text files are stored with LF line endings, the checkout chooses its own.
+* text=auto
