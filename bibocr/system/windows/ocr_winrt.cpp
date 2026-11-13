@@ -198,7 +198,7 @@ auto ocr_engine_windows::create_bitmap(
     }
   }();
 
-  // Create SoftwareBitmap with Bgra8 format (alpha ignored since bibstd::system::screen captures have no alpha)
+  // Create SoftwareBitmap with Bgra8 format (alpha ignored since screen captures have no alpha)
   bitmap_ = winrt_imaging::SoftwareBitmap(
     winrt_imaging::BitmapPixelFormat::Bgra8,
     numeric_cast<int>(width),
@@ -225,7 +225,7 @@ auto ocr_engine_windows::create_bitmap(
   {
     const auto& [i, pixel] = p;
     // pixel is RGBA, SoftwareBitmap expects BGRA. Alpha is set to 255 (opaque)
-    // because bibstd::system::screen captures do not set the alpha channel.
+    // because screen captures do not set the alpha channel.
     dst_data[(i * 4) + 0] = pixel.blue;
     dst_data[(i * 4) + 1] = pixel.green;
     dst_data[(i * 4) + 2] = pixel.red;

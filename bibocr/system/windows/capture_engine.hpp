@@ -8,7 +8,7 @@ namespace bibocr::system
 {
 
 ///
-/// Interface of a bibstd::system::screen capture backend. A backend may turn a region down, the caller then captures it
+/// Interface of a screen capture backend. A backend may turn a region down, the caller then captures it
 /// otherwise.
 /// \note Implementations shall be thread-safe.
 ///
@@ -37,7 +37,7 @@ public: // Constructor
 
 public: // Modifiers
   ///
-  /// Capture the bibstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first.
+  /// Capture the screen region \p rect, origin top left, into \p pix row by row, the topmost row first.
   /// \return true if the region was captured, false if the caller shall capture it by other means
   ///
   [[nodiscard]] auto capture(screen_rect_type rect, pixel_plane_type& pix) -> bool;

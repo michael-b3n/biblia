@@ -16,7 +16,7 @@ public: // Typedefs
 
 public: // Static accessors
   ///
-  /// Capture the bibstd::system::screen region \p rect, origin top left, into \p pix row by row, the topmost row first as
+  /// Capture the screen region \p rect, origin top left, into \p pix row by row, the topmost row first as
   /// tesseract reads them.
   /// \return true if the region was captured
   ///

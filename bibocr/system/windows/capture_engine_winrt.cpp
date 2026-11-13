@@ -256,8 +256,8 @@ namespace
 {
 
 ///
-/// A bibstd::system::screen region as the capture API addresses it: the monitor showing it, the size that monitor
-/// has according to the bibstd::system::screen metrics, and the region within that monitor.
+/// A screen region as the capture API addresses it: the monitor showing it, the size that monitor
+/// has according to the screen metrics, and the region within that monitor.
 ///
 struct placement final
 {
@@ -268,7 +268,7 @@ struct placement final
 };
 
 ///
-/// Locate a bibstd::system::screen region on the monitor showing it.
+/// Locate a screen region on the monitor showing it.
 /// \return Placement of the region, or std::nullopt if no single monitor shows all of it
 ///
 auto place(const bibocr::data::screen_rect_type rect) -> std::optional<placement>
