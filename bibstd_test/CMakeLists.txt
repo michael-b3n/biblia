@@ -4,6 +4,7 @@ project(bibstd_test LANGUAGES CXX)
 
 find_package(Catch2 3 REQUIRED)
 find_package(pugixml REQUIRED)
+find_package(libzip REQUIRED)
 include(Catch)
 
 #
@@ -67,6 +68,7 @@ target_link_libraries(
   PRIVATE
   Catch2::Catch2WithMain
   pugixml::pugixml
+  libzip::zip
   arcstd_test_utils
   bibstd)
 

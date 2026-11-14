@@ -95,7 +95,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ar
     try
     {
       scope_ = std::make_unique<arcstd::execution::scope>();
-      loop_ = std::make_unique<arcstd::system::message_loop>();
+      loop_ = std::make_unique<message_loop>();
     }
     catch(...)
     {
@@ -126,7 +126,7 @@ auto tray::init(const icon_buffer icon, std::vector<entry_type>&& entries) -> ar
         }
       );
     };
-    const auto loop = arcstd::util::non_owning_ptr<arcstd::system::message_loop>{loop_.get()};
+    const auto loop = arcstd::util::non_owning_ptr<message_loop>{loop_.get()};
     // Released first: an exception of the tray reaches the caller, the guard then closes what exists
     lock.unlock();
     loop->call(create);

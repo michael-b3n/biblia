@@ -15,10 +15,10 @@
   #include "src/windows/construct_velopack_updater.hpp"
 #endif
 
-#include <arcstd/framework/single_instance.hpp>
 #include <arcstd/system/filesystem.hpp>
 #include <arcstd/util/log.hpp>
 #include <bibstd/system/screen.hpp>
+#include <bibstd/system/single_instance.hpp>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 #endif
 
   // The instance check runs before the logger, a second instance would truncate the log of the running one.
-  const auto instance = arcstd::framework::single_instance::claim(std::string{verselens::version::data_folder_name});
+  const auto instance = bibstd::system::single_instance::claim(std::string{verselens::version::data_folder_name});
   if(!instance.is_owner())
   {
     return verselens::show_already_running(argc, argv);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <arcstd/framework/setting_validator.hpp>
+#include <arcstd/setting/setting_validator.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <format>
@@ -21,7 +21,7 @@ namespace bibstd::test_utils
 [[nodiscard]] inline auto scripture_names_of(const workflow::workflow_scripture& scripture, const std::string_view script)
   -> std::vector<std::string>
 {
-  using validator_type = arcstd::framework::setting_validator_list<std::optional<std::string>>::sptr_type;
+  using validator_type = arcstd::setting::setting_validator_list<std::optional<std::string>>::sptr_type;
   const auto suffix = std::format(" ({})", script);
   return std::get<validator_type>(scripture.settings().default_scripture_name->validator)->available() |
          std::views::filter([&](const auto& name) { return name.ends_with(suffix); }) | std::ranges::to<std::vector>();

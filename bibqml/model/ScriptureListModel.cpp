@@ -2,7 +2,7 @@
 #include "bibqml/util/ScriptureAccess.hpp"
 
 #include <arcstd/execution/launch.hpp>
-#include <arcstd/framework/setting.hpp>
+#include <arcstd/setting/setting.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/ranges.hpp>
@@ -198,7 +198,7 @@ ScriptureListModel::ScriptureListModel(
   // The rows hold the texts of one scripture, another one or other scripts fetch them again
   const auto changed = [this]() { post([this]() { applyScriptureChange(); }); };
   workflowScripture_->settings().default_scripture_name->connect_queued(
-    &arcstd::framework::setting_signals::value_changed, changed, connections_
+    &arcstd::setting::setting_signals::value_changed, changed, connections_
   );
   workflowScripture_->connect_queued(&bibstd::workflow::workflow_scripture_sigs::scriptures_changed, changed, connections_);
 }

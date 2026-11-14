@@ -4,12 +4,12 @@
 #include "bibstd/system/locale.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
 
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/format.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/ranges.hpp>
 #include <arcstd/util/visit_helper.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
 #include <bibocr/system/ocr.hpp>
 #include <bibocr/txt/ocr_engine.hpp>
 #include <bibocr/txt/ocr_engine_tesseract.hpp>
@@ -116,51 +116,49 @@ namespace
 /// Limit \p setting to the \p available values. The validator resets a value that is not available, an optional value to
 /// nothing and any other value to the first available one.
 ///
-template<arcstd::framework::underlying_setting_type T>
+template<arcstd::setting::underlying_setting_type T>
 auto limit_to(
-  const arcstd::workflow::workflow_settings::setting_non_owning_ptr_type<T>& setting,
-  const std::vector<typename arcstd::framework::setting_validator_list<T>::plain_underlying_type>& available
+  const arcstd::setting::setting_store::setting_non_owning_ptr_type<T>& setting,
+  const std::vector<typename arcstd::setting::setting_validator_list<T>::plain_underlying_type>& available
 ) -> void
 {
   // Only an empty list of a plain setting is refused, the lists given here always hold line recognition.
   std::ignore =
-    std::get<typename arcstd::framework::setting_validator_list<T>::sptr_type>(setting->validator)->available(available);
+    std::get<typename arcstd::setting::setting_validator_list<T>::sptr_type>(setting->validator)->available(available);
 }
 
 } // namespace
 
 ///
 ///
-workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
-)
-  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
-  , custom_tessdata_path{workflow_settings_->create_setting(
+workflow_bible_ref_ocr_settings::workflow_bible_ref_ocr_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store)
+  : workflow_settings_base{std::move(setting_store)}
+  , custom_tessdata_path{setting_store_->create_setting(
       "ocr.custom_tessdata_path", setting_value_t<decltype(custom_tessdata_path)>{}
     )}
-  , character_recognition_ocr_engine{workflow_settings_->create_setting(
+  , character_recognition_ocr_engine{setting_store_->create_setting(
       "ocr.character_recognition_ocr_engine",
       setting_value_t<decltype(character_recognition_ocr_engine)>{},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(character_recognition_ocr_engine)>>>()
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(character_recognition_ocr_engine)>>>()
     )}
-  , layout_recognition_ocr_engine{workflow_settings_->create_setting(
+  , layout_recognition_ocr_engine{setting_store_->create_setting(
       "ocr.layout_recognition_ocr_engine",
       setting_value_t<decltype(layout_recognition_ocr_engine)>{},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(layout_recognition_ocr_engine)>>>()
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(layout_recognition_ocr_engine)>>>()
     )}
-  , recognition_algorithm{workflow_settings_->create_setting(
+  , recognition_algorithm{setting_store_->create_setting(
       "ocr.recognition_algorithm", ocr_recognition_algorithm::line_recognition
     )}
-  , language{workflow_settings_->create_setting("ocr.language", bibstd::system::locale::preferred_language())}
+  , language{setting_store_->create_setting("ocr.language", bibstd::system::locale::preferred_language())}
 {
 }
 
 ///
 ///
 workflow_bible_ref_ocr::workflow_bible_ref_ocr(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings, std::shared_ptr<workflow_scripture> workflow_scripture
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<workflow_scripture> workflow_scripture
 )
-  : workflow_base{std::move(workflow_settings)}
+  : workflow_base{std::move(setting_store)}
   , workflow_scripture_{std::move(workflow_scripture)}
 {
   init();
@@ -321,7 +319,7 @@ auto workflow_bible_ref_ocr::limit_settings_to_loaded_engines() -> void
 ///
 auto workflow_bible_ref_ocr::find_references(
   const auto& params, const settings_t& settings, const position_data_result_type& position_data
-) -> arcstd::framework::process_result<find_references_result_t>
+) -> process_result<find_references_result_t>
 {
   if(position_data)
   {

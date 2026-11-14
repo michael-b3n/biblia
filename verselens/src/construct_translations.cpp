@@ -1,12 +1,12 @@
 #include "src/construct_translations.hpp"
 #include "res/version.hpp"
 
-#include <arcstd/framework/setting_validator.hpp>
+#include <arcstd/setting/setting_store.hpp>
+#include <arcstd/setting/setting_validator.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/incbin.hpp>
 #include <arcstd/util/log.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
 #include <bibstd/system/locale.hpp>
 
 #include <QMetaObject>
@@ -68,7 +68,7 @@ translations_instance::translations_instance(
   }
   translations_->setLanguage(QString::fromStdString(language_setting_->value()));
   language_setting_->connect_queued(
-    &arcstd::framework::setting_signals::value_changed,
+    &arcstd::setting::setting_signals::value_changed,
     [this]()
     {
       QMetaObject::invokeMethod(
@@ -114,11 +114,11 @@ auto read_language_setting() -> std::optional<std::string>
   {
     auto tree = boost::property_tree::ptree{};
     boost::property_tree::read_xml(
-      arcstd::workflow::workflow_settings::settings_file_path(version::data_folder_name).generic_string(), tree
+      arcstd::setting::setting_store::settings_file_path(version::data_folder_name).generic_string(), tree
     );
-    const auto language = tree.get_optional<std::string>(std::format(
-      "{}.{}", arcstd::workflow::workflow_settings::settings_root_name, translations_instance::language_setting_path
-    ));
+    const auto language = tree.get_optional<std::string>(
+      std::format("{}.{}", arcstd::setting::setting_store::settings_root_name, translations_instance::language_setting_path)
+    );
     return language ? std::optional{*language} : std::nullopt;
   }
   catch(...)
@@ -136,10 +136,10 @@ auto construct_translations(backend_instance& backend) -> translations_instance
     auto translations = std::make_unique<bibqml::Translations>(display_names_view);
     const auto languages = available_languages(*translations);
     const auto preferred_language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
-    auto* const language_setting = backend.workflow_settings->create_setting(
+    auto* const language_setting = backend.setting_store->create_setting(
       std::string{translations_instance::language_setting_path},
       std::ranges::contains(languages, preferred_language) ? preferred_language : languages.front(),
-      std::make_shared<arcstd::framework::setting_validator_list<std::string>>(languages)
+      std::make_shared<arcstd::setting::setting_validator_list<std::string>>(languages)
     );
     return translations_instance{std::move(translations), language_setting};
   }

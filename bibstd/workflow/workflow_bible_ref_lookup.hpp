@@ -1,14 +1,14 @@
 #pragma once
 
 #include "bibstd/bible/reference_range.hpp"
+#include "bibstd/workflow/process_params.hpp"
+#include "bibstd/workflow/workflow_base.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
-#include <arcstd/framework/process_params.hpp>
-#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/lua/script_table.hpp>
+#include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/path.hpp>
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
-#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -23,10 +23,10 @@ namespace bibstd::workflow
 ///
 /// Settings corresponding to workflow bible reference lookup.
 ///
-class workflow_bible_ref_lookup_settings final : public arcstd::workflow::workflow_settings_base
+class workflow_bible_ref_lookup_settings final : public workflow_settings_base
 {
 public: // Structors
-  workflow_bible_ref_lookup_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
+  workflow_bible_ref_lookup_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store);
   ~workflow_bible_ref_lookup_settings() noexcept override = default;
 
 public: // Variables
@@ -40,7 +40,7 @@ public: // Variables
 /// the chosen one tells the translations of the setting "lookup.translations". Until the user chooses, it is the
 /// script offering the most translations.
 ///
-class workflow_bible_ref_lookup final : public arcstd::workflow::workflow_base<workflow_bible_ref_lookup_settings>
+class workflow_bible_ref_lookup final : public workflow_base<workflow_bible_ref_lookup_settings>
 {
   // Typedefs
   struct params_t final
@@ -49,12 +49,12 @@ class workflow_bible_ref_lookup final : public arcstd::workflow::workflow_base<w
   };
 
   // Variables
-  const std::shared_ptr<arcstd::workflow::workflow_script> workflow_script_;
+  const std::shared_ptr<arcstd::lua::lua_engine> lua_engine_;
   mutable std::mutex mtx_;
-  arcstd::framework::queued_connections connections_;
+  arcstd::signal::queued_connections connections_;
 
 public: // Typedefs
-  using params = arcstd::framework::process_params<params_t>;
+  using params = process_params<params_t>;
 
   // Manifests of a script offering the lookup, \see doc/lua_api.md
   ///
@@ -99,8 +99,7 @@ public: // Typedefs
 
 public: // Structors
   workflow_bible_ref_lookup(
-    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-    std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+    std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
   );
   ~workflow_bible_ref_lookup() noexcept override;
 

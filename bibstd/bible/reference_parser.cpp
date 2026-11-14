@@ -7,8 +7,8 @@
 #include "bibstd/txt/script_letters.hpp"
 
 #include <arcstd/math/value_range.hpp>
-#include <arcstd/txt/find_uint.hpp>
 #include <arcstd/util/contains.hpp>
+#include <arcstd/util/find_uint.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/ranges.hpp>
 #include <arcstd/util/string.hpp>
@@ -527,7 +527,7 @@ auto reference_parser::normalize_passage_text(const std::string_view text, const
 ///
 auto reference_parser::identify_number(std::string_view text, std::size_t& pos) -> std::optional<std::uint32_t>
 {
-  const auto number = arcstd::txt::find_uint(text.substr(pos));
+  const auto number = arcstd::util::find_uint(text.substr(pos));
   if(number)
   {
     pos += number->post_value_offset;

@@ -45,7 +45,7 @@ end
 --- byte order mark, or nil and the reason, e.g. for a text that is no UTF-8
 ---
 function scripture_archive.read(name)
-  local content, reason = workflow.scripture_store.read_entry(name)
+  local content, reason = scripture_store.read_entry(name)
   if not content then
     return nil, name .. ": " .. reason
   end
@@ -110,11 +110,11 @@ local function verse_key(book, chapter, verse)
 end
 
 ---
---- \return what read_scripture returned of the file in the cache \p cache, nil if it kept none of the \p stamp
+--- \return what read_scripture returned of the file in the cache \p cache_name, nil if it kept none of the \p stamp
 ---
-local function kept_output(cache, stamp)
-  local text = workflow.cache.get(cache, summary_key)
-  local chunk = text and load("return " .. text, "=" .. cache, "t", {})
+local function kept_output(cache_name, stamp)
+  local text = cache.get(cache_name, summary_key)
+  local chunk = text and load("return " .. text, "=" .. cache_name, "t", {})
   if not chunk then
     return nil
   end
@@ -162,9 +162,9 @@ function scripture_archive.read_scripture(input, format)
   if #files == 0 then
     return nil
   end
-  local cache = cache_of(input.file)
+  local cache_name = cache_of(input.file)
   local stamp = string.format("%d|%d|%d", cache_version, input.size, input.modified)
-  local kept = not input.reload and kept_output(cache, stamp)
+  local kept = not input.reload and kept_output(cache_name, stamp)
   if kept then
     return kept
   end
@@ -203,8 +203,8 @@ function scripture_archive.read_scripture(input, format)
   end
   -- Only a file read to its end replaces what is kept of a file of its name, e.g. on an import
   values[summary_key] = util.dump({ stamp = stamp, output = output })
-  workflow.cache.clear(cache)
-  workflow.cache.set_all(cache, values)
+  cache.clear(cache_name)
+  cache.set_all(cache_name, values)
   return output
 end
 
@@ -213,13 +213,13 @@ end
 --- its `markup` and `cross_references`. None if the cache of the file does not keep it.
 ---
 function scripture_archive.passage(input)
-  local cache = cache_of(input.name)
+  local cache_name = cache_of(input.name)
   local key = verse_key(input.book, input.chapter, input.verse)
-  local markup = workflow.cache.get(cache, key)
+  local markup = cache.get(cache_name, key)
   if not markup then
     return nil
   end
-  local references = workflow.cache.get(cache, key .. ".x")
+  local references = cache.get(cache_name, key .. ".x")
   return { markup = markup, cross_references = references and util.split(references, "\n") }
 end
 

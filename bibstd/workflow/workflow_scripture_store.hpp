@@ -1,9 +1,10 @@
 #pragma once
 
+#include "bibstd/workflow/workflow_base.hpp"
+
+#include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/lua/script_table.hpp>
 #include <arcstd/util/path.hpp>
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -28,18 +29,18 @@ namespace bibstd::workflow
 /// the files: each script offering scripture.read is a reader, e.g. the bundled ones for USX and USFM.
 /// A reader keeps the verses of a file, the store only what it tells about the file.
 ///
-class workflow_scripture_store final : public arcstd::workflow::workflow_base<void>
+class workflow_scripture_store final : public workflow_base<void>
 {
   // Typedefs
   struct file_scripture_t final
   {
     std::shared_ptr<bible::scripture_outline> outline;
-    arcstd::workflow::workflow_script::script_name_type reader; // gives the verses, \see workflow_scripture::passage_manifest
-    std::string file_name;                    // the name the reader knows the scripture by
+    arcstd::lua::lua_engine::script_name_type reader; // gives the verses, \see workflow_scripture::passage_manifest
+    std::string file_name;                            // the name the reader knows the scripture by
   };
 
   // Variables
-  const std::shared_ptr<arcstd::workflow::workflow_script> workflow_script_;
+  const std::shared_ptr<arcstd::lua::lua_engine> lua_engine_;
   const std::filesystem::path folder_;
   mutable std::mutex mtx_;
   std::map<std::filesystem::path, file_scripture_t> files_; // the scriptures by file
@@ -53,9 +54,9 @@ public: // Typedefs
   ///
   /// \lua A script that offers this reads scripture files, those of the scripture folder and those the user imports.
   /// The app asks each reader until one tells the file is of its format, by a name or an error. The app reads the
-  /// archive, the script its entries with `workflow.scripture_store.read_entry`. The bundled readers `USX` and
+  /// archive, the script its entries with `scripture_store.read_entry`. The bundled readers `USX` and
   /// `USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files. A reader keeps the
-  /// verses, e.g. in `workflow.cache`, and gives them by `scripture.passage` with the file name as `name`. The app
+  /// verses, e.g. in `cache`, and gives them by `scripture.passage` with the file name as `name`. The app
   /// asks on every start, a reader that kept the file at this size and time answers from what it kept.
   /// \param file the name of the file, e.g. `bible.zip`
   /// \param entries the names of the files in the archive
@@ -97,8 +98,7 @@ public: // Constants
 
 public: // Structors
   workflow_scripture_store(
-    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-    std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+    std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
   );
   ~workflow_scripture_store() noexcept override;
 

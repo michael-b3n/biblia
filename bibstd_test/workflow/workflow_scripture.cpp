@@ -4,8 +4,8 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arcstd/workflow/workflow_cache.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 #include <bibstd/workflow/workflow_scripture_store.hpp>
@@ -58,8 +58,8 @@ constexpr auto scripture_script = R"(
 struct scripture_fixture final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
-  std::shared_ptr<arcstd::workflow::workflow_cache> cache;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
+  std::shared_ptr<arcstd::cache::cache_store> cache;
   std::shared_ptr<workflow_scripture> scripture;
 
   explicit scripture_fixture(
@@ -104,12 +104,12 @@ scripture_fixture::scripture_fixture(
   );
   if(selected)
   {
-    const auto writer = std::make_shared<arcstd::workflow::workflow_settings>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path().string());
     std::ignore = workflow_scripture_settings{writer}.default_scripture_name->value(selected);
   }
   const auto settings = arcstd::test_utils::make_script_settings(folder.path(), true);
-  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
-  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
+  script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::cache::cache_store>(settings->data_folder(), script);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   // Last, as the app does
   arcstd::test_utils::load_scripts(*script);
@@ -206,36 +206,31 @@ TEST_CASE("workflow_scripture_offers_the_scriptures_to_scripts", "[workflow]")
       [&]() { return fixture.scripture->settings().default_scripture_name->value() == "AAA (Script test)"; }
     )
   );
-  const auto run = [&](const std::string& code)
-  {
-    return fixture.script->state()->safe_script(
-      "local workflow = root.interface.workflow return " + code, sol::script_pass_on_error
-    );
-  };
+  const auto run = [&](const std::string& code) { return fixture.script->run_script("test.lua", "return " + code); };
   const auto text = [&](const std::string& code)
-  {
-    const auto result = run(code);
-    return result.get_type() == sol::type::string ? std::optional{result.get<std::string>()} : std::nullopt;
-  };
+  { return arcstd::test_utils::script_value<std::string>(*fixture.script, "return " + code); };
 
-  CHECK(run("workflow.scripture.scripture_count()").get<std::size_t>() == fixture.scripture->scripture_count());
-  CHECK(text("workflow.scripture.book_identifiers()[1]") == "genesis");
+  CHECK(
+    arcstd::test_utils::script_value<std::size_t>(*fixture.script, "return scripture.scripture_count()") ==
+    fixture.scripture->scripture_count()
+  );
+  CHECK(text("scripture.book_identifiers()[1]") == "genesis");
   // nil is the selected scripture
-  CHECK(text("workflow.scripture.name(nil)") == "AAA (Script test)");
-  CHECK(text("workflow.scripture.abbreviation('BBB (Script test)')") == "BBB");
-  CHECK(text("workflow.scripture.language(nil)") == "de");
-  CHECK(text("workflow.scripture.copyright(nil)") == "(c) AAA");
-  CHECK(text("workflow.scripture.name('XXX')") == std::nullopt);
-  CHECK(text("workflow.scripture.book_short_name(nil, 'john')") == "Johannes");
-  CHECK(text("workflow.scripture.book_long_name(nil, 'john')") == "");
-  CHECK(text("workflow.scripture.book_abbreviation(nil, 'mark')") == std::nullopt);
-  CHECK(text("workflow.scripture.passage(nil, 'john', 3, 16)") == R"(<p data-id="undefined">&lt;b&gt;AAA john 3,16</p>)");
+  CHECK(text("scripture.name(nil)") == "AAA (Script test)");
+  CHECK(text("scripture.abbreviation('BBB (Script test)')") == "BBB");
+  CHECK(text("scripture.language(nil)") == "de");
+  CHECK(text("scripture.copyright(nil)") == "(c) AAA");
+  CHECK(text("scripture.name('XXX')") == std::nullopt);
+  CHECK(text("scripture.book_short_name(nil, 'john')") == "Johannes");
+  CHECK(text("scripture.book_long_name(nil, 'john')") == "");
+  CHECK(text("scripture.book_abbreviation(nil, 'mark')") == std::nullopt);
+  CHECK(text("scripture.passage(nil, 'john', 3, 16)") == R"(<p data-id="undefined">&lt;b&gt;AAA john 3,16</p>)");
   // No passage tells why
-  CHECK(text("select(2, workflow.scripture.passage(nil, 'john', 3, 2))") == "no such verse");
-  CHECK(text("select(2, workflow.scripture.passage('XXX', 'john', 3, 16))") == "scripture not found");
+  CHECK(text("select(2, scripture.passage(nil, 'john', 3, 2))") == "no such verse");
+  CHECK(text("select(2, scripture.passage('XXX', 'john', 3, 16))") == "scripture not found");
   // Called the wrong way
-  CHECK_FALSE(run("workflow.scripture.book_short_name(nil, 'nobook')").valid());
-  CHECK_FALSE(run("workflow.scripture.passage(nil, 'john', -1, 16)").valid());
+  CHECK_FALSE(run("scripture.book_short_name(nil, 'nobook')"));
+  CHECK_FALSE(run("scripture.passage(nil, 'john', -1, 16)"));
 }
 
 TEST_CASE("workflow_scripture_keeps_the_name_until_the_scripts_are_loaded", "[workflow]")
@@ -370,9 +365,9 @@ TEST_CASE("workflow_scripture_changes_the_name_setting_without_its_lock", "[work
   auto counted = std::make_shared<std::atomic<int>>(0);
   const auto count = [&scripture, counted]() { *counted += static_cast<int>(scripture.scripture_count()) + 1; };
   const auto value =
-    scripture.settings().default_scripture_name->connect(&arcstd::framework::setting_signals::value_changed, count);
+    scripture.settings().default_scripture_name->connect(&arcstd::setting::setting_signals::value_changed, count);
   const auto validator =
-    scripture.settings().default_scripture_name->connect(&arcstd::framework::setting_signals::validator_changed, count);
+    scripture.settings().default_scripture_name->connect(&arcstd::setting::setting_signals::validator_changed, count);
 
   // The selected scripture goes with its script, so the names and the name change
   std::filesystem::remove(fixture.folder.path() / "scripts" / "first.lua");

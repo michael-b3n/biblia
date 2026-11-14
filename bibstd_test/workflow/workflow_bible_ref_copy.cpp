@@ -5,7 +5,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
@@ -55,7 +55,7 @@ struct copy_fixture final
 {
   bibstd::test_utils::clipboard_restorer clipboard;
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
   std::shared_ptr<workflow_scripture> scripture;
   std::shared_ptr<workflow_bible_ref_copy> copy;
 
@@ -74,7 +74,7 @@ copy_fixture::copy_fixture(const std::string_view name, const bool with_scriptur
     arcstd::test_utils::write_file(scripts_folder / "scripture.lua", scripture_script);
   }
   const auto settings = arcstd::test_utils::make_script_settings(folder.path(), with_scripture);
-  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
+  script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
   scripture = std::make_shared<workflow_scripture>(settings, script);
   copy = std::make_shared<workflow_bible_ref_copy>(settings, scripture);
   // Last, as the app does
@@ -143,8 +143,7 @@ TEST_CASE("workflow_bible_ref_copy_defaults_to_the_reference", "[.clipboard][wor
           .ends_with(std::format("(Johannes\u00A03{0} 16\u00A0- 4{0}2 A)", separator)));
   // The scripture does not name this book, so it is left out
   CHECK(
-    copied(fixture, books_of(bible::book_id::mark, bible::book_id::mark)) ==
-    std::format("\"<Vers 1>\" (1{} 1 A)", separator)
+    copied(fixture, books_of(bible::book_id::mark, bible::book_id::mark)) == std::format("\"<Vers 1>\" (1{} 1 A)", separator)
   );
 }
 

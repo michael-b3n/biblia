@@ -1,6 +1,6 @@
 #include "bibstd/system/clipboard.hpp"
+#include "bibstd/system/windows/win.hpp"
 
-#include <arcstd/system/windows/win.hpp>
 #include <arcstd/util/scope_guard.hpp>
 
 #include <algorithm>

@@ -84,7 +84,7 @@ Output:
 
 ### `scripture.passage`
 
-A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `workflow.cache`
+A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `cache`
 first. A reader of scripture files offers it too, see `scripture.read`.
 
 Input:
@@ -108,9 +108,9 @@ Output:
 
 A script that offers this reads scripture files, those of the scripture folder and those the user imports.
 The app asks each reader until one tells the file is of its format, by a name or an error. The app reads the
-archive, the script its entries with `workflow.scripture_store.read_entry`. The bundled readers `USX` and
+archive, the script its entries with `scripture_store.read_entry`. The bundled readers `USX` and
 `USFM` read the USX bundles of the Digital Bible Library and zip archives of USFM files. A reader keeps the
-verses, e.g. in `workflow.cache`, and gives them by `scripture.passage` with the file name as `name`. The app
+verses, e.g. in `cache`, and gives them by `scripture.passage` with the file name as `name`. The app
 asks on every start, a reader that kept the file at this size and time answers from what it kept.
 
 Input:
@@ -135,9 +135,9 @@ Output:
 
 ## Functions
 
-What the app offers at `workflow`.
+What the app offers to scripts, each at its own name, e.g. `web.fetch`.
 
-### `workflow.cache.get(name, key)`
+### `cache.get(name, key)`
 
 Reads a text value from a cache. A cache keeps its values after the app closes. Each cache is the SQLite file
 `cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is
@@ -147,28 +147,28 @@ logged and holds nothing.
 - `key` (`string`): the key of the value
 - Returns the value, or `nil` if there is none
 
-### `workflow.cache.set(name, key, value)`
+### `cache.set(name, key, value)`
 
-Writes a text value to a cache, see `workflow.cache.get`.
+Writes a text value to a cache, see `cache.get`.
 
 - `name` (`string`): the cache
 - `key` (`string`): the key of the value
 - `value` (`string or nil`): the value, `nil` removes the key
 
-### `workflow.cache.set_all(name, values)`
+### `cache.set_all(name, values)`
 
-Writes many text values to a cache at once, all of them or none, see `workflow.cache.get`.
+Writes many text values to a cache at once, all of them or none, see `cache.get`.
 
 - `name` (`string`): the cache
 - `values` (`{ [string] = string }`): the values by key
 
-### `workflow.cache.clear(name)`
+### `cache.clear(name)`
 
-Removes all values of a cache, see `workflow.cache.get`.
+Removes all values of a cache, see `cache.get`.
 
 - `name` (`string`): the cache
 
-### `workflow.web.fetch(url)`
+### `web.fetch(url)`
 
 Fetches a web page. The script waits for the page, and other scripts wait too. During
 `Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
@@ -177,35 +177,35 @@ Fetches a web page. The script waits for the page, and other scripts wait too. D
 - Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
   `timeout` (after 30 s), `init_failed` or `request_failed`
 
-### `workflow.scripture.scripture_count()`
+### `scripture.scripture_count()`
 
 - Returns the number of scriptures, including those of scripts
 
-### `workflow.scripture.book_identifiers()`
+### `scripture.book_identifiers()`
 
 - Returns the identifiers of all books, e.g. `john`
 
-### `workflow.scripture.name(scripture_name)`
+### `scripture.name(scripture_name)`
 
 - `scripture_name` (`string or nil`): the scripture, `nil` for the default scripture
 - Returns its name, or `nil` if there is no such scripture
 
-### `workflow.scripture.abbreviation(scripture_name)`
+### `scripture.abbreviation(scripture_name)`
 
 - `scripture_name` (`string or nil`): the scripture, `nil` for the default scripture
 - Returns its abbreviation, or `nil` if there is no such scripture
 
-### `workflow.scripture.language(scripture_name)`
+### `scripture.language(scripture_name)`
 
 - `scripture_name` (`string or nil`): the scripture, `nil` for the default scripture
 - Returns its language, or `nil` if there is no such scripture
 
-### `workflow.scripture.copyright(scripture_name)`
+### `scripture.copyright(scripture_name)`
 
 - `scripture_name` (`string or nil`): the scripture, `nil` for the default scripture
 - Returns its copyright, or `nil` if it has none or there is no such scripture
 
-### `workflow.scripture.book_abbreviation(scripture_name, book_id)`
+### `scripture.book_abbreviation(scripture_name, book_id)`
 
 An unknown book raises an error.
 
@@ -213,7 +213,7 @@ An unknown book raises an error.
 - `book_id` (`string`): the identifier of the book, e.g. `john`
 - Returns the abbreviation of the book, or `nil` if it has none or there is no such scripture
 
-### `workflow.scripture.book_short_name(scripture_name, book_id)`
+### `scripture.book_short_name(scripture_name, book_id)`
 
 An unknown book raises an error.
 
@@ -221,7 +221,7 @@ An unknown book raises an error.
 - `book_id` (`string`): the identifier of the book, e.g. `john`
 - Returns the short name of the book, or `nil` if it has none or there is no such scripture
 
-### `workflow.scripture.book_long_name(scripture_name, book_id)`
+### `scripture.book_long_name(scripture_name, book_id)`
 
 An unknown book raises an error.
 
@@ -229,7 +229,7 @@ An unknown book raises an error.
 - `book_id` (`string`): the identifier of the book, e.g. `john`
 - Returns the long name of the book, or `nil` if it has none or there is no such scripture
 
-### `workflow.scripture.passage(scripture_name, book_id, chapter, verse)`
+### `scripture.passage(scripture_name, book_id, chapter, verse)`
 
 A script that asks for a passage of its own scripture calls itself.
 
@@ -239,7 +239,7 @@ A script that asks for a passage of its own scripture calls itself.
 - `verse` (`integer`): the verse
 - Returns the verse with the markup of the app, or `nil` and the reason, e.g. `scripture not found`
 
-### `workflow.scripture_store.read_entry(name)`
+### `scripture_store.read_entry(name)`
 
 Reads an entry of the archive a reader reads, see the
 manifest `scripture.read`. It exists only while a reader runs.
@@ -249,19 +249,19 @@ manifest `scripture.read`. It exists only while a reader runs.
 
 ## Settings
 
-Settings of the app at `workflow.setting`, each with the functions at the end, `<setting>` stands for one of them.
+Settings of the app at `setting`, each with the functions at the end, `<setting>` stands for one of them.
 
-### `workflow.setting.web.retry_pause`
+### `setting.web.retry_pause`
 
 How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
 request a failed url again right away.
 
-### `workflow.setting.scripture.default_name`
+### `setting.scripture.default_name`
 
 The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as
 scripture name use it, so without a default scripture they find no scripture.
 
-### `workflow.setting.scripture.fallback_versification_name`
+### `setting.scripture.fallback_versification_name`
 
 The versification for scriptures that have none, including those of scripts,
 `Scripture > Fallback versification`.

@@ -166,7 +166,7 @@ TEST_CASE("usfm_resolves_escapes_and_spaces", "[lua]")
   // "~" is a no-break space, "//" an optional line break
   CHECK(
     verse_of(scripture, book_id::genesis, 1, 1) == "<p data-id=\"begin\">a\xC2\xA0"
-                                                    "b \\ c~d </p>"
+                                                   "b \\ c~d </p>"
   );
   // An escaped bar is text, the first bar that is none starts the attributes
   CHECK(verse_of(scripture, book_id::genesis, 1, 2) == R"(<p data-id="continue">a|b</p>)");
@@ -363,7 +363,7 @@ TEST_CASE("usfm_gives_the_tree_and_book_of_usx", "[lua]")
     {"usfm_text", usfm},
     { "usx_text",  usx}
   };
-  const auto dump = [&](const std::string& code) { return fixture.value("util.dump(" + code + ")").as<std::string>(); };
+  const auto dump = [&](const std::string& code) { return fixture.text("util.dump(" + code + ")"); };
   CHECK(dump("scripts.usfm.parse(usfm_text)") == dump("scripts.usx.parse(usx_text)"));
   CHECK(dump("scripts.usfm.book(scripts.usfm.parse(usfm_text))") == dump("scripts.usx.book(scripts.usx.parse(usx_text))"));
 

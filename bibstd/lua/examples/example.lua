@@ -9,7 +9,7 @@ end
 local example = {}
 
 -- The cache of this script, a name of letters, digits and "_"
-local cache = "example"
+local cache_name = "example"
 
 ---
 --- \return the names of the scriptures this script offers
@@ -39,15 +39,15 @@ end
 ---
 example["scripture.passage"] = function(input)
   local key = table.concat({ input.name, input.book, input.chapter, input.verse }, ".")
-  local cached = workflow.cache.get(cache, key)
+  local cached = cache.get(cache_name, key)
   if cached then
     return { text = cached }
   end
   -- A script providing real text fetches it here, mind the terms of use of the page:
-  -- local page, reason = workflow.web.fetch("https://example.com/" .. input.book .. input.chapter)
+  -- local page, reason = web.fetch("https://example.com/" .. input.book .. input.chapter)
   -- if not page then return { error = "example.com: " .. reason } end
   local text = "Example text of " .. input.book .. " " .. input.chapter .. "," .. input.verse
-  workflow.cache.set(cache, key, text)
+  cache.set(cache_name, key, text)
   return { text = text }
 end
 

@@ -2,13 +2,13 @@
 
 #include "bibqml/util/ScreenConversion.hpp"
 
-#include <arcstd/framework/process_params.hpp>
-#include <arcstd/framework/queued_connections.hpp>
-#include <arcstd/framework/setting_type_erased.hpp>
+#include <arcstd/setting/setting_type_erased.hpp>
+#include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
-#include <arcstd/workflow/workflow_hotkey.hpp>
 #include <bibocr/data/screen_types.hpp>
 #include <bibstd/bible/reference_range.hpp>
+#include <bibstd/workflow/process_params.hpp>
+#include <bibstd/workflow/workflow_hotkey.hpp>
 
 #include <QObject>
 #include <QPoint>
@@ -43,30 +43,30 @@ class BridgeBibleRefOcr final : public QObject
   Q_PROPERTY(QPoint cursorPosition MEMBER cursorPosition_ NOTIFY cursorPositionChanged FINAL)
 
   // Typedefs
-  using AutoSearchSettingType = arcstd::util::non_owning_ptr<arcstd::framework::setting_type_erased<bool>>;
+  using AutoSearchSettingType = arcstd::util::non_owning_ptr<arcstd::setting::setting_type_erased<bool>>;
 
   // Variables
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr_;
   const std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto_;
-  const arcstd::workflow::workflow_hotkey::shared_sig_type manualSearchSig_;
+  const bibstd::workflow::workflow_hotkey::shared_sig_type manualSearchSig_;
   const AutoSearchSettingType autoSearchSetting_;
 
-  std::optional<arcstd::framework::process_id_type> manualSearchProcessId_;
+  std::optional<bibstd::workflow::process_id_type> manualSearchProcessId_;
   std::optional<bibqml::CursorPositionPair> manualSearchCursor_;
-  std::optional<arcstd::framework::process_id_type> autoSearchDetectionId_;
+  std::optional<bibstd::workflow::process_id_type> autoSearchDetectionId_;
   std::optional<bibqml::CursorPositionPair> autoSearchCursor_;
   bool manualSearchRunning_{false};
   bool autoSearchRunning_{false};
   QPoint cursorPosition_{0, 0};
   mutable std::mutex autoSearchMtx_;
-  arcstd::framework::queued_connections connections_;
+  arcstd::signal::queued_connections connections_;
 
 public: // Structors
   explicit BridgeBibleRefOcr(
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr,
     std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto,
-    const std::shared_ptr<arcstd::workflow::workflow_hotkey>& workflowHotkey,
-    const std::shared_ptr<arcstd::workflow::workflow_settings>& workflowSettings,
+    const std::shared_ptr<bibstd::workflow::workflow_hotkey>& workflowHotkey,
+    const std::shared_ptr<arcstd::setting::setting_store>& workflowSettings,
     arcstd::util::non_owning_ptr<QObject> parent = nullptr
   );
 
@@ -95,16 +95,16 @@ signals:
 private: // Implementation
   void runManualSearch();
   void applyAutoSearch();
-  void setManualSearch(std::optional<arcstd::framework::process_id_type> processId);
-  void notifyManualSearchStarted(arcstd::framework::process_id_type processId);
+  void setManualSearch(std::optional<bibstd::workflow::process_id_type> processId);
+  void notifyManualSearchStarted(bibstd::workflow::process_id_type processId);
   void notifyManualSearchFinished(
-    arcstd::framework::process_id_type processId,
+    bibstd::workflow::process_id_type processId,
     std::optional<bibstd::bible::reference_range> referenceRange,
     std::optional<bibocr::data::screen_rect_type> boundingBox
   );
-  void notifyAutoSearchDetecting(arcstd::framework::process_id_type detectionId);
+  void notifyAutoSearchDetecting(bibstd::workflow::process_id_type detectionId);
   void notifyAutoSearchDetection(
-    arcstd::framework::process_id_type detectionId,
+    bibstd::workflow::process_id_type detectionId,
     bibstd::bible::reference_range referenceRange,
     std::optional<bibocr::data::screen_rect_type> boundingBox
   );

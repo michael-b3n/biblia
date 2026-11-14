@@ -1,7 +1,8 @@
 #pragma once
 
+#include "bibstd/system/windows/message_loop.hpp"
+
 #include <arcstd/execution/scope.hpp>
-#include <arcstd/system/windows/message_loop.hpp>
 #include <arcstd/util/scope_guard.hpp>
 
 #include <tray.hpp>
@@ -26,7 +27,7 @@ class tray final
   // Variables
   inline static std::mutex mtx_;
   inline static bool active_{false};
-  inline static std::unique_ptr<arcstd::system::message_loop> loop_{};
+  inline static std::unique_ptr<message_loop> loop_{};
   inline static std::unique_ptr<arcstd::execution::scope> scope_{};
   // The tray window belongs to the loop thread, the tray is only used there
   inline static std::unique_ptr<Tray::Tray> tray_{nullptr};

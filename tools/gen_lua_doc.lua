@@ -284,7 +284,7 @@ local function setting_path(code, text, source)
   local name = code:match("register_setting%(%*settings%(%)%.([%w_]+)%)")
   if name then
     local path = text:match(name .. "%s*{%s*[%w_]+%->create_setting%(%s*\"([^\"]+)\"")
-    return "workflow.setting." .. assert(path, source .. ": no create_setting of " .. name)
+    return "setting." .. assert(path, source .. ": no create_setting of " .. name)
   end
 end
 
@@ -326,13 +326,15 @@ local function cpp_entry(part, text, source)
     for _, parameter in ipairs(parameters) do
       names[#names + 1] = parameter.name
     end
-    entry.names = { string.format("workflow.%s(%s)", function_name, table.concat(names, ", ")) }
+    entry.kind = "function"
+    entry.names = { string.format("%s(%s)", function_name, table.concat(names, ", ")) }
     entry.lists = { { items = items(comment, parameters, source) } }
   elseif manifest then
     entry.manifest = true
     entry.names = { manifest }
     entry.lists = manifest_lists(part.code, comment, source)
   elseif setting then
+    entry.kind = "setting"
     entry.names = { setting }
   else
     assert(#comment.signatures > 0, source .. ": a \\lua comment names no function")
@@ -366,10 +368,10 @@ local groups = {
     intro = "A script offers a function named after a manifest, e.g. `scripture.read`. "
       .. "The app calls it with the input as a table and takes the output as a table.",
   },
-  { title = "Functions", intro = "What the app offers at `workflow`." },
+  { title = "Functions", intro = "What the app offers to scripts, each at its own name, e.g. `web.fetch`." },
   {
     title = "Settings",
-    intro = "Settings of the app at `workflow.setting`, each with the functions at the end, "
+    intro = "Settings of the app at `setting`, each with the functions at the end, "
       .. "`<setting>` stands for one of them.",
   },
   { title = "Helpers", intro = "What the app offers at `util`." },
@@ -387,9 +389,9 @@ local function group_of(entry)
   local name = entry.names[1]
   if entry.manifest then
     return groups[1]
-  elseif name:match("^workflow%.setting%.") or name:match("^<setting>") then
+  elseif entry.kind == "setting" or name:match("^<setting>") then
     return groups[3]
-  elseif name:match("^workflow%.") then
+  elseif entry.kind == "function" then
     return groups[2]
   elseif name:match("^util%.") then
     return groups[4]

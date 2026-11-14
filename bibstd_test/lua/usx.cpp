@@ -87,11 +87,13 @@ struct shipped_scripture final
     for(const auto& file : std::filesystem::directory_iterator{BIBSTD_TEST_SCRIPTURE_DIR, error} | std::views::filter(is_zip))
     {
       // Each test case runs in its own process, which reads them into its own folder, the verses stay in it
-      auto loaded = test_utils::reading_of(std::make_shared<const test_utils::scripture_store>(
-        std::format("{}_{}", Catch::getResultCapture().getCurrentTestName(), file.path().stem().string()),
-        std::map<std::string, std::vector<test_utils::zip_entry>>{},
-        std::vector{file.path()}
-      ));
+      auto loaded = test_utils::reading_of(
+        std::make_shared<const test_utils::scripture_store>(
+          std::format("{}_{}", Catch::getResultCapture().getCurrentTestName(), file.path().stem().string()),
+          std::map<std::string, std::vector<test_utils::zip_entry>>{},
+          std::vector{file.path()}
+        )
+      );
       REQUIRE(loaded);
       result.emplace_back(file.path().filename().string(), std::move(loaded));
     }

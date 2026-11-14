@@ -2,11 +2,11 @@
 
 #include "bibstd/bible/reference_ocr.hpp"
 #include "bibstd/bible/reference_range.hpp"
+#include "bibstd/workflow/process_params.hpp"
+#include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_scripture.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
-#include <arcstd/framework/process_params.hpp>
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_settings_base.hpp>
 #include <bibocr/data/screen_types.hpp>
 #include <bibocr/util/language.hpp>
 
@@ -22,7 +22,7 @@ namespace bibstd::workflow
 ///
 /// Settings corresponding to workflow bible reference ocr.
 ///
-struct workflow_bible_ref_ocr_settings final : public arcstd::workflow::workflow_settings_base
+struct workflow_bible_ref_ocr_settings final : public workflow_settings_base
 {
   // Typedefs
   ///
@@ -37,7 +37,7 @@ struct workflow_bible_ref_ocr_settings final : public arcstd::workflow::workflow
   };
 
   // Structors
-  workflow_bible_ref_ocr_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
+  workflow_bible_ref_ocr_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store);
 
   // Variables
   const setting_type<std::optional<std::filesystem::path>> custom_tessdata_path;
@@ -50,7 +50,7 @@ struct workflow_bible_ref_ocr_settings final : public arcstd::workflow::workflow
 ///
 /// Bible reference ocr: this workflow searches for bible references on a screen area using OCR around the cursor position.
 ///
-class workflow_bible_ref_ocr final : public arcstd::workflow::workflow_base<workflow_bible_ref_ocr_settings>
+class workflow_bible_ref_ocr final : public workflow_base<workflow_bible_ref_ocr_settings>
 {
   // Typedefs
   struct params_t final
@@ -89,8 +89,8 @@ class workflow_bible_ref_ocr final : public arcstd::workflow::workflow_base<work
   bible::reference_ocr::ocr_engine_list_type ocr_engines_;
 
 public: // Typedefs
-  using params = arcstd::framework::process_params<params_t>;
-  using result = arcstd::framework::process_result<result_t>;
+  using params = process_params<params_t>;
+  using result = process_result<result_t>;
   using ocr_recognition_algorithm = workflow_bible_ref_ocr_settings::ocr_recognition_algorithm;
 
 public: // Structors
@@ -100,8 +100,7 @@ public: // Structors
   /// \see bibocr::txt::ocr_engine_tesseract::shipped_tessdata_folder.
   ///
   workflow_bible_ref_ocr(
-    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-    std::shared_ptr<workflow_scripture> workflow_scripture
+    std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<workflow_scripture> workflow_scripture
   );
   ~workflow_bible_ref_ocr() noexcept override;
 
@@ -118,7 +117,7 @@ private: // Implementation
   auto limit_settings_to_loaded_engines() -> void;
   [[nodiscard]] auto find_references(
     const auto& params, const settings_t& settings, const position_data_result_type& position_data
-  ) -> arcstd::framework::process_result<find_references_result_t>;
+  ) -> process_result<find_references_result_t>;
 };
 
 } // namespace bibstd::workflow

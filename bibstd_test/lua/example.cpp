@@ -4,8 +4,8 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arcstd/workflow/workflow_cache.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
@@ -29,8 +29,8 @@ namespace
 struct example_fixture final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
-  std::shared_ptr<arcstd::workflow::workflow_cache> cache;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
+  std::shared_ptr<arcstd::cache::cache_store> cache;
   std::shared_ptr<workflow::workflow_scripture> scripture;
 
   example_fixture(std::string_view name, bool activate);
@@ -52,8 +52,8 @@ example_fixture::example_fixture(const std::string_view name, const bool activat
   }
   arcstd::test_utils::write_file(scripts / "example.lua", code);
   const auto settings = arcstd::test_utils::make_script_settings(folder.path(), true);
-  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
-  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
+  script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::cache::cache_store>(settings->data_folder(), script);
   scripture = std::make_shared<workflow::workflow_scripture>(settings, script);
   // Last, as the app does
   arcstd::test_utils::load_scripts(*script);

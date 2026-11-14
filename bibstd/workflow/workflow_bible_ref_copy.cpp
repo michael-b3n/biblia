@@ -56,19 +56,19 @@ namespace
 ///
 ///
 workflow_bible_ref_copy_settings::workflow_bible_ref_copy_settings(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
+  std::shared_ptr<arcstd::setting::setting_store> setting_store
 )
-  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
-  , mask{workflow_settings_->create_setting("copy.mask", std::string{default_mask()})}
+  : workflow_settings_base{std::move(setting_store)}
+  , mask{setting_store_->create_setting("copy.mask", std::string{default_mask()})}
 {
 }
 
 ///
 ///
 workflow_bible_ref_copy::workflow_bible_ref_copy(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings, std::shared_ptr<workflow_scripture> workflow_scripture
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<workflow_scripture> workflow_scripture
 )
-  : workflow_base{std::move(workflow_settings)}
+  : workflow_base{std::move(setting_store)}
   , workflow_scripture_{std::move(workflow_scripture)}
 {
 }
@@ -122,7 +122,7 @@ auto workflow_bible_ref_copy::text(const bible::reference_range& range) const ->
       const auto plain_verses = verses(range, scripture.scripture_name);
       if(!plain_verses)
       {
-        return std::unexpected{arcstd::framework::process_result_unexpected::failure};
+        return std::unexpected{process_result_unexpected::failure};
       }
       values.content = joined_text(*plain_verses, false);
       values.content_numbered = joined_text(*plain_verses, true);
@@ -131,14 +131,14 @@ auto workflow_bible_ref_copy::text(const bible::reference_range& range) const ->
     if(text.empty())
     {
       LOG_WARN("nothing to copy: mask=\"{}\", reference=\"{}\"", mask, range);
-      return std::unexpected{arcstd::framework::process_result_unexpected::failure};
+      return std::unexpected{process_result_unexpected::failure};
     }
     return text;
   }
   catch(...)
   {
     LOG_ERROR("exception occurred: {}", arcstd::util::exception_report());
-    return std::unexpected{arcstd::framework::process_result_unexpected::failure};
+    return std::unexpected{process_result_unexpected::failure};
   }
 }
 

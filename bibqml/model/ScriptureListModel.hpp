@@ -1,7 +1,7 @@
 #pragma once
 
 #include <arcstd/execution/scope.hpp>
-#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
 #include <bibstd/bible/reference.hpp>
 
@@ -107,7 +107,7 @@ class ScriptureListModel final : public QAbstractListModel
   std::deque<Entry> entries_;
   int referenceRow_{0};
   QString scriptureCopyright_;
-  arcstd::framework::queued_connections connections_;
+  arcstd::signal::queued_connections connections_;
   arcstd::execution::scope scope_;
   const std::unique_ptr<MachineHolder> machine_;
 

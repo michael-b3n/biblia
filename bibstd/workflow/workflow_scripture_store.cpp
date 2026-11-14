@@ -5,12 +5,12 @@
 #include "bibstd/bible/scripture_types.hpp"
 
 #include <arcstd/io/zip_file_reader.hpp>
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/numeric_cast.hpp>
 #include <arcstd/util/string.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -85,9 +85,7 @@ namespace
   {
     const auto& [book, chapters] = book_entry;
     const auto chapter_end = [book = book_of(book)](const auto& chapter_entry)
-    {
-      return bible::reference::create_unguarded(book, number_of(chapter_entry.first), number_of(chapter_entry.second));
-    };
+    { return bible::reference::create_unguarded(book, number_of(chapter_entry.first), number_of(chapter_entry.second)); };
     return chapters | std::views::transform(chapter_end);
   };
   return verse_counts | std::views::transform(of_book) | std::views::join | std::ranges::to<std::vector>();
@@ -97,7 +95,8 @@ namespace
 /// \return the outline of the scripture of the reader output \p output. Throws if
 /// it names an unknown book or a number below 1, or holds no verse.
 ///
-[[nodiscard]] auto outline_of(workflow_scripture_store::read_manifest::output output) -> std::shared_ptr<bible::scripture_outline>
+[[nodiscard]] auto outline_of(workflow_scripture_store::read_manifest::output output)
+  -> std::shared_ptr<bible::scripture_outline>
 {
   // A field left out holds nothing
   static constexpr auto filled = [](auto& field) -> auto&
@@ -192,11 +191,10 @@ namespace
 ///
 ///
 workflow_scripture_store::workflow_scripture_store(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
 )
-  : workflow_script_{std::move(workflow_script)}
-  , folder_{workflow_settings->data_folder() / folder_name}
+  : lua_engine_{std::move(lua_engine)}
+  , folder_{setting_store->data_folder() / folder_name}
 {
 }
 
@@ -234,7 +232,7 @@ auto workflow_scripture_store::load(const bool reload) -> void
   // Created here so a later import has somewhere to copy to
   std::ignore = std::filesystem::create_directories(folder_, error);
   // Held throughout, so an import waits until the folder is read
-  const auto state = workflow_script_->state();
+  const auto script_lock = lua_engine_->lock();
   const auto supported = [](const std::filesystem::path& file)
   {
     const auto container = is_container(file);
@@ -284,9 +282,9 @@ auto workflow_scripture_store::import(const std::filesystem::path& source) -> st
   std::ignore = std::filesystem::create_directories(folder_, error);
 
   // Held throughout, so a load takes turns with the import
-  const auto state = workflow_script_->state();
+  const auto script_lock = lua_engine_->lock();
   // Before the scripts are loaded there is no reader, the load after them reads the copied files
-  const auto readers_loaded = !workflow_script_->scripts<read_manifest>().empty();
+  const auto readers_loaded = !lua_engine_->scripts<read_manifest>().empty();
   const auto take_over = [&](const std::filesystem::path& file)
   {
     // Read before the copy, so a file this store cannot load never reaches the folder
@@ -344,14 +342,14 @@ auto workflow_scripture_store::read(const std::filesystem::path& file, const boo
     };
 
     // Held while the readers run, so no other script reaches the archive
-    const auto state = workflow_script_->state();
+    const auto script_lock = lua_engine_->lock();
     ///
     /// \lua Reads an entry of the archive a reader reads, \see the
     /// manifest `scripture.read`. It exists only while a reader runs.
     /// \param name the name of the entry, one of the `entries` of the input
     /// \return its content, or `nil` and `not found`
     ///
-    const auto registration = workflow_script_->register_function(
+    const auto registration = lua_engine_->register_function(
       "scripture_store.read_entry",
       [&archive](const std::string& name) -> std::expected<std::string, std::string>
       {
@@ -363,10 +361,10 @@ auto workflow_scripture_store::read(const std::filesystem::path& file, const boo
         return archive.read_entry_as_string(*entry);
       }
     );
-    for(const auto& reader : workflow_script_->scripts<read_manifest>() | std::views::keys)
+    for(const auto& reader : lua_engine_->scripts<read_manifest>() | std::views::keys)
     {
       // A reader of another format answers with neither an error nor a name
-      auto output = workflow_script_->run<read_manifest>(reader, input);
+      auto output = lua_engine_->run<read_manifest>(reader, input);
       if(output && output->get<"error">())
       {
         LOG_ERROR(

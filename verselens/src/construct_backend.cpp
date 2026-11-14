@@ -1,16 +1,16 @@
 #include "src/construct_backend.hpp"
 #include "res/version.hpp"
 
-#include <arcstd/workflow/workflow_cache.hpp>
-#include <arcstd/workflow/workflow_hotkey.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
-#include <arcstd/workflow/workflow_web.hpp>
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
+#include <arcstd/setting/setting_store.hpp>
+#include <arcstd/web/web_fetcher.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_copy.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
+#include <bibstd/workflow/workflow_hotkey.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
 #include <memory>
@@ -24,25 +24,25 @@ auto construct_backend() -> backend_instance
 {
   // Init backend
   // clang-format off
-  auto workflow_settings = std::make_shared<arcstd::workflow::workflow_settings>(version::data_folder_name);
-  auto workflow_script = std::make_shared<arcstd::workflow::workflow_script>(workflow_settings, bibstd::lua::bundled::all);
-  auto workflow_web = std::make_shared<arcstd::workflow::workflow_web>(workflow_settings, workflow_script);
-  auto workflow_cache = std::make_shared<arcstd::workflow::workflow_cache>(workflow_settings, workflow_script);
-  auto workflow_hotkey = std::make_shared<arcstd::workflow::workflow_hotkey>(workflow_settings);
-  auto workflow_scripture = std::make_shared<bibstd::workflow::workflow_scripture>(workflow_settings, workflow_script);
-  auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(workflow_settings, workflow_scripture);
-  auto workflow_bible_ref_ocr_auto = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr_auto>(workflow_settings, workflow_bible_ref_ocr);
-  auto workflow_bible_ref_lookup = std::make_shared<bibstd::workflow::workflow_bible_ref_lookup>(workflow_settings, workflow_script);
-  auto workflow_bible_ref_copy = std::make_shared<bibstd::workflow::workflow_bible_ref_copy>(workflow_settings, workflow_scripture);
+  auto setting_store = std::make_shared<arcstd::setting::setting_store>(version::data_folder_name);
+  auto lua_engine = std::make_shared<arcstd::lua::lua_engine>(setting_store, bibstd::lua::bundled::all);
+  auto web_fetcher = std::make_shared<arcstd::web::web_fetcher>(setting_store, lua_engine);
+  auto cache_store = std::make_shared<arcstd::cache::cache_store>(setting_store->data_folder(), lua_engine);
+  auto workflow_hotkey = std::make_shared<bibstd::workflow::workflow_hotkey>(setting_store);
+  auto workflow_scripture = std::make_shared<bibstd::workflow::workflow_scripture>(setting_store, lua_engine);
+  auto workflow_bible_ref_ocr = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr>(setting_store, workflow_scripture);
+  auto workflow_bible_ref_ocr_auto = std::make_shared<bibstd::workflow::workflow_bible_ref_ocr_auto>(setting_store, workflow_bible_ref_ocr);
+  auto workflow_bible_ref_lookup = std::make_shared<bibstd::workflow::workflow_bible_ref_lookup>(setting_store, lua_engine);
+  auto workflow_bible_ref_copy = std::make_shared<bibstd::workflow::workflow_bible_ref_copy>(setting_store, workflow_scripture);
   // clang-format on
-  workflow_script->load_scripts();
+  lua_engine->load_scripts();
 
   // Construct workflows here. The returned scoped guard will deinitialize the workflows when it goes out of scope.
   return backend_instance{
-    .workflow_settings{std::move(workflow_settings)},
-    .workflow_script{std::move(workflow_script)},
-    .workflow_web{std::move(workflow_web)},
-    .workflow_cache{std::move(workflow_cache)},
+    .setting_store{std::move(setting_store)},
+    .lua_engine{std::move(lua_engine)},
+    .web_fetcher{std::move(web_fetcher)},
+    .cache_store{std::move(cache_store)},
     .workflow_hotkey{std::move(workflow_hotkey)},
     .workflow_scripture{std::move(workflow_scripture)},
     .workflow_bible_ref_ocr{std::move(workflow_bible_ref_ocr)},
@@ -56,7 +56,7 @@ auto construct_backend() -> backend_instance
 ///
 auto shutdown_backend(const backend_instance& backend) -> void
 {
-  std::static_pointer_cast<arcstd::workflow::workflow_script>(backend.workflow_script)->shutdown();
+  backend.lua_engine->shutdown();
 }
 
 } // namespace verselens

@@ -1,7 +1,10 @@
 #pragma once
 
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
+#include <arcstd/setting/setting_store.hpp>
+#include <arcstd/web/web_fetcher.hpp>
+#include <bibstd/workflow/workflow_base.hpp>
 
 #include <memory>
 
@@ -13,16 +16,16 @@ namespace verselens
 ///
 struct backend_instance final
 {
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_script;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_web;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_cache;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_hotkey;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_scripture;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_bible_ref_ocr;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_bible_ref_ocr_auto;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_bible_ref_lookup;
-  std::shared_ptr<arcstd::workflow::workflow_ground> workflow_bible_ref_copy;
+  std::shared_ptr<arcstd::setting::setting_store> setting_store;
+  std::shared_ptr<arcstd::lua::lua_engine> lua_engine;
+  std::shared_ptr<arcstd::web::web_fetcher> web_fetcher;
+  std::shared_ptr<arcstd::cache::cache_store> cache_store;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_hotkey;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_scripture;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_ocr_auto;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_lookup;
+  std::shared_ptr<bibstd::workflow::workflow_ground> workflow_bible_ref_copy;
 };
 
 ///

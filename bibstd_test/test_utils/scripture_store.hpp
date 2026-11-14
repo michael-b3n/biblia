@@ -4,9 +4,9 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/zip_archive.hpp"
 
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/util/enum.hpp>
-#include <arcstd/workflow/workflow_cache.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
 #include <bibstd/bible/common.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
@@ -64,8 +64,8 @@ inline constexpr auto usfm_codes = std::array<std::string_view, 66>{
 struct scripture_store final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
-  std::shared_ptr<arcstd::workflow::workflow_cache> cache; // keeps the verses for the readers
+  std::shared_ptr<arcstd::lua::lua_engine> script;
+  std::shared_ptr<arcstd::cache::cache_store> cache; // keeps the verses for the readers
   std::shared_ptr<workflow::workflow_scripture_store> store;
 
   explicit scripture_store(
@@ -124,8 +124,8 @@ inline scripture_store::scripture_store(
     std::filesystem::copy_file(file, scripture_folder() / file.filename());
   }
   const auto settings = arcstd::test_utils::make_script_settings(folder.path());
-  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
-  cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
+  script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
+  cache = std::make_shared<arcstd::cache::cache_store>(settings->data_folder(), script);
   store = std::make_shared<workflow::workflow_scripture_store>(settings, script);
   arcstd::test_utils::load_scripts(*script);
   store->load();
@@ -193,7 +193,14 @@ inline auto scripture_reading::operator->() const -> const bible::scripture_outl
 [[nodiscard]] inline auto read_scripture(const std::string_view name, const std::vector<test_utils::zip_entry>& entries)
   -> scripture_reading
 {
-  return reading_of(std::make_shared<const scripture_store>(name, std::map<std::string, std::vector<test_utils::zip_entry>>{{"scripture.zip", entries}}));
+  return reading_of(
+    std::make_shared<const scripture_store>(
+      name,
+      std::map<std::string, std::vector<test_utils::zip_entry>>{
+        {"scripture.zip", entries}
+  }
+    )
+  );
 }
 
 ///

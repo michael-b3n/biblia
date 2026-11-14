@@ -2,14 +2,14 @@
 #include "bibstd/system/screen.hpp"
 #include "bibstd/workflow/workflow_bible_ref_ocr.hpp"
 
-#include <arcstd/framework/setting.hpp>
 #include <arcstd/math/rect.hpp>
 #include <arcstd/math/value_range.hpp>
+#include <arcstd/setting/setting.hpp>
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/format.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
 #include <bibocr/system/capture.hpp>
 
 #include <algorithm>
@@ -83,22 +83,21 @@ public: // Operators
 ///
 ///
 workflow_bible_ref_ocr_auto_settings::workflow_bible_ref_ocr_auto_settings(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
+  std::shared_ptr<arcstd::setting::setting_store> setting_store
 )
-  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
-  , poll_interval{workflow_settings_->create_setting("ocr_auto.poll_interval", std::chrono::milliseconds{250})}
-  , dwell_duration{workflow_settings_->create_setting("ocr_auto.dwell_duration", std::chrono::milliseconds{700})}
-  , movement_tolerance{workflow_settings_->create_setting("ocr_auto.movement_tolerance", std::int32_t{8}, "px")}
+  : workflow_settings_base{std::move(setting_store)}
+  , poll_interval{setting_store_->create_setting("ocr_auto.poll_interval", std::chrono::milliseconds{250})}
+  , dwell_duration{setting_store_->create_setting("ocr_auto.dwell_duration", std::chrono::milliseconds{700})}
+  , movement_tolerance{setting_store_->create_setting("ocr_auto.movement_tolerance", std::int32_t{8}, "px")}
 {
 }
 
 ///
 ///
 workflow_bible_ref_ocr_auto::workflow_bible_ref_ocr_auto(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-  std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<workflow_bible_ref_ocr> workflow_bible_ref_ocr
 )
-  : workflow_base{std::move(workflow_settings)}
+  : workflow_base{std::move(setting_store)}
   , workflow_bible_ref_ocr_{std::move(workflow_bible_ref_ocr)}
   , machine_{std::make_unique<machine_holder>(*this)}
 {
@@ -156,7 +155,7 @@ auto workflow_bible_ref_ocr_auto::a_stop(sm::s_running& source) -> void
 
 ///
 ///
-auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcstd::framework::process_id_type id) -> void
+auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const process_id_type id) -> void
 {
   auto examined = std::optional<bibocr::data::screen_coordinates_type>{};
   auto resting_position = std::optional<bibocr::data::screen_coordinates_type>{};
@@ -204,14 +203,12 @@ auto workflow_bible_ref_ocr_auto::search(const std::stop_token token, const arcs
 ///
 ///
 auto workflow_bible_ref_ocr_auto::examine(
-  const std::stop_token& token,
-  const bibocr::data::screen_coordinates_type position,
-  const arcstd::framework::process_id_type id
+  const std::stop_token& token, const bibocr::data::screen_coordinates_type position, const process_id_type id
 ) -> void
 {
   try
   {
-    const auto detection_id = arcstd::framework::process_id_type{};
+    const auto detection_id = process_id_type{};
     notify(
       &signals_type::detecting,
       detection_started_type{.process_id = id, .detection_id = detection_id, .cursor_position = position}

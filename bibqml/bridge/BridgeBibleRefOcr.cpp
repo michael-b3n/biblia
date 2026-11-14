@@ -1,17 +1,17 @@
 #include "bibqml/bridge/BridgeBibleRefOcr.hpp"
 
-#include <arcstd/framework/setting.hpp>
 #include <arcstd/math/rect.hpp>
+#include <arcstd/setting/setting.hpp>
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/numeric_cast.hpp>
 #include <arcstd/util/timer.hpp>
-#include <arcstd/workflow/workflow_hotkey.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
 #include <bibocr/system/capture.hpp>
 #include <bibstd/system/screen.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr.hpp>
 #include <bibstd/workflow/workflow_bible_ref_ocr_auto.hpp>
+#include <bibstd/workflow/workflow_hotkey.hpp>
 
 #include <QCursor>
 #include <QMetaObject>
@@ -90,11 +90,11 @@ struct CaptureResult final
 /// Create the auto search setting, or access the existing one. Declared here, the backend only searches when told.
 /// \return non owning pointer to the auto search setting
 ///
-[[nodiscard]] auto createAutoSearchSetting(arcstd::workflow::workflow_settings& workflowSettings)
-  -> arcstd::util::non_owning_ptr<arcstd::framework::setting_type_erased<bool>>
+[[nodiscard]] auto createAutoSearchSetting(arcstd::setting::setting_store& workflowSettings)
+  -> arcstd::util::non_owning_ptr<arcstd::setting::setting_type_erased<bool>>
 {
   const auto setting = workflowSettings.type_erased_setting(std::string{"ocr.auto_search"}, false);
-  return std::get<arcstd::util::non_owning_ptr<arcstd::framework::setting_type_erased<bool>>>(setting);
+  return std::get<arcstd::util::non_owning_ptr<arcstd::setting::setting_type_erased<bool>>>(setting);
 }
 
 } // namespace
@@ -107,15 +107,15 @@ constexpr auto manualSearchPath = "manual_reference_search";
 BridgeBibleRefOcr::BridgeBibleRefOcr(
   std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr> workflowBibleRefOcr,
   std::shared_ptr<bibstd::workflow::workflow_bible_ref_ocr_auto> workflowBibleRefOcrAuto,
-  const std::shared_ptr<arcstd::workflow::workflow_hotkey>& workflowHotkey,
-  const std::shared_ptr<arcstd::workflow::workflow_settings>& workflowSettings,
+  const std::shared_ptr<bibstd::workflow::workflow_hotkey>& workflowHotkey,
+  const std::shared_ptr<arcstd::setting::setting_store>& workflowSettings,
   const arcstd::util::non_owning_ptr<QObject> parent
 )
   : QObject{parent}
   , workflowBibleRefOcr_{std::move(workflowBibleRefOcr)}
   , workflowBibleRefOcrAuto_{std::move(workflowBibleRefOcrAuto)}
   , manualSearchSig_{workflowHotkey->register_callback(
-      manualSearchPath, arcstd::system::hotkey_common::key_modifier::alt, arcstd::system::hotkey_common::key::vk_f
+      manualSearchPath, bibstd::system::hotkey_common::key_modifier::alt, bibstd::system::hotkey_common::key::vk_f
     )}
   , autoSearchSetting_{createAutoSearchSetting(*workflowSettings)}
 {
@@ -140,7 +140,7 @@ BridgeBibleRefOcr::BridgeBibleRefOcr(
   );
 
   autoSearchSetting_->signal_adapter.connect_queued(
-    &arcstd::framework::setting_signals::value_changed, [this]() { applyAutoSearch(); }, connections_
+    &arcstd::setting::setting_signals::value_changed, [this]() { applyAutoSearch(); }, connections_
   );
   // An unchanged setting emits nothing, so a search left on is started here. Starting is the one
   // half that does not wait for a run, so it needs no thread of its own
@@ -185,7 +185,7 @@ void BridgeBibleRefOcr::runManualSearch()
     return;
   }
 
-  const auto processId = arcstd::framework::process_id_type{};
+  const auto processId = bibstd::workflow::process_id_type{};
   notifyManualSearchStarted(processId);
 
   const auto result = workflowBibleRefOcr_->find({
@@ -221,7 +221,7 @@ void BridgeBibleRefOcr::applyAutoSearch()
 
 ///
 ///
-void BridgeBibleRefOcr::setManualSearch(const std::optional<arcstd::framework::process_id_type> processId)
+void BridgeBibleRefOcr::setManualSearch(const std::optional<bibstd::workflow::process_id_type> processId)
 {
   manualSearchProcessId_ = processId;
   const auto running = manualSearchProcessId_.has_value();
@@ -234,7 +234,7 @@ void BridgeBibleRefOcr::setManualSearch(const std::optional<arcstd::framework::p
 
 ///
 ///
-void BridgeBibleRefOcr::notifyManualSearchStarted(const arcstd::framework::process_id_type processId)
+void BridgeBibleRefOcr::notifyManualSearchStarted(const bibstd::workflow::process_id_type processId)
 {
   QMetaObject::invokeMethod(
     this,
@@ -252,7 +252,7 @@ void BridgeBibleRefOcr::notifyManualSearchStarted(const arcstd::framework::proce
 ///
 ///
 void BridgeBibleRefOcr::notifyManualSearchFinished(
-  const arcstd::framework::process_id_type processId,
+  const bibstd::workflow::process_id_type processId,
   const std::optional<bibstd::bible::reference_range> referenceRange,
   const std::optional<bibocr::data::screen_rect_type> boundingBox
 )
@@ -279,7 +279,7 @@ void BridgeBibleRefOcr::notifyManualSearchFinished(
 
 ///
 ///
-void BridgeBibleRefOcr::notifyAutoSearchDetecting(const arcstd::framework::process_id_type detectionId)
+void BridgeBibleRefOcr::notifyAutoSearchDetecting(const bibstd::workflow::process_id_type detectionId)
 {
   QMetaObject::invokeMethod(
     this,
@@ -296,7 +296,7 @@ void BridgeBibleRefOcr::notifyAutoSearchDetecting(const arcstd::framework::proce
 ///
 ///
 void BridgeBibleRefOcr::notifyAutoSearchDetection(
-  const arcstd::framework::process_id_type detectionId,
+  const bibstd::workflow::process_id_type detectionId,
   const bibstd::bible::reference_range referenceRange,
   const std::optional<bibocr::data::screen_rect_type> boundingBox
 )

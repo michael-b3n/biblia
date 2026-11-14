@@ -4,12 +4,15 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/lua/lua_engine.hpp>
+#include <arcstd/lua/value.hpp>
+#include <arcstd/lua/value_cast.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <filesystem>
+#include <format>
 #include <map>
 #include <memory>
 #include <string>
@@ -19,13 +22,13 @@ namespace bibstd::test_utils
 {
 
 ///
-/// Script workflow with the bundled scripts and the user scripts \p scripts by
+/// Lua engine with the bundled scripts and the user scripts \p scripts by
 /// file name, loaded. Lua expressions see the globals of scripts and \p texts.
 ///
 struct script_sandbox final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
   std::map<std::string, std::string> texts;
 
   explicit script_sandbox(std::string_view name, const std::map<std::string, std::string>& scripts = {});
@@ -33,7 +36,12 @@ struct script_sandbox final
   ///
   /// \return the value of the Lua expression \p code
   ///
-  [[nodiscard]] auto value(const std::string& code) const -> sol::object;
+  [[nodiscard]] auto value(const std::string& code) const -> arcstd::lua::value;
+
+  ///
+  /// \return the text the Lua expression \p code gives
+  ///
+  [[nodiscard]] auto text(const std::string& code) const -> std::string;
 
   ///
   /// \return true if the Lua expression \p code is true
@@ -52,36 +60,48 @@ inline script_sandbox::script_sandbox(const std::string_view name, const std::ma
   {
     arcstd::test_utils::write_file(folder_of_scripts / file, code);
   }
-  script = std::make_shared<arcstd::workflow::workflow_script>(
-    arcstd::test_utils::make_script_settings(folder.path(), true), lua::bundled::all
-  );
+  script =
+    std::make_shared<arcstd::lua::lua_engine>(arcstd::test_utils::make_script_settings(folder.path(), true), lua::bundled::all);
   arcstd::test_utils::load_scripts(*script);
 }
 
 ///
 ///
-inline auto script_sandbox::value(const std::string& code) const -> sol::object
+inline auto script_sandbox::value(const std::string& code) const -> arcstd::lua::value
 {
-  auto state = script->state();
-  const auto run = state->load("return " + code, "test", sol::load_mode::text);
-  REQUIRE(run.valid());
-  auto function = run.get<sol::protected_function>();
-  auto environment = sol::environment{*state, sol::create, state->traverse_get<sol::table>("root", "system", "sandbox")};
+  // Each text a local of the expression, in a long string no text closes
+  auto prelude = std::string{};
   for(const auto& [name, text] : texts)
   {
-    environment[name] = text;
+    auto level = std::string{};
+    while(text.contains("]" + level + "]"))
+    {
+      level += "=";
+    }
+    // Lua drops a line break right after the opening bracket, so the text starts after one
+    prelude += std::format("local {} = [{}[\n{}]{}]\n", name, level, text, level);
   }
-  sol::set_environment(environment, function);
-  const auto result = function();
-  REQUIRE(result.valid());
-  return result.get<sol::object>();
+  const auto result = script->run_script("test.lua", prelude + "return " + code);
+  REQUIRE(result);
+  return *result;
+}
+
+///
+///
+inline auto script_sandbox::text(const std::string& code) const -> std::string
+{
+  const auto result = arcstd::lua::value_cast<std::string>::from(value(code));
+  REQUIRE(result);
+  return *result;
 }
 
 ///
 ///
 inline auto script_sandbox::check(const std::string& code) const -> bool
 {
-  return value(code).as<bool>();
+  const auto result = arcstd::lua::value_cast<bool>::from(value(code));
+  REQUIRE(result);
+  return *result;
 }
 
 } // namespace bibstd::test_utils

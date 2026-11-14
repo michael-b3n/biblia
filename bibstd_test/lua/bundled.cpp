@@ -1,8 +1,7 @@
 #include "test_utils/scripts.hpp"
 #include "test_utils/temp_folder.hpp"
 
-#include <arcstd/lua/state_owner.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
 
@@ -29,7 +28,7 @@ using lookup = workflow::workflow_bible_ref_lookup;
 struct bundled_fixture final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
 
   explicit bundled_fixture(std::string_view name);
 
@@ -50,9 +49,9 @@ struct bundled_fixture final
 ///
 bundled_fixture::bundled_fixture(const std::string_view name)
   : folder{name}
-  , script{std::make_shared<arcstd::workflow::workflow_script>(
-      arcstd::test_utils::make_script_settings(folder.path()), lua::bundled::all
-    )}
+  , script{
+      std::make_shared<arcstd::lua::lua_engine>(arcstd::test_utils::make_script_settings(folder.path()), lua::bundled::all)
+    }
 {
   arcstd::test_utils::load_scripts(*script);
 }
@@ -75,15 +74,16 @@ auto bundled_fixture::url(
 
 } // namespace
 
-TEST_CASE("bundled_scripts_compile", "[lua]")
+TEST_CASE("bundled_scripts_run", "[lua]")
 {
-  const auto owner = arcstd::lua::state_owner{};
-  auto s = owner.lock();
+  const auto folder = arcstd::test_utils::temp_folder{"bundled_scripts_run"};
+  const auto engine =
+    arcstd::lua::lua_engine{arcstd::test_utils::make_script_settings(folder.path()), arcstd::test_utils::no_bundled};
   REQUIRE_FALSE(bundled::all().empty());
   for(const auto& script : bundled::all())
   {
     INFO(script.name);
-    CHECK(s->load(script.code, std::string{script.name}).valid());
+    CHECK(engine.run_script(script.name, script.code));
   }
 }
 

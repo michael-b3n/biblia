@@ -2,10 +2,9 @@
 
 #include "bibstd/bible/reference.hpp"
 #include "bibstd/bible/reference_range.hpp"
-
-#include <arcstd/framework/process_params.hpp>
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_settings_base.hpp>
+#include "bibstd/workflow/process_params.hpp"
+#include "bibstd/workflow/workflow_base.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
 #include <memory>
 #include <optional>
@@ -21,10 +20,10 @@ class workflow_scripture;
 ///
 /// Settings corresponding to workflow bible reference copy.
 ///
-class workflow_bible_ref_copy_settings final : public arcstd::workflow::workflow_settings_base
+class workflow_bible_ref_copy_settings final : public workflow_settings_base
 {
 public: // Structors
-  workflow_bible_ref_copy_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
+  workflow_bible_ref_copy_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store);
   ~workflow_bible_ref_copy_settings() noexcept override = default;
 
 public: // Variables
@@ -35,26 +34,25 @@ public: // Variables
 /// Workflow for copying bible references. The setting "copy.mask" writes a reference as text, \see bible::reference_mask.
 /// Books and verses are those of the scripture of the settings.
 ///
-class workflow_bible_ref_copy final : public arcstd::workflow::workflow_base<workflow_bible_ref_copy_settings>
+class workflow_bible_ref_copy final : public workflow_base<workflow_bible_ref_copy_settings>
 {
   // Typedefs
   struct params_t final
   {
     bible::reference_range range;
   };
-  using text_t = arcstd::framework::process_result<std::string>;
+  using text_t = process_result<std::string>;
   using verse_t = std::pair<bible::reference::verse_type, std::string>;
 
   // Variables
   const std::shared_ptr<workflow_scripture> workflow_scripture_;
 
 public: // Typedefs
-  using params = arcstd::framework::process_params<params_t>;
+  using params = process_params<params_t>;
 
 public: // Structors
   workflow_bible_ref_copy(
-    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-    std::shared_ptr<workflow_scripture> workflow_scripture
+    std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<workflow_scripture> workflow_scripture
   );
   ~workflow_bible_ref_copy() noexcept override;
 

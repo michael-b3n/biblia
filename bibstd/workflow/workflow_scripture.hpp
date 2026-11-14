@@ -1,19 +1,19 @@
 #pragma once
 
 #include "bibstd/bible/scripture_outline.hpp"
+#include "bibstd/workflow/process_params.hpp"
+#include "bibstd/workflow/workflow_base.hpp"
 #include "bibstd/workflow/workflow_scripture_store.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
-#include <arcstd/framework/process_params.hpp>
-#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/lua/script_table.hpp>
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/signal/adapter.hpp>
 #include <arcstd/signal/common.hpp>
+#include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/const_map.hpp>
 #include <arcstd/util/path.hpp>
-#include <arcstd/workflow/workflow_base.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
-#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -41,10 +41,10 @@ struct workflow_scripture_sigs final
 ///
 /// Settings corresponding to workflow scripture.
 ///
-class workflow_scripture_settings final : public arcstd::workflow::workflow_settings_base
+class workflow_scripture_settings final : public workflow_settings_base
 {
 public: // Structors
-  workflow_scripture_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings);
+  workflow_scripture_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store);
   ~workflow_scripture_settings() noexcept override = default;
 
 public: // Variables
@@ -59,7 +59,7 @@ public: // Variables
 /// - scriptures_changed: Emitted when the scriptures of the store and the scripts changed.
 ///
 class workflow_scripture final
-  : public arcstd::workflow::workflow_base<workflow_scripture_settings>
+  : public workflow_base<workflow_scripture_settings>
   , public arcstd::signal::adapter<workflow_scripture_sigs>
 {
   // Typedefs
@@ -106,7 +106,7 @@ class workflow_scripture final
 
   struct script_scripture_t final
   {
-    arcstd::workflow::workflow_script::script_name_type script;
+    arcstd::lua::lua_engine::script_name_type script;
     std::string name;
   };
 
@@ -114,11 +114,11 @@ class workflow_scripture final
   using source_t = std::variant<workflow_scripture_store::file_scripture, script_scriptures_t::value_type>;
 
   // Variables
-  const std::shared_ptr<arcstd::workflow::workflow_script> workflow_script_;
+  const std::shared_ptr<arcstd::lua::lua_engine> lua_engine_;
   const std::unique_ptr<workflow_scripture_store> workflow_scripture_store_;
   mutable std::mutex mtx_;
   std::optional<script_scriptures_t> script_scriptures_;
-  arcstd::framework::queued_connections connections_;
+  arcstd::signal::queued_connections connections_;
   arcstd::lua::registration registrations_;
 
 public: // Constants
@@ -137,10 +137,10 @@ public: // Constants
 
 public: // Typedefs
   using versification_wrapper_type = versification_wrapper;
-  using scripture_params = arcstd::framework::process_params<scripture_params_t>;
-  using passage_params = arcstd::framework::process_params<passage_params_t>;
+  using scripture_params = process_params<scripture_params_t>;
+  using passage_params = process_params<passage_params_t>;
   using passage_result = std::expected<passage_result_t, std::string>;
-  using import_params = arcstd::framework::process_params<import_params_t>;
+  using import_params = process_params<import_params_t>;
 
   // Manifests of a script offering scriptures, \see doc/lua_api.md
   // clang-format off
@@ -193,7 +193,7 @@ public: // Typedefs
   };
 
   ///
-  /// \lua A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `workflow.cache`
+  /// \lua A verse. The app asks for every verse it shows and keeps nothing, so the script may ask `cache`
   /// first. A reader of scripture files offers it too, \see `scripture.read`.
   /// \param name one of the names the script offers, for a reader the name of the file
   /// \param book the identifier of the app, e.g. `john`
@@ -225,8 +225,7 @@ public: // Typedefs
 
 public: // Structors
   workflow_scripture(
-    std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-    std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+    std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
   );
   ~workflow_scripture() noexcept override;
 
@@ -283,7 +282,7 @@ private: // Implementation
   [[nodiscard]] auto scripture_names() const -> std::vector<std::string>;
   [[nodiscard]] auto selected_name(const std::optional<std::string>& name) const -> std::optional<std::string>;
   [[nodiscard]] auto find(const std::optional<std::string>& name) const -> std::optional<source_t>;
-  template<arcstd::workflow::script_manifest M>
+  template<arcstd::lua::script_manifest M>
   [[nodiscard]] auto run_script(const script_scripture_t& scripture, typename M::input input) const
     -> std::optional<typename M::output>;
   auto update_scripts() -> void;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <arcstd/execution/scope.hpp>
-#include <arcstd/framework/queued_connections.hpp>
+#include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
 
 #include <QList>
@@ -38,7 +38,7 @@ class BridgeScripture final : public QObject
   bool available_{false};
   bool loaded_{false};
   bool reading_{false};
-  arcstd::framework::queued_connections connections_;
+  arcstd::signal::queued_connections connections_;
   arcstd::execution::scope scope_;
 
 public: // Structors

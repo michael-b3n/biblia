@@ -3,7 +3,7 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/wait_until.hpp"
 
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/lua/lua_engine.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 #include <bibstd/system/locale.hpp>
 #include <bibstd/workflow/workflow_bible_ref_lookup.hpp>
@@ -55,7 +55,7 @@ constexpr auto plain_script = R"(
 struct lookup_fixture final
 {
   arcstd::test_utils::temp_folder folder;
-  std::shared_ptr<arcstd::workflow::workflow_script> script;
+  std::shared_ptr<arcstd::lua::lua_engine> script;
   std::shared_ptr<workflow_bible_ref_lookup> lookup;
 
   explicit lookup_fixture(
@@ -83,13 +83,13 @@ lookup_fixture::lookup_fixture(
   );
   if(!selected.empty())
   {
-    const auto writer = std::make_shared<arcstd::workflow::workflow_settings>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path().string());
     const auto settings = workflow_bible_ref_lookup_settings{writer};
     std::ignore = settings.script->value(selected);
     std::ignore = settings.translations->value(translations);
   }
   const auto settings = arcstd::test_utils::make_script_settings(folder.path(), !scripts.empty());
-  script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
+  script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
   lookup = std::make_shared<workflow_bible_ref_lookup>(settings, script);
   // Last, as the app does
   arcstd::test_utils::load_scripts(*script);
@@ -102,7 +102,7 @@ template<typename T>
 [[nodiscard]] auto available(const T& setting)
 {
   using value_type = std::remove_cvref_t<decltype(setting->value())>;
-  return std::get<typename arcstd::framework::setting_validator_list<value_type>::sptr_type>(setting->validator)->available();
+  return std::get<typename arcstd::setting::setting_validator_list<value_type>::sptr_type>(setting->validator)->available();
 }
 
 ///

@@ -3,9 +3,9 @@
 #include "test_utils/temp_folder.hpp"
 #include "test_utils/zip_archive.hpp"
 
-#include <arcstd/core/core_cache.hpp>
-#include <arcstd/workflow/workflow_cache.hpp>
-#include <arcstd/workflow/workflow_script.hpp>
+#include <arcstd/cache/cache_store.hpp>
+#include <arcstd/lua/lua_engine.hpp>
+#include <arcstd/util/identifier.hpp>
 #include <bibstd/bible/reference.hpp>
 #include <bibstd/bible/scripture_outline.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
@@ -98,7 +98,7 @@ TEST_CASE("workflow_scripture_store_leaves_out_a_file_its_reader_rejects", "[wor
   const auto fixture = test_utils::scripture_store{
     "workflow_scripture_store_leaves_out_a_file_its_reader_rejects",
     {{"other_book.zip", {{"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}}},
-     {"unknown.zip", {{"readme.txt", "no scripture here"}}}}
+      {"unknown.zip", {{"readme.txt", "no scripture here"}}}}
   };
   CHECK(fixture.store->scriptures().empty());
 }
@@ -106,10 +106,7 @@ TEST_CASE("workflow_scripture_store_leaves_out_a_file_its_reader_rejects", "[wor
 TEST_CASE("workflow_scripture_store_reads_entries_only_while_reading", "[workflow]")
 {
   const auto fixture = test_utils::scripture_store{"workflow_scripture_store_reads_entries_only_while_reading"};
-  const auto result = fixture.script->state()->safe_script(
-    "return root.interface.workflow.scripture_store.read_entry('GEN.usfm')", sol::script_pass_on_error
-  );
-  CHECK_FALSE(result.valid());
+  CHECK_FALSE(fixture.script->run_script("test.lua", "return scripture_store.read_entry('GEN.usfm')"));
 }
 
 TEST_CASE("workflow_scripture_store_keeps_the_verses_of_a_file_an_import_fails_to_replace", "[workflow]")
@@ -122,9 +119,8 @@ TEST_CASE("workflow_scripture_store_keeps_the_verses_of_a_file_an_import_fails_t
       {"XXA.usfm", "\\id XXA\n\\c 1\n\\p\n\\v 1 Extra\n"}
   }
   );
-  auto fixture = test_utils::scripture_store{
-    "workflow_scripture_store_failed_replace_target", {{"a.zip", test_utils::usfm_entries()}}
-  };
+  auto fixture =
+    test_utils::scripture_store{"workflow_scripture_store_failed_replace_target", {{"a.zip", test_utils::usfm_entries()}}};
   CHECK(fixture.store->import(source.path() / "a.zip") == 0);
   const auto scriptures = fixture.store->scriptures();
   REQUIRE(scriptures.contains("a"));
@@ -196,8 +192,8 @@ TEST_CASE("workflow_scripture_store_reads_an_import_before_the_scripts_once_they
   test_utils::write_zip_archive(source.path() / "a.zip", test_utils::usfm_entries());
   const auto folder = arcstd::test_utils::temp_folder{"workflow_scripture_store_import_early"};
   const auto settings = arcstd::test_utils::make_script_settings(folder.path());
-  const auto script = std::make_shared<arcstd::workflow::workflow_script>(settings, lua::bundled::all);
-  const auto cache = std::make_shared<arcstd::workflow::workflow_cache>(settings, script);
+  const auto script = std::make_shared<arcstd::lua::lua_engine>(settings, lua::bundled::all);
+  const auto cache = std::make_shared<arcstd::cache::cache_store>(settings->data_folder(), script);
   const auto store = std::make_shared<workflow_scripture_store>(settings, script);
 
   // No reader yet, the file is taken over unread
@@ -233,18 +229,22 @@ TEST_CASE("workflow_scripture_store_takes_a_file_read_before_from_its_reader", "
   };
   REQUIRE(fixture.store->scriptures().contains("a"));
   // The reader keeps the file in a cache of its own, a changed name there shows it is not read again
-  const auto caches = std::filesystem::directory_iterator{fixture.folder.path() / "cache"} |
-                      std::views::transform([](const auto& entry) { return entry.path(); }) |
-                      std::views::filter([](const auto& path) { return path.filename().string().starts_with("scripture_a_zip_") && path.extension() == ".sqlite"; }) |
-                      std::ranges::to<std::vector>();
+  const auto caches =
+    std::filesystem::directory_iterator{fixture.folder.path() / "cache"} |
+    std::views::transform([](const auto& entry) { return entry.path(); }) |
+    std::views::filter([](const auto& path)
+                       { return path.filename().string().starts_with("scripture_a_zip_") && path.extension() == ".sqlite"; }) |
+    std::ranges::to<std::vector>();
   REQUIRE(caches.size() == 1);
   {
-    auto cache = arcstd::core::core_cache{caches.front()};
-    const auto summary = cache.get("summary");
+    const auto cache_name = arcstd::util::identifier{caches.front().stem().string()};
+    const auto summary = fixture.cache->get(cache_name, "summary");
     REQUIRE(summary);
     const auto name = std::string{R"(["name"] = "a")"};
     REQUIRE(summary->contains(name));
-    cache.set("summary", std::string{*summary}.replace(summary->find(name), name.size(), R"(["name"] = "Kept")"));
+    fixture.cache->set(
+      cache_name, "summary", std::string{*summary}.replace(summary->find(name), name.size(), R"(["name"] = "Kept")")
+    );
   }
   fixture.store->load();
   const auto scriptures = fixture.store->scriptures();

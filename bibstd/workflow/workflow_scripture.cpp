@@ -2,14 +2,14 @@
 #include "bibstd/bible/common.hpp"
 #include "bibstd/bible/versification.hpp"
 #include "bibstd/workflow/workflow_scripture_store.hpp"
+#include "bibstd/workflow/workflow_settings_base.hpp"
 
+#include <arcstd/setting/setting_store.hpp>
 #include <arcstd/util/contains.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/log.hpp>
 #include <arcstd/util/visit_helper.hpp>
-#include <arcstd/workflow/workflow_settings.hpp>
-#include <arcstd/workflow/workflow_settings_base.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -33,24 +33,24 @@ namespace
 ///
 [[nodiscard]] auto list_validator(const auto& setting)
 {
-  return std::get<arcstd::framework::setting_validator_list<std::optional<std::string>>::sptr_type>(setting->validator);
+  return std::get<arcstd::setting::setting_validator_list<std::optional<std::string>>::sptr_type>(setting->validator);
 }
 
 } // namespace
 
 ///
 ///
-workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings)
-  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
-  , default_scripture_name{workflow_settings_->create_setting(
+workflow_scripture_settings::workflow_scripture_settings(std::shared_ptr<arcstd::setting::setting_store> setting_store)
+  : workflow_settings_base{std::move(setting_store)}
+  , default_scripture_name{setting_store_->create_setting(
       "scripture.default_name",
       setting_value_t<decltype(default_scripture_name)>{},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(default_scripture_name)>>>()
     )}
-  , fallback_versification{workflow_settings_->create_setting(
+  , fallback_versification{setting_store_->create_setting(
       "scripture.fallback_versification_name",
       std::string{bible::versification::default_kjv::name},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(fallback_versification)>>>(
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(fallback_versification)>>>(
         workflow_scripture::default_versifications | std::views::keys |
         std::views::transform([](const auto& n) { return std::string{n}; }) | std::ranges::to<std::vector>()
       )
@@ -89,20 +89,15 @@ auto workflow_scripture::versification_wrapper::get() const -> const bible::vers
 ///
 ///
 workflow_scripture::workflow_scripture(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
 )
-  : workflow_base{workflow_settings}
-  , workflow_script_{workflow_script}
-  , workflow_scripture_store_{
-      std::make_unique<workflow_scripture_store>(std::move(workflow_settings), std::move(workflow_script))
-    }
+  : workflow_base{setting_store}
+  , lua_engine_{lua_engine}
+  , workflow_scripture_store_{std::make_unique<workflow_scripture_store>(std::move(setting_store), std::move(lua_engine))}
 {
   update_scripture_name_setting();
 
-  workflow_script_->connect_queued(
-    &arcstd::workflow::workflow_script_sigs::scripts_loaded, [this]() { update_scripts(); }, connections_
-  );
+  lua_engine_->connect_queued(&arcstd::lua::lua_engine_signals::scripts_loaded, [this]() { update_scripts(); }, connections_);
 
   static constexpr auto book_id_of = [](const std::string_view book_id) -> bible::book_id
   {
@@ -120,24 +115,24 @@ workflow_scripture::workflow_scripture(
     /// \lua The name of the default scripture, `Scripture > Default name`, `nil` for none. Functions called with `nil` as
     /// scripture name use it, so without a default scripture they find no scripture.
     ///
-    << workflow_script_->register_setting(*settings().default_scripture_name)
+    << lua_engine_->register_setting(*settings().default_scripture_name)
     ///
     /// \lua The versification for scriptures that have none, including those of scripts,
     /// `Scripture > Fallback versification`.
     ///
-    << workflow_script_->register_setting(*settings().fallback_versification)
+    << lua_engine_->register_setting(*settings().fallback_versification)
 
     // Functions
     ///
     /// \lua
     /// \return the number of scriptures, including those of scripts
     ///
-    << workflow_script_->register_function("scripture.scripture_count", [this]() { return scripture_count(); })
+    << lua_engine_->register_function("scripture.scripture_count", [this]() { return scripture_count(); })
     ///
     /// \lua
     /// \return the identifiers of all books, e.g. `john`
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.book_identifiers",
          []() { return arcstd::util::enum_names<bible::book_id>() | std::ranges::to<std::vector<std::string>>(); }
        )
@@ -146,7 +141,7 @@ workflow_scripture::workflow_scripture(
     /// \param scripture_name the scripture, `nil` for the default scripture
     /// \return its name, or `nil` if there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.name",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.name; }); }
@@ -156,7 +151,7 @@ workflow_scripture::workflow_scripture(
     /// \param scripture_name the scripture, `nil` for the default scripture
     /// \return its abbreviation, or `nil` if there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.abbreviation",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.abbreviation; }); }
@@ -166,7 +161,7 @@ workflow_scripture::workflow_scripture(
     /// \param scripture_name the scripture, `nil` for the default scripture
     /// \return its language, or `nil` if there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.language",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).transform([](const auto& info) { return info.language; }); }
@@ -176,7 +171,7 @@ workflow_scripture::workflow_scripture(
     /// \param scripture_name the scripture, `nil` for the default scripture
     /// \return its copyright, or `nil` if it has none or there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.copyright",
          [this](const std::optional<std::string>& scripture_name)
          { return information({{scripture_name}}).and_then([](const auto& info) { return info.copyright; }); }
@@ -187,7 +182,7 @@ workflow_scripture::workflow_scripture(
     /// \param book_id the identifier of the book, e.g. `john`
     /// \return the abbreviation of the book, or `nil` if it has none or there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.book_abbreviation",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
          {
@@ -201,7 +196,7 @@ workflow_scripture::workflow_scripture(
     /// \param book_id the identifier of the book, e.g. `john`
     /// \return the short name of the book, or `nil` if it has none or there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.book_short_name",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
          {
@@ -215,7 +210,7 @@ workflow_scripture::workflow_scripture(
     /// \param book_id the identifier of the book, e.g. `john`
     /// \return the long name of the book, or `nil` if it has none or there is no such scripture
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.book_long_name",
          [this](const std::optional<std::string>& scripture_name, const std::string& book_id)
          {
@@ -231,7 +226,7 @@ workflow_scripture::workflow_scripture(
     /// \param verse the verse
     /// \return the verse with the markup of the app, or `nil` and the reason, e.g. `scripture not found`
     ///
-    << workflow_script_->register_function(
+    << lua_engine_->register_function(
          "scripture.passage",
          [this](
            const std::optional<std::string>& scripture_name,
@@ -499,13 +494,13 @@ auto workflow_scripture::find(const std::optional<std::string>& name) const -> s
 
 ///
 ///
-template<arcstd::workflow::script_manifest M>
+template<arcstd::lua::script_manifest M>
 auto workflow_scripture::run_script(const script_scripture_t& scripture, typename M::input input) const
   -> std::optional<typename M::output>
 {
   // The script knows the scripture by its own name
   input.template get<"name">() = scripture.name;
-  return workflow_script_->run<M>(scripture.script, input);
+  return lua_engine_->run<M>(scripture.script, input);
 }
 
 ///
@@ -518,9 +513,9 @@ auto workflow_scripture::update_scripts() -> void
   {
     // The readers of the files are scripts too
     workflow_scripture_store_->load();
-    const auto of_script = [this](const arcstd::workflow::workflow_script::scripts_type::value_type& script)
+    const auto of_script = [this](const arcstd::lua::lua_engine::scripts_type::value_type& script)
     {
-      const auto output = workflow_script_->run<names_manifest>(script.first, {});
+      const auto output = lua_engine_->run<names_manifest>(script.first, {});
       const auto names = output ? output->get<"names">() : std::vector<std::string>{};
       return names |
              std::views::transform(
@@ -533,7 +528,7 @@ auto workflow_scripture::update_scripts() -> void
              ) |
              std::ranges::to<std::vector>();
     };
-    const auto scripts = workflow_script_->scripts<names_manifest, information_manifest, book_manifest, passage_manifest>();
+    const auto scripts = lua_engine_->scripts<names_manifest, information_manifest, book_manifest, passage_manifest>();
     auto scriptures = scripts | std::views::transform(of_script) | std::views::join | std::ranges::to<script_scriptures_t>();
     {
       const auto lock = std::scoped_lock{mtx_};

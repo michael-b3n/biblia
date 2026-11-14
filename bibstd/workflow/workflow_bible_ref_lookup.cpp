@@ -22,10 +22,10 @@ namespace
 ///
 /// \return the list validator of \p setting
 ///
-template<arcstd::framework::underlying_setting_type T>
-[[nodiscard]] auto list_validator(const arcstd::workflow::workflow_settings::setting_non_owning_ptr_type<T>& setting)
+template<arcstd::setting::underlying_setting_type T>
+[[nodiscard]] auto list_validator(const arcstd::setting::setting_store::setting_non_owning_ptr_type<T>& setting)
 {
-  return std::get<typename arcstd::framework::setting_validator_list<T>::sptr_type>(setting->validator);
+  return std::get<typename arcstd::setting::setting_validator_list<T>::sptr_type>(setting->validator);
 }
 
 } // namespace
@@ -33,18 +33,18 @@ template<arcstd::framework::underlying_setting_type T>
 ///
 ///
 workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings
+  std::shared_ptr<arcstd::setting::setting_store> setting_store
 )
-  : arcstd::workflow::workflow_settings_base{std::move(workflow_settings)}
-  , script{workflow_settings_->create_setting(
+  : workflow_settings_base{std::move(setting_store)}
+  , script{setting_store_->create_setting(
       "lookup.script",
       std::string{},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(script)>>>()
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(script)>>>()
     )}
-  , translations{workflow_settings_->create_setting(
+  , translations{setting_store_->create_setting(
       "lookup.translations",
       setting_value_t<decltype(translations)>{},
-      std::make_shared<arcstd::framework::setting_validator_list<setting_value_t<decltype(translations)>>>()
+      std::make_shared<arcstd::setting::setting_validator_list<setting_value_t<decltype(translations)>>>()
     )}
 {
 }
@@ -52,11 +52,10 @@ workflow_bible_ref_lookup_settings::workflow_bible_ref_lookup_settings(
 ///
 ///
 workflow_bible_ref_lookup::workflow_bible_ref_lookup(
-  std::shared_ptr<arcstd::workflow::workflow_settings> workflow_settings,
-  std::shared_ptr<arcstd::workflow::workflow_script> workflow_script
+  std::shared_ptr<arcstd::setting::setting_store> setting_store, std::shared_ptr<arcstd::lua::lua_engine> lua_engine
 )
-  : workflow_base{std::move(workflow_settings)}
-  , workflow_script_{std::move(workflow_script)}
+  : workflow_base{std::move(setting_store)}
+  , lua_engine_{std::move(lua_engine)}
 {
   const auto translations_changed = [this]()
   {
@@ -69,8 +68,8 @@ workflow_bible_ref_lookup::workflow_bible_ref_lookup(
     update_scripts();
   };
   // Connected last: scripts_loaded comes once all workflows are constructed, and with every "Load scripts"
-  settings().script->connect_queued(&arcstd::framework::setting_signals::value_changed, translations_changed, connections_);
-  workflow_script_->connect_queued(&arcstd::workflow::workflow_script_sigs::scripts_loaded, scripts_loaded, connections_);
+  settings().script->connect_queued(&arcstd::setting::setting_signals::value_changed, translations_changed, connections_);
+  lua_engine_->connect_queued(&arcstd::lua::lua_engine_signals::scripts_loaded, scripts_loaded, connections_);
 }
 
 ///
@@ -121,7 +120,7 @@ auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const 
   const auto to_url = [&](const bible::reference_range& chapter) -> std::optional<std::string>
   {
     const auto begin = chapter.begin();
-    const auto output = workflow_script_->run<url_manifest>(
+    const auto output = lua_engine_->run<url_manifest>(
       script,
       {
         translations,
@@ -150,7 +149,7 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
 {
   try
   {
-    const auto scripts = workflow_script_->scripts<translations_manifest, url_manifest>();
+    const auto scripts = lua_engine_->scripts<translations_manifest, url_manifest>();
     const auto names = scripts | std::views::keys | std::ranges::to<std::vector>();
     // No script chosen yet, or the chosen one is gone: the one offering the most translations takes its place
     const auto gone = !arcstd::util::contains(names, settings().script->value());
@@ -158,9 +157,9 @@ auto workflow_bible_ref_lookup::update_scripts() -> void
     if(gone && !scripts.empty())
     {
       const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
-      const auto translations = [&](const arcstd::workflow::workflow_script::scripts_type::value_type& script)
+      const auto translations = [&](const arcstd::lua::lua_engine::scripts_type::value_type& script)
       {
-        const auto output = workflow_script_->run<translations_manifest>(script.first, {language});
+        const auto output = lua_engine_->run<translations_manifest>(script.first, {language});
         return output ? output->get<"names">().size() : std::size_t{0};
       };
       std::ignore = settings().script->value(std::ranges::max_element(scripts, {}, translations)->first);
@@ -180,7 +179,7 @@ auto workflow_bible_ref_lookup::update_translations() -> void
   try
   {
     const auto language = std::string{arcstd::util::enum_name(bibstd::system::locale::preferred_language())};
-    const auto output = workflow_script_->run<translations_manifest>(settings().script->value(), {language});
+    const auto output = lua_engine_->run<translations_manifest>(settings().script->value(), {language});
     if(!output)
     {
       return;
