@@ -15,8 +15,10 @@
   #include "src/windows/construct_velopack_updater.hpp"
 #endif
 
+#include <arcstd/execution/thread_pool.hpp>
 #include <arcstd/system/filesystem.hpp>
 #include <arcstd/util/log.hpp>
+#include <arcstd/util/scope_guard.hpp>
 #include <bibstd/system/screen.hpp>
 #include <bibstd/system/single_instance.hpp>
 
@@ -66,6 +68,8 @@ int main(int argc, char** argv)
       updater_name
     )
   );
+  // Destroyed after the objects below, so no work runs on the pool anymore
+  const auto thread_pool = arcstd::util::scope_guard{[] { arcstd::execution::shutdown_thread_pool(); }};
   if(const auto& single_instance_error = instance.error(); single_instance_error.has_value())
   {
     LOG_WARN("single instance guard inactive: {}", *single_instance_error);
