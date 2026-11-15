@@ -7,7 +7,7 @@
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
 #include <arcstd/util/log.hpp>
-#include <arcstd/util/url.hpp>
+#include <arcstd/web/url.hpp>
 
 #include <algorithm>
 #include <ranges>
@@ -132,7 +132,7 @@ auto workflow_bible_ref_lookup::urls(const bible::reference_range& range) const 
     );
     auto url = output ? output->get<"url">() : std::nullopt;
     // A script built it, anything but a web page could start a program
-    if(!url || !arcstd::util::url::is_web_url(*url))
+    if(!url || !arcstd::web::is_web_url(*url))
     {
       LOG_WARN("lookup without the url of a web page: script=\"{}\", url=\"{}\"", script, url.value_or(""));
       return std::nullopt;
