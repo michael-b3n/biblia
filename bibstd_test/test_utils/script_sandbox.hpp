@@ -6,7 +6,7 @@
 
 #include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/lua/value.hpp>
-#include <arcstd/lua/value_cast.hpp>
+#include <arcstd/lua/value_conversion.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -90,7 +90,7 @@ inline auto script_sandbox::value(const std::string& code) const -> arcstd::lua:
 ///
 inline auto script_sandbox::text(const std::string& code) const -> std::string
 {
-  const auto result = arcstd::lua::value_cast<std::string>::from(value(code));
+  const auto result = arcstd::lua::from_value<std::string>(value(code));
   REQUIRE(result);
   return *result;
 }
@@ -99,7 +99,7 @@ inline auto script_sandbox::text(const std::string& code) const -> std::string
 ///
 inline auto script_sandbox::check(const std::string& code) const -> bool
 {
-  const auto result = arcstd::lua::value_cast<bool>::from(value(code));
+  const auto result = arcstd::lua::from_value<bool>(value(code));
   REQUIRE(result);
   return *result;
 }
