@@ -1,5 +1,4 @@
 #include "src/construct_backend.hpp"
-#include "res/version.hpp"
 
 #include <arcstd/cache/cache_store.hpp>
 #include <arcstd/lua/lua_engine.hpp>
@@ -13,6 +12,7 @@
 #include <bibstd/workflow/workflow_hotkey.hpp>
 #include <bibstd/workflow/workflow_scripture.hpp>
 
+#include <filesystem>
 #include <memory>
 
 namespace verselens
@@ -20,11 +20,11 @@ namespace verselens
 
 ///
 ///
-auto construct_backend() -> backend_instance
+auto construct_backend(const std::filesystem::path& data_folder) -> backend_instance
 {
   // Init backend
   // clang-format off
-  auto setting_store = std::make_shared<arcstd::setting::setting_store>(version::data_folder_name);
+  auto setting_store = std::make_shared<arcstd::setting::setting_store>(data_folder);
   auto lua_engine = std::make_shared<arcstd::lua::lua_engine>(setting_store, bibstd::lua::bundled::all);
   auto web_fetcher = std::make_shared<arcstd::web::web_fetcher>(setting_store, lua_engine);
   auto cache_store = std::make_shared<arcstd::cache::cache_store>(setting_store->data_folder(), lua_engine);

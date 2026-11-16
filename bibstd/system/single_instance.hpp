@@ -2,6 +2,7 @@
 
 #include <boost/interprocess/sync/file_lock.hpp>
 
+#include <filesystem>
 #include <optional>
 #include <string>
 
@@ -9,7 +10,7 @@ namespace bibstd::system
 {
 
 ///
-/// The single instance guard holds an exclusive lock on a file in the local data folder.
+/// The single instance guard holds an exclusive lock on a file in the data folder of the application.
 /// That folder belongs to the current user, so the guard scopes an instance to a logon
 /// session only. The lock is held by the OS and released when the process ends.
 ///
@@ -31,10 +32,11 @@ public: // Operators
 
 public: // Static operations
   ///
-  /// Claim the single instance of the application \p name, which also names its local data folder.
+  /// Claim the single instance of the application \p name, its lock file is in \p data_folder.
   /// \return guard holding the claim while it lives
   ///
-  [[nodiscard]] static auto claim(const std::string& name) -> single_instance;
+  [[nodiscard]] static auto claim(const std::filesystem::path& data_folder, const std::string& name)
+    -> single_instance;
 
 public: // Accessors
   ///
@@ -51,7 +53,7 @@ public: // Accessors
   [[nodiscard]] auto error() const -> const std::optional<std::string>&;
 
 private: // Structors
-  explicit single_instance(const std::string& name);
+  single_instance(const std::filesystem::path& data_folder, const std::string& name);
 };
 
 } // namespace bibstd::system

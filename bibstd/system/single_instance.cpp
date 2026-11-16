@@ -1,6 +1,5 @@
 #include "bibstd/system/single_instance.hpp"
 
-#include <arcstd/system/filesystem.hpp>
 #include <arcstd/util/exception.hpp>
 
 #include <filesystem>
@@ -13,18 +12,18 @@ namespace bibstd::system
 
 ///
 ///
-auto single_instance::claim(const std::string& name) -> single_instance
+auto single_instance::claim(const std::filesystem::path& data_folder, const std::string& name) -> single_instance
 {
-  return single_instance{name};
+  return single_instance{data_folder, name};
 }
 
 ///
 ///
-single_instance::single_instance(const std::string& name)
+single_instance::single_instance(const std::filesystem::path& data_folder, const std::string& name)
 {
   try
   {
-    const auto lock_file = arcstd::system::filesystem::local_data_folder(name) / std::format("{}.lock", name);
+    const auto lock_file = data_folder / std::format("{}.lock", name);
     std::filesystem::create_directories(lock_file.parent_path());
     std::ignore = std::ofstream{lock_file, std::ios::app}; // file_lock needs an existing file, its content is never read
 

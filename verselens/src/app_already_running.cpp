@@ -6,6 +6,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include <filesystem>
 #include <string>
 
 namespace verselens
@@ -13,14 +14,14 @@ namespace verselens
 
 ///
 ///
-auto show_already_running(int argc, char** argv) -> int
+auto show_already_running(int argc, char** argv, const std::filesystem::path& data_folder) -> int
 {
   configure_qml_layer();
   QGuiApplication app(argc, argv);
 
   // The notice reads like the rest of the application: same display names, same language. The
   // language is only read, a second instance must never write what the running one owns.
-  const auto translations = construct_translations(read_language_setting());
+  const auto translations = construct_translations(read_language_setting(data_folder));
 
   QQmlApplicationEngine engine;
   engine.setInitialProperties({

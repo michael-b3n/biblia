@@ -7,6 +7,7 @@
 #include "src/construct_bridge.hpp"
 #include "src/construct_translations.hpp"
 #include "src/construct_tray.hpp"
+#include "src/data_folder.hpp"
 #include "src/qml_application.hpp"
 
 #ifdef VERSELENS_VELOPACK
@@ -50,15 +51,18 @@ int main(int argc, char** argv)
   constexpr auto updater_name = "none";
 #endif
 
+  const auto data_folder = verselens::data_folder();
+
   // The instance check runs before the logger, a second instance would truncate the log of the running one.
-  const auto instance = bibstd::system::single_instance::claim(std::string{verselens::version::data_folder_name});
+  const auto instance =
+    bibstd::system::single_instance::claim(data_folder, std::string{verselens::version::data_folder_name});
   if(!instance.is_owner())
   {
-    return verselens::show_already_running(argc, argv);
+    return verselens::show_already_running(argc, argv, data_folder);
   }
 
   const auto logger = arcstd::util::logger(
-    verselens::version::data_folder_name,
+    data_folder,
     std::format(
       "executable: {}\nversion: {}\ncommit_hash: {}\ncommit_date: {}\nupdater: {}\n",
       arcstd::system::filesystem::executable_location().string(),
@@ -90,7 +94,7 @@ int main(int argc, char** argv)
   }
 
   // Init backend components.
-  auto backend = verselens::construct_backend();
+  auto backend = verselens::construct_backend(data_folder);
 
   // Initialize Qt application.
   verselens::configure_qml_layer();

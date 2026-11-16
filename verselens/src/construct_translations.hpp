@@ -8,6 +8,7 @@
 #include <arcstd/signal/queued_connections.hpp>
 #include <arcstd/util/non_owning_ptr.hpp>
 
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -16,11 +17,11 @@ namespace verselens
 {
 
 ///
-/// Read the language the display names are written in from the settings file. The file is only
+/// Read the language the display names are written in from the settings file in \p data_folder. The file is only
 /// read, which lets an instance owning no settings display the language of the one that does.
 /// \return language, std::nullopt if the file holds none
 ///
-[[nodiscard]] auto read_language_setting() -> std::optional<std::string>;
+[[nodiscard]] auto read_language_setting(const std::filesystem::path& data_folder) -> std::optional<std::string>;
 
 ///
 /// Translations of the application: owns the QML translations singleton and keeps its language in sync with the

@@ -6,6 +6,7 @@
 #include <arcstd/web/web_fetcher.hpp>
 #include <bibstd/workflow/workflow_base.hpp>
 
+#include <filesystem>
 #include <memory>
 
 namespace verselens
@@ -29,10 +30,10 @@ struct backend_instance final
 };
 
 ///
-/// Initialize backend components.
+/// Initialize backend components, their data is kept in \p data_folder.
 /// \return backend instance
 ///
-[[nodiscard]] auto construct_backend() -> backend_instance;
+[[nodiscard]] auto construct_backend(const std::filesystem::path& data_folder) -> backend_instance;
 
 ///
 /// Stop the scripts of \p backend for good. Called first once the app ends,

@@ -1,5 +1,4 @@
 #include "src/construct_translations.hpp"
-#include "res/version.hpp"
 
 #include <arcstd/setting/setting_store.hpp>
 #include <arcstd/setting/setting_validator.hpp>
@@ -15,6 +14,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 #include <algorithm>
+#include <filesystem>
 #include <format>
 #include <memory>
 #include <span>
@@ -108,13 +108,13 @@ auto translations_instance::disconnect() -> void
 
 ///
 ///
-auto read_language_setting() -> std::optional<std::string>
+auto read_language_setting(const std::filesystem::path& data_folder) -> std::optional<std::string>
 {
   try
   {
     auto tree = boost::property_tree::ptree{};
     boost::property_tree::read_xml(
-      arcstd::setting::setting_store::settings_file_path(version::data_folder_name).generic_string(), tree
+      arcstd::setting::setting_store::settings_file_path(data_folder).generic_string(), tree
     );
     const auto language = tree.get_optional<std::string>(
       std::format("{}.{}", arcstd::setting::setting_store::settings_root_name, translations_instance::language_setting_path)

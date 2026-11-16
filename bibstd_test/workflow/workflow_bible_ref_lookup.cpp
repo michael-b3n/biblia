@@ -83,7 +83,7 @@ lookup_fixture::lookup_fixture(
   );
   if(!selected.empty())
   {
-    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path());
     const auto settings = workflow_bible_ref_lookup_settings{writer};
     std::ignore = settings.script->value(selected);
     std::ignore = settings.translations->value(translations);

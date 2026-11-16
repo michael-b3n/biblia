@@ -104,7 +104,7 @@ scripture_fixture::scripture_fixture(
   );
   if(selected)
   {
-    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path().string());
+    const auto writer = std::make_shared<arcstd::setting::setting_store>(folder.path());
     std::ignore = workflow_scripture_settings{writer}.default_scripture_name->value(selected);
   }
   const auto settings = arcstd::test_utils::make_script_settings(folder.path(), true);
