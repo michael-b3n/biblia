@@ -6,7 +6,7 @@
 
 #include <arcstd/lua/lua_engine.hpp>
 #include <arcstd/lua/value.hpp>
-#include <arcstd/lua/value_conversion.hpp>
+#include <arcstd/lua/value_cast.hpp>
 #include <bibstd/lua/bundled_scripts.hpp>
 
 #include <catch2/catch_test_macros.hpp>

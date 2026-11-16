@@ -139,9 +139,9 @@ What the app offers to scripts, each at its own name, e.g. `web.fetch`.
 
 ### `cache.get(name, key)`
 
-Reads a text value from a cache. A cache keeps its values after the app closes. Each cache is the SQLite file
-`cache/<name>.sqlite` in the local data folder, and other programs may read and change it. A cache that fails is
-logged and holds nothing.
+Reads a text value from a cache. A cache keeps its values after the app closes. Each
+cache is the SQLite file `cache/<name>.sqlite` in the local data folder, and other programs
+may read and change it. A cache that fails is logged and holds nothing.
 
 - `name` (`string`): the cache, made of letters, digits and `_`. Each script uses its own cache.
 - `key` (`string`): the key of the value
@@ -171,11 +171,12 @@ Removes all values of a cache, see `cache.get`.
 ### `web.fetch(url)`
 
 Fetches a web page. The script waits for the page, and other scripts wait too. During
-`Web > Pause after a failure` a failed url is not requested again, it returns the same failure.
+`Web > Pause after a failure` a failed url is not requested again, it returns the same
+failure.
 
 - `url` (`string`): the address of the page, http or https
-- Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP 404 or 410),
-  `timeout` (after 30 s), `init_failed` or `request_failed`
+- Returns the content of the page, or `nil` and the reason: `invalid_url`, `not_found` (HTTP
+  404 or 410), `timeout` (after 30 s), `init_failed` or `request_failed`
 
 ### `scripture.scripture_count()`
 
@@ -253,8 +254,8 @@ Settings of the app at `setting`, each with the functions at the end, `<setting>
 
 ### `setting.web.retry_pause`
 
-How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a script may
-request a failed url again right away.
+How long a failed url is not requested again, `Web > Pause after a failure`. With 0 s a
+script may request a failed url again right away.
 
 ### `setting.scripture.default_name`
 
