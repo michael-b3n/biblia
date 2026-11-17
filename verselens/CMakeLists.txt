@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 4.3)
 #
 # Include cmake functions
 #
-include(incbin)
 include(git_info)
 include(mingw)
 
@@ -164,11 +163,6 @@ target_sources(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/res/resource.rc
 )
 
-#
-# Add all resources that are compiled into the executable using incbin.
-#
-add_incbin_resources(src/construct_tray.cpp res/icon.ico)
-add_incbin_resources(src/construct_translations.cpp res/display_names.csv)
 
 #
 # Link against external dependencies

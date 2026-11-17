@@ -5,7 +5,6 @@
 #include <bibqml/bridge/BridgeApplication.hpp>
 #include <bibqml/translation/Translations.hpp>
 
-#include <arcstd/util/incbin.hpp>
 #include <bibstd/system/open_browser.hpp>
 #include <bibstd/system/tray.hpp>
 
@@ -16,12 +15,21 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <span>
 #include <string>
 #include <tuple>
 #include <vector>
 
-INC_RESOURCE(icon, "res/icon.ico");
-const auto icon_view = arcstd::util::incbin::to_span<std::byte>(res_icon_data, res_icon_size);
+// #embed is standard in C++26, clang still calls it an extension
+#ifdef __clang__
+  #pragma clang diagnostic ignored "-Wc23-extensions"
+#endif
+
+// NOLINTNEXTLINE(modernize-avoid-c-arrays) #embed fills an array of the size of the file
+constexpr unsigned char icon[] = {
+#embed "../res/icon.ico"
+};
+const auto icon_view = std::as_bytes(std::span{icon});
 
 namespace verselens
 {

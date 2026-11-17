@@ -4,7 +4,6 @@
 #include <arcstd/setting/setting_validator.hpp>
 #include <arcstd/util/enum.hpp>
 #include <arcstd/util/exception.hpp>
-#include <arcstd/util/incbin.hpp>
 #include <arcstd/util/log.hpp>
 #include <bibstd/system/locale.hpp>
 
@@ -21,8 +20,16 @@
 #include <utility>
 #include <vector>
 
-INC_RESOURCE(display_names, "res/display_names.csv");
-const auto display_names_view = arcstd::util::incbin::to_span<std::byte>(res_display_names_data, res_display_names_size);
+// #embed is standard in C++26, clang still calls it an extension
+#ifdef __clang__
+  #pragma clang diagnostic ignored "-Wc23-extensions"
+#endif
+
+// NOLINTNEXTLINE(modernize-avoid-c-arrays) #embed fills an array of the size of the file
+constexpr unsigned char display_names[] = {
+#embed "../res/display_names.csv"
+};
+const auto display_names_view = std::as_bytes(std::span{display_names});
 
 namespace verselens
 {

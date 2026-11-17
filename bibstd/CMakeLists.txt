@@ -28,15 +28,16 @@ target_sources(${PROJECT_NAME}
 
 #
 # Compile the Lua scripts of lua/bundled and lua/private into the library, a new script needs no other change.
-# The label is the namespace of the scripts, \see lua/bundled_scripts.hpp.
 #
-include(incbin)
+include(embedded_scripts)
 file(GLOB BIBSTD_LUA_BUNDLED CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/lua/bundled/*.lua" "${CMAKE_CURRENT_LIST_DIR}/lua/private/*.lua")
-set(INCBIN_HEADER bibstd/lua/bundled_scripts.hpp)
-set(INCBIN_NAMESPACE bibstd::lua::bundled)
-configure_incbin_source(bundled ${arca_SOURCE_DIR}/tools/cmake/embedded_scripts.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp ${BIBSTD_LUA_BUNDLED})
+configure_embedded_scripts(${CMAKE_CURRENT_BINARY_DIR}/lua/bundled_scripts.cpp
+  HEADER bibstd/lua/bundled_scripts.hpp
+  NAMESPACE bibstd::lua::bundled
+  SCRIPTS ${BIBSTD_LUA_BUNDLED}
+)
 target_sources(${PROJECT_NAME}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled.cpp
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lua/bundled_scripts.cpp
 )
 
 find_package(pugixml REQUIRED)
